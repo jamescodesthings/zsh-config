@@ -1,0 +1,20 @@
+#!/usr/bin/env zsh
+
+DEBUG_GET_HOSTNAME=0
+
+# Gets the hostname of the box
+# james-macbook on macbook pro (m1)
+# jet on jetson nano
+function get-hostname {
+  RAW_HOSTNAME=$(uname -n)
+  CUT_HOSTNAME=${RAW_HOSTNAME%%.*}
+
+  if is equal "$DEBUG_GET_HOSTNAME" "1"; then
+    echo "Raw Hostname is $RAW_HOSTNAME"
+    echo "Cut is $CUT_HOSTNAME"
+  fi
+
+  echo $CUT_HOSTNAME
+}
+
+get-hostname "$@"
