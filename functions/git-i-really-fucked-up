@@ -1,0 +1,24 @@
+#!/usr/bin/env zsh
+
+function git-i-really-fucked-up() {
+  local DEPS=(
+    confirm
+    clr_white
+    clr_cyan
+    git
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  local BRANCH="origin/$(git-branch)"
+  clr_white "Reset to " -n;
+  clr_cyan "$BRANCH"
+
+  if confirm; then
+    git reset --hard $BRANCH
+  fi
+}
+
+git-i-really-fucked-up "$@"

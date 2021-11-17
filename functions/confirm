@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+function confirm() {
+  read "confirmed?Are you sure? "
+  if [[ "$confirmed" =~ ^[Yy]$ ]]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+confirm "$@"

@@ -1,0 +1,28 @@
+#!/usr/bin/env zsh
+
+function global-python-version() {
+ local DEPS=(
+    asdf
+    python
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  ASDF_VER=$(asdf current python | egrep -o1 "(\d+\.+\d+\.\d+)")
+  if is not empty "$ASDF_VER"; then
+    echo "$ASDF_VER"
+    return 0
+  fi
+
+  GLOBAL_VER=$(python --version | egrep -o1 "(\d+\.+\d+\.\d+)")
+  if is not empty "$GLOBAL_VER"; then
+    echo "$GLOBAL_VER"
+    return 0
+  fi
+
+  clr_red 'Could not get python version from ASDF or global Python executable'
+}
+
+global-python-version "$@"

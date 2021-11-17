@@ -1,0 +1,19 @@
+#!/usr/bin/env zsh
+
+function backup(){
+  local DEPS=(
+    brew
+    mackup
+    clr_green
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  brew bundle dump --force --describe --global
+  mackup backup -f
+  clr_green 'Backed Up'
+}
+
+backup "$@"

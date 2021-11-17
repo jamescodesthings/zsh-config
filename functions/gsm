@@ -1,0 +1,82 @@
+#!/usr/bin/env zsh
+
+function _current_branch() {
+	local ref
+	ref=$(command git symbolic-ref --quiet HEAD 2> /dev/null)
+	local ret=$?
+	if is not equal "$?" "0"
+	then
+		[[ $ret == 128 ]] && return
+		ref=$(command git rev-parse --short HEAD 2> /dev/null)  || return
+	fi
+	echo ${ref#refs/heads/}
+}
+
+function _gsm_usage() {
+  local DEPS=(clr_cyan clr_white)
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  clr_cyan 'Usage:' -n
+  clr_white 'gsm [branch to check out and merge]'
+}
+
+# Git Super Merge
+function gsm () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    git
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _gsm_usage
+    return 0
+  fi
+
+  # Set current branch
+  local THEIR_BRANCH=$1
+  local MY_BRANCH=$(_current_branch)
+  clr_white "Saved Current Branch " -n
+  clr_cyan ${MY_BRANCH}
+  clr_white "Checking out " -n
+  clr_green ${THEIR_BRANCH}
+
+  # Check out branch
+  git checkout ${THEIR_BRANCH} &> /dev/null
+
+  if is not equal "$?" "0"; then
+    clr_red "Could not find branch"
+    return 1
+  fi
+
+  # Update
+  git pull &> /dev/null
+
+  if is not equal "$?" "0"; then
+    clr_red "Could not git pull"
+    return 1
+  fi
+
+  # Check out the original branch
+  git checkout ${MY_BRANCH} &>/dev/null
+
+  if is not equal "$?" "0"; then
+    clr_red "Could not check out $MY_BRANCH"
+    return 1
+  fi
+
+  # Finally Merge the input branch
+  git merge --no-ff ${THEIR_BRANCH}
+}
+
+gsm "$@"

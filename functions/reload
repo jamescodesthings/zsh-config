@@ -1,0 +1,36 @@
+#!/usr/bin/env zsh
+
+function _reload_usage() {
+  local DEPS=(
+    clr_cyan
+    clr_white
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  clr_cyan 'Usage: ' -n; clr_white 'reload [function]'
+  clr_cyan 'reloads [function]'
+
+}
+
+function reload() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _reload_usage
+    return
+  fi
+
+  unfunction "$1"
+  autoload -Uz "$1"
+}
+
+reload "$@"

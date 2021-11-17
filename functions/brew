@@ -1,0 +1,51 @@
+#!/usr/bin/env zsh
+
+X86_BREW="/usr/local/bin/brew"
+ARM_BREW="/opt/homebrew/bin/brew"
+
+function brew(){
+  local DEPS=(
+    brew
+    is
+  )
+
+  ORIGINAL_BREW="$ARM_BREW"
+
+  if is not existing "$X86_BREW"; then
+    clr_red "Could not find original brew at $ORIGINAL_BREW";
+    unfunction "brew" # Just to be safe
+
+    return 1;
+  fi
+
+
+  if is not existing "$X86_BREW"; then
+    clr_red "Could not find x86 brew at $X86_BREW";
+    unfunction "brew" # Just to be safe
+
+    return 1;
+  fi
+
+  if is not equal "$(arch)" "arm64"; then
+    ORIGINAL_BREW="$X86_BREW"
+  fi
+
+  if is equal "$1" "cask"; then
+    # echo "messing with casks cause fuck it"
+    # echo "$ORIGINAL"
+
+    # Parse first two commands (e.g. cask info)
+    # Replace with command --cask (e.g. info --cask)
+    # Add the rest
+
+    brew_command="$2";
+    # echo "$ORIGINAL_BREW $brew_command --cask ${@:3}"
+    $ORIGINAL_BREW $brew_command --cask ${@:3}
+    return 0;
+  fi
+
+  $ORIGINAL_BREW "$@"
+  return 0;
+}
+
+brew "$@"

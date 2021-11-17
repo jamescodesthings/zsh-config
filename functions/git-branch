@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+
+function git-branch() {
+  local DEPS=(
+    git
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  git rev-parse --abbrev-ref HEAD
+}
+
+git-branch "$@"

@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+function nuke-docker() {
+  local DEPS=(
+    clr_cyan
+    docker
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  # Stop the containers
+  clr_cyan "Stop all containers"
+  docker stop $(docker ps -a -q)
+  # Delete all containers
+  clr_cyan "Remove all containers"
+  docker rm $(docker ps -a -q)
+  # Delete all images
+  clr_cyan "Delete all images"
+  docker rmi -f $(docker images -a -q)
+  # Delete all volumes
+  clr_cyan "Delete all volumes"
+  docker volume rm -f $(docker volume ls -q)
+}
+
+nuke-docker "$@"

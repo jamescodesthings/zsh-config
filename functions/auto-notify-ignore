@@ -1,0 +1,72 @@
+#!/usr/bin/env zsh
+
+function _auto-notify-ignore_usage() {
+  clr_cyan 'Usage:' -n
+  clr_white " $1 [command]\n"
+
+  clr_cyan 'Commands:'
+  clr_green 'list' -n
+  clr_white ' - Lists ignored commands'
+  clr_green 'add' -n
+  clr_white ' [command] - Adds [command] to the ignored list'
+}
+
+function _auto-notify-ignore_add() {
+  command=$2
+
+  if is empty "$AUTO_NOTIFY_IGNORE_FILE"; then
+    clr_red "Could not find an ignore file"
+    clr_white "Create a .zsh script and export it's path as AUTO_NOTIFY_IGNORE_FILE"
+    clr_white "e.g. touch ~/.auto-notify-ignore.zsh"
+    clr_white "     echo 'export AUTO_NOTIFY_IGNORE_FILE=\"~/.auto-notify-ignore.zsh\"' >> .zshrc"
+    return 1;
+  fi
+
+  if is not existing "$AUTO_NOTIFY_IGNORE_FILE"; then
+    clr_red "$AUTO_NOTIFY_IGNORE_FILE does not exist, please create it"
+    return 1;
+  fi
+
+  if is empty "$command"; then
+    clr_red "No command to add to ignore file"
+    _auto-notify-ignore_usage $1
+    return 1
+  fi
+
+  echo "AUTO_NOTIFY_IGNORE+=(\"$command\")" >> $AUTO_NOTIFY_IGNORE_FILE
+  source $AUTO_NOTIFY_IGNORE_FILE
+  clr_green "Added $command to $AUTO_NOTIFY_IGNORE_FILE"
+}
+
+# Lists and adds to AUTO_NOTIFY_IGNORE
+# Used by MichaelAquilina/zsh-auto-notify
+function auto-notify-ignore () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    tr
+    sort
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _auto-notify-ignore_usage "$0"
+    return 0
+  fi
+
+  if is equal "$1" "list"; then
+    echo $AUTO_NOTIFY_IGNORE | tr ' ' '\n' | sort | uniq
+  fi
+
+  if is equal "$1" "add"; then
+    _auto-notify-ignore_add $1 $2
+  fi
+}
+
+auto-notify-ignore "$@"

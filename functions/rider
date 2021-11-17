@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+
+# alias wso='open -na "WebStorm.app" --args "$(pwd)"'
+
+# ls -1 | grep 'WebStorm'
+
+function _rider_find_sln() {
+  SLN=$(ls -1 | grep .sln | head -1)
+  PROJ=$(ls -1 | grep .csproj | head -1)
+
+  if is empty "$SLN"; then
+    if is empty "$PROJ"; then
+      clr_red ".sln/.csproj not found, try passing it as an argument"
+      return 1
+    fi
+
+    open -na "/Applications/Rider.app" --args "$PROJ"
+    return 0
+  fi
+
+  open -na "/Applications/Rider.app" --args "$SLN"
+}
+
+# Webstorm Open Here
+function rider () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+  )
+
+  if is not existing "/Applications/Rider.app"; then
+    clr_red "Rider not installed";
+    return 1;
+  fi
+
+  if is equal "$1" "."; then
+    _rider_find_sln
+    return 0;
+  fi
+
+  open -na "/Applications/Rider.app" --args "$@"
+}
+
+rider "$@"

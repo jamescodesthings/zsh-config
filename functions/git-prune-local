@@ -1,0 +1,61 @@
+#!/usr/bin/env zsh
+
+function git-prune-local_usage() {
+  clr_cyan 'Usage:' -n
+  clr_white " $1 command\n"
+
+  clr_cyan 'Commands:'
+  clr_green 'list' -n
+  clr_white ' - Lists the branches to be deleted'
+  clr_green 'delete' -n
+  clr_white ' - Actually deletes the buggers (be very careful)'
+}
+
+function git-prune-local_delete() {
+  clr_red 'The following branches will be deleted'
+
+  git-prune-local_list
+
+  if confirm; then
+    clr_green 'Cool, deleting'
+    git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
+  fi
+}
+
+function git-prune-local_list() {
+  git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}'
+}
+
+function git-prune-local() {
+  local DEPS=(
+    git
+    grep
+    awk
+    xargs
+    clr_white
+    confirm
+    clr_cyan
+    clr_red
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    git-prune-local_usage $0
+    return 0
+  fi
+
+  if is equal "$1" "list"; then
+    git-prune-local_list
+    return 0
+  fi
+
+  if is equal "$1" "delete"; then
+    git-prune-local_delete
+    return 0
+  fi
+}
+
+git-prune-local "$@"

@@ -1,0 +1,29 @@
+#!/usr/bin/env zsh
+
+function _update_brew() {
+  clr_cyan "updating brew"
+  brew update && brew upgrade && brew cask upgrade
+}
+
+function _update_tldr() {
+  clr_cyan "updating tldr"
+  tldr --update
+}
+
+function _update_zinit() {
+  clr_cyan "updating zinit"
+  # Self update
+  zinit self-update
+  # Plugin parallel update
+  zinit update --parallel
+}
+
+function update() {
+  _update_brew
+  _update_tldr
+  _update_zinit
+  # _update_python
+  # _update_node
+}
+
+update "$@"

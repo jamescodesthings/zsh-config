@@ -1,0 +1,64 @@
+#!/usr/bin/env zsh
+
+shims=('clear' 'tput')
+
+function _asdf-reshim_usage() {
+  clr_cyan 'Usage:' -n
+  clr_white " $1 [--help|-h]\n"
+  clr_cyan 'Runs asdf reshim then fixes shims for the following commands'
+
+  for shim in $shims; do
+    echo "- $shim"
+  done
+}
+
+# asdf-reshim: Lazy issue mentions in a git commit -m
+function asdf-reshim () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    asdf
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    _asdf-reshim_usage "$0"
+    return 0
+  fi
+
+  clr_cyan "Reshimming"
+  _asdf_reshim_reshim
+
+  clr_cyan "Fixing shims, will need sudo"
+  _asdf_reshim_fix
+}
+
+function _asdf_reshim_reshim() {
+  which asdf 2>&1 > /dev/null
+  if is not equal "$?" "0"; then
+    clr_red "asdf function not found, cannot reshim. Install asdf."
+  else
+    asdf reshim
+  fi
+}
+
+function _asdf_reshim_fix() {
+  if is not existing "$ASDF_DIR/shims"; then
+    clr_red "ASDF_DIR not found, set ASDF_dir to the path to .asdf (usually ~/.asdf)"
+    return 1
+  fi
+
+  for shim in $shims; do
+    without_nl=${shim:-1}
+    sudo chmod -x "$ASDF_DIR/shims/$without_nl"
+    clr_green "$ASDF_DIR/shims/$without_nl"
+  done
+}
+
+asdf-reshim "$@"

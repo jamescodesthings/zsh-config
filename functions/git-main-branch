@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+function git-main-branch() {
+  local DEPS=(
+    git
+    grep
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  git remote show origin | grep "HEAD branch" | cut -d ":" -f 2 | awk '{$1=$1};1'
+}
+
+git-main-branch "$@"

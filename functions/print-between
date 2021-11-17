@@ -1,0 +1,44 @@
+#!/usr/bin/env zsh
+
+function _print-between_usage() {
+  clr_cyan 'Usage:' -n
+  clr_white " $1 start-string end-string filepath"
+  clr_cyan 'Example:' -n
+  clr_white " $1 \"START HERE\" \"END HERE\" ./web.log"
+}
+
+# print-between: Lazy issue mentions in a git commit -m
+function print-between () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    git
+    current_branch
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _print-between_usage "$0"
+    return 0
+  fi
+  if is empty "$2"; then
+    _print-between_usage "$0"
+    return 0
+  fi
+
+  if is empty "$3"; then
+    _print-between_usage "$0"
+    return 0
+  fi
+
+  echo "Printing file contents of $3 between $1 and $2"
+  awk "/$1/{flag=1}/$2/{print;flag=0}flag" $3
+}
+
+print-between "$@"

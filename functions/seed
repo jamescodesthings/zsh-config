@@ -1,0 +1,229 @@
+#!/usr/bin/env zsh
+
+local SEED_PYTHON_DEV_DEPS=(pytest-cov pre-commit flake8 mypy isort)
+local SEED_PYTHON_DEV_DEPS_PRE=(black)
+# local SEED_PYTHON_DEFAULT_DEPS=(numpy scipy scikit-learn matplotlib pandas)
+
+local SEED_TASK_COUNTER=1
+
+function _seed_usage() {
+  clr_cyan 'Usage:' -n
+  clr_white " $1 [project-type] [project-name] [additional-deps]\n"
+
+  clr_cyan 'Project Types:'
+  clr_green 'python:'
+  clr_white '  A python project for ML use'
+  clr_cyan "  Default Dependencies:" -n
+  clr_white " $SEED_PYTHON_DEFAULT_DEPS"
+  echo ''
+
+  clr_cyan 'Examples:'
+  clr_green "$1 " -n
+  clr_white "python my-new-project pandas"
+}
+
+# seed: Lazy issue mentions in a git commit -m
+function seed () {
+  local DEPS=(
+    poetry
+    asdf
+    gitignore
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _seed_usage "$0"
+    return 0
+  fi
+
+  SEED_TASK_COUNTER=1
+
+  if is equal "$1" "python"; then
+    _seed_python $0 ${@:2}
+    return 0;
+  fi
+}
+
+function _seed_global_python_version() {
+  asdf current python | egrep -o1 "(\d+\.+\d+\.\d+)";
+}
+
+
+function _seed_message() {
+  clr_green "$SEED_TASK_COUNTER: " -n
+  clr_white "$@"
+  SEED_TASK_COUNTER=$((SEED_TASK_COUNTER+1))
+}
+
+function _seed_python() {
+  ORIG_COMMAND="$1"
+  PROJECT_NAME="$2"
+  DEPENDENCIES="$SEED_PYTHON_DEFAULT_DEPS ${@:3}"
+
+  if is empty "$PROJECT_NAME"; then
+    _seed_usage "$ORIG_COMMAND"
+  fi
+
+  if is existing "$PROJECT_NAME"; then
+    clr_cyan "$PROJECT_NAME" -n
+    clr_white " already exists, do you want to ovewrite it?"
+    if confirm; then
+      rm -rf "$PROJECT_NAME"
+    else;
+      clr_red "cannot seed project over existing project."
+      return 1
+    fi
+  fi
+
+  echo ""
+  clr_cyan "Seeding: " -n
+  clr_white "$PROJECT_NAME"
+  clr_cyan "With Dependencies: " -n
+  clr_white "$DEPENDENCIES"
+  echo ""
+
+  PYTHON_GLOBAL_VERSION=$(_seed_global_python_version)
+  # echo $PYTHON_GLOBAL_VERSION
+
+  _seed_message "Seeding $PROJECT_NAME"
+  poetry new "$PROJECT_NAME"
+
+  ORIGINAL_VERSION_REQUIREMENT="python = \"^3.9\""
+  NEW_VERSION_REQUIREMENT="python = \">=3.7.1,<3.10\""
+
+  _seed_message "Set Project required python version to >=3.7,<3.10"
+  (cd $PROJECT_NAME && sed -i '' "s/$ORIGINAL_VERSION_REQUIREMENT/$NEW_VERSION_REQUIREMENT/g" ./pyproject.toml)
+  _seed_message "Setting Python version to $PYTHON_GLOBAL_VERSION"
+  (cd $PROJECT_NAME && asdf local python "$PYTHON_GLOBAL_VERSION")
+
+  _seed_message "Set Poetry Python version to $PYTHON_GLOBAL_VERSION"
+  (cd $PROJECT_NAME && poetry env use python)
+
+  _seed_message "Adding default dev dependencies ($SEED_PYTHON_DEV_DEPS)"
+  (cd $PROJECT_NAME && poetry add --dev $SEED_PYTHON_DEV_DEPS)
+  _seed_message "Adding default dev pre-release packages ($SEED_PYTHON_DEV_DEPS_PRE)"
+  (cd $PROJECT_NAME && poetry add --dev --allow-prereleases $SEED_PYTHON_DEV_DEPS_PRE)
+  # _seed_message "Adding default runtime packages ($SEED_PYTHON_DEFAULT_DEPS)"
+  # (cd $PROJECT_NAME && poetry add $SEED_PYTHON_DEFAULT_DEPS)
+
+  _seed_message "Configuring isort and black"
+  cat <<EOT >> ./$PROJECT_NAME/pyproject.toml
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 79
+
+[tool.black]
+line-length = 79
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+
+'''
+EOT
+
+  _seed_message "Configuring mypy and flake8"
+  cat <<EOT > ./$PROJECT_NAME/setup.cfg
+[flake8]
+extend-ignore = E203
+
+[mypy]
+follow_imports = silent
+strict_optional = True
+warn_redundant_casts = True
+warn_unused_ignores = True
+disallow_any_generics = True
+check_untyped_defs = True
+no_implicit_reexport = True
+disallow_untyped_defs = True
+ignore_missing_imports = True
+
+[mypy-tests.*]
+ignore_errors = True
+
+EOT
+
+  _seed_message "Creating pre-commit config"
+  cat <<EOT > ./$PROJECT_NAME/.pre-commit-config.yaml
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+    -   id: flake8
+-   repo: https://github.com/psf/black
+    rev: 21.9b0
+    hooks:
+      - id: black
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.910-1
+    hooks:
+        - id: mypy
+          additional_dependencies: [pydantic]  # add if use pydantic
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.9.3
+    hooks:
+    -   id: isort
+
+EOT
+
+  _seed_message "Creating Gitignore"
+  gitignore python > ./$PROJECT_NAME/.gitignore
+  gitignore jetbrains >> ./$PROJECT_NAME/.gitignore
+
+  _seed_message "Creating repo"
+  (cd $PROJECT_NAME && git init)
+
+  _seed_message "Install & Update pre-commit"
+  (cd $PROJECT_NAME && pre-commit install)
+  (cd $PROJECT_NAME && pre-commit autoupdate)
+
+  _seed_message "Running First Time lint"
+  (cd $PROJECT_NAME && git add --all)
+  (cd $PROJECT_NAME && pre-commit run --all-files || true)
+  (cd $PROJECT_NAME && pre-commit run --all-files || true)
+
+  _seed_message "Adding First Commit"
+  (cd $PROJECT_NAME && git add --all)
+  (cd $PROJECT_NAME && git commit -m "Seeded $PROJECT_NAME")
+
+  echo ""
+  echo ""
+  clr_cyan "Done seeding python project" -n
+  clr_green " $PROJECT_NAME"
+  echo ""
+  clr_cyan "To get started:" -n
+  clr_white " cd $PROJECT_NAME"
+
+}
+
+seed "$@"

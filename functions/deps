@@ -1,0 +1,66 @@
+#!/usr/bin/env zsh
+
+# Usage:
+# To check for availability of dependencies in a function:
+# local DEPS=(clr_cyan clr_missing)
+# if ! deps $DEPS; then
+#   return
+# fi
+
+declare -A steps
+
+steps[aws-mfa]="pip install aws-mfa"
+steps[asdf]="brew install asdf"
+steps[circleci]="brew install circleci"
+steps[clr]="source ${HOME}/.custom/bash_colors.zsh"
+steps[clr_cyan]=${steps[clr]}
+steps[clr_missing]=${steps[clr]}
+steps[clr_red]=${steps[clr]}
+steps[clr_white]=${steps[clr]}
+steps[confirm]="source ${HOME}/.custom/functions/confirm"
+steps[docker]="brew cask install docker"
+steps[exa]="brew install exa"
+steps[git]="brew install git"
+steps[git-branch]="create a function called git-branch that returns the current branch"
+steps[grep]="brew install grep"
+steps[gron]="brew install gron"
+steps[gzip]="brew install gzip"
+steps[http]="brew install httpie"
+steps[is]="source ${HOME}/.custom/is.zsh"
+steps[jq]="brew install jq"
+steps[lazygit]="brew install lazygit"
+steps[mysql]="brew install mysql-client && brew link mysql-client"
+steps[pv]="brew install pv"
+steps[python]="brew install asdf && asdf plugin add python && asdf install python latest"
+steps[revolver]="brew install revolver"
+steps[rg]="brew install rg"
+steps[ts]="brew install moreutils"
+steps[webstorm]="brew cask install webstorm"
+steps[zinit]="install-zinit"
+steps[xcrun]="install xcode command line tools (xcode-select --install)"
+
+
+function deps() {
+  # todo: check for deps' deps to make sure they're cool
+  local missing=0
+
+  for dependency in "$@"; do
+    if is not available "$dependency"; then
+      clr_red 'Missing: ' -n
+      clr_white "${dependency}"
+      deps-command "${dependency}"
+      missing=1
+    fi
+  done
+
+  return ${missing}
+}
+
+function deps-command() {
+  if is not empty ${steps[$1]}; then
+    clr_cyan 'To Install: ' -n
+    clr_white "${steps[$1]}"
+  fi
+}
+
+deps "$@"

@@ -1,0 +1,52 @@
+#!/usr/bin/env zsh
+
+function git-prune-remote {
+  local DEPS=(
+    is
+    git-branch
+    git-main-branch
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  local BRANCH=$(git-branch)
+  local MAIN_BRANCH=$(git-main-branch)
+
+  if [ "$BRANCH" != "$MAIN_BRANCH" ]; then
+    clr_red "WARNING: " -n
+    clr_white "You are on branch " -n
+    clr_cyan "$BRANCH" -n
+    clr_white " NOT " -n
+    clr_cyan "$MAIN_BRANCH"
+    return
+  fi
+
+  clr_white "Fetching merged branches" -n
+  clr_cyan "..."
+
+
+  remote_branches=$(git branch -r --merged | grep -v "/$MAIN_BRANCH$" | grep -v "/$BRANCH$")
+  if [ -z "$remote_branches" ]; then
+    clr_white "No existing branches have been merged into " -n
+    clr_cyan "$current_branch"
+    return
+  fi
+
+  clr_white "This will remove the following branches:"
+  if [ -n "$remote_branches" ]; then
+    clr_white "Remote:"
+    clr_cyan "$remote_branches"
+  fi
+
+  if confirm; then
+    clr_green "Removing"
+    # Remove remote branches
+    git push origin `git branch -r --merged | grep -v "/$MAIN_BRANCH$" | grep -v "/$BRANCH$" | sed 's/origin\//:/g' | tr -d '\n'`
+  else
+    clr_red "No branches removed"
+  fi
+}
+
+git-prune-remote "$@"

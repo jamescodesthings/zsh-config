@@ -1,0 +1,157 @@
+#!/usr/bin/env zsh
+
+function _abspath() {
+    if [[ -d "$1" ]]; then
+        # dir
+        (cd "$1"; pwd)
+    elif [[ -f "$1" ]]; then
+        # file
+        if [[ $1 == */* ]]; then
+            return "$(cd "${1%/*}"; pwd)/${1##*/}"
+        else
+            return "$(pwd)/$1"
+        fi
+    fi
+}
+
+function _sim_usage() {
+  clr_cyan 'Works with the running simulator'
+  clr_cyan 'Usage:' -n
+  clr_white " $1 command\n"
+
+  clr_cyan 'Commands:'
+  clr_green 'set-clock 10:00' -n
+  clr_white '\t\t- Sets the clock time to the given time'
+  clr_green 'screenshot path.png' -n
+  clr_white '\t- Takes a screenshot and saves it to path'
+  clr_green 'screenrecord path.mov' -n
+  clr_white '\t- Takes a screen recording and saves it to path'
+  clr_green 'install path.app' -n
+  clr_white '\t- Installs App from path on the current sim'
+
+}
+
+function _sim_install() {
+  self_command=$1
+
+  if is empty "$2"; then
+    clr_red "No app passed to command"
+    _gcmm_usage $self_command;
+    return 1;
+  fi;
+
+  xcrun simctl install booted "$2"
+}
+
+function _sim_set_clock() {
+  self_command=$1
+
+  if is empty "$2"; then
+    clr_red "No time passed to command"
+    _gcmm_usage $self_command;
+    return 1;
+  fi;
+
+  xcrun simctl status_bar booted override --time "$2" --batteryState charged --batteryLevel 100
+}
+
+function _sim_screenshot() {
+  self_command=$1
+
+  if is empty "$2"; then
+    clr_red "No path passed to command"
+    _gcmm_usage $self_command;
+    return 1;
+  fi;
+
+  folderpath=${2%/*}
+  if is not empty "$folderpath"; then
+    mkdir -p "$folderpath"
+  fi
+
+  xcrun simctl io booted screenshot "$2" &>/dev/null
+  if is not equal "$?" "0"; then
+    clr_red "Could not capture screenshot, try running manually:"
+    clr_red "xcrun simctl io booted screenshot \"$2\""
+    return 1
+  fi
+
+  clr_green "Captured $2"
+}
+
+function _sim_screenrecord() {
+  self_command=$1
+
+  if is empty "$2"; then
+    clr_red "No path passed to command"
+    _gcmm_usage $self_command;
+    return 1;
+  fi;
+
+  folderpath=${2%/*}
+  if is not empty "$folderpath"; then
+    mkdir -p "$folderpath"
+  fi
+
+  # xcrun simctl io booted recordVideo "$2"
+  # if is not equal "$?" "0"; then
+    clr_red "Could not capture screen recording, try running manually:"
+    clr_red "xcrun simctl io booted recordVideo \"$2\""
+    return 1
+  # fi
+
+  # clr_green "Captured $2"
+}
+
+function _sim_logs() {
+  xcrun simctl spawn booted log stream --level=debug
+}
+
+# Git Super Merge
+function sim () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    xcrun
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _sim_usage $0
+    return 0
+  fi
+
+  if is equal "$1" "set-clock"; then
+    _sim_set_clock $0 $2
+    return 0;
+  fi
+
+  if is equal "$1" "screenshot"; then
+    _sim_screenshot $0 $2
+    return 0;
+  fi
+
+  if is equal "$1" "screenrecord"; then
+    _sim_screenrecord $0 $2
+    return 0;
+  fi
+
+  if is equal "$1" "install"; then
+    _sim_install $0 $2
+    return 0;
+  fi
+
+  if is equal "$1" "logs"; then
+    _sim_logs
+    return 0;
+  fi
+
+}
+
+sim "$@"

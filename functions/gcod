@@ -1,0 +1,26 @@
+#!/usr/bin/env zsh
+
+# gcod: Checks out development (git flow configured)
+function gcod () {
+  local DEPS=(
+    is
+    git
+    clr_red
+    clr_white
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  DEV_BRANCH=$(git config gitflow.branch.develop)
+  if is empty "$DEV_BRANCH"; then
+    clr_red "Could not get develop branch"
+    clr_white "Make sure you are in a git repo and then run: git flow init"
+    return 1
+  fi
+
+  git checkout $DEV_BRANCH
+}
+
+gcod "$@"

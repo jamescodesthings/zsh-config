@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+
+# GCMM: Lazy issue mentions in a git commit -m
+function has-touch-bar () {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+
+  if is existing ~/.has-touch-bar; then
+    return 0;
+  else
+    return 1;
+  fi
+}
+
+
+
+has-touch-bar "$@"

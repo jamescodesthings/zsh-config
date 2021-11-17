@@ -1,0 +1,43 @@
+#!/usr/bin/env zsh
+
+function _fast-download_usage() {
+  clr_cyan 'Usage:' -n
+  clr_white " $1 url [directory]\n"
+  clr_cyan "Downloads url to [directory], or ~/Downloads if omitted"
+}
+
+# GCMM: Lazy issue mentions in a git commit -m
+function fast-download () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    aria2c
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _fast-download_usage "$0"
+    return 0
+  fi
+
+  _fast-download_run $1 $2
+}
+
+function _fast-download_run() {
+  URL="$1"
+  DIRECTORY=${2:=~/Downloads}
+  if is not existing "$DIRECTORY"; then
+    clr_red "Could not find $DIRECTORY"
+    return 1
+  fi
+  clr_cyan "Downloading $URL\nto $DIRECTORY"
+  aria2c -x 16 -s 16 $URL -d $DIRECTORY
+}
+
+fast-download "$@"
