@@ -11,3 +11,5 @@
   - If not linking to `~/.custom` update `CUSTOM_DIR` variable in `.zshrc`.
 3) Link `.zshrc` to where it goes `sudo ln -s ~/.custom/.zshrc ~/.zshrc`
 4) Restart the terminal
+
+Or run `./install` (check it first to make sure it makes sense)
