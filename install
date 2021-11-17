@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+
+# The directory this install script runs from
+SOURCE_DIR=${0:a:h}
+
+if [[ -z "$HOME" ]]; then
+  echo '$HOME not set, set it before running this script'
+  exit 1
+fi
+
+# Expected destination
+DEST_DIR=$HOME/.custom
+DEST_ZSHRC=$HOME/.zshrc
+
+echo 'Linking zsh-config:'
+echo "From: $SOURCE_DIR"
+echo "To: $DEST_DIR"
+echo "linking .zshrc to: $DEST_ZSHRC"
+
+# Clean old instances if they exist
+if [[ -h $DEST_DIR ]]; then
+  rm $DEST_DIR
+fi
+
+if [[ -h $DEST_ZSHRC ]]; then
+  rm $DEST_ZSHRC
+fi
+
+sudo ln -s $SOURCE_DIR $DEST_DIR
+sudo ln -s $DEST_DIR/.zshrc $DEST_ZSHRC
