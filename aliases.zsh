@@ -1,111 +1,88 @@
 #!/usr/bin/env zsh
 
-# Compatibility
-alias rosetta='arch -x86_64'
-alias rosetta-zsh='arch -x86_64 /usr/local/bin/zsh'
-alias rosetta-shell='rosetta-zsh'
-# alias brew='rosetta /usr/local/bin/brew'
-alias weekly='open -a typora ~/Documents/weekly-update.md'
-alias typora='open -a typora'
-
-alias xcode='open /Applications/Xcode.app'
-alias pc='pycharm'
-
-# Aliases
-alias zshconfig='subl ~/.custom'
-alias zshconfig-ws='ws ~/.custom'
-alias asch='alias | grep'
-
-# Emulator/simulator
-alias simulator='open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app'
-
-alias emulator-list='emulator -list-avds'
-alias emulator-start='emulator -avd'
-
-# My Touchbar My Rules
-alias tbconfig='subl ~/Library/Application\ Support/MTMR/'
-alias tbopen='open ~/Library/Application\ Support/MTMR/'
-alias tbcd='cd ~/Library/Application\ Support/MTMR/'
-
-# Shell
-alias rst='source ~/.zshrc'
-# alias clear='/usr/bin/clear'
-# alias tput='/usr/bin/tput'
-alias cl='clear'
-alias oh='open .'
-alias flush-dns='sudo killall -HUP mDNSResponder'
-alias count='ls -b1 | wc -l' # Count files in current directory
-alias cx='chmod +x'
-alias j='z'
-alias ls='exa'
-alias la='ls -la'
-alias bat='bat --paging="never"'
-
-# Openscad helpers
-alias scad-libs='cd ~/Documents/OpenSCAD/libraries'
-alias scad='open /Applications/OpenSCAD.app'
-alias openscad='/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD'
-
-alias chrome='open -a /Applications/Google\ Chrome.app'
-
-# Simplify3D Helper
-alias wipe-simplify='rm ~/Library/Preferences/com.Simplify3D.S3D-Software.plist && rm -rf ~/Library/Application\ Support/Simplify3D'
-
-# Mac Mini SSH
-alias mac-mini='sudo ssh administrator@92.207.254.162 -p8004 -L5900:127.0.0.1:5900'
-
-# nvm reinstall
-# alias nvmu='nvm install node --reinstall-packages-from=node'
-# alias nvmi='nvm install --reinstall-packages-from=node'
-# alias nvmu-lts='nvm install lts/* --reinstall-packages-from=node'
-
-alias set-xcode-12='sudo xcode-select -s /Applications/Xcode_12.app'
-alias set-xcode-13='sudo xcode-select -s /Applications/Xcode.app'
-
-alias install-poetry='curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -'
-alias install-poetry-new='curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -'
-alias uninstall-poetry='curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_UNINSTALL=1 python -'
-alias uninstall-poetry-new='curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | POETRY_UNINSTALL=1 python -'
-
-# Bat with no pager
-alias bat="bat --paging=never"
-
-# For tiny python projects book only
-alias tiny-new="/Users/jamesmacmillan/projects/learning/tiny-python/00-source/bin/new.py"
-
-export PAGER='cat'
-
-CHT="${HOME}/.custom/cht.sh"
-if is file $CHT; then
-  alias cht="${CHT}"
+# Compatibility architecture mode (rosetta)
+if is-m1; then
+  alias rosetta='arch -x86_64'
+  alias rosetta-shell='arch -x86_64 /usr/local/bin/zsh'
 fi
 
+# OSX Development
+if is-osx; then
+  alias xcode='open /Applications/Xcode.app'
+  # Emulator/simulator
+  alias simulator='open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app'
+  # OSX Flush DNS command
+  alias flush-dns='sudo killall -HUP mDNSResponder'
+
+  # Engineius: Mac Mini SSH
+  alias mac-mini='sudo ssh administrator@92.207.254.162 -p8004 -L5900:127.0.0.1:5900'
+
+  alias set-xcode-12='sudo xcode-select -s /Applications/Xcode_12.app'
+  alias set-xcode-13='sudo xcode-select -s /Applications/Xcode.app'
+
+  alias plistbuddy="/usr/libexec/PlistBuddy"
+fi
+
+# Ubuntu/Deb Specific
+if is-ubuntu; then
+  alias open='xdg-open'
+fi
+
+# Shell related
+alias asch='alias | grep'
+alias rst='source ~/.zshrc'
+alias cl='clear'
+alias oh='open .'
+alias count='ls -b1 | wc -l' # Count files in current directory
+alias cx='chmod +x'
+alias la='ls -la'
+alias j='z'
+
+if is available bat; then
+  alias bat='bat --paging="never"'
+fi
+if is avaiable exa; then
+  alias ls='exa'
+fi
+if is available subl; then
+  alias zshconfig='subl ~/.custom'
+elif is available nano; then
+  alias zshconfig='nano ~/.zshrc'
+else
+  alias zshconfig='open ~/.custom'
+fi
+
+# Programs/Application specific
+# Android Emulators
+if is available emulator; then
+  alias emulator-list='emulator -list-avds'
+  alias emulator-start='emulator -avd'
+fi
+
+# Shorthand for pycharm
+if is available pycharm; then
+  alias pc='pycharm'
+fi
+
+# Openscad helpers
+if is-osx && is existing /Applications/OpenSCAD.app; then
+  alias scad='open /Applications/OpenSCAD.app'
+  alias scad-libs='cd ~/Documents/OpenSCAD/libraries'
+  alias openscad='/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD'
+fi
+
+if is-osx && is existing /Applications/Google\ Chrome.app; then
+  alias chrome='open -a /Applications/Google\ Chrome.app'
+fi
+
+# Simplify3D Helper
+if is-osx && is existing /Applications/Simplify3D-4.1.2/Simplify3D.app; then
+  alias wipe-simplify='rm ~/Library/Preferences/com.Simplify3D.S3D-Software.plist && rm -rf ~/Library/Application\ Support/Simplify3D'
+fi
 
 if is available lazygit; then
   alias lg='lazygit'
 fi
-
-# AWS SQS Save
-SQS_SAVE_SCRIPT="${HOME}/projects/python/sqs-save/sqs-save.zsh"
-if is file ${SQS_SAVE_SCRIPT}; then
-  alias sqs-save="${SQS_SAVE_SCRIPT}"
-fi
-
-# Node
-alias npmst='npm start'
-alias npmg='npm i -g'
-alias npmL0g='npm list -g --depth=0 2>/dev/null'
-alias npmL0='npm list --depth=0 2>/dev/null'
-alias npmr='npm run'
-alias npmD='npm i -D'
-alias npmS='npm i -S'
-alias npmSE='npm i -E'
-alias npmDE='npm i -D -E'
-alias npmIY='npm init -y'
-alias npmU='npm uninstall -S -D'
-alias npmUG='npm uninstall -g'
-alias npm-check-update='npx npm-check -u -E'
-alias ncu='npm-check-update'
 
 # Git
 if is available git; then
@@ -113,7 +90,6 @@ if is available git; then
     # Unalias g from OMZ:git
     unalias g;
     unalias gcm;
-
     unalias gcd;
   fi;
 
@@ -135,36 +111,46 @@ if is available git; then
 
   # When I committed to the wrong branch, but didn't push yet (phew)
   alias git-i-fucked-up='git reset HEAD~1'
-
   alias gb='git --no-pager branch'
   alias gbr='git --no-pager branch --remote'
 
   # Git Cherry pick and edit message
   alias gcpe="git cherry-pick -e"
-
   alias gd="git --no-pager diff"
-
   alias gms="git merge --squash"
 fi
 
-# AWS MFA
-alias aws-mfa-sandbox='aws-mfa --device arn:aws:iam::246802837414:mfa/jamesm --profile sandbox && export AWS_PROFILE="sandbox"'
-alias aws-mfa-dev='aws-mfa --device arn:aws:iam::879195206356:mfa/jamesm --profile dev && export AWS_PROFILE="dev"'
-alias aws-mfa-staging='aws-mfa --device arn:aws:iam::447649200633:mfa/jamesm --profile staging && export AWS_PROFILE="staging"'
-alias aws-mfa-prod='aws-mfa --device arn:aws:iam::575515639038:mfa/jamesm --profile prod && export AWS_PROFILE="prod"'
+# Node
+if is existing "$ASDF_DIR/shims/npm"; then
+  alias npmst='npm start'
+  alias npmg='npm i -g'
+  alias npmL0g='npm list -g --depth=0 2>/dev/null'
+  alias npmL0='npm list --depth=0 2>/dev/null'
+  alias npmr='npm run'
+  alias npmD='npm i -D'
+  alias npmS='npm i -S'
+  alias npmSE='npm i -E'
+  alias npmDE='npm i -D -E'
+  alias npmIY='npm init -y'
+  alias npmU='npm uninstall -S -D'
+  alias npmUG='npm uninstall -g'
+  alias npm-check-update='npx npm-check -u -E'
+  alias ncu='npm-check-update'
+fi
+
+# Python
+if is available python; then
+  alias pip='python -m pip'
+  alias sudo-python='sudo $(asdf which python)'
+  alias sudo-pip='sudo $(asdf which python) -m pip'
+fi
 
 # Gron
 if is available gron; then
   alias ungron="gron --ungron"
-else
-  clr_red 'Missing gron'
 fi
 
-# Install Google Fonts
-# Install Google Fonts
-alias install-google-fonts="curl https://raw.githubusercontent.com/qrpike/Web-Font-Load/master/install.sh | bash"
-alias uninstall-google-fonts="curl https://raw.githubusercontent.com/qrpike/Web-Font-Load/master/uninstall.sh | bash"
-
-alias plistbuddy="/usr/libexec/PlistBuddy"
-
-eval $(thefuck --alias)
+# TheFuck (type fuck to fix it)
+if is available thefuck; then
+  eval $(thefuck --alias)
+fi
