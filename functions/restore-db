@@ -34,11 +34,12 @@ function restore-db() {
 
 function _restore-db_help() {
   clr_cyan 'Usage:' -n
-  clr_white " $1 [./path/to/.tar.gz] [--no-fix]\n"
+  clr_white " $1 [./path/to/.tar.gz] [--no-fix|--no-delete]\n"
 
   clr_cyan 'Restores the DB SQL file in the .tar.gz.'
   clr_cyan 'Options:'
   echo "--no-fix: Does not run the after script"
+  echo "--no-delete: Does not DROP and recreate the DB"
 }
 
 function _restore-db_restore() {
@@ -71,17 +72,20 @@ function _restore-db_restore() {
   fi
 
   DB_NAME="app_prod_$DB_DATE"
-  clr_cyan "Creating: " -n
-  clr_white "$DB_NAME"
 
-  _restore-db_mysql "DROP DATABASE IF EXISTS \`$DB_NAME\`"
+  if is not equal "$2" "--no-delete"; then
+    clr_cyan "Creating: " -n
+    clr_white "$DB_NAME"
 
-  _restore-db_mysql "CREATE DATABASE \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+    _restore-db_mysql "DROP DATABASE IF EXISTS \`$DB_NAME\`"
 
-  if is not equal "$?" "0"; then
-    clr_red "Could not create database"
-    _restore_db_cleanup
-    return 1
+    _restore-db_mysql "CREATE DATABASE \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+
+    if is not equal "$?" "0"; then
+      clr_red "Could not create database"
+      _restore_db_cleanup
+      return 1
+    fi
   fi
 
   _restore-db_mysql-script "$DB_NAME" "$EXTRACTED_FILE"
@@ -94,6 +98,8 @@ function _restore-db_restore() {
 
   if is equal "$2" "--no-fix"; then
     clr_cyan "Not running $DB_AFTER_RESTORE_SCRIPT due to --no-fix option"
+  elif is equal "$2" " --no-delete"; then
+    clr_cyan "Not running $DB_AFTER_RESTORE_SCRIPT due to --no-delete option"
   else
     _restore-db_mysql-script "$DB_NAME" "$DB_AFTER_RESTORE_SCRIPT"
 
