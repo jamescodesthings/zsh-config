@@ -39,6 +39,10 @@ source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/completions.zsh
 
+if is existing $CUSTOM_DIR/private.zsh; then
+  source $CUSTOM_DIR/private.zsh
+fi
+
 # Set PROFILING_ZSH=1 will profile this script
 if [[ "$PROFILING_ZSH" == "1" ]]; then
   zprof

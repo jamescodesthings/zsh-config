@@ -42,7 +42,7 @@ for plugin in $OMZ_PLUGINS; do
 done
 
 # Using carefulRM instead here
-if alias rm 2>/dev/null; then
+if alias rm 2>&1 > /dev/null; then
   unalias rm
 fi
 
