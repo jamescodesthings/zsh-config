@@ -1,0 +1,119 @@
+#!/usr/bin/env zsh
+
+function _pyloader_usage() {
+  clr_cyan 'Pyloader\n' -n; clr_white 'Manages pyload install as a docker container\n'
+  clr_cyan 'Usage:' -n; clr_white ' $1 command\n'
+
+  clr_cyan 'Commands:'
+  clr_green 'install' -n; clr_white ' - creates the docker container'
+  clr_green 'start' -n; clr_white ' - starts the container'
+  clr_green 'open' -n; clr_white ' - opens in the browser'
+  clr_green 'stop' -n; clr_white ' - stops the container'
+  clr_green 'logs' -n; clr_white ' - check logs'
+  clr_green 'config' -n; clr_white ' - check config'
+  # clr_green '' -n; clr_white ' - '
+}
+
+# pyloader: Lazy issue mentions in a git commit -m
+function pyloader () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    docker
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  PYLOAD_NAME="${PYLOAD_NAME:-pyload}"
+  CONFIG_DIR="${PYLOAD_CONFIG:-$HOME/.pyload}"
+  DOWNLOAD_DIR="${PYLOAD_DOWNLOAD:-$HOME/downloads}"
+
+  if is empty "$1"; then
+    _pyloader_usage "$0"
+    return 0
+  fi
+
+  if is equal "$1" "install"; then
+    _pyloader_install
+    return 0;
+  fi
+
+  if is equal "$1" "start"; then
+    _pyloader_start
+    return 0;
+  fi
+
+  if is equal "$1" "stop"; then
+    _pyloader_stop
+    return 0;
+  fi
+
+  if is equal "$1" "logs"; then
+    _pyloader_logs
+    return 0;
+  fi
+
+  if is equal "$1" "config"; then
+    _pyloader_config
+    return 0;
+  fi
+
+  if is equal "$1" "open"; then
+    _pyloader_open
+    return 0;
+  fi
+
+  _pyloader_commit $1
+}
+
+function _pyloader_config() {
+
+  clr_green 'PYLOAD_NAME ' -n; clr_white $PYLOAD_NAME
+  clr_green 'CONFIG_DIR: ' -n; clr_white $CONFIG_DIR
+  clr_green 'DOWNLOAD_DIR: ' -n; clr_white $DOWNLOAD_DIR
+}
+
+function _pyloader_install() {
+  clr_cyan 'Creating pyload container with following config:'
+  clr_green 'PYLOAD_NAME: ' -n; clr_white $PYLOAD_NAME
+  clr_green 'CONFIG_DIR: ' -n; clr_white $CONFIG_DIR
+  clr_green 'DOWNLOAD_DIR: ' -n; clr_white $DOWNLOAD_DIR
+  docker run -d \
+    --name=$PYLOAD_NAME \
+    -e PUID=501 \
+    -e PGID=20 \
+    -e TZ=Europe/London \
+    -p 8000:8000 \
+    -p 9666:9666 `#optional` \
+    -v $CONFIG_DIR:/config \
+    -v $DOWNLOAD_DIR:/downloads \
+    --restart unless-stopped \
+    lscr.io/linuxserver/pyload-ng
+}
+
+function _pyloader_start() {
+  clr_cyan "Starting $PYLOAD_NAME"
+  docker start pyload
+}
+
+function _pyloader_stop() {
+  clr_cyan "Stopping $PYLOAD_NAME"
+  docker stop pyload
+}
+
+function _pyloader_logs() {
+  clr_cyan "Logs for $PYLOAD_NAME"
+  docker logs -f pyload
+}
+
+function _pyloader_open() {
+  open "http://localhost:8000"
+}
+
+
+pyloader "$@"
