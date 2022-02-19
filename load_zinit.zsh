@@ -1,8 +1,9 @@
 #!/usr/bin/env zsh
 
 
-export ZINIT_DIR="$HOME/.zinit"
-export ZINIT_URL="https://raw.githubusercontent.com/zdharma-continuum/zinit/master/doc/install.sh"
+export ZINIT_HOME="$HOME/.zinit"
+export ZINIT_DIR="$ZINIT_HOME/zinit.git"
+export ZINIT_URL="https://git.io/zinit-install"
 export LOAD_METHOD="light"
 export FORCE_REINSTALL=0
 
@@ -16,6 +17,6 @@ if is not directory "$ZINIT_DIR" || is equal "1" "$FORCE_REINSTALL"; then
   sh -c "$(curl -fsSL $ZINIT_URL)"
 fi
 
-source "$ZINIT_DIR/bin/zinit.zsh"
+source "$ZINIT_DIR/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
