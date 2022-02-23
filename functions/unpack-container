@@ -1,0 +1,116 @@
+#!/usr/bin/env zsh
+
+function _unpack-container_usage() {
+  clr_cyan 'Usage:' -n; clr_white " $1 " -n; clr_green "[path to .xcappdata file]"
+}
+
+# unpack-container: Lazy issue mentions in a git commit -m
+function unpack-container () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    cblite
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _unpack-container_usage "$0"
+    return 0
+  fi
+
+  CONTAINER_PATH=${1%/}
+  CONTAINER_NAME="${CONTAINER_PATH%.*}"
+  OUTPUT_PATH="$CONTAINER_NAME"
+
+  mkdir -p $OUTPUT_PATH
+
+  _unpack-container_dbs $CONTAINER_PATH $OUTPUT_PATH
+  _unpack-container_logs $CONTAINER_PATH $OUTPUT_PATH
+  _unpack-container_images $CONTAINER_PATH $OUTPUT_PATH
+}
+
+function _unpack-container_dbs() {
+  BASE_PATH="$1/AppData/Library/Application Support/CouchbaseLite"
+  OUT=$2
+  DBS=$(ls -1 $BASE_PATH)
+
+  while IFS= read -r DB; do
+    _unpack-container_db $BASE_PATH $DB $OUT
+  done <<< "$DBS"
+}
+
+function _unpack-container_db() {
+  OUT="$3"
+  DB_PATH="$1/$2"
+  DB_NAME=${2%.*}
+  OUT_NAME="$DB_NAME.json"
+  OUT_PATH="$OUT/$OUT_NAME"
+
+  echo "Unpacking $TEMP_FILE to $OUT_PATH"
+
+  ITEMS=$(cblite ls $DB_PATH)
+  if is equal "$ITEMS" "(No documents)"; then
+    clr_green "Empty"
+    return;
+  fi
+  ITEMS_NL=$(echo $ITEMS | tr " " "\n")
+  ITEMS_CT=$(echo $ITEMS_NL | wc -l | xargs)
+  if is equal "$ITEMS_CT" "1"; then
+    clr_cyan "Only one"
+
+    cblite cat $DB_PATH $ITEMS_NL > $OUT_PATH
+    return
+  fi
+
+  echo "[\n" > $OUT_PATH
+
+  FIRST="TRUE"
+  while IFS= read -r DOC; do
+    echo $DOC
+    if is equal "$FIRST" "TRUE"; then
+      FIRST="FALSE"
+    else
+      echo ",\n" >> $OUT_PATH
+    fi
+    cblite cat $DB_PATH $DOC >> $OUT_PATH
+
+  done <<< "$ITEMS_NL"
+
+  echo "\n]" >> $OUT_PATH
+
+  cp $OUT_PATH $OUT_PATH.temp
+  jq "." $OUT_PATH.temp > $OUT_PATH
+  rm $OUT_PATH.temp
+}
+
+function _unpack-container_logs() {
+  OUT="$2/logs"
+  mkdir -p $OUT
+  LOGS_PATH="$1/AppData/Documents"
+  clr_cyan "Logs from $LOGS_PATH to $OUT"
+
+  LOGS=$(ls -1 $LOGS_PATH/*.json)
+  while IFS= read -r LOG; do
+    cp $LOG $OUT/
+  done <<< "$LOGS"
+}
+
+function _unpack-container_images() {
+  OUT="$2/images"
+  mkdir -p $OUT
+  IMAGES_PATH="$1/AppData/Documents/images/gallery"
+  clr_cyan "Images from $IMAGES_PATH to $OUT"
+
+  IMAGES=$(ls -1 $IMAGES_PATH/*)
+  while IFS= read -r IMAGe; do
+    cp $IMAGe $OUT/
+  done <<< "$IMAGES"
+}
+
+unpack-container "$@"

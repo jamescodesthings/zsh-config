@@ -67,8 +67,6 @@ function pyloader () {
     _pyloader_open
     return 0;
   fi
-
-  _pyloader_commit $1
 }
 
 function _pyloader_config() {
