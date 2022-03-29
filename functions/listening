@@ -1,0 +1,32 @@
+#!/usr/bin/env zsh
+
+function _listening_usage() {
+  clr_cyan 'Usage:' -n clr_white " $1 port\n"
+
+  clr_cyan 'Lists Processes running on a given port'
+}
+
+# listening: Lazy issue mentions in a git commit -m
+function listening () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _listening_usage "$0"
+    return 0
+  fi
+
+  sudo lsof -iTCP -sTCP:LISTEN -n -P | grep -i --color $1
+
+}
+
+listening "$@"

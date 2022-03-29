@@ -10,7 +10,13 @@ fi
 if is-osx; then
   alias xcode='open /Applications/Xcode.app'
   # Emulator/simulator
-  alias simulator='open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app'
+
+  if is available xcodes; then
+    local SELECTED=$(xcodes select -p)
+    alias simulator="open $SELECTED/Applications/Simulator.app"
+  else
+    alias simulator='open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app'
+  fi
   # OSX Flush DNS command
   alias flush-dns='sudo killall -HUP mDNSResponder'
 
