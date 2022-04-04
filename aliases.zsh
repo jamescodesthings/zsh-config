@@ -47,7 +47,7 @@ alias j='z'
 if is available bat; then
   alias bat='bat --paging="never"'
 fi
-if is avaiable exa; then
+if is available exa; then
   alias ls='exa'
 fi
 if is available subl; then
