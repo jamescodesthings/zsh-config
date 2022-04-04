@@ -120,6 +120,8 @@ EOF
             [[ "$value_a" != true ]] && [[ "$value_a" != 0 ]]; return $?;;
         arch)
             [[ -f "/etc/arch-release" ]]; return $?;;
+        linux)
+            [[ "$(uname)" == "Linux" ]]; return $?;;
         # Is arch if uname contains ""
         # UNAME=$(uname -r)
         # echo "$UNAME" | grep "ARCH" 2>&1 /dev/null

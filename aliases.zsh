@@ -29,8 +29,8 @@ if is osx; then
   alias plistbuddy="/usr/libexec/PlistBuddy"
 fi
 
-# Ubuntu/Deb Specific
-if is-ubuntu; then
+# Linux Specific
+if is linux; then
   alias open='xdg-open'
 fi
 
