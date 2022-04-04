@@ -47,6 +47,7 @@ alias j='z'
 if is available exa; then
   alias ls='exa'
 fi
+
 if is available subl; then
   alias zshconfig='subl ~/.custom'
 elif is available nano; then
@@ -81,10 +82,6 @@ fi
 # Simplify3D Helper
 if is osx && is existing /Applications/Simplify3D-4.1.2/Simplify3D.app; then
   alias wipe-simplify='rm ~/Library/Preferences/com.Simplify3D.S3D-Software.plist && rm -rf ~/Library/Application\ Support/Simplify3D'
-fi
-
-if is available lazygit; then
-  alias lg='lazygit'
 fi
 
 # Git
