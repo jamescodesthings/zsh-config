@@ -119,12 +119,18 @@ EOF
         false)
             [[ "$value_a" != true ]] && [[ "$value_a" != 0 ]]; return $?;;
         arch)
-            # Is arch if uname contains ""
-            # UNAME=$(uname -r)
-            # echo "$UNAME" | grep "ARCH" 2>&1 /dev/null
-            # return $?
-            [[ -f "/etc/arch-release" ]]; return $?;
-        ;;
+            [[ -f "/etc/arch-release" ]]; return $?;;
+        # Is arch if uname contains ""
+        # UNAME=$(uname -r)
+        # echo "$UNAME" | grep "ARCH" 2>&1 /dev/null
+        # return $?
+        iterm)
+            [[ "$TERM_PROGRAM" == "iTerm.app" ]]; return $?;;
+        osx)
+            [[ "$(uname)" == "Darwin" ]]; return $?;;
+        m1)
+            [[ "$(uname)" == "Darwin" && "$(uname -m)" == "arm64" ]]; return $?;;
+
     esac > /dev/null
 
     return 1

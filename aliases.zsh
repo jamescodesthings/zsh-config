@@ -1,13 +1,13 @@
 #!/usr/bin/env zsh
 
 # Compatibility architecture mode (rosetta)
-if is-m1; then
+if is m1; then
   alias rosetta='arch -x86_64'
   alias rosetta-shell='arch -x86_64 /usr/local/bin/zsh'
 fi
 
 # OSX Development
-if is-osx; then
+if is osx; then
   alias xcode='open /Applications/Xcode.app'
   # Emulator/simulator
 
@@ -71,18 +71,18 @@ if is available pycharm; then
 fi
 
 # Openscad helpers
-if is-osx && is existing /Applications/OpenSCAD.app; then
+if is osx && is existing /Applications/OpenSCAD.app; then
   alias scad='open /Applications/OpenSCAD.app'
   alias scad-libs='cd ~/Documents/OpenSCAD/libraries'
   alias openscad='/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD'
 fi
 
-if is-osx && is existing /Applications/Google\ Chrome.app; then
+if is osx && is existing /Applications/Google\ Chrome.app; then
   alias chrome='open -a /Applications/Google\ Chrome.app'
 fi
 
 # Simplify3D Helper
-if is-osx && is existing /Applications/Simplify3D-4.1.2/Simplify3D.app; then
+if is osx && is existing /Applications/Simplify3D-4.1.2/Simplify3D.app; then
   alias wipe-simplify='rm ~/Library/Preferences/com.Simplify3D.S3D-Software.plist && rm -rf ~/Library/Application\ Support/Simplify3D'
 fi
 
