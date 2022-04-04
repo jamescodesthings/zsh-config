@@ -118,6 +118,13 @@ EOF
             [[ "$value_a" == true ]] || [[ "$value_a" == 0 ]]; return $?;;
         false)
             [[ "$value_a" != true ]] && [[ "$value_a" != 0 ]]; return $?;;
+        arch)
+            # Is arch if uname contains ""
+            # UNAME=$(uname -r)
+            # echo "$UNAME" | grep "ARCH" 2>&1 /dev/null
+            # return $?
+            [[ -f "/etc/arch-release" ]]; return $?;
+        ;;
     esac > /dev/null
 
     return 1

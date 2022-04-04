@@ -11,7 +11,6 @@ if is existing "$BOX_ENV"; then
   fi
 
   source $BOX_ENV
-
 else
   if is equal "$DEBUG_LOAD_BOX" "1"; then
     echo "$BOX_ENV does not exist, no custom environment to source"
