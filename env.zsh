@@ -7,7 +7,7 @@ export PROJECTS="$HOME/projects"
 export ASDF_DIR="$HOME/.asdf"
 
 # Pager (turn it off)
-export PAGER='cat'
+# export PAGER='cat'
 
 # Set the editor to sublime
 if is available subl; then

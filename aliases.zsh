@@ -44,9 +44,6 @@ alias cx='chmod +x'
 alias la='ls -la'
 alias j='z'
 
-if is available bat; then
-  alias bat='bat --paging="never"'
-fi
 if is available exa; then
   alias ls='exa'
 fi
