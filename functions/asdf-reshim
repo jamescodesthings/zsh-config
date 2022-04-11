@@ -56,9 +56,14 @@ function _asdf_reshim_fix() {
 
   for shim in $shims; do
     without_nl=${shim:-1}
-    sudo chmod -x "$ASDF_DIR/shims/$without_nl"
-    rm -f "$ASDF_DIR/shims/$without_nl"
-    clr_green "$ASDF_DIR/shims/$without_nl"
+    SHIM="$ASDF_DIR/shims/$without_nl"
+    if is file "$SHIM"; then
+      sudo chmod -x "$SHIM"
+      rm -f "$SHIM"
+      clr_green "$without_nl Fixed"
+    else
+      clr_cyan "$without_nl skipped, does not exist"
+    fi
   done
 }
 
