@@ -102,7 +102,7 @@ zload 0b light-mode \
         RobSis/zsh-reentry-hook
 
 # Fast Syntax Highlighting
-zload 0b light \
+zload 0b light-mode \
     atinit'zicompinit_fast; zicdreplay' atload'FAST_HIGHLIGHT[chroma-man]=' \
     atclone'(){local f;cd -q →*;for f (*~*.zwc){zcompile -Uz -- ${f}};}' \
     compile'.*fast*~*.zwc' nocompletions atpull'%atclone' \
