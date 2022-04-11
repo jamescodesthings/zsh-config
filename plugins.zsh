@@ -27,7 +27,7 @@ zt 0a light-mode for \
         OMZL::completion.zsh
 
 # Colored Man pages with triggered load?
-zload light-mode \
+zload 0a light-mode \
     trigger-load'!man' \
         ael-code/zsh-colored-man-pages
 
