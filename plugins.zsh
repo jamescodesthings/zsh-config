@@ -8,13 +8,13 @@ export LOAD_METHOD='light'
 
 # Powerlevel10k prompt
 zinit ice depth=1
-zload romkatv/powerlevel10k
+zinit $LOAD_METHOD romkatv/powerlevel10k
 
 # Saneopt:
-zload willghatch/zsh-saneopt
+zinit $LOAD_METHOD willghatch/zsh-saneopt
 
 # ASYNC: See example in $CUSTOM_DIR/async-demo.zsh
-zload mafredri/zsh-async
+zinit $LOAD_METHOD mafredri/zsh-async
 
 # OMZ Libraries
 zt 0a light-mode for \
@@ -23,66 +23,55 @@ zt 0a light-mode for \
         OMZL::completion.zsh
 
 # Colored Man pages
-zload 0a light-mode \
-    trigger-load'!man' \
-        ael-code/zsh-colored-man-pages
+zinit ice wait"0a" lucid light-mode trigger-load'!man'
+zinit $LOAD_METHOD ael-code/zsh-colored-man-pages
 
 # Additional Zsh completions
-zload 0a light-mode \
-    as'completion' atpull'zinit cclear' blockf \
-        zsh-users/zsh-completions
-zload 0a light-mode \
-    as'completion' nocompile mv'*.zsh -> _git' patch"${pchf}/%PLUGIN%.patch" reset \
-        felipec/git-completion
+zinit ice wait"0a" lucid light-mode as'completion' atpull'zinit cclear' blockf
+zinit $LOAD_METHOD zsh-users/zsh-completions
+
+zinit ice wait"0a" lucid light-mode as'completion' nocompile mv'*.zsh -> _git' patch"${pchf}/%PLUGIN%.patch" reset
+zinit $LOAD_METHOD felipec/git-completion
 
 # Suggestions during typing
-zload 0a light-mode \
-    ver'develop' atload'_zsh_autosuggest_start' \
-        zsh-users/zsh-autosuggestions
+zinit ice wait"0a" light-mode ver'develop' atload'_zsh_autosuggest_start' lucid
+zinit $LOAD_METHOD zsh-users/zsh-autosuggestions
 
 # History Improvements:
 # Fuzzy Find (fzf) in history tab completion
 # Tab/Shift Tab for next/previous with enter for select
-zload 0b light-mode patch"${pchf}/%PLUGIN%.patch" reset nocompile'!' \
+zinit ice wait"0b" lucid light-mode patch"${pchf}/%PLUGIN%.patch" reset nocompile'!' \
     atload'ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(__fz_zsh_completion)' \
-        changyuheng/fz
+zinit $LOAD_METHOD changyuheng/fz
 
 # Per Directory History
 # swap between Global/Local history with Option+L
-zload 0b light-mode \
-    atload'add-zsh-hook chpwd @chwpd_dir-history-var;
-    add-zsh-hook zshaddhistory @append_dir-history-var; @chwpd_dir-history-var' \
-        kadaan/per-directory-history
-
-# Cycle Directory Stack
-# Ctrl + Shift + Left = backward through directory stack
-zload 0b light-mode \
-    trackbinds bindmap'\e[1\;6D -> ^[[1\;5B; \e[1\;6C -> ^[[1\;5A' \
-        michaelxmcbride/zsh-dircycle
+zinit ice wait"0b" light-mode aatload'add-zsh-hook chpwd @chwpd_dir-history-var; add-zsh-hook zshaddhistory @append_dir-history-var; @chwpd_dir-history-var' lucid
+zinit light kadaan/per-directory-history
 
 # FZF Tab completion
 # Ctrl + Space Selects multiple results
 # F1/F2 Switch Groups
 # / Triggers continuous completion
-zload 0b light-mode \
-    blockf compile'lib/*f*~*.zwc' \
-        Aloxaf/fzf-tab
+zinit ice wait"0b" light-mode\
+    blockf compile'lib/*f*~*.zwc' lucid
+zinit light Aloxaf/fzf-tab
 
 # Many Dots -> Many ../../s
-zload 0b light-mode \
-    autoload'#manydots-magic' \
-        knu/zsh-manydots-magic
+zinit ice wait"0b" light-mode autoload'#manydots-magic' lucid
+zinit light knu/zsh-manydots-magic
 
 # Reentry of deleted and recreated dirs
-zload 0b light-mode \
-        RobSis/zsh-reentry-hook
+zinit ice wait"0b" light-mode lucid
+zinit light RobSis/zsh-reentry-hook
 
 # Fast Syntax Highlighting
-zload 0b light-mode \
+zinit ice light lucid \
     atinit'zicompinit_fast; zicdreplay' atload'FAST_HIGHLIGHT[chroma-man]=' \
     atclone'(){local f;cd -q →*;for f (*~*.zwc){zcompile -Uz -- ${f}};}' \
-    compile'.*fast*~*.zwc' nocompletions atpull'%atclone' \
-        zdharma-continuum/fast-syntax-highlighting
+    compile'.*fast*~*.zwc' nocompletions atpull'%atclone'
+
+zinit $LOAD_METHOD zdharma-continuum/fast-syntax-highlighting
 
 # # Binds up/down to history substring search
 # zt 0c light-mode \
@@ -113,33 +102,39 @@ zt 0b light-mode for \
 # fi
 
 # Extended Zsh Colors
-zload 0c zpm-zsh/colors
+zinit ice wait"0a"
+zinit zpm-zsh/colors
 
 # Aliases
-zload 0a djui/alias-tips
+zinit ice wait"0a"
+zinit djui/alias-tips
 
 # Notify on command completion
 zinit ice wait'0c' atload'source $CUSTOM_DIR/.auto-notify-ignore.zsh' lucid
 zinit $LOAD_METHOD MichaelAquilina/zsh-auto-notify
 
 # Better RM
-zload MikeDacre/careful_rm
+zinit $LOAD_METHOD MikeDacre/careful_rm
 if is not file ${HOME}/.rm_recycle; then
   touch ${HOME}/.rm_recycle
 fi
 
 # Double escape = sudo [last command]
-zload 0a hcgraf/zsh-sudo
+zinit ice wait"0a" lucid
+zinit light hcgraf/zsh-sudo
 # Colored Man Pages
 
 # Aliased to J: Zsh autojump
-zload 0a rupa/z
+zinit ice wait"0a" lucid
+zinit light rupa/z
 
 # Extra Git commands
-zload 0c unixorn/git-extra-commands
+zinit ice wait"0c" lucid
+zinit light unixorn/git-extra-commands
 
 # almost on top (clears previous output on new command)
-zload 0b Valiev/almostontop
+zinit ice wait"0b" lucid
+zinit light Valiev/almostontop
 
 # ASDF w/Direnv support
 zinit ice wait lucid
@@ -149,5 +144,5 @@ zinit load redxtech/zsh-asdf-direnv
 if has-touch-bar; then
   # zload iam4x/zsh-iterm-touchbar
   # zload jamescodesthings/zsh-iterm-touchbar
-  zload %HOME/projects/personal/zsh-iterm-touchbar
+  zinit $LOAD_METHOD %HOME/projects/personal/zsh-iterm-touchbar
 fi
