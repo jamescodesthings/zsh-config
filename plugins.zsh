@@ -1,9 +1,5 @@
 #!/usr/bin/env zsh
 
-# Functions to make configuration less verbose
-# zt() : First argument is a wait time and suffix, ie "0a". Anything that doesn't match will be passed as if it were an ice mod. Default ices depth'3' and lucid
-zt(){ zinit depth'3' lucid ${1/#[0-9][a-c]/wait"${1}"} "${@:2}"; }
-
 # Make it 1 to log the script output
 export ZINIT_DEBUG=0
 
@@ -26,7 +22,7 @@ zt 0a light-mode for \
     atload'zstyle ":completion:*" special-dirs false' \
         OMZL::completion.zsh
 
-# Colored Man pages with triggered load?
+# Colored Man pages
 zload 0a light-mode \
     trigger-load'!man' \
         ael-code/zsh-colored-man-pages
@@ -51,32 +47,12 @@ zload 0b light-mode patch"${pchf}/%PLUGIN%.patch" reset nocompile'!' \
     atload'ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(__fz_zsh_completion)' \
         changyuheng/fz
 
-# # More LS Colors
-# zinit 0b light-mode \
-#   pack'no-dir-color-swap' atload"zstyle ':completion:*' list-colors \${(s.:.)LS_COLORS}" \
-#         trapd00r/LS_COLORS
-
 # Per Directory History
 # swap between Global/Local history with Option+L
 zload 0b light-mode \
     atload'add-zsh-hook chpwd @chwpd_dir-history-var;
     add-zsh-hook zshaddhistory @append_dir-history-var; @chwpd_dir-history-var' \
         kadaan/per-directory-history
-
-# Per Directory History P10k
-function prompt_my_per_dir_status() {
-    if $_per_directory_history_is_global; then
-        return
-    else
-        p10k segment -i ''
-    fi
-}
-
-# AND history search
-# Ctrl + R to search history with multiple words
-# zload 0b light-mode \
-#     compile'h*' \
-#         zdharma-continuum/history-search-multi-word
 
 # Cycle Directory Stack
 # Ctrl + Shift + Left = backward through directory stack
