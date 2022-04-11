@@ -17,7 +17,7 @@ zinit $LOAD_METHOD willghatch/zsh-saneopt
 zinit $LOAD_METHOD mafredri/zsh-async
 
 # OMZ Libraries
-zt 0a light-mode for \
+zinit ice wait"0a" light-mode for \
         OMZL::history.zsh \
     atload'zstyle ":completion:*" special-dirs false' \
         OMZL::completion.zsh
@@ -41,7 +41,7 @@ zinit $LOAD_METHOD zsh-users/zsh-autosuggestions
 # Fuzzy Find (fzf) in history tab completion
 # Tab/Shift Tab for next/previous with enter for select
 zinit ice wait"0b" lucid light-mode patch"${pchf}/%PLUGIN%.patch" reset nocompile'!' \
-    atload'ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(__fz_zsh_completion)' \
+    atload'ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(__fz_zsh_completion)'
 zinit $LOAD_METHOD changyuheng/fz
 
 # Per Directory History
@@ -74,32 +74,9 @@ zinit ice light lucid \
 zinit $LOAD_METHOD zdharma-continuum/fast-syntax-highlighting
 
 # # Binds up/down to history substring search
-# zt 0c light-mode \
-#     atload'bindkey "\e[A" history-substring-search-up;
-#     bindkey "\e[B" history-substring-search-down' \
-#         zsh-users/zsh-history-substring-search
-
-zt 0b light-mode for \
-        atload'bindkey "\e[A" history-substring-search-up;
-    bindkey "\e[B" history-substring-search-down' \
-        zsh-users/zsh-history-substring-search
-
-# Autosuggestions, fast-syntax-highlighting and completion
-# if ! zisloaded zsh-autosuggestions; then
-#   ZSH_AUTOSUGGEST_USE_ASYNC=1
-#   ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-
-#   zload zdharma-continuum/history-search-multi-word
-
-#   # zload 0a atload"_zsh_autosuggest_start" zsh-users/zsh-autosuggestions
-#   zinit wait lucid for \
-#     atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
-#       zdharma-continuum/fast-syntax-highlighting \
-#     blockf \
-#       zsh-users/zsh-completions \
-#     atload"!_zsh_autosuggest_start" \
-#       zsh-users/zsh-autosuggestions
-# fi
+zinit wait"0b" light-mode for \
+    atload'bindkey "\e[A" history-substring-search-up; bindkey "\e[B" history-substring-search-down' \
+    zsh-users/zsh-history-substring-search
 
 # Extended Zsh Colors
 zinit ice wait"0a"
