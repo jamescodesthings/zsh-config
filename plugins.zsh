@@ -80,11 +80,11 @@ zinit wait"0b" light-mode for \
 
 # Extended Zsh Colors
 zinit ice wait"0a"
-zinit zpm-zsh/colors
+zinit $LOAD_METHOD zpm-zsh/colors
 
 # Aliases
 zinit ice wait"0a"
-zinit djui/alias-tips
+zinit $LOAD_METHOD djui/alias-tips
 
 # Notify on command completion
 zinit ice wait'0c' atload'source $CUSTOM_DIR/.auto-notify-ignore.zsh' lucid
