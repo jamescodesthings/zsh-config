@@ -76,16 +76,16 @@ zinit ice light lucid \
 zinit $LOAD_METHOD zdharma-continuum/fast-syntax-highlighting
 
 # # Binds up/down to history substring search
-zinit wait"0b" light-mode for \
+zinit wait"0b" lucid light-mode for \
     atload'bindkey "\e[A" history-substring-search-up; bindkey "\e[B" history-substring-search-down' \
     zsh-users/zsh-history-substring-search
 
 # Extended Zsh Colors
-zinit ice wait"0a"
+zinit ice wait"0a" lucid
 zinit $LOAD_METHOD zpm-zsh/colors
 
 # Aliases
-zinit ice wait"0a"
+zinit ice wait"0a" lucid
 zinit $LOAD_METHOD djui/alias-tips
 
 # Notify on command completion
