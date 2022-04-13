@@ -46,7 +46,9 @@ zinit $LOAD_METHOD changyuheng/fz
 
 # Per Directory History
 # swap between Global/Local history with Option+L
-zinit ice wait"0b" light-mode aatload'add-zsh-hook chpwd @chwpd_dir-history-var; add-zsh-hook zshaddhistory @append_dir-history-var; @chwpd_dir-history-var' lucid
+# Also sets local as the default
+_per_directory_history_is_global=false
+zinit ice wait"0b" light-mode atload'_per_directory_history_is_global=false' lucid
 zinit light kadaan/per-directory-history
 
 # FZF Tab completion
