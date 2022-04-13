@@ -1,11 +1,21 @@
 #!/usr/bin/env zsh
 
-APP_PLACEHOLDER="[AppName]"
 
-declare -A new_templates
-new_templates[react-native]="npx react-native init $APP_PLACEHOLDER --template react-native-template-typescript"
-new_templates[stencil]="npm init stencil"
-new_templates[python]="poetry new $APP_PLACEHOLDER"
+new/load() {
+  APP_PLACEHOLDER="[AppName]"
+
+  # Delcare global associative array
+  declare -g -A new_templates
+  new_templates[react-native]="npx react-native init $APP_PLACEHOLDER --template react-native-template-typescript"
+  new_templates[stencil]="npm init stencil"
+  new_templates[python]="poetry new $APP_PLACEHOLDER"
+}
+
+new/print_all() {
+  for key value in ${(kv)new_templates}; do
+    echo -n "$key"; clr_cyan ": " -n; clr_green "$value"
+  done
+}
 
 # Either creates a new project of a type or
 new() {
@@ -20,6 +30,7 @@ new() {
     return
   fi
 
+  new/load
 
   if is not empty "$1"; then
     if is not empty "$new_templates[$1]"; then
@@ -36,13 +47,7 @@ new() {
     fi
   fi
 
-  _new_print_all
-}
-
-_new_print_all() {
-  for key value in ${(kv)new_templates}; do
-    echo -n "$key"; clr_cyan ": " -n; clr_green "$value"
-  done
+  new/print_all
 }
 
 new "$@"
