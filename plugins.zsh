@@ -24,7 +24,7 @@ zinit ice wait"0a" light-mode for \
 
 # ASDF w/Direnv support
 # zinit ice wait"0a" lucid
-zinit lucid
+zinit ice lucid
 zinit load redxtech/zsh-asdf-direnv
 
 # Colored Man pages
