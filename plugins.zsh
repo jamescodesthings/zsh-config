@@ -22,6 +22,11 @@ zinit ice wait"0a" light-mode for \
     atload'zstyle ":completion:*" special-dirs false' \
         OMZL::completion.zsh
 
+# ASDF w/Direnv support
+# zinit ice wait"0a" lucid
+zinit lucid
+zinit load redxtech/zsh-asdf-direnv
+
 # Colored Man pages
 zinit ice wait"0a" lucid light-mode trigger-load'!man'
 zinit $LOAD_METHOD ael-code/zsh-colored-man-pages
@@ -114,10 +119,6 @@ zinit light unixorn/git-extra-commands
 # almost on top (clears previous output on new command)
 zinit ice wait"0b" lucid
 zinit light Valiev/almostontop
-
-# ASDF w/Direnv support
-zinit ice wait lucid
-zinit load redxtech/zsh-asdf-direnv
 
 # iTerm touchbar support
 if has-touch-bar; then

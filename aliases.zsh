@@ -128,6 +128,8 @@ if is existing "$ASDF_DIR/shims/npm"; then
   alias npmL0g='npm list -g --depth=0 2>/dev/null'
   alias npmL0='npm list --depth=0 2>/dev/null'
   alias npmr='npm run'
+  alias npmi='npm i'
+  alias npmil='npm i --legacy-peer-deps'
   alias npmD='npm i -D'
   alias npmS='npm i -S'
   alias npmSE='npm i -E'
