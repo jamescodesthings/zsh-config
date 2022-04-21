@@ -40,6 +40,7 @@ function _restore-db_help() {
   clr_cyan 'Options:'
   echo "--no-fix: Does not run the after script"
   echo "--no-delete: Does not DROP and recreate the DB"
+  echo "--compare: dumps to a -compare database"
 }
 
 function _restore-db_restore() {
@@ -72,6 +73,10 @@ function _restore-db_restore() {
   fi
 
   DB_NAME="app_prod_$DB_DATE"
+
+  if is equal "$2" "--compare"; then
+    DB_NAME="${DB_NAME}_compare"
+  fi
 
   if is not equal "$2" "--no-delete"; then
     clr_cyan "Creating: " -n

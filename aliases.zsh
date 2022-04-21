@@ -102,7 +102,7 @@ if is available git; then
   alias gtmapt='git tag $(rls)'
   alias git-skip='git update-index --skip-worktree'
   alias git-unskip='git update-index --no-skip-worktree'
-  alias git-list-skipped='git ls-files -v . | grep ^S'
+  alias git-list-skipped='git ls-files -v . | grep "^S"'
   alias git-delete-untracked-check='git clean -n';
   alias git-delete-untracked='git clean -f';
   alias git-update-from-upstream='git pull upstream $(current_branch)'
