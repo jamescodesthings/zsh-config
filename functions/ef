@@ -1,0 +1,165 @@
+#!/usr/bin/env zsh
+
+# todo: convert this to a param with defaults
+DATA_PROJ_PATH="/Users/jamesmacmillan/projects/engineius/web-app/src/BBWT.Data.MySQL"
+STARTUP_PROJ_PATH="/Users/jamesmacmillan/projects/engineius/web-app/src/BBWT.Web"
+STORE_PATH="/Users/jamesmacmillan/projects/engineius/.migrations"
+
+function _ef_usage() {
+  clr_cyan 'Usage:' -n
+  clr_white " $1 command\n"
+
+  clr_cyan 'Commands:'
+  clr_green 'store' -n; clr_white ' - Stores the names of the last 2 migrations for use in script'
+  clr_green 'reload' -n; clr_white " - Reloads stored migration names from $STORE_PATH"
+  clr_green 'print-stored' -n; clr_white ' - Prints the stored migration names'
+  clr_green 'script-migration' -n; clr_white ' - Scripts the previous migration to the last migration'
+  clr_green 'script-revert' -n; clr_white ' - Scripts the last migration revert to the previous migration'
+}
+
+function _ef_print_stored() {
+  if is empty "$EF_LAST"; then
+    clr_red "EF_LAST not stored yet, run ef store first."
+    return 1
+  fi
+  if is empty "$EF_PREV"; then
+    clr_red "EF_PREV not stored yet, run ef store first."
+    return 1
+  fi
+
+  clr_cyan "Last Migration (-1): " -n; echo "$EF_LAST"
+  clr_cyan "Previous Migration (-2): " -n; echo "$EF_PREV"
+}
+
+function _ef_store() {
+  # Store the last 2 migrations in the env for later use
+  ALL_MIGRATIONS=$(_ef_default migrations list)
+
+  export EF_LAST=$(echo $ALL_MIGRATIONS | tail -1)
+  export EF_PREV=$(echo $ALL_MIGRATIONS | tail -2 | head -1)
+
+  _ef_save_store
+
+  clr_cyan "Stored Last 2 migrations"
+  _ef_print_stored
+}
+
+function _ef_save_store() {
+  echo "$EF_PREV" > $STORE_PATH
+  echo "$EF_LAST" >> $STORE_PATH
+}
+
+function _ef_reload_store() {
+
+  if is not existing "$STORE_PATH"; then
+    clr_red "Migrations have not been stored yet, run ef store."
+    return 1
+  fi
+  RAW_RELOAD=$(cat $STORE_PATH)
+  if is empty "$RAW_RELOAD"; then
+    clr_red "Migrations have not been stored yet, run ef store."
+    return 1
+  fi
+
+  export EF_LAST=$(echo $RAW_RELOAD | tail -1)
+  export EF_PREV=$(echo $RAW_RELOAD | tail -2 | head -1)
+
+  clr_cyan "Restored:"
+  _ef_print_stored
+}
+
+function _ef_script_migration(){
+  if is empty "$EF_LAST"; then
+    clr_red "EF_LAST not stored yet, run ef store first."
+    return 1
+  fi
+  if is empty "$EF_PREV"; then
+    clr_red "EF_PREV not stored yet, run ef store first."
+    return 1
+  fi
+
+  clr_cyan "Scripting migration " -n; echo -n "$EF_PREV"; clr_green " -> " -n; echo "$EF_LAST"
+
+  _ef_default migrations script $EF_PREV $EF_LAST -o "migrate-last.sql"
+}
+
+function _ef_script_revert(){
+  if is empty "$EF_LAST"; then
+    clr_red "EF_LAST not stored yet, run ef store first."
+    return 1
+  fi
+  if is empty "$EF_PREV"; then
+    clr_red "EF_PREV not stored yet, run ef store first."
+    return 1
+  fi
+
+  clr_cyan "Scripting revert " -n; echo -n "$EF_LAST"; clr_green " -> " -n; echo "$EF_PREV"
+
+  _ef_default migrations script $EF_LAST $EF_PREV -o "revert-last.sql"
+}
+
+function _ef_default() {
+  clr_cyan "Running: " -n; echo "dotnet ef $@"
+
+  CURRENT_DIR=$(pwd)
+  RELATIVE_DATA_PATH=$(realpath --relative-to=$CURRENT_DIR $DATA_PROJ_PATH)
+  RELATIVE_STARTUP_PATH=$(realpath --relative-to=$CURRENT_DIR $STARTUP_PROJ_PATH)
+
+  EXTRAS="-p $RELATIVE_DATA_PATH -s $RELATIVE_STARTUP_PATH -c DataContext"
+  clr_cyan "With Options: " -n; echo "$EXTRAS"
+
+
+  FINAL_COMMAND="dotnet ef $@ $EXTRAS"
+  # echo "Final Command: $FINAL_COMMAND"
+  eval "$FINAL_COMMAND"
+}
+
+
+# ef: Lazy issue mentions in a git commit -m
+function ef () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    dotnet
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1"; then
+    _ef_usage "$0"
+    return 0
+  fi
+
+  if is equal "store" "$1"; then
+    _ef_store
+    return $?
+  fi
+  if is equal "reload" "$1"; then
+    _ef_reload_store
+    return $?
+  fi
+
+  if is equal "print-stored" "$1"; then
+    _ef_print_stored
+    return $?
+  fi
+
+  if is equal "script-migration" "$1"; then
+    _ef_script_migration
+    return $?
+  fi
+
+  if is equal "script-revert" "$1"; then
+    _ef_script_revert
+    return $?
+  fi
+
+  _ef_default $@
+}
+
+ef "$@"

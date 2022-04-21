@@ -1,16 +1,22 @@
 #!/usr/bin/env zsh
 
 # Compatibility architecture mode (rosetta)
-if is-m1; then
+if is m1; then
   alias rosetta='arch -x86_64'
   alias rosetta-shell='arch -x86_64 /usr/local/bin/zsh'
 fi
 
 # OSX Development
-if is-osx; then
+if is osx; then
   alias xcode='open /Applications/Xcode.app'
   # Emulator/simulator
-  alias simulator='open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app'
+
+  if is available xcodes; then
+    local SELECTED=$(xcodes select -p)
+    alias simulator="open $SELECTED/Applications/Simulator.app"
+  else
+    alias simulator='open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app'
+  fi
   # OSX Flush DNS command
   alias flush-dns='sudo killall -HUP mDNSResponder'
 
@@ -23,8 +29,8 @@ if is-osx; then
   alias plistbuddy="/usr/libexec/PlistBuddy"
 fi
 
-# Ubuntu/Deb Specific
-if is-ubuntu; then
+# Linux Specific
+if is linux; then
   alias open='xdg-open'
 fi
 
@@ -35,15 +41,14 @@ alias cl='clear'
 alias oh='open .'
 alias count='ls -b1 | wc -l' # Count files in current directory
 alias cx='chmod +x'
-alias la='ls -la'
+alias lla='ls -la'
+alias la='ls -a'
 alias j='z'
 
-if is available bat; then
-  alias bat='bat --paging="never"'
-fi
-if is avaiable exa; then
+if is available exa; then
   alias ls='exa'
 fi
+
 if is available subl; then
   alias zshconfig='subl ~/.custom'
 elif is available nano; then
@@ -65,23 +70,19 @@ if is available pycharm; then
 fi
 
 # Openscad helpers
-if is-osx && is existing /Applications/OpenSCAD.app; then
+if is osx && is existing /Applications/OpenSCAD.app; then
   alias scad='open /Applications/OpenSCAD.app'
   alias scad-libs='cd ~/Documents/OpenSCAD/libraries'
   alias openscad='/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD'
 fi
 
-if is-osx && is existing /Applications/Google\ Chrome.app; then
+if is osx && is existing /Applications/Google\ Chrome.app; then
   alias chrome='open -a /Applications/Google\ Chrome.app'
 fi
 
 # Simplify3D Helper
-if is-osx && is existing /Applications/Simplify3D-4.1.2/Simplify3D.app; then
+if is osx && is existing /Applications/Simplify3D-4.1.2/Simplify3D.app; then
   alias wipe-simplify='rm ~/Library/Preferences/com.Simplify3D.S3D-Software.plist && rm -rf ~/Library/Application\ Support/Simplify3D'
-fi
-
-if is available lazygit; then
-  alias lg='lazygit'
 fi
 
 # Git
@@ -127,6 +128,8 @@ if is existing "$ASDF_DIR/shims/npm"; then
   alias npmL0g='npm list -g --depth=0 2>/dev/null'
   alias npmL0='npm list --depth=0 2>/dev/null'
   alias npmr='npm run'
+  alias npmi='npm i'
+  alias npmil='npm i --legacy-peer-deps'
   alias npmD='npm i -D'
   alias npmS='npm i -S'
   alias npmSE='npm i -E'

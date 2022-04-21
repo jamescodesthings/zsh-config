@@ -34,10 +34,15 @@ source $CUSTOM_DIR/custom_functions.zsh
 source $CUSTOM_DIR/env.zsh
 source $CUSTOM_DIR/load_zinit.zsh
 source $CUSTOM_DIR/load_omz.zsh
+source $CUSTOM_DIR/fzf-key-bindings.zsh
 source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/completions.zsh
+
+if is existing $CUSTOM_DIR/private.zsh; then
+  source $CUSTOM_DIR/private.zsh
+fi
 
 # Set PROFILING_ZSH=1 will profile this script
 if [[ "$PROFILING_ZSH" == "1" ]]; then

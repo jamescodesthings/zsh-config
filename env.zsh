@@ -6,9 +6,6 @@ export PROJECTS="$HOME/projects"
 # ASDF dir
 export ASDF_DIR="$HOME/.asdf"
 
-# Pager (turn it off)
-export PAGER='cat'
-
 # Set the editor to sublime
 if is available subl; then
   export EDITOR='subl -w'
@@ -28,11 +25,6 @@ export WORDCHARS=${WORDCHARS/\/}
 export WORDCHARS=${WORDCHARS/-/}
 
 export POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
-
-# allows you to use the `[up, down]` key on a partial command
-# to search your bash history for similar commands
-bindkey '\e[A' history-search-backward
-bindkey '\e[B' history-search-forward
 
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh

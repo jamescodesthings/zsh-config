@@ -30,7 +30,7 @@ for lib in $OMZ_LIBS; do
     echo $c[cyan] Lib: $c[white]$lib.zsh $c[reset]
   fi
 
-  zload snippet "OMZL::$lib.zsh"
+  zinit snippet "OMZL::$lib.zsh"
 done
 #loads plugins
 for plugin in $OMZ_PLUGINS; do
@@ -38,8 +38,11 @@ for plugin in $OMZ_PLUGINS; do
     echo $c[cyan] Plugin: $c[white]$plugin $c[reset]
   fi
 
-  zload snippet "OMZP::$plugin"
+  zinit snippet "OMZP::$plugin"
 done
 
 # Using carefulRM instead here
-unalias rm
+if alias rm 2>&1 > /dev/null; then
+  unalias rm
+fi
+
