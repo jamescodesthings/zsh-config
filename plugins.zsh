@@ -24,11 +24,11 @@ zinit ice wait"0a" light-mode for \
 
 # ASDF w/Direnv support
 zinit ice lucid
-zinit load redxtech/zsh-asdf-direnv
+zinit $LOAD_METHOD redxtech/zsh-asdf-direnv
 
 # Better RM
 zinit ice wait"0c" lucid
-zinit load jamescodesthings/careful_rm
+zinit $LOAD_METHOD jamescodesthings/careful_rm
 if is not file ${HOME}/.rm_recycle; then
   touch ${HOME}/.rm_recycle
 fi
@@ -105,20 +105,24 @@ zinit $LOAD_METHOD MichaelAquilina/zsh-auto-notify
 
 # Double escape = sudo [last command]
 zinit ice wait"0a" lucid
-zinit light hcgraf/zsh-sudo
+zinit $LOAD_METHOD hcgraf/zsh-sudo
 # Colored Man Pages
 
 # Aliased to J: Zsh autojump
 zinit ice wait"0a" lucid
-zinit light rupa/z
+zinit $LOAD_METHOD rupa/z
 
 # Extra Git commands
 zinit ice wait"0c" lucid
-zinit light unixorn/git-extra-commands
+zinit $LOAD_METHOD unixorn/git-extra-commands
+
+zinit ice wait"0c" lucid
+zinit $LOAD_METHOD torifat/npms
+# zinit $LOAD_METHOD lukechilds/zsh-better-npm-completion
 
 # almost on top (clears previous output on new command)
 zinit ice wait"0b" lucid
-zinit light Valiev/almostontop
+zinit $LOAD_METHOD Valiev/almostontop
 
 # iTerm touchbar support
 if has-touch-bar; then
