@@ -95,6 +95,7 @@ if is available git; then
   fi;
 
   alias gcm='git commit -m'
+  alias gcmn='git commit --no-verify -m'
   alias gbD='git branch -D'
   alias gbDi='gbD $(gb | fzf)'
   alias gtD='git tag -d'
