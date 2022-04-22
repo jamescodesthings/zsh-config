@@ -23,9 +23,15 @@ zinit ice wait"0a" light-mode for \
         OMZL::completion.zsh
 
 # ASDF w/Direnv support
-# zinit ice wait"0a" lucid
 zinit ice lucid
 zinit load redxtech/zsh-asdf-direnv
+
+# Better RM
+zinit ice wait"0c" lucid
+zinit load jamescodesthings/careful_rm
+if is not file ${HOME}/.rm_recycle; then
+  touch ${HOME}/.rm_recycle
+fi
 
 # Colored Man pages
 zinit ice wait"0a" lucid light-mode trigger-load'!man'
@@ -94,14 +100,8 @@ zinit ice wait"0a" lucid
 zinit $LOAD_METHOD djui/alias-tips
 
 # Notify on command completion
-zinit ice wait'0c' atload'source $CUSTOM_DIR/.auto-notify-ignore.zsh' lucid
+zinit ice wait"0a" atload'source $CUSTOM_DIR/.auto-notify-ignore.zsh' lucid
 zinit $LOAD_METHOD MichaelAquilina/zsh-auto-notify
-
-# Better RM
-zinit $LOAD_METHOD MikeDacre/careful_rm
-if is not file ${HOME}/.rm_recycle; then
-  touch ${HOME}/.rm_recycle
-fi
 
 # Double escape = sudo [last command]
 zinit ice wait"0a" lucid

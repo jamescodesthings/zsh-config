@@ -96,6 +96,7 @@ if is available git; then
 
   alias gcm='git commit -m'
   alias gbD='git branch -D'
+  alias gbDi='gbD $(gb | fzf)'
   alias gtD='git tag -d'
   alias gm='git merge --no-ff'
   alias gt='git tag'
