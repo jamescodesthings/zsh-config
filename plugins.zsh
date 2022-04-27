@@ -124,6 +124,13 @@ zinit $LOAD_METHOD torifat/npms
 zinit ice wait"0b" lucid
 zinit $LOAD_METHOD Valiev/almostontop
 
+# Auto Activate conda env from environment.yml
+zinit ice wait"0c" lucid
+zinit $LOAD_METHOD jamescodesthings/zsh-activate-py-environment
+
+zinit ice wait"0c" lucid
+zinit $LOAD_METHOD esc/conda-zsh-completion
+
 # iTerm touchbar support
 if has-touch-bar; then
   # zload iam4x/zsh-iterm-touchbar

@@ -39,6 +39,7 @@ source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/completions.zsh
+source $CUSTOM_DIR/conda_init.zsh
 
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
@@ -54,4 +55,3 @@ if [[ "$PROFILING_ZSH" == "w" ]]; then
   unsetopt XTRACE
   exec 2>&3 3>&-
 fi
-
