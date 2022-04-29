@@ -1,0 +1,53 @@
+#!/usr/bin/env zsh
+
+TOUCH_SUDO_FILE="/etc/pam.d/sudo"
+
+function _touch-sudo-update-sudo() {
+  sudo chown $(whoami) $TOUCH_SUDO_FILE
+  sudo chmod +w $TOUCH_SUDO_FILE
+  cat > $TOUCH_SUDO_FILE << EOF
+# sudo: auth account password session
+auth       sufficient     pam_tid.so
+auth       sufficient     pam_smartcard.so
+auth       required       pam_opendirectory.so
+account    required       pam_permit.so
+password   required       pam_deny.so
+session    required       pam_permit.so
+EOF
+  sudo chmod -w $TOUCH_SUDO_FILE
+  sudo chown root $TOUCH_SUDO_FILE
+  clr_green "Done"
+  clr_cyan "cat $TOUCH_SUDO_FILE to check"
+}
+
+# touch-sudo: Lazy issue mentions in a git commit -m
+function touch-sudo () {
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    confirm
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is not osx; then
+    clr_red "Can't do that on non-osx"
+    return 1
+  fi
+
+  clr_cyan "Enable touch sudo"
+  if confirm; then
+    clr_green "Enabling"
+    _touch-sudo-update-sudo
+  else
+    clr_red "Okay then"
+  fi
+
+}
+
+touch-sudo "$@"
