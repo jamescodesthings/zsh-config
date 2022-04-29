@@ -159,3 +159,7 @@ fi
 if is available thefuck; then
   eval $(thefuck --alias)
 fi
+
+if is available conda; then
+  alias conda-save='conda env export > environment.yml'
+fi
