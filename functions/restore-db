@@ -6,7 +6,7 @@ DB_USER="root"
 DB_PASS="engineius"
 CNF_FILE="db.cnf"
 EXTRACTED_FILE="backup.sql"
-DB_AFTER_RESTORE_SCRIPT="$HOME/projects/sql/engineius-db-restore-users.sql"
+DB_AFTER_RESTORE_SCRIPT="$HOME/projects/sql/db-mobile-seed.sql"
 DEBUG=0
 
 # Restores a sql database to a new db
