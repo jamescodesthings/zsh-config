@@ -7,7 +7,7 @@ const completionSpec: Fig.Spec = {
       description: "Set the simulator clock to the given value",
       args: {
         name: "time",
-        description: "the time in HH:MM that you want to set",
+        description: "The time in HH:MM that you want to set",
       },
     },
     {
@@ -15,7 +15,7 @@ const completionSpec: Fig.Spec = {
       description: "Saves a screenshot at path.png",
       args: {
         name: "path.png",
-        description: "the path to save the screenshot to",
+        description: "The path to save the screenshot to",
       },
     },
     {
@@ -23,7 +23,7 @@ const completionSpec: Fig.Spec = {
       description: "Saves a screen recording at path.mov",
       args: {
         name: "path.mov",
-        description: "the path to save the recording to",
+        description: "The path to save the recording to",
       },
     },
     {
@@ -31,7 +31,7 @@ const completionSpec: Fig.Spec = {
       description: "Installs a local .app file",
       args: {
         name: "path.app",
-        description: "the path to the app to install",
+        description: "The path to the app to install",
       },
     },
   ],
