@@ -1,0 +1,78 @@
+#!/usr/bin/env zsh
+
+_ns-release_set-build-id() {
+  /usr/libexec/PlistBuddy $1 -c "set CFBundleVersion $2"
+}
+
+_ns-release_build-id() {
+  /usr/libexec/PlistBuddy $1 -c "print CFBundleVersion"
+}
+_ns-release_short-version() {
+  /usr/libexec/PlistBuddy $1 -c "print CFBundleShortVersionString"
+}
+
+_ns-release_build() {
+  SHORT_VERSION=$1
+  BUILD_ID=$2
+  DESKTOP_DIR=$3
+
+  FINAL_PATH="$DESKTOP_DIR/engineius-$SHORT_VERSION-$BUILD_ID.ipa"
+  echo "Building $SHORT_VERSION-$BUILD_ID"
+  echo "to $FINAL_PATH"
+
+  if ! confirm; then
+    clr_cyan "Okay Then, ignore me"
+    return
+  fi
+
+  clr_green "Running Build Command:"
+
+  ns build ios \
+    --for-device \
+    --release \
+    --env.uglify \
+    --env.aot \
+    --env.production \
+    --copy-to "$FINAL_PATH" \
+    --provision "Engineius Distribution Profile 2022"
+
+  # ns build android --release --env.uglify --env.aot --env.production --key-store-path ../secrets/vme-release-key.jks --key-store-password androidP4ssword --key-store-alias vme-alias --key-store-alias-password androidP4ssword --copy-to /Users/jamesmacmillan/Desktop/engineius-1.5.7-157220434.apk
+}
+
+
+ns-release() {
+  # /Users/jamesmacmillan/projects/engineius/mobile-app/App_Resources/iOS/Info
+  local INFO_PLIST="./App_Resources/iOS/Info.plist"
+  local DEPS=(
+    is
+    clr_cyan
+    clr_green
+    clr_white
+    clr_red
+    git
+    current_branch
+    plistbuddy
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is not existing $INFO_PLIST; then
+    clr_red "Cannot find $INFO_PLIST, are you in the right directory?"
+    return
+  fi
+
+  if is not equal "$1" ""; then
+    clr_cyan "Updating BUILD_ID to: $1"
+    _ns-release_set-build-id "$INFO_PLIST" "$1"
+  fi
+
+  SHORT_VERSION=$(_ns-release_short-version $INFO_PLIST)
+  BUILD_ID=$(_ns-release_build-id $INFO_PLIST)
+  DESKTOP_DIR="$HOME/Desktop"
+
+  _ns-release_build "$SHORT_VERSION" "$BUILD_ID" "$DESKTOP_DIR"
+}
+
+ns-release "$@"

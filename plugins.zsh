@@ -124,6 +124,10 @@ zinit $LOAD_METHOD torifat/npms
 zinit ice wait"0b" lucid
 zinit $LOAD_METHOD Valiev/almostontop
 
+# git flow completion:
+zinit ice wait"0c" lucid
+zinit $LOAD_METHOD bobthecow/git-flow-completion
+
 # Auto Activate conda env from environment.yml
 zinit ice wait"0c" lucid
 zinit $LOAD_METHOD jamescodesthings/zsh-activate-py-environment

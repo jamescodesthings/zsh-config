@@ -1,3 +1,5 @@
+# Fig pre block. Keep at the top of this file.
+. "$HOME/.fig/shell/zshrc.pre.zsh"
 #!/usr/bin/env zsh
 
 # Set PROFILING_ZSH=2 will profile this script
@@ -40,6 +42,7 @@ source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/completions.zsh
 source $CUSTOM_DIR/conda_init.zsh
+source $CUSTOM_DIR/fig_init.zsh
 
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh

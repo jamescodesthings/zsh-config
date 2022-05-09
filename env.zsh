@@ -20,6 +20,8 @@ if is existing $HOME/.cargo/env; then
   source $HOME/.cargo/env
 fi
 
+export FIG_DIR=$CUSTOM_DIR/autocomplete
+
 # Ensures partial word completion does not skip over folders/dashes
 export WORDCHARS=${WORDCHARS/\/}
 export WORDCHARS=${WORDCHARS/-/}
