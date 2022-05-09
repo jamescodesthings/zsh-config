@@ -10,7 +10,8 @@
     "test": "tsc --noEmit && echo 'All specs passed validation.",
     "build": "npx @withfig/autocomplete-tools compile",
     "lint": "eslint '**/*.ts' && npx prettier --check '**/*.ts'",
-    "lint:fix": "eslint '**/*.ts' --fix && npx prettier --write '**/*.ts'"
+    "lint:fix": "eslint '**/*.ts' --fix && npx prettier --write '**/*.ts'",
+    "format": "prettier --write ./src"
   },
   "fig": {
     "dev": {
@@ -53,10 +54,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^14.14.33",
     "@fig/eslint-config-autocomplete": "^1.0.0",
-    "@withfig/autocomplete-types": "^1.4.4",
+    "@types/node": "^14.14.33",
     "@withfig/autocomplete-tools": "^2.2.3",
+    "@withfig/autocomplete-types": "^1.4.4",
     "eslint": "^7.22.0",
     "lint-staged": "^10.5.4",
     "prettier": "2.2.1",
