@@ -1,6 +1,6 @@
-# Fig pre block. Keep at the top of this file.
-. "$HOME/.fig/shell/zshrc.pre.zsh"
 #!/usr/bin/env zsh
+# Fig pre block. Keep at the top of this file.
+[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && . "$HOME/.fig/shell/zshrc.pre.zsh"
 
 # Set PROFILING_ZSH=2 will profile this script
 if [[ "$PROFILING_ZSH" == "2" ]]; then
@@ -27,6 +27,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+
 # Custom Functions
 export CUSTOM_DIR=$HOME/.custom
 
@@ -42,7 +43,6 @@ source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/completions.zsh
 source $CUSTOM_DIR/conda_init.zsh
-source $CUSTOM_DIR/fig_init.zsh
 
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
@@ -58,3 +58,6 @@ if [[ "$PROFILING_ZSH" == "w" ]]; then
   unsetopt XTRACE
   exec 2>&3 3>&-
 fi
+
+# Fig post block. Keep at the bottom of this file.
+[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && . "$HOME/.fig/shell/zshrc.post.zsh"
