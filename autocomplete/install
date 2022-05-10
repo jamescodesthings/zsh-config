@@ -1,6 +1,0 @@
-#!/usr/bin/env zsh
-
-FIG_DIR=$CUSTOM_DIR/autocomplete
-DEST_DIR=$HOME/.fig/autocomplete
-
-sudo ln -s $FIG_DIR $DEST_DIR
