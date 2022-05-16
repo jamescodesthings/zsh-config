@@ -49,6 +49,7 @@ zinit ice wait"0a" light-mode ver'develop' atload'_zsh_autosuggest_start' lucid
 zinit $LOAD_METHOD zsh-users/zsh-autosuggestions
 
 # History Improvements:
+# CTRL + R to search history
 # Fuzzy Find (fzf) in history tab completion
 # Tab/Shift Tab for next/previous with enter for select
 zinit ice wait"0b" lucid light-mode patch"${pchf}/%PLUGIN%.patch" reset nocompile'!' \

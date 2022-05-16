@@ -20,6 +20,10 @@ if is existing $HOME/.cargo/env; then
   source $HOME/.cargo/env
 fi
 
+if is existing $HOME/.asdf/plugins/java/set-java-home.zsh; then
+  source $HOME/.asdf/plugins/java/set-java-home.zsh
+fi
+
 export FIG_DIR=$CUSTOM_DIR/autocomplete
 
 # Ensures partial word completion does not skip over folders/dashes
