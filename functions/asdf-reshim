@@ -2,13 +2,40 @@
 
 shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst')
 
-function _asdf-reshim_usage() {
-  clr_cyan 'Usage:' -n
-  clr_white " $1 [--help|-h]\n"
-  clr_cyan 'Runs asdf reshim then fixes shims for the following commands'
+
+
+# function _asdf-reshim_usage() {
+#   clr_cyan 'Usage:' -n
+#   clr_white " $1 [--help|-h]\n"
+#   clr_cyan 'Runs asdf reshim then fixes shims for the following commands'
+
+#   for shim in $shims; do
+#     echo "- $shim"
+#   done
+# }
+
+reshim_description="Runs asdf reshim and fixes shims to avoid collision"
+
+_reshim_flags[1]="--help"
+_reshim_flag_descriptions[1]="Prints Help"
+
+function _asdf_reshim_fix() {
+  if is not existing "$ASDF_DIR/shims"; then
+    clr_red "ASDF_DIR not found, set ASDF_DIR to the path to .asdf (usually ~/.asdf)"
+    return 1
+  fi
 
   for shim in $shims; do
-    echo "- $shim"
+    without_nl=${shim:-1}
+    SHIM="$ASDF_DIR/shims/$without_nl"
+    if is file "$SHIM"; then
+      sudo chmod -x "$SHIM"
+      rm -f "$SHIM"
+      clr_green "Fixed " -n; clr_white "$without_nl"
+    else
+      clr_cyan "$without_nl skipped, does not exist"
+      clr_brown "Skipped " -n; clr_white "$without_nl" -n; clr_brown ", does not exist"
+    fi
   done
 }
 
@@ -27,44 +54,32 @@ function asdf-reshim () {
     return
   fi
 
-  if is equal "$1" "--help" || is equal "$1" "-h"; then
-    _asdf-reshim_usage "$0"
-    return 0
+  if has-flag '--help' $@; then
+    print-help $0 "$reshim_description" "_reshim_flags" "_reshim_flag_descriptions"
+    clr_cyan "\nShims:"
+    for shim in $shims; do
+      echo -n "- "; clr_green "$shim"
+    done
+    return
   fi
 
-  clr_cyan "Reshimming"
-  _asdf_reshim_reshim
-
-  clr_cyan "Fixing shims, will need sudo"
-  _asdf_reshim_fix
-}
-
-function _asdf_reshim_reshim() {
-  which asdf 2>&1 > /dev/null
-  if is not equal "$?" "0"; then
-    clr_red "asdf function not found, cannot reshim. Install asdf."
-  else
-    asdf reshim
-  fi
-}
-
-function _asdf_reshim_fix() {
-  if is not existing "$ASDF_DIR/shims"; then
-    clr_red "ASDF_DIR not found, set ASDF_dir to the path to .asdf (usually ~/.asdf)"
+  if is not available "asdf"; then
+    clr_brown "Could not find asdf!"
     return 1
   fi
 
-  for shim in $shims; do
-    without_nl=${shim:-1}
-    SHIM="$ASDF_DIR/shims/$without_nl"
-    if is file "$SHIM"; then
-      sudo chmod -x "$SHIM"
-      rm -f "$SHIM"
-      clr_green "$without_nl Fixed"
-    else
-      clr_cyan "$without_nl skipped, does not exist"
-    fi
-  done
+  clr_green "Reshimming " -n; clr_white "ASDF"
+  asdf reshim
+  RESULT=$?
+  if is equal $RESULT 0; then
+    clr_green "Reshimmed " -n; clr_white "ASDF"
+  else
+    clr_brown "Something may have gone wrong, try running " -n
+    clr_white "asdf reshim " -n
+    clr_brown "manually"
+  fi
+
+  _asdf_reshim_fix
 }
 
 asdf-reshim "$@"

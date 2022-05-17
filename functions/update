@@ -10,14 +10,20 @@ _update_flag_names[1]="--help"
 _update_flag_messages[1]="shows help"
 _update_flag_names[2]="--quiet"
 _update_flag_messages[2]="hide command output"
+_update_flag_names[3]="--all"
+_update_flag_messages[3]="updates everything"
+_update_flag_names[4]="--[name]"
+_update_flag_messages[4]="name of the thing to update"
 
 # Update commands
 # XCode CLTs
+_update_flags[1]="soft"
 _update_names[1]="Software Updates"
 _update_checks[1]="is available softwareupdate"
 _update_commands[1]="softwareupdate --all --install --force"
 
 # Homebrew
+_update_flags[2]="brew"
 _update_names[2]="Homebrew"
 _update_checks[2]="is available brew"
 _update_commands[2]="brew update && brew upgrade && brew cask upgrade"
@@ -29,22 +35,50 @@ function _update_zinit() {
   # Plugin parallel update
   zinit update --parallel
 }
+_update_flags[3]="zinit"
 _update_names[3]="ZInit"
 _update_checks[3]="is available zinit"
 _update_commands[3]="_update_zinit"
 
 # xcodes
+_update_flags[4]="xcodes"
 _update_names[4]="xcodes"
 _update_checks[4]="is available xcodes"
 _update_commands[4]="xcodes update"
 
 # TLDR
+_update_flags[5]="tldr"
 _update_names[5]="TLDR"
 _update_checks[5]="is available tldr"
 _update_commands[5]="tldr --update"
 
+# ASDF
+_update_flags[6]="asdf"
+_update_names[6]="ASDF"
+_update_checks[6]="is available asdf"
+_update_commands[6]="asdf update && asdf plugin-update --all"
+
+function _update_node() {
+  asdf install nodejs latest
+  asdf global nodejs latest
+  _update_updating "NPM"
+  # Updates NPM
+  node --version
+  npm install -g npm
+  if is available asdf-reshim; then
+    asdf-reshim
+  fi
+  _update_updated "NPM"
+}
+
+_update_flags[7]="node"
+_update_names[7]="NodeJS"
+_update_checks[7]="is available asdf"
+_update_commands[7]="_update_node"
+
 # Testing
 if is equal $_UPDATE_TEST 1; then
+  _update_flags=( )
   _update_names=( )
   _update_commands=( )
   _update_checks=( )
@@ -60,12 +94,15 @@ if is equal $_UPDATE_TEST 1; then
     function _update_test_f2() {
     return 127
   }
-  _update_names[0]="Test Passed"
-  _update_commands[0]="_update_test_p"
-  _update_names[1]="Test Failed"
-  _update_commands[1]="_update_test_f"
-  _update_names[2]="Test Failed No Output"
-  _update_commands[2]="_update_test_f2"
+  _update_flags[1]="pass"
+  _update_names[1]="Test Passed"
+  _update_commands[1]="_update_test_p"
+  _update_flags[2]="fail"
+  _update_names[2]="Test Failed"
+  _update_commands[2]="_update_test_f"
+  _update_flags[3]="fail2"
+  _update_names[3]="Test Failed No Output"
+  _update_commands[3]="_update_test_f2"
 fi
 # End of testing
 
@@ -82,10 +119,15 @@ function _update_skipping() {
   clr_white $1 -n
   clr_brown ", check failed"
 }
+
 # _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
 function _update_failed() {
+  local NAME=$1
+  local COMMAND=$2
+  local RESULT=$3
+  local OUTPUT=$4
   echo ""
-  clr_red "Update Failed " -n; clr_white "$1" -n; clr_red ", exit code was not zero ($3)\n"
+  clr_red "Update Failed " -n; clr_white "$NAME" -n; clr_red ", exit code was not zero ($3)\n"
   clr_brown "Command: " -n; echo $2
   if is not empty "$4"; then
     clr_brown "Output:"
@@ -94,6 +136,60 @@ function _update_failed() {
     clr_brown "No other output"
   fi
   echo ""
+}
+
+function _update_print_available() {
+  clr_cyan "\nAvailable [name]s:"
+  local index=1
+  for FLAG in ${_update_flags[@]}; do
+    NAME=$_update_names[$index]
+    clr_green "\0---$FLAG: " -n;
+    clr_white "$NAME"
+
+    index=$(expr $index + 1)
+  done
+}
+
+function _update_do_update() {
+  index=$1
+  NAME=$_update_names[$index]
+  COMMAND=$_update_commands[$index]
+  CHECK=$_update_checks[$index]
+
+  if is not empty "$CHECK"; then
+    eval "$CHECK"
+    RESULT=$?
+
+    if is not equal $RESULT 0; then
+      _update_skipping $NAME
+      continue
+    fi
+  fi
+
+  _update_updating $NAME
+
+  if is equal 1 $_UPDATE_DEBUG; then
+    clr_cyan "$NAME ($index)"
+    echo "$CHECK"
+    echo "$COMMAND"
+  fi
+
+  local UPDATE_RESULT=0
+  if is equal $QUIET 1; then
+    eval "$COMMAND"
+    UPDATE_RESULT=$?
+  else
+    # Perform the update command
+    UPDATE_OUTPUT=$(eval "$COMMAND" 2>&1)
+    UPDATE_RESULT=$?
+  fi
+
+  # Report Result
+  if is equal 0 $UPDATE_RESULT; then
+    _update_updated $NAME
+  else
+    _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
+  fi
 }
 
 function update() {
@@ -111,52 +207,42 @@ function update() {
 
   if has-flag '--help' $@; then
     print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages"
+    _update_print_available
     return
   fi
 
   has-flag '--quiet' $@
   local QUIET=$?
 
+  has-flag '--all' $@
+  local ALL=$?
+
+  if is equal $ALL 0; then
+    clr_cyan 'Updating Everything'
+    local index=1
+    for NAME in ${_update_names[@]}; do
+      _update_do_update $index
+
+      index=$(expr $index + 1)
+    done
+    return
+  fi
+
+  # If --all is not passed then we check to see if a flag exists with a particular name
+  # check each flag in the available flags:
   local index=1
-  for NAME in ${_update_names[@]}; do
-    COMMAND=$_update_commands[$index]
-    CHECK=$_update_checks[$index]
-
-    if is not empty "$CHECK"; then
-      eval "$CHECK"
-      RESULT=$?
-
-      if is not equal $RESULT 0; then
-        _update_skipping $NAME
-        continue
-      fi
+  local matched=0
+  for FLAG in ${_update_flags[@]}; do
+    if has-flag "--$FLAG" $@; then
+      matched=$(expr $matched + 1)
+      _update_do_update $index
     fi
-
-    _update_updating $NAME
-
-    if is equal 1 $_UPDATE_DEBUG; then
-      clr_cyan "$NAME ($index)"
-      echo "$CHECK"
-      echo "$COMMAND"
-    fi
-
-    if is equal $QUIET 1; then
-      eval "$COMMAND"
-    else
-      # Perform the update command
-      UPDATE_OUTPUT=$(eval "$COMMAND" 2>&1)
-    fi
-    UPDATE_RESULT=$?
-
-    # Report Result
-    if is equal 0 $UPDATE_RESULT; then
-      _update_updated $NAME
-    else
-      _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
-    fi
-
     index=$(expr $index + 1)
   done
+
+  if is equal $matched 0; then
+    clr_brown "Nothing to update, do --help to see what's available."
+  fi
 }
 
 update "$@"
