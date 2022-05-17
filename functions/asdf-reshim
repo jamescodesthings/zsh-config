@@ -1,23 +1,11 @@
 #!/usr/bin/env zsh
 
-shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst')
 
-
-
-# function _asdf-reshim_usage() {
-#   clr_cyan 'Usage:' -n
-#   clr_white " $1 [--help|-h]\n"
-#   clr_cyan 'Runs asdf reshim then fixes shims for the following commands'
-
-#   for shim in $shims; do
-#     echo "- $shim"
-#   done
-# }
-
-reshim_description="Runs asdf reshim and fixes shims to avoid collision"
-
+_reshim_description="Runs asdf reshim and fixes shims to avoid collision"
 _reshim_flags[1]="--help"
 _reshim_flag_descriptions[1]="Prints Help"
+
+shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst')
 
 function _asdf_reshim_fix() {
   if is not existing "$ASDF_DIR/shims"; then
@@ -54,7 +42,7 @@ function asdf-reshim () {
   fi
 
   if has-flag '--help' $@; then
-    print-help $0 "$reshim_description" "_reshim_flags" "_reshim_flag_descriptions"
+    print-help $0 "$_reshim_description" "_reshim_flags" "_reshim_flag_descriptions"
     clr_cyan "\nShims:"
     for shim in $shims; do
       echo -n "- "; clr_green "$shim"
