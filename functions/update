@@ -1,29 +1,163 @@
 #!/usr/bin/env zsh
 
-function _update_brew() {
-  clr_cyan "updating brew"
-  brew update && brew upgrade && brew cask upgrade
-}
+# Make this 1 to debug
+export _UPDATE_DEBUG=0
+# Make this 1 to test
+export _UPDATE_TEST=0
 
-function _update_tldr() {
-  clr_cyan "updating tldr"
-  tldr --update
-}
+_update_description="Updates the system"
+_update_flag_names[1]="--help"
+_update_flag_messages[1]="shows help"
+_update_flag_names[2]="--quiet"
+_update_flag_messages[2]="hide command output"
 
+declare -A _update_names
+declare -A _update_checks
+declare -A _update_commands
+
+# Update commands
+# XCode CLTs
+_update_names[0]="Software Updates"
+_update_checks[0]="is available softwareupdate"
+_update_commands[0]="softwareupdate --all --install --force"
+
+# Homebrew
+_update_names[1]="Homebrew"
+_update_checks[1]="is available brew"
+_update_commands[1]="brew update && brew upgrade && brew cask upgrade"
+
+# ZInit
 function _update_zinit() {
-  clr_cyan "updating zinit"
   # Self update
   zinit self-update
   # Plugin parallel update
   zinit update --parallel
 }
+_update_names[2]="ZInit"
+_update_checks[2]="is available zinit"
+_update_commands[2]="_update_zinit"
+
+# xcodes
+_update_names[3]="xcodes"
+_update_checks[3]="is available xcodes"
+_update_commands[3]="xcodes update"
+
+# TLDR
+_update_names[4]="TLDR"
+_update_checks[4]="is available tldr"
+_update_commands[4]="tldr --update"
+
+# Testing
+if is equal $_UPDATE_TEST 1; then
+  _update_names=( )
+  _update_commands=( )
+  _update_checks=( )
+
+  function _update_test_p() {
+    echo "This command passes"
+    return 0
+  }
+  function _update_test_f() {
+    echo "This command fails"
+    return 127
+  }
+    function _update_test_f2() {
+    return 127
+  }
+  _update_names[0]="Test Passed"
+  _update_commands[0]="_update_test_p"
+  _update_names[1]="Test Failed"
+  _update_commands[1]="_update_test_f"
+  _update_names[2]="Test Failed No Output"
+  _update_commands[2]="_update_test_f2"
+fi
+# End of testing
+
+function _update_updating() {
+  clr_green "Updating " -n
+  echo $1
+}
+function _update_updated() {
+  clr_green "Updated " -n
+  echo $1
+}
+function _update_skipping() {
+  clr_brown "Skipping " -n
+  clr_white $1 -n
+  clr_brown ", check failed"
+}
+# _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
+function _update_failed() {
+  echo ""
+  clr_red "Update Failed " -n; clr_white "$1" -n; clr_red ", exit code was not zero ($3)\n"
+  clr_brown "Command: " -n; echo $2
+  if is not empty "$4"; then
+    clr_brown "Output:"
+    echo "$4"
+  else
+    clr_brown "No other output"
+  fi
+  echo ""
+}
 
 function update() {
-  _update_brew
-  _update_tldr
-  _update_zinit
-  # _update_python
-  # _update_node
+  local DEPS=(
+    is
+    clr_red
+    clr_green
+    clr_brown
+    clr_white
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if has-flag '--help' $@; then
+    print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages"
+    return
+  fi
+
+  has-flag '--quiet' $@
+  local QUIET=$?
+
+  for key NAME in ${(kv)_update_names}; do
+    COMMAND=$_update_commands[$key]
+    CHECK=$_update_checks[$key]
+
+    if is not empty "$CHECK"; then
+      eval "$CHECK"
+      RESULT=$?
+
+      if is not equal $RESULT 0; then
+        _update_skipping $NAME
+        continue
+      fi
+    fi
+
+    _update_updating $NAME
+
+    if is equal 1 $_UPDATE_DEBUG; then
+      clr_cyan "$NAME ($key)"
+      echo "$CHECK"
+      echo "$COMMAND"
+    fi
+
+    if is equal $QUIET 1; then
+      eval "$COMMAND"
+    else
+      # Perform the update command
+      UPDATE_OUTPUT=$(eval "$COMMAND" 2>&1)
+    fi
+    UPDATE_RESULT=$?
+
+    # Report Result
+    if is equal 0 $UPDATE_RESULT; then
+      _update_updated $NAME
+    else
+      _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
+    fi
+  done
 }
 
 update "$@"

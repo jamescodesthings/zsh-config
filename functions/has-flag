@@ -1,0 +1,35 @@
+#!/usr/bin/env zsh
+
+# Tests for flags in $@
+# Usage: has_flag '--flag' $@
+# Returns 1 if the flag is there
+# Returns 0 otherwise
+# Example Usage:
+#
+# if has-flag '--help' $@; then
+#   echo 'The flag is set'
+# fi
+#
+# Storing for later:
+#
+# has-flag '--help' $@
+# local HELP=$?
+# if is equal $QUIET 0; then
+#   echo 'The flag --quiet was set'
+# else
+#   echo 'The flag --quiet was not set'
+# fi
+function has-flag() {
+  TEST=$1
+  REST="${@:2}"
+
+  for A in $(echo $REST); do
+    if is equal "$TEST" "$A"; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+has-flag "$@"
