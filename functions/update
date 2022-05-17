@@ -11,20 +11,16 @@ _update_flag_messages[1]="shows help"
 _update_flag_names[2]="--quiet"
 _update_flag_messages[2]="hide command output"
 
-declare -A _update_names
-declare -A _update_checks
-declare -A _update_commands
-
 # Update commands
 # XCode CLTs
-_update_names[0]="Software Updates"
-_update_checks[0]="is available softwareupdate"
-_update_commands[0]="softwareupdate --all --install --force"
+_update_names[1]="Software Updates"
+_update_checks[1]="is available softwareupdate"
+_update_commands[1]="softwareupdate --all --install --force"
 
 # Homebrew
-_update_names[1]="Homebrew"
-_update_checks[1]="is available brew"
-_update_commands[1]="brew update && brew upgrade && brew cask upgrade"
+_update_names[2]="Homebrew"
+_update_checks[2]="is available brew"
+_update_commands[2]="brew update && brew upgrade && brew cask upgrade"
 
 # ZInit
 function _update_zinit() {
@@ -33,19 +29,19 @@ function _update_zinit() {
   # Plugin parallel update
   zinit update --parallel
 }
-_update_names[2]="ZInit"
-_update_checks[2]="is available zinit"
-_update_commands[2]="_update_zinit"
+_update_names[3]="ZInit"
+_update_checks[3]="is available zinit"
+_update_commands[3]="_update_zinit"
 
 # xcodes
-_update_names[3]="xcodes"
-_update_checks[3]="is available xcodes"
-_update_commands[3]="xcodes update"
+_update_names[4]="xcodes"
+_update_checks[4]="is available xcodes"
+_update_commands[4]="xcodes update"
 
 # TLDR
-_update_names[4]="TLDR"
-_update_checks[4]="is available tldr"
-_update_commands[4]="tldr --update"
+_update_names[5]="TLDR"
+_update_checks[5]="is available tldr"
+_update_commands[5]="tldr --update"
 
 # Testing
 if is equal $_UPDATE_TEST 1; then
@@ -121,9 +117,10 @@ function update() {
   has-flag '--quiet' $@
   local QUIET=$?
 
-  for key NAME in ${(kv)_update_names}; do
-    COMMAND=$_update_commands[$key]
-    CHECK=$_update_checks[$key]
+  local index=1
+  for NAME in ${_update_names[@]}; do
+    COMMAND=$_update_commands[$index]
+    CHECK=$_update_checks[$index]
 
     if is not empty "$CHECK"; then
       eval "$CHECK"
@@ -138,7 +135,7 @@ function update() {
     _update_updating $NAME
 
     if is equal 1 $_UPDATE_DEBUG; then
-      clr_cyan "$NAME ($key)"
+      clr_cyan "$NAME ($index)"
       echo "$CHECK"
       echo "$COMMAND"
     fi
@@ -157,6 +154,8 @@ function update() {
     else
       _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
     fi
+
+    index=$(expr $index + 1)
   done
 }
 
