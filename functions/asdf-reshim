@@ -33,7 +33,6 @@ function _asdf_reshim_fix() {
       rm -f "$SHIM"
       clr_green "Fixed " -n; clr_white "$without_nl"
     else
-      clr_cyan "$without_nl skipped, does not exist"
       clr_brown "Skipped " -n; clr_white "$without_nl" -n; clr_brown ", does not exist"
     fi
   done
