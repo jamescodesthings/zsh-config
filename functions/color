@@ -1,0 +1,66 @@
+#!/usr/bin/env zsh
+
+_color_description="Describes how to use zpm-zsh/colors"
+_color_flag_names[1]="--help"
+_color_flag_messages[1]="shows help"
+_color_flag_names[2]="--test"
+_color_flag_messages[2]="tests using the inbuilt test script"
+
+function _color_test() {
+  PLUGIN_DIR=$(zinit cd "zpm-zsh/colors" >& /dev/null && pwd)
+  echo "\n$c[dim]Example:\n$c[reset]"
+  source $PLUGIN_DIR/test/test.zsh
+  echo "$c[reset]"
+}
+
+function _color_usage() {
+  PLUGIN_DIR=$(zinit cd "zpm-zsh/colors" >& /dev/null && pwd)
+  echo "\n$c[dim]Using Color:\n$c[reset]"
+  cat $PLUGIN_DIR/test/test.zsh
+}
+
+function _color_options() {
+  COLORS=$(echo ${(k)c} | tr ' ' '\n' | uniq | sort)
+  AS_ARRAY=("${(f)COLORS}")
+  UPDATED_COLORS=()
+  for color in $AS_ARRAY; do
+    if is substring "raw" "$color"; then
+      continue
+    fi
+
+    if is substring "bg" "$color"; then
+      UPDATED_COLORS+="$c[reset]$c[$color]$c[base3]$color$c[reset]"
+      continue
+    fi
+
+    UPDATED_COLORS+="$c[reset]$c[$color]$color$c[reset]"
+  done
+
+  echo $UPDATED_COLORS | tr ' ' '\n' | column
+}
+
+# Prints information about using zpm-zsh/colors
+function color() {
+  local DEPS=(
+    is
+    zinit
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if has-flag '--help' $@ || is empty "$1"; then
+    print-help "$0" "$_color_description" "_color_flag_names" "_color_flag_messages"
+    _color_usage
+    _color_test
+    _color_options
+    return
+  fi
+
+  if has-flag '--test' $@; then
+    _color_test
+  fi
+}
+
+color "$@"

@@ -33,6 +33,10 @@ if is not file ${HOME}/.rm_recycle; then
   touch ${HOME}/.rm_recycle
 fi
 
+# 256 Colors
+zinit ice wait"0a" lucid
+zinit $LOAD_METHOD chrissicool/zsh-256color
+
 # Colored Man pages
 zinit ice wait"0a" lucid light-mode trigger-load'!man'
 zinit $LOAD_METHOD ael-code/zsh-colored-man-pages
