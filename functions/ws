@@ -1,48 +1,38 @@
 #!/usr/bin/env zsh
 
-# alias wso='open -na "WebStorm.app" --args "$(pwd)"'
+WS_LOCATION="/Applications/WebStorm.app"
 
-# ls -1 | grep 'WebStorm'
+_ws_description="Opens Webstorm given the path provided"
+_ws_flag_names[1]="--help"
+_ws_flag_messages[1]="shows help"
 
 function _ws_stable() {
-  stable_app=$(cd /Applications && ls -1 | rg -i 'webstorm.app' --color never)
-  if is not equal "" "$stable_app"; then
-    open -na "$stable_app" --args "$@"
+  if is existing /Applications/WebStorm.app; then
+    open -na "$WS_LOCATION" --args "$@"
     return 0;
   fi
 
-  clr_red 'Could not find webstorm, check it is installed'
+  clr_red "Could not find webstorm at '" -n; clr_white "$WS_LOCATION" -n; clr_red -n ", check it is installed"
   return 1;
-}
-
-function _ws_eap() {
-  eap_app=$(cd /Applications && ls -1 | rg -i 'webstorm.*eap.*$' --color never)
-
-  if is not equal "" "$eap_app"; then
-    open -na "$eap_app" --args "$@"
-    return 0;
-  fi
-
-  # clr_red 'Could not find webstorm eap, falling back to stable'
-  _ws_stable "$@"
 }
 
 # Webstorm Open Here
 function ws () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
     clr_red
   )
 
-  if is equal "$1" "--stable"; then
-    _ws_stable "${@:2}"
-    return 0;
+  if ! deps $DEPS; then
+    return 1
   fi
 
-  _ws_eap "$@"
+  if has-flag '--help' $@; then
+    print-help "$0" "$_ws_description" "_ws_flag_names" "_ws_flag_messages" "path" "The path to open"
+    return
+  fi
+
+  _ws_stable "$@"
 }
 
 ws "$@"

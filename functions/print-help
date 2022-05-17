@@ -8,13 +8,19 @@
 # _update_flag_names[1]="--help"
 # _update_flag_messages[1]="shows help"
 #
-# print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages"
+# print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages" "Mandatory Parameter"
 function print-help() {
+  COMMAND="$1"
   DESCRIPTION="$2"
+  FLAG_NAMES="$3"
+  FLAG_DESCRIPTIONS="$4"
+  MANDATORY_PARAMETER="$5"
+  MANDATORY_PARAMETER_DESCRIPTION="$6"
 
   local DEPS=(
     is
     clr_white
+    clr_green
     clr_cyan
   )
 
@@ -22,13 +28,19 @@ function print-help() {
     return
   fi
 
-  if is empty "$1"; then
+  if is empty "$COMMAND"; then
     return
   fi
 
-  clr_green "$DESCRIPTION\n"
+  clr_cyan "\n$DESCRIPTION\n"
+
   clr_cyan 'Usage:' -n
-  clr_white " $1 [flags]\n"
+  if is not empty "$MANDATORY_PARAMETER"; then
+    clr_white " $1 [flags] $MANDATORY_PARAMETER\n"
+    print-parameter $MANDATORY_PARAMETER $MANDATORY_PARAMETER_DESCRIPTION
+  else
+    clr_white " $1 [flags]\n"
+  fi
 
   print-flags "$3" "$4"
 }

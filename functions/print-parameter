@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+
+
+function print-parameter() {
+  PARAM="$1"
+  PARAM_DESC="$2"
+
+  clr_cyan 'Parameters:'
+  clr_green "$PARAM " -n; clr_white "\0-- $PARAM_DESC\n"
+}
+
+print-parameter "$@"
