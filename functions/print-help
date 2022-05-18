@@ -8,7 +8,10 @@
 # _update_flag_names[1]="--help"
 # _update_flag_messages[1]="shows help"
 #
-# print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages" "Mandatory Parameter" "Mandatory Parameter Description"
+# if is empty "$1" || has-flag '--help' $@; then
+#    print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages" "Mandatory Parameter" "Mandatory Parameter Description"
+#    return 0
+# fi
 function print-help() {
   COMMAND="$1"
   DESCRIPTION="$2"
