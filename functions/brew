@@ -11,16 +11,15 @@ function brew(){
 
   ORIGINAL_BREW="$ARM_BREW"
 
-  if is not existing "$X86_BREW"; then
-    clr_red "Could not find original brew at $ORIGINAL_BREW";
+  if is not existing "$ARM_BREW"; then
+    echo "$c[red]Could not find original brew at$c[reset] $ARM_BREW";
     unfunction "brew" # Just to be safe
 
     return 1;
   fi
 
-
   if is not existing "$X86_BREW"; then
-    clr_red "Could not find x86 brew at $X86_BREW";
+    echo "$c[red]Could not find original brew at$c[reset] $X86_BREW";
     unfunction "brew" # Just to be safe
 
     return 1;
@@ -41,11 +40,11 @@ function brew(){
     brew_command="$2";
     # echo "$ORIGINAL_BREW $brew_command --cask ${@:3}"
     $ORIGINAL_BREW $brew_command --cask ${@:3}
-    return 0;
+    return $?;
   fi
 
   $ORIGINAL_BREW "$@"
-  return 0;
+  return $?;
 }
 
 brew "$@"

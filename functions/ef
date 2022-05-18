@@ -5,30 +5,32 @@ DATA_PROJ_PATH="/Users/jamesmacmillan/projects/engineius/web-app/src/BBWT.Data.M
 STARTUP_PROJ_PATH="/Users/jamesmacmillan/projects/engineius/web-app/src/BBWT.Web"
 STORE_PATH="/Users/jamesmacmillan/projects/engineius/.migrations"
 
-function _ef_usage() {
-  clr_cyan 'Usage:' -n
-  clr_white " $1 command\n"
-
-  clr_cyan 'Commands:'
-  clr_green 'store' -n; clr_white ' - Stores the names of the last 2 migrations for use in script'
-  clr_green 'reload' -n; clr_white " - Reloads stored migration names from $STORE_PATH"
-  clr_green 'print-stored' -n; clr_white ' - Prints the stored migration names'
-  clr_green 'script-migration' -n; clr_white ' - Scripts the previous migration to the last migration'
-  clr_green 'script-revert' -n; clr_white ' - Scripts the last migration revert to the previous migration'
-}
+_ef_description="Entity Framework wrapper for the dotnet ef command that adds on boilerplate options"
+_ef_flag_names[1]="--help"
+_ef_flag_messages[1]="shows help"
+_ef_flag_names[2]="--store"
+_ef_flag_messages[2]="stores the names of the last 2 migrations for use in script"
+_ef_flag_names[3]="--reload"
+_ef_flag_messages[3]="reloads stored migration names from $STORE_PATH"
+_ef_flag_names[4]="--print"
+_ef_flag_messages[4]="prints the stored migration names"
+_ef_flag_names[5]="--script-migrate"
+_ef_flag_messages[5]="scripts the migration between the last two migrations"
+_ef_flag_names[6]="--script-revert"
+_ef_flag_messages[6]="scripts the revert between the last two migrations"
 
 function _ef_print_stored() {
   if is empty "$EF_LAST"; then
-    clr_red "EF_LAST not stored yet, run ef store first."
+    echo "$c[red]EF_LAST not stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
     return 1
   fi
   if is empty "$EF_PREV"; then
-    clr_red "EF_PREV not stored yet, run ef store first."
+    echo "$c[red]EF_PREV not stored yet,$c[reset] $c[green]ef --store$c[reset] first."
     return 1
   fi
 
-  clr_cyan "Last Migration (-1): " -n; echo "$EF_LAST"
-  clr_cyan "Previous Migration (-2): " -n; echo "$EF_PREV"
+  echo "$c[dim]Last Migration (-1):$c[reset] $EF_LAST"
+  echo "$c[dim]Previous Migration (-2):$c[reset] $EF_PREV"
 }
 
 function _ef_store() {
@@ -40,7 +42,7 @@ function _ef_store() {
 
   _ef_save_store
 
-  clr_cyan "Stored Last 2 migrations"
+  echo "$c[green]Stored Last 2 migrations$c[reset]"
   _ef_print_stored
 }
 
@@ -50,67 +52,65 @@ function _ef_save_store() {
 }
 
 function _ef_reload_store() {
-
   if is not existing "$STORE_PATH"; then
-    clr_red "Migrations have not been stored yet, run ef store."
+    echo "$c[red]Migrations have not been stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
     return 1
   fi
   RAW_RELOAD=$(cat $STORE_PATH)
   if is empty "$RAW_RELOAD"; then
-    clr_red "Migrations have not been stored yet, run ef store."
+    echo "$c[red]Migrations have not been stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
     return 1
   fi
 
   export EF_LAST=$(echo $RAW_RELOAD | tail -1)
   export EF_PREV=$(echo $RAW_RELOAD | tail -2 | head -1)
 
-  clr_cyan "Restored:"
+  echo "$c[green]Restored:$c[reset]"
   _ef_print_stored
 }
 
 function _ef_script_migration(){
   if is empty "$EF_LAST"; then
-    clr_red "EF_LAST not stored yet, run ef store first."
+    echo "$c[red]EF_LAST not stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
     return 1
   fi
   if is empty "$EF_PREV"; then
-    clr_red "EF_PREV not stored yet, run ef store first."
+    echo "$c[red]EF_PREV not stored yet,$c[reset] $c[green]ef --store$c[reset] first."
     return 1
   fi
 
-  clr_cyan "Scripting migration " -n; echo -n "$EF_PREV"; clr_green " -> " -n; echo "$EF_LAST"
+  echo "$c[cyan]Scripting migration $c[reset]$EF_PREV $c[magenta]->$c[reset] $EF_LAST"
 
   _ef_default migrations script $EF_PREV $EF_LAST -o "migrate-last.sql"
 }
 
 function _ef_script_revert(){
   if is empty "$EF_LAST"; then
-    clr_red "EF_LAST not stored yet, run ef store first."
+    echo "$c[red]EF_LAST not stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
     return 1
   fi
   if is empty "$EF_PREV"; then
-    clr_red "EF_PREV not stored yet, run ef store first."
+    echo "$c[red]EF_PREV not stored yet,$c[reset] $c[green]ef --store$c[reset] first."
     return 1
   fi
 
-  clr_cyan "Scripting revert " -n; echo -n "$EF_LAST"; clr_green " -> " -n; echo "$EF_PREV"
+  echo "$c[cyan]Scripting revert $c[reset]$EF_LAST $c[magenta]->$c[reset] $EF_PREv"
 
   _ef_default migrations script $EF_LAST $EF_PREV -o "revert-last.sql"
 }
 
 function _ef_default() {
-  clr_cyan "Running: " -n; echo "dotnet ef $@"
+  echo "$c[dim]Running:$c[reset] dotnet ef $@"
 
   CURRENT_DIR=$(pwd)
   RELATIVE_DATA_PATH=$(realpath --relative-to=$CURRENT_DIR $DATA_PROJ_PATH)
   RELATIVE_STARTUP_PATH=$(realpath --relative-to=$CURRENT_DIR $STARTUP_PROJ_PATH)
 
   EXTRAS="-p $RELATIVE_DATA_PATH -s $RELATIVE_STARTUP_PATH -c DataContext"
-  clr_cyan "With Options: " -n; echo "$EXTRAS"
+  echo "$c[dim]With Options:$c[reset] $EXTRAS"
 
 
   FINAL_COMMAND="dotnet ef $@ $EXTRAS"
-  # echo "Final Command: $FINAL_COMMAND"
   eval "$FINAL_COMMAND"
 }
 
@@ -119,10 +119,6 @@ function _ef_default() {
 function ef () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     dotnet
   )
 
@@ -130,31 +126,31 @@ function ef () {
     return
   fi
 
-  if is empty "$1"; then
-    _ef_usage "$0"
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help "$0" "$_ef_description" "_ef_flag_names" "_ef_flag_messages"
     return 0
   fi
 
-  if is equal "store" "$1"; then
+  if has-flag "--store" $@; then
     _ef_store
     return $?
   fi
-  if is equal "reload" "$1"; then
+  if has-flag "--reload" $@; then
     _ef_reload_store
     return $?
   fi
 
-  if is equal "print-stored" "$1"; then
+  if has-flag "--print" $@; then
     _ef_print_stored
     return $?
   fi
 
-  if is equal "script-migration" "$1"; then
+  if has-flag "--script-migrate" $@; then
     _ef_script_migration
     return $?
   fi
 
-  if is equal "script-revert" "$1"; then
+  if has-flag "--script-revert" $@; then
     _ef_script_revert
     return $?
   fi

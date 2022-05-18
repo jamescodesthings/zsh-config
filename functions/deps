@@ -12,12 +12,7 @@ declare -A steps
 steps[aws-mfa]="pip install aws-mfa"
 steps[asdf]="brew install asdf"
 steps[circleci]="brew install circleci"
-#steps[clr]="source ${HOME}/.custom/bash_colors.zsh"
-#steps[clr_cyan]=${steps[clr]}
-#steps[clr_missing]=${steps[clr]}
-#steps[clr_red]=${steps[clr]}
-#steps[clr_white]=${steps[clr]}
-steps[confirm]="source ${HOME}/.custom/functions/confirm"
+steps[confirm]="source $CUSTOM_DIR/functions/confirm"
 steps[docker]="brew cask install docker"
 steps[exa]="brew install exa"
 steps[git]="brew install git"
@@ -26,7 +21,7 @@ steps[grep]="brew install grep"
 steps[gron]="brew install gron"
 steps[gzip]="brew install gzip"
 steps[http]="brew install httpie"
-steps[is]="source ${HOME}/.custom/is.zsh"
+steps[is]="source $CUSTOM_DIR/is.zsh"
 steps[jq]="brew install jq"
 steps[lazygit]="brew install lazygit"
 steps[mysql]="brew install mysql-client && brew link mysql-client"
@@ -40,27 +35,25 @@ steps[zinit]="install-zinit"
 steps[xcrun]="install xcode command line tools (xcode-select --install)"
 
 
+function deps-command() {
+  local inst="${steps[$1]}"
+  if is not empty $inst; then
+    echo "$c[dim]Install:$c[reset] $inst"
+  fi
+}
+
 function deps() {
-  # todo: check for deps' deps to make sure they're cool
   local missing=0
 
   for dependency in "$@"; do
     if is not available "$dependency"; then
-      clr_red 'Missing: ' -n
-      clr_white "${dependency}"
+      echo "$c[red]Missing dependency:$c[reset] $dependency"
       deps-command "${dependency}"
       missing=1
     fi
   done
 
   return ${missing}
-}
-
-function deps-command() {
-  if is not empty ${steps[$1]}; then
-    clr_cyan 'To Install: ' -n
-    clr_white "${steps[$1]}"
-  fi
 }
 
 deps "$@"
