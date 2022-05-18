@@ -1,23 +1,22 @@
 #!/usr/bin/env zsh
 
-function git-prune-local_usage() {
-  clr_cyan 'Usage:' -n
-  clr_white " $1 command\n"
-
-  clr_cyan 'Commands:'
-  clr_green 'list' -n
-  clr_white ' - Lists the branches to be deleted'
-  clr_green 'delete' -n
-  clr_white ' - Actually deletes the buggers (be very careful)'
-}
+_gpl_description="Prunes Local Branches"
+_gpl_positional=""
+_gpl_positional_desc=""
+_gpl_flag_names[1]="--help"
+_gpl_flag_messages[1]="shows help"
+_gpl_flag_names[2]="--list"
+_gpl_flag_messages[2]="lists branches to delete"
+_gpl_flag_names[3]="--prune"
+_gpl_flag_messages[3]="runs the prune"
 
 function git-prune-local_delete() {
-  clr_red 'The following branches will be deleted'
+  echo "$c[cyan]The following branches will be deleted$c[reset]"
 
   git-prune-local_list
 
   if confirm; then
-    clr_green 'Cool, deleting'
+    echo "$c[green]Deleting stale branches$c[reset]"
     git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
   fi
 }
@@ -42,19 +41,25 @@ function git-prune-local() {
     return
   fi
 
-  if is empty "$1"; then
-    git-prune-local_usage $0
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_gpl_description" \
+      "_gpl_flag_names" \
+      "_gpl_flag_messages" \
+      "$_gpl_positional" \
+      "$_gpl_positional_desc"
     return 0
   fi
 
-  if is equal "$1" "list"; then
+  if has-flag '--list' $@; then
     git-prune-local_list
-    return 0
+    return $?
   fi
 
-  if is equal "$1" "delete"; then
+  if has-flag '--delete' $@; then
     git-prune-local_delete
-    return 0
+    return $?
   fi
 }
 

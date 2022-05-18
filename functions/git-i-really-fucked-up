@@ -3,8 +3,6 @@
 function git-i-really-fucked-up() {
   local DEPS=(
     confirm
-    clr_white
-    clr_cyan
     git
   )
 
@@ -13,8 +11,7 @@ function git-i-really-fucked-up() {
   fi
 
   local BRANCH="origin/$(git-branch)"
-  clr_white "Reset to " -n;
-  clr_cyan "$BRANCH"
+  echo "$c[green]Reset to$c[reset] $BRANCH"
 
   if confirm; then
     git reset --hard $BRANCH

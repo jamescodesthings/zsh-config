@@ -5,8 +5,6 @@ function gcom () {
   local DEPS=(
     is
     git
-    clr_red
-    clr_white
   )
 
   if ! deps $DEPS; then
@@ -15,8 +13,8 @@ function gcom () {
 
   MASTER_BRANCH=$(git config gitflow.branch.master)
   if is empty "$MASTER_BRANCH"; then
-    clr_red "Could not get master branch"
-    clr_white "Make sure you are in a git repo and then run: git flow init"
+    echo "$c[red]Could not get master branch$c[reset]"
+        echo "$c[dim]Make sure you are in a git repo and then run:$c[reset] git flow init"
     return 1
   fi
 
