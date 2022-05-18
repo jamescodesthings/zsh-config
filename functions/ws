@@ -12,7 +12,7 @@ function _ws_stable() {
     return 0;
   fi
 
-  clr_red "Could not find webstorm at '" -n; clr_white "$WS_LOCATION" -n; clr_red -n ", check it is installed"
+  echo "$c[red]Could not find webstorm at$c[reset] $WS_LOCATION$c[red], check it is installed.$c[reset]"
   return 1;
 }
 
@@ -20,7 +20,6 @@ function _ws_stable() {
 function ws () {
   local DEPS=(
     is
-    clr_red
   )
 
   if ! deps $DEPS; then

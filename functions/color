@@ -8,15 +8,15 @@ _color_flag_messages[2]="tests using the inbuilt test script"
 
 function _color_test() {
   PLUGIN_DIR=$(zinit cd "zpm-zsh/colors" >& /dev/null && pwd)
-  echo "\n$c[dim]Example:\n$c[reset]"
+  echo "\n$c[dim]Test:$c[reset]"
   source $PLUGIN_DIR/test/test.zsh
   echo "$c[reset]"
 }
 
 function _color_usage() {
   PLUGIN_DIR=$(zinit cd "zpm-zsh/colors" >& /dev/null && pwd)
-  echo "\n$c[dim]Using Color:\n$c[reset]"
-  cat $PLUGIN_DIR/test/test.zsh
+  echo "\n$c[dim]Using Color:$c[reset]"
+  echo 'echo "$c[color]Some colored text$c[reset]"'
 }
 
 function _color_options() {
@@ -36,6 +36,8 @@ function _color_options() {
     UPDATED_COLORS+="$c[reset]$c[$color]$color$c[reset]"
   done
 
+
+  echo "\n$c[dim]Available Colors:$c[reset]"
   echo $UPDATED_COLORS | tr ' ' '\n' | column
 }
 
@@ -53,7 +55,7 @@ function color() {
   if has-flag '--help' $@ || is empty "$1"; then
     print-help "$0" "$_color_description" "_color_flag_names" "_color_flag_messages"
     _color_usage
-    _color_test
+#    _color_test
     _color_options
     return
   fi

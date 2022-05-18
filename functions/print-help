@@ -19,9 +19,6 @@ function print-help() {
 
   local DEPS=(
     is
-    clr_white
-    clr_green
-    clr_cyan
   )
 
   if ! deps $DEPS; then
@@ -32,14 +29,13 @@ function print-help() {
     return
   fi
 
-  clr_cyan "\n$DESCRIPTION\n"
+  echo "\n$COMMAND"
 
-  clr_cyan 'Usage:' -n
+  echo "\n$c[dim]Description:$c[reset] $DESCRIPTION\n"
+
+  echo "$c[dim]Usage:$c[reset] $1 $c[cyan][flags]$c[reset] $c[magenta]$MANDATORY_PARAMETER$c[reset]\n"
   if is not empty "$MANDATORY_PARAMETER"; then
-    clr_white " $1 [flags] $MANDATORY_PARAMETER\n"
     print-parameter $MANDATORY_PARAMETER $MANDATORY_PARAMETER_DESCRIPTION
-  else
-    clr_white " $1 [flags]\n"
   fi
 
   print-flags "$3" "$4"

@@ -3,10 +3,6 @@
 function print-flags() {
   local DEPS=(
     is
-    clr_red
-    clr_green
-    clr_white
-    clr_cyan
   )
 
   if ! deps $DEPS; then
@@ -19,14 +15,12 @@ function print-flags() {
   typeset -a names=(${(P)${1}})
   typeset -a messages=(${(P)${2}})
 
-  clr_cyan 'Flags:'
+  echo "$c[dim]Flags:$c[reset]"
 
   local index=1
   for n in $names
   do
-    clr_green "\0-$names[$index]: " -n;
-    clr_white "$messages[$index]"
-
+    echo "$c[cyan]$names[$index]$c[reset]: $messages[$index]"
     index=$(expr $index + 1)
   done
 }
