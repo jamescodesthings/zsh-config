@@ -4,14 +4,26 @@
 # Provided an array of flags and the command name
 # Example Usage:
 #
-# _update_description="This is the command description"
-# _update_flag_names[1]="--help"
-# _update_flag_messages[1]="shows help"
+# Declarations:
 #
-# if is empty "$1" || has-flag '--help' $@; then
-#    print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages" "Mandatory Parameter" "Mandatory Parameter Description"
-#    return 0
-# fi
+#_update_description="This is the command description"
+#_update_positional="positional-param"
+#_update_positional_desc="This is the positional parameter description"
+#_update_flag_names[1]="--help"
+#_update_flag_messages[1]="shows help"
+#
+# Invocation:
+#
+#if is empty "$1" || has-flag '--help' $@; then
+#  print-help \
+#    "$0" \
+#    "$_update_description" \
+#    "_update_flag_names" \
+#    "_update_flag_messages" \
+#    "$_update_positional" \
+#    "$_update_positional_desc"
+#  return 0
+#fi
 function print-help() {
   COMMAND="$1"
   DESCRIPTION="$2"

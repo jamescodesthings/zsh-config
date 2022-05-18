@@ -1,5 +1,19 @@
 #!/usr/bin/env zsh
 
+_gcmm_description="git commit -m wrapper with support for adding branch and project tags"
+_gcmm_positional="message"
+_gcmm_positional_desc="The commit message"
+_gcmm_flag_names[1]="--help"
+_gcmm_flag_messages[1]="shows help"
+_gcmm_flag_names[2]="--set-project [project]"
+_gcmm_flag_messages[2]="sets the branch's project to [project]"
+_gcmm_flag_names[3]="--get-project"
+_gcmm_flag_messages[3]="gets the branch's project"
+_gcmm_flag_names[4]="--unset-project"
+_gcmm_flag_messages[4]="unsets the branch's project"
+_gcmm_flag_names[5]="--show"
+_gcmm_flag_messages[5]="Shows the full tag that will be prepended to the [messsage]"
+
 function _gcmm_usage() {
   clr_cyan 'Usage:' -n
   clr_white " $1 command\n"
@@ -33,8 +47,14 @@ function gcmm () {
     return
   fi
 
-  if is empty "$1"; then
-    _gcmm_usage "$0"
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_gcmm_description" \
+      "_gcmm_flag_names" \
+      "_gcmm_flag_messages" \
+      "$_gcmm_positional" \
+      "$_gcmm_positional_desc"
     return 0
   fi
 
