@@ -1,41 +1,25 @@
 #!/usr/bin/env zsh
 
-function _auto-notify-ignore_usage() {
-  clr_cyan 'Usage:' -n
-  clr_white " $1 [command]\n"
+_auto_notify_description="Adds a shell command to the list of commands ignored by auto-notify"
+_auto_notify_flag_names[1]="--help"
+_auto_notify_flag_messages[1]="shows help"
+_auto_notify_flag_names[2]="--list"
+_auto_notify_flag_messages[2]="lists currently ignored commands"
+_auto_notify_flag_names[3]="--add [command]"
+_auto_notify_flag_messages[3]="adds [command] to ignored commands"
 
-  clr_cyan 'Commands:'
-  clr_green 'list' -n
-  clr_white ' - Lists ignored commands'
-  clr_green 'add' -n
-  clr_white ' [command] - Adds [command] to the ignored list'
-}
 
 function _auto-notify-ignore_add() {
-  command=$2
-
-  if is empty "$AUTO_NOTIFY_IGNORE_FILE"; then
-    clr_red "Could not find an ignore file"
-    clr_white "Create a .zsh script and export it's path as AUTO_NOTIFY_IGNORE_FILE"
-    clr_white "e.g. touch ~/.auto-notify-ignore.zsh"
-    clr_white "     echo 'export AUTO_NOTIFY_IGNORE_FILE=\"~/.auto-notify-ignore.zsh\"' >> .zshrc"
-    return 1;
-  fi
+  command=$1
 
   if is not existing "$AUTO_NOTIFY_IGNORE_FILE"; then
-    clr_red "$AUTO_NOTIFY_IGNORE_FILE does not exist, please create it"
-    return 1;
-  fi
-
-  if is empty "$command"; then
-    clr_red "No command to add to ignore file"
-    _auto-notify-ignore_usage $1
-    return 1
+    echo "$AUTO_NOTIFY_IGNORE_FILE $c[red] does not exist, please create it.$c[reset]"
+    return
   fi
 
   echo "AUTO_NOTIFY_IGNORE+=(\"$command\")" >> $AUTO_NOTIFY_IGNORE_FILE
   source $AUTO_NOTIFY_IGNORE_FILE
-  clr_green "Added $command to $AUTO_NOTIFY_IGNORE_FILE"
+  echo "Added $c[magenta]$command$c[reset] to $c[dim]$AUTO_NOTIFY_IGNORE_FILE$c[reset]"
 }
 
 # Lists and adds to AUTO_NOTIFY_IGNORE
@@ -43,10 +27,6 @@ function _auto-notify-ignore_add() {
 function auto-notify-ignore () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     tr
     sort
   )
@@ -55,17 +35,28 @@ function auto-notify-ignore () {
     return
   fi
 
-  if is empty "$1"; then
-    _auto-notify-ignore_usage "$0"
-    return 0
+  if is empty "$1" || has-flag "--help" $@; then
+    print-help \
+      "$0" \
+      "$_auto_notify_description" \
+      "_auto_notify_flag_names" \
+      "_auto_notify_flag_messages"
+    return
   fi
 
-  if is equal "$1" "list"; then
+  if has-flag '--add' $@; then
+    VALUE=$(flag-value '--add' $@)
+    if is empty "$VALUE"; then
+      echo "$c[yellow]No command passed to --add, see --help for usage.$c[reset]"
+      return 1
+    fi
+
+    _auto-notify-ignore_add "$VALUE"
+  fi
+
+  if has-flag '--list' $@; then
+    echo "$c[dim]Commands currently ignored:$c[reset]"
     echo $AUTO_NOTIFY_IGNORE | tr ' ' '\n' | sort | uniq
-  fi
-
-  if is equal "$1" "add"; then
-    _auto-notify-ignore_add $1 $2
   fi
 }
 

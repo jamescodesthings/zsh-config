@@ -12,11 +12,11 @@ declare -A steps
 steps[aws-mfa]="pip install aws-mfa"
 steps[asdf]="brew install asdf"
 steps[circleci]="brew install circleci"
-steps[clr]="source ${HOME}/.custom/bash_colors.zsh"
-steps[clr_cyan]=${steps[clr]}
-steps[clr_missing]=${steps[clr]}
-steps[clr_red]=${steps[clr]}
-steps[clr_white]=${steps[clr]}
+#steps[clr]="source ${HOME}/.custom/bash_colors.zsh"
+#steps[clr_cyan]=${steps[clr]}
+#steps[clr_missing]=${steps[clr]}
+#steps[clr_red]=${steps[clr]}
+#steps[clr_white]=${steps[clr]}
 steps[confirm]="source ${HOME}/.custom/functions/confirm"
 steps[docker]="brew cask install docker"
 steps[exa]="brew install exa"

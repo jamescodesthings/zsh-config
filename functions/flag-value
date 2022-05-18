@@ -1,0 +1,36 @@
+#!/usr/bin/env zsh
+
+# Gets the value passed to a flag
+# Usage: VALUE=$(flag-value '--add' $@)
+function flag-value() {
+  needle=$1
+  typeset haystack=(${@:2})
+  PREVIOUS_HIT=0
+  START_HIT=0
+  VALUE=""
+  for hay in ${haystack[@]}; do
+    if is equal $PREVIOUS_HIT 1; then
+      # if value is a flag
+      if is matching "^\-\-.*" "$hay"; then
+        PREVIOUS_HIT=0
+        continue
+      else
+        # Space between
+        if is equal $START_HIT 1; then
+          VALUE+=' '
+        fi
+        VALUE+=$hay
+        START_HIT=1
+      fi
+    else
+      # If we find the needle
+      if is equal "$hay" "$needle"; then
+        PREVIOUS_HIT=1
+      fi
+    fi
+  done
+
+  echo "$VALUE"
+}
+
+flag-value "$@"

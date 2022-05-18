@@ -20,7 +20,22 @@ function print-flags() {
   local index=1
   for n in $names
   do
-    echo "$c[cyan]$names[$index]$c[reset]: $messages[$index]"
+    name="$names[$index]"
+    if is substring "[" "$name"; then
+      before_rep="$c[magenta]["
+      name=${name//\[/$before_rep}
+    fi
+    name="$c[cyan]$name$c[reset]"
+
+    message="$messages[$index]"
+    if is substring "[" "$message"; then
+      before_rep="$c[magenta]["
+      after_rep="]$c[reset]"
+      message=${message//\[/$before_rep}
+      message=${message//\]/$after_rep}
+    fi
+
+    echo "$name: $message"
     index=$(expr $index + 1)
   done
 }

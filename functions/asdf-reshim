@@ -9,7 +9,8 @@ shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst')
 
 function _asdf_reshim_fix() {
   if is not existing "$ASDF_DIR/shims"; then
-    clr_red "ASDF_DIR not found, set ASDF_DIR to the path to .asdf (usually ~/.asdf)"
+
+    echo "$c[red]$ASDF_DIR/shims not found, check that \$ASDF_DIR points to the right place.$c[reset]"
     return 1
   fi
 
@@ -19,9 +20,9 @@ function _asdf_reshim_fix() {
     if is file "$SHIM"; then
       sudo chmod -x "$SHIM"
       rm -f "$SHIM"
-      clr_green "Fixed " -n; clr_white "$without_nl"
+      echo "$c[green]Fixed$c[reset] $without_nl"
     else
-      clr_brown "Skipped " -n; clr_white "$without_nl" -n; clr_brown ", does not exist"
+      echo "$c[yellow]Skipped$c[reset] $without_nl $c[yellow], does not exist.$c[reset]"
     fi
   done
 }
@@ -30,10 +31,6 @@ function _asdf_reshim_fix() {
 function asdf-reshim () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     asdf
   )
 
@@ -43,27 +40,20 @@ function asdf-reshim () {
 
   if has-flag '--help' $@; then
     print-help $0 "$_reshim_description" "_reshim_flags" "_reshim_flag_descriptions"
-    clr_cyan "\nShims:"
+    echo "\n$c[dim]Shims:$c[reset]"
     for shim in $shims; do
-      echo -n "- "; clr_green "$shim"
+      echo "- $c[cyan]$shim$c[reset]"
     done
     return
   fi
 
-  if is not available "asdf"; then
-    clr_brown "Could not find asdf!"
-    return 1
-  fi
-
-  clr_green "Reshimming " -n; clr_white "ASDF"
+  echo "$c[dim]Reshimming$c[reset] ASDF"
   asdf reshim
   RESULT=$?
   if is equal $RESULT 0; then
-    clr_green "Reshimmed " -n; clr_white "ASDF"
+    echo "$c[dim]Reshimmed$c[reset] ASDF"
   else
-    clr_brown "Something may have gone wrong, try running " -n
-    clr_white "asdf reshim " -n
-    clr_brown "manually"
+    echo "$c[yellow]Something may have gone wrong, try running$c[reset] asdf reshim $c[yellow]manually.$[reset]"
   fi
 
   _asdf_reshim_fix
