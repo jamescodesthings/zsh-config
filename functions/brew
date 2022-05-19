@@ -12,14 +12,14 @@ function brew(){
   ORIGINAL_BREW="$ARM_BREW"
 
   if is not existing "$ARM_BREW"; then
-    echo "$c[red]Could not find original brew at$c[reset] $ARM_BREW";
+    echo "$cs[error]Could not find original brew at$c[reset] $ARM_BREW";
     unfunction "brew" # Just to be safe
 
     return 1;
   fi
 
   if is not existing "$X86_BREW"; then
-    echo "$c[red]Could not find original brew at$c[reset] $X86_BREW";
+    echo "$cs[error]Could not find original brew at$c[reset] $X86_BREW";
     unfunction "brew" # Just to be safe
 
     return 1;

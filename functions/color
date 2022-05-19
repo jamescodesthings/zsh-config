@@ -8,14 +8,13 @@ _color_flag_messages[2]="tests using the inbuilt test script"
 
 function _color_test() {
   PLUGIN_DIR=$(zinit cd "zpm-zsh/colors" >& /dev/null && pwd)
-  echo "\n$c[dim]Test:$c[reset]"
+  echo "\n$cs[h2]Test:$c[reset]"
   source $PLUGIN_DIR/test/test.zsh
   echo "$c[reset]"
 }
 
 function _color_usage() {
-  PLUGIN_DIR=$(zinit cd "zpm-zsh/colors" >& /dev/null && pwd)
-  echo "\n$c[dim]Using Color:$c[reset]"
+  echo "\n$cs[h2]Using Color:$c[reset]"
   echo 'echo "$c[color]Some colored text$c[reset]"'
 }
 
@@ -37,9 +36,28 @@ function _color_options() {
   done
 
 
-  echo "\n$c[dim]Available Colors:$c[reset]"
+  echo "\n$cs[h2]Available Colors:$c[reset]"
   echo $UPDATED_COLORS | tr ' ' '\n' | column
 }
+
+function _color_scheme_usage() {
+  echo "\n$cs[h2]Using Color with Schemes:$c[reset]"
+  echo 'echo "$cs[color]Some colored text$c[reset]"'
+}
+
+function _color_scheme_options() {
+  COLORS=$(echo ${(k)cs} | tr ' ' '\n' | uniq | sort)
+  AS_ARRAY=("${(f)COLORS}")
+  UPDATED_COLORS=()
+  for color in $AS_ARRAY; do
+    UPDATED_COLORS+="$c[reset]$cs[$color]$color$c[reset]"
+  done
+
+
+  echo "\n$c[h2]Available Colors:$c[reset]"
+  echo $UPDATED_COLORS | tr ' ' '\n'
+}
+
 
 # Prints information about using zpm-zsh/colors
 function color() {
@@ -57,6 +75,8 @@ function color() {
     _color_usage
 #    _color_test
     _color_options
+    _color_scheme_usage
+    _color_scheme_options
     return
   fi
 
