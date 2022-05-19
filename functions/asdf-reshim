@@ -10,7 +10,7 @@ shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst')
 function _asdf_reshim_fix() {
   if is not existing "$ASDF_DIR/shims"; then
 
-    echo "$c[red]$ASDF_DIR/shims not found, check that \$ASDF_DIR points to the right place.$c[reset]"
+    echo "$ASDF_DIR/shims $cs[error]not found, check that $c[reset]\$ASDF_DIR $cs[error]points to the right place.$c[reset]"
     return 1
   fi
 
@@ -20,9 +20,9 @@ function _asdf_reshim_fix() {
     if is file "$SHIM"; then
       sudo chmod -x "$SHIM"
       rm -f "$SHIM"
-      echo "$c[green]Fixed$c[reset] $without_nl"
+      echo "$cs[success]Fixed$c[reset] $without_nl"
     else
-      echo "$c[yellow]Skipped$c[reset] $without_nl $c[yellow], does not exist.$c[reset]"
+      echo "$cs[warn]Skipped$c[reset] $without_nl $cs[warn], does not exist.$c[reset]"
     fi
   done
 }
@@ -40,20 +40,20 @@ function asdf-reshim () {
 
   if has-flag '--help' $@; then
     print-help $0 "$_reshim_description" "_reshim_flags" "_reshim_flag_descriptions"
-    echo "\n$c[dim]Shims:$c[reset]"
+    echo "\n$cs[h2]Shims:$c[reset]"
     for shim in $shims; do
-      echo "- $c[cyan]$shim$c[reset]"
+      echo "- $shim"
     done
     return
   fi
 
-  echo "$c[dim]Reshimming$c[reset] ASDF"
+  echo "$cs[h2]Reshimming$c[reset] ASDF"
   asdf reshim
   RESULT=$?
   if is equal $RESULT 0; then
-    echo "$c[dim]Reshimmed$c[reset] ASDF"
+    echo "$cs[h2]Reshimmed$c[reset] ASDF"
   else
-    echo "$c[yellow]Something may have gone wrong, try running$c[reset] asdf reshim $c[yellow]manually.$[reset]"
+    echo "$cs[warn]Something may have gone wrong, try running$c[reset] asdf reshim $cs[warn]manually.$c[reset]"
   fi
 
   _asdf_reshim_fix

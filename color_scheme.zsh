@@ -7,6 +7,7 @@ declare -Ag cs
 # Declares the color shceme
 cs[success]="$c[green]"
 cs[error]="$c[red]"
+cs[warn]="$c[yellow]"
 cs[info]="$c[cyan]"
 cs[default]="$c[default]"
 cs[h1]="$c[bold]"
