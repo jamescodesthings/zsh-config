@@ -39,8 +39,8 @@ function _fast-download_run() {
   URL="$1"
   DIRECTORY=${2:=~/Downloads}
 
-  echo "$c[dim]Downloading:$c[reset] $URL"
-  echo "$c[dim]To:$c[reset] $DIRECTORY"
+  echo "$cs[h3]Downloading:$c[reset] $URL"
+  echo "$cs[h3]To:$c[reset] $DIRECTORY"
   if is not existing "$DIRECTORY"; then
     echo "$cs[error]Could not find$c[reset] $DIRECTORY"
     return 1

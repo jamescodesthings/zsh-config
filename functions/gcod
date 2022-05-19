@@ -14,7 +14,7 @@ function gcod () {
   DEV_BRANCH=$(git config gitflow.branch.develop)
   if is empty "$DEV_BRANCH"; then
     echo "$cs[error]Could not get develop branch$c[reset]"
-    echo "$c[dim]Make sure you are in a git repo and then run:$c[reset] git flow init"
+    echo "$cs[default]Make sure you are in a git repo and then run:$c[reset] git flow init"
     return 1
   fi
 

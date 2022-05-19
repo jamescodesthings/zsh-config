@@ -16,7 +16,7 @@ function git-prune-remote {
 
   if [ "$BRANCH" != "$MAIN_BRANCH" ]; then
     echo "$cs[error]Warning:$c[reset] You are on branch $c[cyan]$BRANCH$c[reset] not $cs[success]$MAIN_BRANCH$c[reset]"
-    echo "$c[dim]Run$c[rest] git checkout  $cs[success]$MAIN_BRANCH$c[reset] $c[dim]before running this command."
+    echo "$cs[default]Run$c[rest] git checkout  $cs[success]$MAIN_BRANCH$c[reset] $cs[default]before running this command."
     return 1
   fi
 
@@ -39,7 +39,7 @@ function git-prune-remote {
     # Remove remote branches
     git push origin `git branch -r --merged | grep -v "/$MAIN_BRANCH$" | grep -v "/$BRANCH$" | sed 's/origin\//:/g' | tr -d '\n'`
   else
-    echo "$c[dim]No branches removed$c[reset]"
+    echo "$cs[success]No branches removed$c[reset]"
   fi
 }
 

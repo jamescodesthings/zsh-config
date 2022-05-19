@@ -29,8 +29,8 @@ function _ef_print_stored() {
     return 1
   fi
 
-  echo "$c[dim]Last Migration (-1):$c[reset] $EF_LAST"
-  echo "$c[dim]Previous Migration (-2):$c[reset] $EF_PREV"
+  echo "$cs[h3]Last Migration (-1):$c[reset] $EF_LAST"
+  echo "$cs[h3]Previous Migration (-2):$c[reset] $EF_PREV"
 }
 
 function _ef_store() {
