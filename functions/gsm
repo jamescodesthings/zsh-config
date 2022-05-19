@@ -1,5 +1,11 @@
 #!/usr/bin/env zsh
 
+_gsm_description="Git super merge - Checks out a branch, updates it and merges"
+_gsm_positional="branch"
+_gsm_positional_desc="The branch to Check out, Update and Merge."
+_gsm_flag_names[1]="--help"
+_gsm_flag_messages[1]="shows help"
+
 function _current_branch() {
 	local ref
 	ref=$(command git symbolic-ref --quiet HEAD 2> /dev/null)
@@ -12,25 +18,10 @@ function _current_branch() {
 	echo ${ref#refs/heads/}
 }
 
-function _gsm_usage() {
-  local DEPS=(clr_cyan clr_white)
-
-  if ! deps $DEPS; then
-    return
-  fi
-
-  clr_cyan 'Usage:' -n
-  clr_white 'gsm [branch to check out and merge]'
-}
-
 # Git Super Merge
 function gsm () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     git
   )
 
@@ -38,45 +29,49 @@ function gsm () {
     return
   fi
 
-  if is empty "$1"; then
-    _gsm_usage
-    return 0
+  if is empty "$1" || has-flag '--help' $@; then
+   print-help \
+     "$0" \
+     "$_gsm_description" \
+     "_gsm_flag_names" \
+     "_gsm_flag_messages" \
+     "$_gsm_positional" \
+     "$_gsm_positional_desc"
+   return 0
   fi
 
   # Set current branch
   local THEIR_BRANCH=$1
   local MY_BRANCH=$(_current_branch)
-  clr_white "Saved Current Branch " -n
-  clr_cyan ${MY_BRANCH}
-  clr_white "Checking out " -n
-  clr_green ${THEIR_BRANCH}
+  echo "$cs[info]Saved current branch$c[reset] $MY_BRANCH"
+  echo "$cs[info]Checking Out$c[reset] $THEIR_BRANCH"
 
   # Check out branch
-  git checkout ${THEIR_BRANCH} &> /dev/null
+  git checkout "$THEIR_BRANCH" &> /dev/null
 
   if is not equal "$?" "0"; then
-    clr_red "Could not find branch"
+    echo "$cs[error]Could not find branch.$c[reset] $THEIR_BRANCH"
     return 1
   fi
 
   # Update
   git pull &> /dev/null
 
-  if is not equal "$?" "0"; then
-    clr_red "Could not git pull"
+  if is not equal $? 0; then
+    echo "$cs[error]Could not git pull$c[reset]"
     return 1
   fi
 
   # Check out the original branch
-  git checkout ${MY_BRANCH} &>/dev/null
+  git checkout "$MY_BRANCH" &>/dev/null
 
-  if is not equal "$?" "0"; then
-    clr_red "Could not check out $MY_BRANCH"
+  if is not equal $? 0; then
+    echo "$cs[error]Could not checkout$c[reset] $MY_BRANCH"
     return 1
   fi
 
   # Finally Merge the input branch
-  git merge --no-ff ${THEIR_BRANCH}
+  git merge --no-ff "$THEIR_BRANCH"
 }
 
 gsm "$@"
