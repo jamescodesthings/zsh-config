@@ -1,6 +1,12 @@
 #!/usr/bin/env zsh
 
-TOUCH_SUDO_FILE="/etc/pam.d/sudo"
+TOUCH_SUDO_FILE=${TOUCH_SUDO_FILE:=/etc/pam.d/sudo}
+
+_touch_sudo_description="Enables TouchID Sudo-ing"
+_touch_sudo_positional=""
+_touch_sudo_positional_desc=""
+_touch_sudo_flag_names[1]="--help"
+_touch_sudo_flag_messages[1]="shows help"
 
 function _touch-sudo-update-sudo() {
   sudo chown $(whoami) $TOUCH_SUDO_FILE
@@ -16,8 +22,8 @@ session    required       pam_permit.so
 EOF
   sudo chmod -w $TOUCH_SUDO_FILE
   sudo chown root $TOUCH_SUDO_FILE
-  clr_green "Done"
-  clr_cyan "cat $TOUCH_SUDO_FILE to check"
+  echo "$cs[success]Done$c[reset]"
+  echo "$cs[info]run$c[reset] cat $TOUCH_SUDO_FILE $cs[info]to check$c[reset]"
 }
 
 # touch-sudo: Lazy issue mentions in a git commit -m
@@ -35,19 +41,28 @@ function touch-sudo () {
     return
   fi
 
+  if has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_touch_sudo_description" \
+      "_touch_sudo_flag_names" \
+      "_touch_sudo_flag_messages" \
+      "$_touch_sudo_positional" \
+      "$_touch_sudo_positional_desc"
+    return 0
+  fi
+
   if is not osx; then
-    clr_red "Can't do that on non-osx"
+    echo "$cs[error]Can't do that on non-osx$c[reset]"
     return 1
   fi
 
-  clr_cyan "Enable touch sudo"
-  if confirm; then
-    clr_green "Enabling"
+  if confirm "$cs[warn]Enable touch Sudo?$c[reset]"; then
+    echo "$cs[info]Enabling$c[reset]"
     _touch-sudo-update-sudo
   else
-    clr_red "Okay then"
+    echo "$cs[info]Not Enabling$c[reset]"
   fi
-
 }
 
 touch-sudo "$@"
