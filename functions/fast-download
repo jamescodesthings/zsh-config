@@ -29,7 +29,7 @@ function fast-download () {
 
   URL="$@[-1]"
   if is empty "$URL"; then
-    echo "$c[red]Could not find url to donwload$c[reset]"
+    echo "$cs[error]Could not find url to donwload$c[reset]"
   fi
 
   _fast-download_run $URL $DIRECTORY
@@ -42,7 +42,7 @@ function _fast-download_run() {
   echo "$c[dim]Downloading:$c[reset] $URL"
   echo "$c[dim]To:$c[reset] $DIRECTORY"
   if is not existing "$DIRECTORY"; then
-    echo "$c[red]Could not find$c[reset] $DIRECTORY"
+    echo "$cs[error]Could not find$c[reset] $DIRECTORY"
     return 1
   fi
   aria2c -x 16 -s 16 $URL -d $DIRECTORY

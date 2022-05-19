@@ -16,7 +16,7 @@ function git-prune-local_delete() {
   git-prune-local_list
 
   if confirm; then
-    echo "$c[green]Deleting stale branches$c[reset]"
+    echo "$cs[success]Deleting stale branches$c[reset]"
     git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
   fi
 }

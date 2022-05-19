@@ -21,11 +21,11 @@ _ef_flag_messages[6]="scripts the revert between the last two migrations"
 
 function _ef_print_stored() {
   if is empty "$EF_LAST"; then
-    echo "$c[red]EF_LAST not stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
+    echo "$cs[error]EF_LAST not stored yet,$c[reset] run $cs[default]ef --store$c[reset] first."
     return 1
   fi
   if is empty "$EF_PREV"; then
-    echo "$c[red]EF_PREV not stored yet,$c[reset] $c[green]ef --store$c[reset] first."
+    echo "$cs[error]EF_PREV not stored yet,$c[reset] $cs[default]ef --store$c[reset] first."
     return 1
   fi
 
@@ -42,7 +42,7 @@ function _ef_store() {
 
   _ef_save_store
 
-  echo "$c[green]Stored Last 2 migrations$c[reset]"
+  echo "$cs[success]Stored Last 2 migrations$c[reset]"
   _ef_print_stored
 }
 
@@ -53,29 +53,29 @@ function _ef_save_store() {
 
 function _ef_reload_store() {
   if is not existing "$STORE_PATH"; then
-    echo "$c[red]Migrations have not been stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
+    echo "$cs[error]Migrations have not been stored yet,$c[reset] run $cs[default]ef --store$c[reset] first."
     return 1
   fi
   RAW_RELOAD=$(cat $STORE_PATH)
   if is empty "$RAW_RELOAD"; then
-    echo "$c[red]Migrations have not been stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
+    echo "$cs[error]Migrations have not been stored yet,$c[reset] run $cs[default]ef --store$c[reset] first."
     return 1
   fi
 
   export EF_LAST=$(echo $RAW_RELOAD | tail -1)
   export EF_PREV=$(echo $RAW_RELOAD | tail -2 | head -1)
 
-  echo "$c[green]Restored:$c[reset]"
+  echo "$cs[success]Restored:$c[reset]"
   _ef_print_stored
 }
 
 function _ef_script_migration(){
   if is empty "$EF_LAST"; then
-    echo "$c[red]EF_LAST not stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
+    echo "$cs[error]EF_LAST not stored yet,$c[reset] run $cs[default]ef --store$c[reset] first."
     return 1
   fi
   if is empty "$EF_PREV"; then
-    echo "$c[red]EF_PREV not stored yet,$c[reset] $c[green]ef --store$c[reset] first."
+    echo "$cs[error]EF_PREV not stored yet,$c[reset] $cs[default]ef --store$c[reset] first."
     return 1
   fi
 
@@ -86,11 +86,11 @@ function _ef_script_migration(){
 
 function _ef_script_revert(){
   if is empty "$EF_LAST"; then
-    echo "$c[red]EF_LAST not stored yet,$c[reset] run $c[green]ef --store$c[reset] first."
+    echo "$cs[error]EF_LAST not stored yet,$c[reset] run $cs[default]ef --store$c[reset] first."
     return 1
   fi
   if is empty "$EF_PREV"; then
-    echo "$c[red]EF_PREV not stored yet,$c[reset] $c[green]ef --store$c[reset] first."
+    echo "$cs[error]EF_PREV not stored yet,$c[reset] $cs[default]ef --store$c[reset] first."
     return 1
   fi
 
@@ -100,14 +100,14 @@ function _ef_script_revert(){
 }
 
 function _ef_default() {
-  echo "$c[dim]Running:$c[reset] dotnet ef $@"
+  echo "$cs[h3]Running:$c[reset] dotnet ef $@"
 
   CURRENT_DIR=$(pwd)
   RELATIVE_DATA_PATH=$(realpath --relative-to=$CURRENT_DIR $DATA_PROJ_PATH)
   RELATIVE_STARTUP_PATH=$(realpath --relative-to=$CURRENT_DIR $STARTUP_PROJ_PATH)
 
   EXTRAS="-p $RELATIVE_DATA_PATH -s $RELATIVE_STARTUP_PATH -c DataContext"
-  echo "$c[dim]With Options:$c[reset] $EXTRAS"
+  echo "$cs[h3]With Options:$c[reset] $EXTRAS"
 
 
   FINAL_COMMAND="dotnet ef $@ $EXTRAS"

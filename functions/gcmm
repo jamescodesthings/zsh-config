@@ -22,7 +22,7 @@ _gcmm_flag_messages[5]="Shows the full tag that will be prepended to the [messsa
 function _gcmm_set_project() {
   project=$1
   if is empty "$project"; then
-    echo "$c[red]No project passed to $c[reset]--set-project$c[red], see --help for usage.$c[reset]"
+    echo "$cs[error]No project passed to $c[reset]--set-project$cs[error], see --help for usage.$c[reset]"
     return 1
   fi
 
@@ -30,12 +30,12 @@ function _gcmm_set_project() {
 
 
   if is empty "$branch"; then
-    echo "$c[red]Could not find current branch.$c[reset]"
+    echo "$cs[error]Could not find current branch.$c[reset]"
     return 1
   fi
 
   git config branch.$branch.project $project
-  echo "$c[green]Set project for$c[reset] $branch $c[green]to$c[reset] $project"
+  echo "$cs[success]Set project for$c[reset] $branch $cs[success]to$c[reset] $project"
   return 0
 }
 
@@ -43,13 +43,13 @@ function _gcmm_get_project() {
   branch=$(current_branch)
 
   if is empty "$branch"; then
-    echo "$c[red]Could not find current branch$c[reset]"
+    echo "$cs[error]Could not find current branch$c[reset]"
     return 1
   fi
 
   project=$(git config branch.$branch.project)
   if is empty "$project"; then
-    echo "$c[red]No project set for$c[reset] $branch"
+    echo "$cs[error]No project set for$c[reset] $branch"
   else
     echo "$project"
   fi;
@@ -60,12 +60,12 @@ function _gcmm_unset_project() {
   branch=$(current_branch)
 
   if is empty "$branch"; then
-    echo "$c[red]Could not find current branch$c[reset]"
+    echo "$cs[error]Could not find current branch$c[reset]"
     return 1
   fi
 
   git config --unset branch.$branch.project
-  echo "$c[green]Unset project for$c[reset] $branch"
+  echo "$cs[success]Unset project for$c[reset] $branch"
   return 0
 }
 
@@ -76,7 +76,7 @@ function _gcmm_show() {
   issue=$(current_branch | egrep -o '[0-9]+')
 
   if is empty "$branch"; then
-    echo "$c[red]Could not find current branch$c[reset]"
+    echo "$cs[error]Could not find current branch$c[reset]"
     return 1
   fi
 

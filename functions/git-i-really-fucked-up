@@ -11,7 +11,7 @@ function git-i-really-fucked-up() {
   fi
 
   local BRANCH="origin/$(git-branch)"
-  echo "$c[green]Reset to$c[reset] $BRANCH"
+  echo "$cs[success]Reset to$c[reset] $BRANCH"
 
   if confirm; then
     git reset --hard $BRANCH

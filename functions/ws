@@ -12,7 +12,7 @@ function _ws_stable() {
     return 0;
   fi
 
-  echo "$c[red]Could not find webstorm at$c[reset] $WS_LOCATION$c[red], check it is installed.$c[reset]"
+  echo "$cs[error]Could not find webstorm at$c[reset] $WS_LOCATION$cs[error], check it is installed.$c[reset]"
   return 1;
 }
 
