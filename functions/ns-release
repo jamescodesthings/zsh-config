@@ -40,7 +40,7 @@ _ns-release_build() {
     return
   fi
 
-  clr_green "$cs[info]Running Build Command:$c[reset]"
+  echo "$cs[info]Running Build Command:$c[reset]"
 
   ns build ios \
     --for-device \
@@ -60,10 +60,6 @@ ns-release() {
   local INFO_PLIST="./App_Resources/iOS/Info.plist"
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     git
     current_branch
     plistbuddy
