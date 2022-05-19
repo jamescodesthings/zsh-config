@@ -14,7 +14,7 @@ function gcom () {
   MASTER_BRANCH=$(git config gitflow.branch.master)
   if is empty "$MASTER_BRANCH"; then
     echo "$cs[error]Could not get master branch$c[reset]"
-        echo "$cs[default]Make sure you are in a git repo and then run:$c[reset] git flow init"
+    echo "$cs[sub]Make sure you are in a git repo and then run:$c[reset] git flow init"
     return 1
   fi
 

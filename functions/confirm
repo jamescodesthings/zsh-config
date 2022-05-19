@@ -1,7 +1,8 @@
 #!/usr/bin/env zsh
 
 function confirm() {
-  read "confirmed?$cs[warn]Are you sure?$c[reset] "
+  MESSAGE=${1:="$cs[warn]Are you sure?$c[reset]"}
+  read "confirmed?$MESSAGE $cs[sub][y/n]$c[reset] "
   if [[ "$confirmed" =~ ^[Yy]$ ]]
   then
     return 0
