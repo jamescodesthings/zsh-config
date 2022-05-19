@@ -97,7 +97,7 @@ zinit wait"0b" lucid light-mode for \
     zsh-users/zsh-history-substring-search
 
 # Extended Zsh Colors
-zinit ice wait"0a" lucid
+zinit ice wait"0a" lucid atload'source $CUSTOM_DIR/color_scheme.zsh'
 zinit $LOAD_METHOD zpm-zsh/colors
 
 # Aliases

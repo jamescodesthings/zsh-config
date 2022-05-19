@@ -5,8 +5,8 @@ function print-parameter() {
   PARAM="$1"
   PARAM_DESC="$2"
 
-  echo "$c[dim]Parameters:$c[reset]"
-  echo "- $c[magenta]$PARAM$c[reset]: $PARAM_DESC\n"
+  echo "$cs[h2]Parameters:$c[reset]"
+  echo "- $cs[param]$PARAM$c[reset]: $PARAM_DESC\n"
 }
 
 print-parameter "$@"

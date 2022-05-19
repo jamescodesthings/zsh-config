@@ -15,21 +15,21 @@ function print-flags() {
   typeset -a names=(${(P)${1}})
   typeset -a messages=(${(P)${2}})
 
-  echo "$c[dim]Flags:$c[reset]"
+  echo "$cs[h2]Flags:$c[reset]"
 
   local index=1
   for n in $names
   do
     name="$names[$index]"
     if is substring "[" "$name"; then
-      before_rep="$c[magenta]["
+      before_rep="$cs[param]["
       name=${name//\[/$before_rep}
     fi
-    name="$c[cyan]$name$c[reset]"
+    name="$cs[flag]$name$c[reset]"
 
     message="$messages[$index]"
     if is substring "[" "$message"; then
-      before_rep="$c[magenta]["
+      before_rep="$cs[param]["
       after_rep="]$c[reset]"
       message=${message//\[/$before_rep}
       message=${message//\]/$after_rep}

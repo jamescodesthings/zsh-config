@@ -44,11 +44,11 @@ function print-help() {
     return
   fi
 
-  echo "\n$COMMAND"
+  echo "\n$cs[h1]$COMMAND$c[reset]"
 
-  echo "\n$c[dim]Description:$c[reset] $DESCRIPTION\n"
+  echo "\n$cs[h2]Description:$c[reset] $DESCRIPTION\n"
 
-  echo "$c[dim]Usage:$c[reset] $1 $c[cyan][flags]$c[reset] $c[magenta]$MANDATORY_PARAMETER$c[reset]\n"
+  echo "$cs[h2]Usage:$c[reset] $1 $cs[flag][flags]$c[reset] $cs[param]$MANDATORY_PARAMETER$c[reset]\n"
   if is not empty "$MANDATORY_PARAMETER"; then
     print-parameter $MANDATORY_PARAMETER $MANDATORY_PARAMETER_DESCRIPTION
   fi
