@@ -5,86 +5,33 @@ SELF_SIGNED_DOMAINS="${SELF_SIGNED_DOMAINS:-$CERTS_DIR/.domains}"
 CERT_NAME="${CERT_NAME:-self-signed}"
 CERT_PASS="${CERT_PASS:-JamesCodesThings1}"
 
-function _self-sign_usage() {
-  local DEPS=(clr_cyan clr_white)
-
-  if ! deps $DEPS; then
-    return
-  fi
-
-  clr_cyan 'Usage:' -n
-  clr_white 'self-sign' -n
-  clr_cyan ' [command]'
-  echo ''
-
-  clr_cyan 'Commands:'
-  clr_white 'add [domain] - Adds a domain to the list of domains'
-  clr_white 'remove [domain] - Removes a domain from the list of domains'
-  clr_white 'list - Lists the list of domains'
-  clr_white 'generate - Generates a self-signed cert with the domains as aliases'
-  clr_white 'trust - Trusts the certificate'
-
-}
-
-# Self Sign, manages a list of domains for a local self signed cert, and generates the cert.
-function self-sign () {
-  local DEPS=(
-    is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
-    openssl
-  )
-
-  if ! deps $DEPS; then
-    return
-  fi
-
-  if is empty "$1"; then
-    _self-sign_usage
-    return 0
-  fi
-
-  if is equal "$1" "add"; then
-    _self-sign_add $2
-    return 0
-  fi;
-
-  if is equal "$1" "remove"; then
-    _self-sign_remove $2
-    return 0;
-  fi;
-
-  if is equal "$1" "list"; then
-    _self-sign_list
-    return 0;
-  fi;
-
-  if is equal "$1" "generate"; then
-    _self-sign_generate
-    return 0;
-  fi;
-
-  if is equal "$1" "trust"; then
-    _self-sign_trust
-    return 0;
-  fi
-
-  _self-sign_usage
-}
+_self_sign_description="Manages and generates a self signed ceritificate"
+_self_sign_positional=""
+_self_sign_positional_desc=""
+_self_sign_flag_names[1]="--help"
+_self_sign_flag_messages[1]="shows help"
+_self_sign_flag_names[2]="--add [domain]"
+_self_sign_flag_messages[2]="Adds [domain] to the list of domains"
+_self_sign_flag_names[3]="--remove [domain]"
+_self_sign_flag_messages[3]="Removes [domain] from the list of domains"
+_self_sign_flag_names[4]="--list"
+_self_sign_flag_messages[4]="Lists the domains for the newly generated certificate"
+_self_sign_flag_names[5]="--generate"
+_self_sign_flag_messages[5]="Generates a self signed certificate"
+_self_sign_flag_names[6]="--trust"
+_self_sign_flag_messages[6]="Trusts the self signed certificate"
 
 function _self-sign_add() {
   if is empty "$1"; then
-    _self-sign_usage
-    return 0
+    echo "$cs[warn]Nothing passed to add$c[reset]"
+    return 1
   fi
 
   if is not existing "$SELF_SIGNED_DOMAINS"; then
-    clr_magenta 'Creating Domain list file'
+    echo "$cs[info]Creating Domain list file$c[reset] $SELF_SIGNED_DOMAINS"
 
     if is not existing "$CERTS_DIR"; then
-      clr_magenta 'Creating Certs Directory'
+      echo "$cs[info]Creating Certificate directory$c[reset] $CERTS_DIR"
       mkdir -p "$CERTS_DIR"
     fi
 
@@ -93,28 +40,28 @@ function _self-sign_add() {
     echo "$1" >> $SELF_SIGNED_DOMAINS
   fi
 
-  clr_green "Added $1"
+  echo "$cs[success]Added$c[reset] $1"
 }
 
 function _self-sign_remove() {
-    if is empty "$1"; then
-    _self-sign_usage
-    return 0
+  if is empty "$1"; then
+    echo "$cs[warn]Nothing passed to remove$c[reset]"
+    return 1
   fi
 
   if is not existing "$SELF_SIGNED_DOMAINS"; then
-    clr_magenta 'Nothing to remove'
-    return 0
-  else
-    grep -v "$1" "$SELF_SIGNED_DOMAINS" > "$SELF_SIGNED_DOMAINS.temp"
-    mv "$SELF_SIGNED_DOMAINS.temp" "$SELF_SIGNED_DOMAINS"
-    clr_green "Removed $1"
+    echo "$cs[warn]No domains file at $c[reset]$SELF_SIGNED_DOMAINS"
+    return 1
   fi
+
+  grep -v "$1" "$SELF_SIGNED_DOMAINS" > "$SELF_SIGNED_DOMAINS.temp"
+  mv "$SELF_SIGNED_DOMAINS.temp" "$SELF_SIGNED_DOMAINS"
+  echo "$cs[success]Removed$c[reset] $1"
 }
 
 function _self-sign_list() {
   if is not existing "$SELF_SIGNED_DOMAINS"; then
-    clr_magenta 'No domains yet'
+    echo "$cs[warn]No domains file at $c[reset]$SELF_SIGNED_DOMAINS"
     return 0
   else
     cat $SELF_SIGNED_DOMAINS | uniq | sort
@@ -123,11 +70,12 @@ function _self-sign_list() {
 
 function _self-sign_generate() {
   if is not existing "$SELF_SIGNED_DOMAINS"; then
-    clr_magenta 'No certs dir, use add first'
+    echo "$cs[warn]No certificates file at $c[reset]$SELF_SIGNED_DOMAINS$cs[warn], use --add $c[reset]$cs[flag][domain]$c[reset] $cs[warn]to create it.$c[reset]"
     return 1
   fi
 
-  clr_cyan 'Creating CNF File'
+  CNF_FILE_LOC="$CERTS_DIR/$CERT_NAME.cnf"
+  echo "$cs[info]Creating .cnf file at$c[reset] $CNF_FILE_LOC"
 
   echo "[req]
 default_bits = 2048
@@ -146,7 +94,7 @@ CN = localhost
 [v3_req]
 subjectAltName = critical, @alt_names
 
-[alt_names]" > "$CERTS_DIR/$CERT_NAME.cnf"
+[alt_names]" > $CNF_FILE_LOC
 
   DNS_CTR=0
   IP_CTR=0
@@ -164,15 +112,15 @@ subjectAltName = critical, @alt_names
   done
 
   ALT_NAMES=$(cat "$CERTS_DIR/.alt-names" | sort -u)
-  clr_green 'Alt Names:'
+  echo "$cs[h2]Alt Names:$c[reset]"
   echo "$ALT_NAMES"
 
   rm "$CERTS_DIR/.alt-names"
 
-  echo "$ALT_NAMES" >> "$CERTS_DIR/$CERT_NAME.cnf"
-  echo ''
-  clr_cyan 'Generating ' -n
-  clr_white "$CERT_NAME.crt"
+  echo "$ALT_NAMES" >> $CNF_FILE_LOC
+
+  echo "\n$cs[h2]Alt Names:$c[reset]"
+  echo "$cs[info]Generating$c[reset] $CERT_NAME.crt"
 
   openssl req \
     -newkey rsa:2048 \
@@ -185,10 +133,7 @@ subjectAltName = critical, @alt_names
     -sha256 \
     -days 365
 
-
-    echo ''
-    clr_cyan 'Exporting ' -n
-    clr_white "$CERT_NAME.pfx"
+    echo "\n$cs[info]Exporting$c[reset] $CERT_NAME.pfx"
 
     openssl pkcs12 -export \
       -out $CERTS_DIR/${CERT_NAME}.pfx \
@@ -198,19 +143,66 @@ subjectAltName = critical, @alt_names
 
     rm $CERTS_DIR/${CERT_NAME}.cnf
 
-    echo ''
-    clr_green 'Generated Certificates'
+    echo "\n$cs[success]Generated Certificates$c[reset]"
 }
 
 function _self-sign_trust() {
   if is not existing "$CERTS_DIR/${CERT_NAME}.crt"; then
-    clr_magenta 'No Certificate, run generate first'
-    return 0
+    echo "$cs[warn]No Certificate, run generate first$c[reset]"
+    return 1
   fi
 
   sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$CERTS_DIR/${CERT_NAME}.crt"
-  clr_green 'Trusted ' -n
-  clr_white "$CERTS_DIR/${CERT_NAME}.crt"
+  echo "$cs[success]Trusted$c[reset] $CERTS_DIR/${CERT_NAME}.crt"
+}
+
+
+# Self Sign, manages a list of domains for a local self signed cert, and generates the cert.
+function self-sign () {
+  local DEPS=(
+    is
+    openssl
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_self_sign_description" \
+      "_self_sign_flag_names" \
+      "_self_sign_flag_messages" \
+      "$_self_sign_positional" \
+      "$_self_sign_positional_desc"
+    return 0
+  fi
+
+  if has-flag '--add' $@; then
+    _self-sign_add "$(flag-value '--add' $@)"
+    return $?
+  fi;
+
+  if has-flag '--remove' $@; then
+    _self-sign_remove "$(flag-value '--remove' $@)"
+    return $?
+  fi;
+
+  if has-flag '--list' $@; then
+    _self-sign_list
+    return $?
+  fi;
+
+  if has-flag '--generate' $@; then
+    _self-sign_generate
+    return $?
+  fi;
+
+  if has-flag '--trust' $@; then
+    _self-sign_trust
+    return $?
+  fi
 }
 
 self-sign "$@"
