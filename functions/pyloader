@@ -73,10 +73,6 @@ function _pyloader_open() {
 function pyloader () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     docker
   )
 
