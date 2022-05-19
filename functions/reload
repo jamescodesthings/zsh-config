@@ -1,19 +1,10 @@
 #!/usr/bin/env zsh
 
-function _reload_usage() {
-  local DEPS=(
-    clr_cyan
-    clr_white
-  )
-
-  if ! deps $DEPS; then
-    return
-  fi
-
-  clr_cyan 'Usage: ' -n; clr_white 'reload [function]'
-  clr_cyan 'reloads [function]'
-
-}
+_reload_description="Reloads a zsh function by name"
+_reload_positional="function"
+_reload_positional_desc="The function to reload"
+_reload_flag_names[1]="--help"
+_reload_flag_messages[1]="shows help"
 
 function reload() {
   local DEPS=(
@@ -24,13 +15,22 @@ function reload() {
     return
   fi
 
-  if is empty "$1"; then
-    _reload_usage
-    return
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_reload_description" \
+      "_reload_flag_names" \
+      "_reload_flag_messages" \
+      "$_reload_positional" \
+      "$_reload_positional_desc"
+    return 0
   fi
 
-  unfunction "$1"
-  autoload -Uz "$1"
+  FN="$1"
+
+  unfunction "$FN"
+  autoload -Uz "$FN"
+  echo "$FN $cs[success]reloaded$c[reset]"
 }
 
 reload "$@"
