@@ -1,22 +1,31 @@
 #!/usr/bin/env zsh
 
-function _unpack-container_usage() {
-  clr_cyan 'Usage:' -n; clr_white " $1 " -n; clr_green "[path to .xcappdata file]"
-}
+_unpack_container_description="Unpacks an .xcappdata file of the Engineius app to a directory with the same name"
+_unpack_container_positional="path"
+_unpack_container_positional_desc="The path to the .xcappdata file"
+_unpack_container_flag_names[1]="--help"
+_unpack_container_flag_messages[1]="shows help"
 
 # unpack-container: Lazy issue mentions in a git commit -m
 function unpack-container () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     cblite
   )
 
   if ! deps $DEPS; then
     return
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_unpack_container_description" \
+      "_unpack_container_flag_names" \
+      "_unpack_container_flag_messages" \
+      "$_unpack_container_positional" \
+      "$_unpack_container_positional_desc"
+    return 0
   fi
 
   if is empty "$1"; then
@@ -52,17 +61,17 @@ function _unpack-container_db() {
   OUT_NAME="$DB_NAME.json"
   OUT_PATH="$OUT/$OUT_NAME"
 
-  echo "Unpacking $TEMP_FILE to $OUT_PATH"
+  echo "$cs[info]Unpacking$c[reset] $TEMP_FILE $cs[info]to$c[reset] $OUT_PATH"
 
   ITEMS=$(cblite ls $DB_PATH)
   if is equal "$ITEMS" "(No documents)"; then
-    clr_green "Empty"
-    return;
+    echo "$cs[info]Empty$c[reset]"
+    return
   fi
   ITEMS_NL=$(echo $ITEMS | tr " " "\n")
   ITEMS_CT=$(echo $ITEMS_NL | wc -l | xargs)
   if is equal "$ITEMS_CT" "1"; then
-    clr_cyan "Only one"
+    echo "$cs[info]Only one$c[reset]"
 
     cblite cat $DB_PATH $ITEMS_NL > $OUT_PATH
     return
@@ -93,7 +102,7 @@ function _unpack-container_logs() {
   OUT="$2/logs"
   mkdir -p $OUT
   LOGS_PATH="$1/AppData/Documents"
-  clr_cyan "Logs from $LOGS_PATH to $OUT"
+  echo "$cs[info]Logs from$c[reset] $LOGS_PATH $cs[info]to$c[reset] $OUT"
 
   LOGS=$(ls -1 $LOGS_PATH/*.json)
   while IFS= read -r LOG; do
@@ -105,11 +114,11 @@ function _unpack-container_images() {
   OUT="$2/images"
   mkdir -p $OUT
   IMAGES_PATH="$1/AppData/Documents/images/gallery"
-  clr_cyan "Images from $IMAGES_PATH to $OUT"
+  echo "$cs[info]Images from$c[reset] $IMAGES_PATH $cs[info]to$c[reset] $OUT"
 
   IMAGES=$(ls -1 $IMAGES_PATH/*)
-  while IFS= read -r IMAGe; do
-    cp $IMAGe $OUT/
+  while IFS= read -r IMAGE; do
+    cp $IMAGE $OUT/
   done <<< "$IMAGES"
 }
 

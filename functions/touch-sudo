@@ -30,10 +30,6 @@ EOF
 function touch-sudo () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     confirm
   )
 

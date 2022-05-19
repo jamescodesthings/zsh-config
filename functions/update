@@ -6,14 +6,12 @@ export _UPDATE_DEBUG=0
 export _UPDATE_TEST=0
 
 _update_description="Updates the system"
+_update_positional="targets"
+_update_positional_desc="The thing(s) to update, space delimited."
 _update_flag_names[1]="--help"
 _update_flag_messages[1]="shows help"
 _update_flag_names[2]="--quiet"
 _update_flag_messages[2]="hide command output"
-_update_flag_names[3]="--all"
-_update_flag_messages[3]="updates everything"
-_update_flag_names[4]="--[name]"
-_update_flag_messages[4]="name of the thing to update"
 
 # Update commands
 # XCode CLTs
@@ -107,17 +105,13 @@ fi
 # End of testing
 
 function _update_updating() {
-  clr_green "Updating " -n
-  echo $1
+  echo "$cs[success]Updating$c[reset] $1"
 }
 function _update_updated() {
-  clr_green "Updated " -n
-  echo $1
+  echo "$cs[success]Updated$c[reset] $1"
 }
 function _update_skipping() {
-  clr_brown "Skipping " -n
-  clr_white $1 -n
-  clr_brown ", check failed"
+  echo "$cs[warn]Skipping$c[reset] $1$cs[warn], check failed."
 }
 
 # _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
@@ -126,25 +120,23 @@ function _update_failed() {
   local COMMAND=$2
   local RESULT=$3
   local OUTPUT=$4
-  echo ""
-  clr_red "Update Failed " -n; clr_white "$NAME" -n; clr_red ", exit code was not zero ($3)\n"
-  clr_brown "Command: " -n; echo $2
+  echo "\n$cs[error]Update Failed $c[reset]$NAME$cs[error], exit code was not zero ($c[reset]$RESULT$cs[red])$c[reset]"
+  echo "$cs[h3]Command:$c[reset] $COMMAND"
   if is not empty "$4"; then
-    clr_brown "Output:"
-    echo "$4"
+    echo "$cs[h3]Output:$c[reset] $OUTPUT"
   else
-    clr_brown "No other output"
+    echo "$cs[h3]Output:$c[reset] No further output"
   fi
   echo ""
 }
 
 function _update_print_available() {
-  clr_cyan "\nAvailable [name]s:"
+  echo "\n$cs[h2]Available $c[reset]$cs[param]targets$c[reset]$cs[h2]:$c[reset]"
   local index=1
+  echo "$cs[param]all$c[reset]: Updates everything below"
   for FLAG in ${_update_flags[@]}; do
     NAME=$_update_names[$index]
-    clr_green "\0---$FLAG: " -n;
-    clr_white "$NAME"
+    echo "$cs[param]$FLAG$c[reset]: $NAME"
 
     index=$(expr $index + 1)
   done
@@ -169,7 +161,7 @@ function _update_do_update() {
   _update_updating $NAME
 
   if is equal 1 $_UPDATE_DEBUG; then
-    clr_cyan "$NAME ($index)"
+    echo "$cs[info]$NAME ($index)$c[reset]"
     echo "$CHECK"
     echo "$COMMAND"
   fi
@@ -195,30 +187,35 @@ function _update_do_update() {
 function update() {
   local DEPS=(
     is
-    clr_red
-    clr_green
-    clr_brown
-    clr_white
   )
 
   if ! deps $DEPS; then
     return
   fi
 
-  if has-flag '--help' $@; then
-    print-help "$0" "$_update_description" "_update_flag_names" "_update_flag_messages"
+  if is empty "$1" || has-flag '--help' $@; then
+      print-help \
+        "$0" \
+        "$_update_description" \
+        "_update_flag_names" \
+        "_update_flag_messages" \
+        "$_update_positional" \
+        "$_update_positional_desc"
     _update_print_available
-    return
+    return 0
   fi
 
   has-flag '--quiet' $@
   local QUIET=$?
 
-  has-flag '--all' $@
+  TARGET="$@[-1]"
+
+
+  has-flag 'all' $@
   local ALL=$?
 
   if is equal $ALL 0; then
-    clr_cyan 'Updating Everything'
+    echo "$cs[info]Updating Everything$c[reset]"
     local index=1
     for NAME in ${_update_names[@]}; do
       _update_do_update $index
@@ -233,7 +230,7 @@ function update() {
   local index=1
   local matched=0
   for FLAG in ${_update_flags[@]}; do
-    if has-flag "--$FLAG" $@; then
+    if has-flag "$FLAG" $@; then
       matched=$(expr $matched + 1)
       _update_do_update $index
     fi
@@ -241,7 +238,7 @@ function update() {
   done
 
   if is equal $matched 0; then
-    clr_brown "Nothing to update, do --help to see what's available."
+    echo "$cs[warn]Nothing to update, check --help for usage.$c[reset]"
   fi
 }
 
