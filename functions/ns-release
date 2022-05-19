@@ -1,31 +1,46 @@
 #!/usr/bin/env zsh
 
+_ns_release_description="Performs an release with nativescript"
+_ns_release_positional=""
+_ns_release_positional_desc=""
+_ns_release_flag_names[1]="--help"
+_ns_release_flag_messages[1]="shows help"
+_ns_release_flag_names[2]="--build-id [build-id]"
+_ns_release_flag_messages[2]="Bumps --build-id to [build-id]"
+_ns_release_flag_names[3]="--ios"
+_ns_release_flag_messages[3]="Performs an iOS release"
+
 _ns-release_set-build-id() {
-  /usr/libexec/PlistBuddy $1 -c "set CFBundleVersion $2"
+  local INFO_PLIST="./App_Resources/iOS/Info.plist"
+  local BUILD_ID=$2
+  /usr/libexec/PlistBuddy $INFO_PLIST -c "set CFBundleVersion $BUILD_ID"
 }
 
 _ns-release_build-id() {
-  /usr/libexec/PlistBuddy $1 -c "print CFBundleVersion"
+  local INFO_PLIST="./App_Resources/iOS/Info.plist"
+  /usr/libexec/PlistBuddy $INFO_PLIST -c "print CFBundleVersion"
 }
 _ns-release_short-version() {
-  /usr/libexec/PlistBuddy $1 -c "print CFBundleShortVersionString"
+  local INFO_PLIST="./App_Resources/iOS/Info.plist"
+  /usr/libexec/PlistBuddy $INFO_PLIST -c "print CFBundleShortVersionString"
 }
 
 _ns-release_build() {
-  SHORT_VERSION=$1
-  BUILD_ID=$2
-  DESKTOP_DIR=$3
+  local INFO_PLIST="./App_Resources/iOS/Info.plist"
+  SHORT_VERSION=$(_ns-release_short-version $INFO_PLIST)
+  BUILD_ID=$(_ns-release_build-id $INFO_PLIST)
+  DESKTOP_DIR="$HOME/Desktop"
 
   FINAL_PATH="$DESKTOP_DIR/engineius-$SHORT_VERSION-$BUILD_ID.ipa"
-  echo "Building $SHORT_VERSION-$BUILD_ID"
-  echo "to $FINAL_PATH"
+  echo "$cs[info]Building$c[reset] $SHORT_VERSION-$BUILD_ID"
+  echo "$cs[info]to$c[reset] $FINAL_PATH"
 
   if ! confirm; then
-    clr_cyan "Okay Then, ignore me"
+    echo "$cs[yellow]Okay Then, ignore me$c[reset]"
     return
   fi
 
-  clr_green "Running Build Command:"
+  clr_green "$cs[info]Running Build Command:$c[reset]"
 
   ns build ios \
     --for-device \
@@ -58,21 +73,31 @@ ns-release() {
     return
   fi
 
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_ns_release_description" \
+      "_ns_release_flag_names" \
+      "_ns_release_flag_messages" \
+      "$_ns_release_positional" \
+      "$_ns_release_positional_desc"
+    return 0
+  fi
+
   if is not existing $INFO_PLIST; then
-    clr_red "Cannot find $INFO_PLIST, are you in the right directory?"
+    echo "$cs[warn]Cannot find$c[reset] $INFO_PLIST$cs[warn], are you in the right directory?$c[reset]"
     return
   fi
 
-  if is not equal "$1" ""; then
-    clr_cyan "Updating BUILD_ID to: $1"
-    _ns-release_set-build-id "$INFO_PLIST" "$1"
+  if has-flag '--build-id' $@; then
+    local BUILD_ID=$(flag-value '--build-id' $@)
+    echo "$cs[info]Updating BUILD_ID to:$c[reset] $1"
+    _ns-release_set-build-id "$1"
   fi
 
-  SHORT_VERSION=$(_ns-release_short-version $INFO_PLIST)
-  BUILD_ID=$(_ns-release_build-id $INFO_PLIST)
-  DESKTOP_DIR="$HOME/Desktop"
-
-  _ns-release_build "$SHORT_VERSION" "$BUILD_ID" "$DESKTOP_DIR"
+  if has-flag '--ios' $@; then
+    _ns-release_build
+  fi
 }
 
 ns-release "$@"
