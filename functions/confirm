@@ -1,6 +1,36 @@
 #!/usr/bin/env zsh
 
+_confirm_description="Confirms with an optional message"
+_confirm_positional="message"
+_confirm_positional_desc="The message to show, default used if omitted."
+_confirm_flag_names[1]="--help"
+_confirm_flag_messages[1]="shows help"
+_confirm_example=$(cat <<-END
+$cs[sub]if $c[reset]confirm $cs[param]'are you sure?'$c[reset]$cs[sub]; then
+  $c[reset]$cs[success]echo 'confirmed'$c[reset]
+$cs[sub]fi$c[reset]
+
+$cs[sub]if $c[reset]confirm$c[reset]$cs[sub]; then
+  $c[reset]$cs[success]echo 'confirmed'$c[reset]
+$cs[sub]fi$c[reset]
+END
+)
+
 function confirm() {
+  if has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_confirm_description" \
+      "_confirm_flag_names" \
+      "_confirm_flag_messages" \
+      "$_confirm_positional" \
+      "$_confirm_positional_desc"
+
+    echo "$cs[h2]\nExample:$c[reset]"
+    echo "$_confirm_example"
+    return 0
+  fi
+
   MESSAGE=${1:="$cs[warn]Are you sure?$c[reset]"}
   read "confirmed?$MESSAGE $cs[sub][y/n]$c[reset] "
   if [[ "$confirmed" =~ ^[Yy]$ ]]
