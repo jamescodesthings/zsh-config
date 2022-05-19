@@ -11,7 +11,7 @@ _gpl_flag_names[3]="--prune"
 _gpl_flag_messages[3]="runs the prune"
 
 function git-prune-local_delete() {
-  echo "$c[cyan]The following branches will be deleted$c[reset]"
+  echo "$cs[info]The following branches will be deleted$c[reset]"
 
   git-prune-local_list
 
@@ -31,10 +31,7 @@ function git-prune-local() {
     grep
     awk
     xargs
-    clr_white
     confirm
-    clr_cyan
-    clr_red
   )
 
   if ! deps $DEPS; then

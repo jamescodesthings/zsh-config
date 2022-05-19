@@ -22,7 +22,7 @@ function global-python-version() {
     return 0
   fi
 
-  clr_red 'Could not get python version from ASDF or global Python executable'
+  echo "$cs[error]Could not get python version from ASDF or global Python executable$c[reset]"
 }
 
 global-python-version "$@"
