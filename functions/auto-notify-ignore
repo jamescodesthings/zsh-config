@@ -8,18 +8,17 @@ _auto_notify_flag_messages[2]="lists currently ignored commands"
 _auto_notify_flag_names[3]="--add [command]"
 _auto_notify_flag_messages[3]="adds [command] to ignored commands"
 
-
 function _auto-notify-ignore_add() {
   command=$1
 
   if is not existing "$AUTO_NOTIFY_IGNORE_FILE"; then
-    echo "$AUTO_NOTIFY_IGNORE_FILE $c[red] does not exist, please create it.$c[reset]"
+    echo "$AUTO_NOTIFY_IGNORE_FILE $cs[error] does not exist, please create it.$c[reset]"
     return
   fi
 
   echo "AUTO_NOTIFY_IGNORE+=(\"$command\")" >> $AUTO_NOTIFY_IGNORE_FILE
   source $AUTO_NOTIFY_IGNORE_FILE
-  echo "Added $c[magenta]$command$c[reset] to $c[dim]$AUTO_NOTIFY_IGNORE_FILE$c[reset]"
+  echo "$cs[success]Added $c[reset] $command $cs[success]to $c[reset]$AUTO_NOTIFY_IGNORE_FILE"
 }
 
 # Lists and adds to AUTO_NOTIFY_IGNORE
@@ -47,7 +46,7 @@ function auto-notify-ignore () {
   if has-flag '--add' $@; then
     VALUE=$(flag-value '--add' $@)
     if is empty "$VALUE"; then
-      echo "$c[yellow]No command passed to --add, see --help for usage.$c[reset]"
+      echo "$cs[warn]No command passed to --add, see --help for usage.$c[reset]"
       return 1
     fi
 
@@ -55,7 +54,7 @@ function auto-notify-ignore () {
   fi
 
   if has-flag '--list' $@; then
-    echo "$c[dim]Commands currently ignored:$c[reset]"
+    echo "$cs[h2]Commands currently ignored:$c[reset]"
     echo $AUTO_NOTIFY_IGNORE | tr ' ' '\n' | sort | uniq
   fi
 }
