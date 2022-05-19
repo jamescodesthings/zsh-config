@@ -1,0 +1,54 @@
+#!/usr/bin/env zsh
+
+#SOME_VAR="${SOME_VAR:-"default-value"}"
+
+_template_description="This is the description"
+_template_positional="positional"
+_template_positional_desc="This is a positional argument"
+_template_flag_names[1]="--help"
+_template_flag_messages[1]="shows help"
+_template_flag_names[2]="--sub [param]"
+_template_flag_messages[2]="Runs a sub function with [param]."
+
+function _template_subfn() {
+  if is empty "$1"; then
+    echo "$cs[warn]Nothing passed to subfn$c[reset]"
+    return 1
+  fi
+
+  echo "$cs[success]subfn$c[reset] $1"
+}
+
+function template() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_template_description" \
+      "_template_flag_names" \
+      "_template_flag_messages" \
+      "$_template_positional" \
+      "$_template_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+
+  if has-flag '--sub' $@; then
+    _template_subfn "$(flag-value '--sub' $@)"
+#    return $?
+  fi
+
+  if is not empty "$POSITIONAL"; then
+    echo "$cs[param]$POSITIONAL$c[reset]"
+  fi
+}
+
+template "$@"

@@ -1,10 +1,19 @@
 #!/usr/bin/env zsh
 
+FN_DIR=${FN_DIR:=$CUSTOM_DIR/functions}
+
 _reload_description="Reloads a zsh function by name"
 _reload_positional="function"
-_reload_positional_desc="The function to reload"
+_reload_positional_desc="The function to reload, or all for all functions."
 _reload_flag_names[1]="--help"
 _reload_flag_messages[1]="shows help"
+
+function _reload_do() {
+  FN="$1"
+  unfunction "$FN"
+  autoload -Uz "$FN"
+  echo "$FN $cs[success]reloaded$c[reset]"
+}
 
 function reload() {
   local DEPS=(
@@ -28,9 +37,15 @@ function reload() {
 
   FN="$1"
 
-  unfunction "$FN"
-  autoload -Uz "$FN"
-  echo "$FN $cs[success]reloaded$c[reset]"
+  if is equal "$FN" "all"; then
+    FNS=$(ls $FN_DIR)
+    while IFS= read -r FN; do
+      _reload_do $FN
+    done <<< "$FNS"
+    return $?
+  fi
+
+  _reload_do $FN
 }
 
 reload "$@"
