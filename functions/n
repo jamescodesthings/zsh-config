@@ -1,8 +1,11 @@
-n ()
+#!/usr/bin/env zsh
+
+# nnn wrapper that helps with exiting on the current directory
+function n ()
 {
     # Block nesting of nnn in subshells
     if [ -n $NNNLVL ] && [ "${NNNLVL:-0}" -ge 1 ]; then
-        echo "nnn is already running"
+        echo "$cs[error]nnn is already running$c[reset]"
         return
     fi
 
