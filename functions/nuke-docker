@@ -1,5 +1,11 @@
 #!/usr/bin/env zsh
 
+_nuke_docker_description="Clears out docker containers, images and volumes."
+_nuke_docker_positional=""
+_nuke_docker_positional_desc=""
+_nuke_docker_flag_names[1]="--help"
+_nuke_docker_flag_messages[1]="shows help"
+
 function nuke-docker() {
   local DEPS=(
     clr_cyan
@@ -10,18 +16,41 @@ function nuke-docker() {
     return
   fi
 
+  if has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_nuke_docker_description" \
+      "_nuke_docker_flag_names" \
+      "_nuke_docker_flag_messages" \
+      "$_nuke_docker_positional" \
+      "$_nuke_docker_positional_desc"
+    return 0
+  fi
+
+  if ! confirm "$cs[info]Nuke Docker$c[reset]?"; then
+    echo "$cs[info]Nothing to do then.$c[reset]"
+    return 0
+  fi
+
   # Stop the containers
-  clr_cyan "Stop all containers"
+  echo "$cs[info]Stop all containers$c[reset]"
   docker stop $(docker ps -a -q)
+  echo "$cs[success]Stopped all containers$c[reset]"
+
   # Delete all containers
-  clr_cyan "Remove all containers"
+  echo "$cs[info]Deleting all containers$c[reset]"
   docker rm $(docker ps -a -q)
+  echo "$cs[success]Deleted all containers$c[reset]"
+
   # Delete all images
-  clr_cyan "Delete all images"
+  echo "$cs[info]Deleting all images$c[reset]"
   docker rmi -f $(docker images -a -q)
+  echo "$cs[success]Deleted all images$c[reset]"
+
   # Delete all volumes
-  clr_cyan "Delete all volumes"
+  echo "$cs[info]Deleting all volumes$c[reset]"
   docker volume rm -f $(docker volume ls -q)
+  echo "$cs[success]Deleted all volumes$c[reset]"
 }
 
 nuke-docker "$@"
