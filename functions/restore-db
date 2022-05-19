@@ -9,58 +9,33 @@ EXTRACTED_FILE="backup.sql"
 DB_AFTER_RESTORE_SCRIPT="$HOME/projects/sql/db-mobile-seed.sql"
 DEBUG=0
 
-# Restores a sql database to a new db
-function restore-db() {
-  local DEPS=(
-    is
-    clr_cyan
-    clr_white
-    du
-    gzip
-    mysql
-    pv
-  )
-
-  if ! deps $DEPS; then
-    return
-  fi
-
-  if is not empty "$1"; then
-    _restore-db_restore $@
-    return
-  fi
-  _restore-db_help "$0"
-}
-
-function _restore-db_help() {
-  clr_cyan 'Usage:' -n
-  clr_white " $1 [./path/to/.tar.gz] [--no-fix|--no-delete]\n"
-
-  clr_cyan 'Restores the DB SQL file in the .tar.gz.'
-  clr_cyan 'Options:'
-  echo "--no-fix: Does not run the after script"
-  echo "--no-delete: Does not DROP and recreate the DB"
-  echo "--compare: dumps to a -compare database"
-}
+_restore_db_description="Restores a DB from the .tar.gz for the db"
+_restore_db_positional="backup"
+_restore_db_positional_desc="The backup file for the db in .tar.gz format"
+_restore_db_flag_names[1]="--help"
+_restore_db_flag_messages[1]="shows help"
+_restore_db_flag_names[2]="--no-fix"
+_restore_db_flag_messages[2]="Does not run the postprocessing script"
+_restore_db_flag_names[3]="--no-delete"
+_restore_db_flag_messages[3]="Does not DROP and recreate the DB"
+_restore_db_flag_names[4]="--compare"
+_restore_db_flag_messages[4]="Restores to db-compare for comparison"
 
 function _restore-db_restore() {
-  clr_cyan 'Restoring ' -n
-  clr_white "$1"
-
-  DB_FILE="$1"
+  DB_FILE="$@[-1]"
+  echo "$cs[info]Restoring$c[reset] $DB_FILE"
 
   if is not existing "$DB_FILE"; then
-    clr_red "Could not find file $1"
+    echo "$cs[error]Could not find file$c[reset] $1"
     return 1
   fi
 
   DB_DATE=$(echo "$DB_FILE" | rg -o "\d+\-\d+\-\d+")
 
   if is not empty "$DB_DATE"; then
-    clr_cyan "Dump Date: " -n
-    clr_white "$DB_DATE"
+    echo "$cs[info]Dump Date:$c[reset] $DB_DATE"
   else
-    clr_red "Could not work out dump date"
+    echo "$cs[error]Could not work out dump date$c[reset]"
     return 1
   fi
 
@@ -69,25 +44,24 @@ function _restore-db_restore() {
   _restore-db_extract "$DB_FILE"
 
   if is not existing "$EXTRACTED_FILE"; then
-    clr_red "$DB_FILE was not successfully extracted to $EXTRACTED_FILE"
+    echo "$DB_FILE $cs[error]was not successfully extracted to$c[reset] $EXTRACTED_FILE"
   fi
 
   DB_NAME="app_prod_$DB_DATE"
 
-  if is equal "$2" "--compare"; then
+  if has-flag '--compare' $@; then
     DB_NAME="${DB_NAME}_compare"
   fi
 
-  if is not equal "$2" "--no-delete"; then
-    clr_cyan "Creating: " -n
-    clr_white "$DB_NAME"
+  if ! has-flag '--compare' $@; then
+    echo "$cs[info]Creating:$c[reset] $DB_NAME"
 
     _restore-db_mysql "DROP DATABASE IF EXISTS \`$DB_NAME\`"
 
     _restore-db_mysql "CREATE DATABASE \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 
     if is not equal "$?" "0"; then
-      clr_red "Could not create database"
+      echo "$cs[error]Could not create database$c[reset]"
       _restore_db_cleanup
       return 1
     fi
@@ -95,60 +69,57 @@ function _restore-db_restore() {
 
   _restore-db_mysql-script "$DB_NAME" "$EXTRACTED_FILE"
 
-  if is not equal "$?" "0"; then
-    clr_red "Script failed: $EXTRACTED_FILE"
+  if is not equal $? 0; then
+    echo "$cs[error]Script failed:$c[reset] $EXTRACTED_FILE"
     _restore_db_cleanup
     return 1
   fi
 
-  if is equal "$2" "--no-fix"; then
-    clr_cyan "Not running $DB_AFTER_RESTORE_SCRIPT due to --no-fix option"
-  elif is equal "$2" " --no-delete"; then
-    clr_cyan "Not running $DB_AFTER_RESTORE_SCRIPT due to --no-delete option"
+  if has-flag '--no-fix' $@; then
+    echo "$cs[info]Not running$c[reset] $DB_AFTER_RESTORE_SCRIPT $cs[info]due to --no-fix option$c[reset]"
+  elif has-flag '--no-delete' $@; then
+    echo "$cs[info]Not running$c[reset] $DB_AFTER_RESTORE_SCRIPT $cs[info]due to --no-delete option$c[reset]"
   else
     _restore-db_mysql-script "$DB_NAME" "$DB_AFTER_RESTORE_SCRIPT"
 
     if is not equal "$?" "0"; then
-      clr_red "Script failed: $DB_AFTER_RESTORE_SCRIPT"
+      echo "$cs[eror]Script failed:$c[reset] $DB_AFTER_RESTORE_SCRIPT"
       _restore_db_cleanup
       return 1
     fi
   fi
 
   _restore_db_cleanup
-  clr_green "Done"
+  echo "$cs[success]Restored$c[reset] $DB_FILE"
 }
 
 function _restore-db_mysql() {
   if is equal "1" "$DEBUG"; then
-    clr_cyan "Sql: " -n
-    clr_white "$1"
+    echo "$cs[info]Sql:$c[reset] $1"
   fi
   mysql --defaults-extra-file=$CNF_FILE -e $1
 }
 
 function _restore-db_mysql-script() {
   if is not existing "$2"; then
-    clr_red "Could not find $2"
+    echo "$cs[error]Could not find$c[reset] $2"
     return 1
   fi
 
   if is empty "$1"; then
-    clr_red "No DB selected?"
+    echo "$cs[error]No DB selected?$c[reset]"
     return 1
   fi
 
   FILE_SIZE=$(du -h $2 | rg -o ".*?\s" | xargs)
-  clr_cyan "Run SQL Script: " -n
-  clr_white "$2 ($FILE_SIZE) " -n
-  clr_cyan "on " -n
-  clr_white "$1"
+
+  echo "$cs[info]Running SQL Script:$c[reset] $2 ($FILE_SIZE) $cs[info]on$c[reset] $1"
 
   pv $2 | mysql --defaults-extra-file=$CNF_FILE $1
 }
 
 function _restore_db_cleanup() {
-  clr_cyan "Cleaning up"
+  echo "$cs[info]Cleaning Up$c[reset]"
   _restore-db_remove-conf
   _restore-db_remove_backup_file
 }
@@ -164,26 +135,55 @@ function _restore-db_create-conf() {
 function _restore-db_remove-conf() {
   if is existing "$CNF_FILE"; then
     if is equal "1" "$DEBUG"; then
-      clr_cyan "Deleting $CNF_FILE"
+      echo "$cs[info]Deleting$c[reset] $CNF_FILE"
     fi
     rm $CNF_FILE
   fi
 }
 
 function _restore-db_extract() {
-  clr_cyan 'Extracting ' -n
-  clr_white "$1 " -n
-  clr_cyan "to " -n
-  clr_white "$EXTRACTED_FILE"
+  echo "$cs[info]Extracting$c[reset] $1 $cs[info]to$c[reset] $EXTRACTED_FILE"
   gzip -c -d "$1" > $EXTRACTED_FILE
 }
 
 function _restore-db_remove_backup_file() {
   if is existing "$EXTRACTED_FILE"; then
     if is equal "1" "$DEBUG"; then
-      clr_cyan "Deleting $EXTRACTED_FILE"
+      echo "$cs[info]Deleting$c[reset]$EXTRACTED_FILE"
     fi
     rm $EXTRACTED_FILE
+  fi
+}
+
+
+# Restores a sql database to a new db
+function restore-db() {
+  local DEPS=(
+    is
+    du
+    gzip
+    mysql
+    pv
+  )
+
+  if ! deps $DEPS; then
+    return
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_restore_db_description" \
+      "_restore_db_flag_names" \
+      "_restore_db_flag_messages" \
+      "$_restore_db_positional" \
+      "$_restore_db_positional_desc"
+    return 0
+  fi
+
+  if is not empty "$@[-1]"; then
+    _restore-db_restore $@
+    return $?
   fi
 }
 
