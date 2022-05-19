@@ -1,32 +1,33 @@
 #!/usr/bin/env zsh
 
-function _listening_usage() {
-  clr_cyan 'Usage:' -n clr_white " $1 port\n"
-
-  clr_cyan 'Lists Processes running on a given port'
-}
+_listening_description="Finds the command listening on a given port"
+_listening_positional="port"
+_listening_positional_desc="The port being listened on"
+_listening_flag_names[1]="--help"
+_listening_flag_messages[1]="shows help"
 
 # listening: Lazy issue mentions in a git commit -m
 function listening () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
   )
 
   if ! deps $DEPS; then
     return
   fi
 
-  if is empty "$1"; then
-    _listening_usage "$0"
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_listening_description" \
+      "_listening_flag_names" \
+      "_listening_flag_messages" \
+      "$_listening_positional" \
+      "$_listening_positional_desc"
     return 0
   fi
 
   sudo lsof -iTCP -sTCP:LISTEN -n -P | grep -i --color $1
-
 }
 
 listening "$@"
