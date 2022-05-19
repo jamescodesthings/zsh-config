@@ -1,5 +1,10 @@
 #!/usr/bin/env zsh
 
+#USAGE=$(cat <<-END
+#    This is line one.
+#    This is line two.
+#    This is line three.
+#END
 _gcmm_description="git commit -m wrapper with support for adding branch and project tags"
 _gcmm_positional="message"
 _gcmm_positional_desc="The commit message"
@@ -14,31 +19,94 @@ _gcmm_flag_messages[4]="unsets the branch's project"
 _gcmm_flag_names[5]="--show"
 _gcmm_flag_messages[5]="Shows the full tag that will be prepended to the [messsage]"
 
-function _gcmm_usage() {
-  clr_cyan 'Usage:' -n
-  clr_white " $1 command\n"
+function _gcmm_set_project() {
+  project=$1
+  if is empty "$project"; then
+    echo "$c[red]No project passed to $c[reset]--set-project$c[red], see --help for usage.$c[reset]"
+    return 1
+  fi
 
-  clr_cyan 'Commands:'
-  clr_green '[message]' -n
-  clr_white ' - Commits with the message, tagged with the project and issue number'
-  clr_green 'set-project' -n
-  clr_white ' [project] - Sets the project for this branch'
-  clr_green 'get-project' -n
-  clr_white ' - Gets the project for this branch'
-  clr_green 'unset-project' -n
-  clr_white ' - Unsets the project for this branch'
-  clr_green 'show' -n
-  clr_white ' - Shows the tag that''s going to be used if you commit'
+  branch=$(current_branch)
+
+
+  if is empty "$branch"; then
+    echo "$c[red]Could not find current branch.$c[reset]"
+    return 1
+  fi
+
+  git config branch.$branch.project $project
+  echo "$c[green]Set project for$c[reset] $branch $c[green]to$c[reset] $project"
+  return 0
 }
 
-# GCMM: Lazy issue mentions in a git commit -m
+function _gcmm_get_project() {
+  branch=$(current_branch)
+
+  if is empty "$branch"; then
+    echo "$c[red]Could not find current branch$c[reset]"
+    return 1
+  fi
+
+  project=$(git config branch.$branch.project)
+  if is empty "$project"; then
+    echo "$c[red]No project set for$c[reset] $branch"
+  else
+    echo "$project"
+  fi;
+  return 0;
+}
+
+function _gcmm_unset_project() {
+  branch=$(current_branch)
+
+  if is empty "$branch"; then
+    echo "$c[red]Could not find current branch$c[reset]"
+    return 1
+  fi
+
+  git config --unset branch.$branch.project
+  echo "$c[green]Unset project for$c[reset] $branch"
+  return 0
+}
+
+
+function _gcmm_show() {
+  branch=$(current_branch)
+  project=$(git config branch.$branch.project)
+  issue=$(current_branch | egrep -o '[0-9]+')
+
+  if is empty "$branch"; then
+    echo "$c[red]Could not find current branch$c[reset]"
+    return 1
+  fi
+
+  if is not empty "$issue"; then
+    tag="#$issue"
+  fi
+
+  if is not empty "$project"; then
+    tag="$project$tag"
+  fi
+
+  echo $tag
+  return 0
+}
+
+function _gcmm_commit() {
+  local tag=$(_gcmm_show)
+  local result=$?
+
+  if is not equal $result 0; then
+    echo "$tag"
+    return 1
+  fi
+
+  git commit -m "$tag $1"
+}
+
 function gcmm () {
   local DEPS=(
     is
-    clr_cyan
-    clr_green
-    clr_white
-    clr_red
     git
     current_branch
   )
@@ -58,132 +126,27 @@ function gcmm () {
     return 0
   fi
 
-  if is equal "$1" "set-project"; then
-    _gcmm_set_project $0 $2
-    return 0;
+  if has-flag '--set-project' $@; then
+    _gcmm_set_project $(flag-value '--set-project' $@)
+    return $?
   fi
 
-  if is equal "$1" "get-project"; then
-    _gcmm_get_project $0
-    return 0;
+  if has-flag '--get-project' $@; then
+    _gcmm_get_project
+    return $?
   fi
 
-  if is equal "$1" "unset-project"; then
-    _gcmm_unset_project $0
-    return 0;
+  if has-flag '--unset-project' $@; then
+    _gcmm_unset_project
+    return $?
   fi
 
-  if is equal "$1" "show"; then
+  if has-flag '--show' $@; then
     _gcmm_show
-    return 0;
+    return $?
   fi
 
   _gcmm_commit $1
-}
-
-function _gcmm_set_project() {
-  self_command=$1
-
-  if is empty "$2"; then
-    clr_red "No project passed to command"
-    _gcmm_usage $self_command;
-    return 1;
-  fi;
-
-  branch=$(current_branch)
-
-  if is empty "$branch"; then
-    clr_red "Could not find current branch"
-    return 1;
-  fi
-
-  git config branch.$branch.project $2
-  clr_green "Set project for $branch to $2"
-  return 0;
-}
-
-function _gcmm_get_project() {
-  branch=$(current_branch)
-
-  if is empty "$branch"; then
-    clr_red "Could not find current branch"
-    return 1;
-  fi
-
-  project=$(git config branch.$branch.project)
-  if is empty "$project"; then
-    clr_white "No project set for $branch"
-  else
-    clr_white "$project"
-  fi;
-  return 0;
-}
-
-function _gcmm_unset_project() {
-  branch=$(current_branch)
-
-  if is empty "$branch"; then
-    clr_red "Could not find current branch"
-    return 1;
-  fi
-
-  git config --unset branch.$branch.project
-  clr_green "Unset project for $branch"
-  return 0;
-}
-# todo: roll _commit into using this
-function _gcmm_show() {
-  branch=$(current_branch)
-
-  project=$(git config branch.$branch.project)
-
-  issue=$(current_branch | egrep -o '[0-9]+')
-
-
-  if is empty "$branch"; then
-    clr_red "Could not find current branch"
-    return 1;
-  fi
-
-  if is empty "$issue"; then
-    clr_red "could not find issue number on $branch"
-    return 1;
-  fi
-
-  tag="#$issue"
-
-  if is not empty "$project"; then
-    tag="$project$tag"
-  fi
-
-  echo $tag
-}
-
-function _gcmm_commit() {
-  branch=$(current_branch)
-
-  project=$(git config branch.$branch.project)
-
-  issue=$(current_branch | egrep -o '[0-9]+')
-
-
-  if is empty "$branch"; then
-    clr_red "Could not find current branch"
-    return 1;
-  fi
-
-  if is empty "$issue"; then
-    git commit -m "$1"
-    return 0;
-  fi
-
-  tag="#$issue"
-
-  if is not empty "$project"; then
-    tag="$project$tag"
-  fi
-
-  git commit -m "$tag $1"
 }
 
 gcmm "$@"
