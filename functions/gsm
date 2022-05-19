@@ -59,6 +59,8 @@ function gsm () {
 
   if is not equal $? 0; then
     echo "$cs[error]Could not git pull$c[reset]"
+    # Try go back
+    git checkout "$MY_BRANCH" &>/dev/null
     return 1
   fi
 
