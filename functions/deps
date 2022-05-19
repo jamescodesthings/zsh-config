@@ -38,7 +38,7 @@ steps[xcrun]="install xcode command line tools (xcode-select --install)"
 function deps-command() {
   local inst="${steps[$1]}"
   if is not empty $inst; then
-    echo "$c[dim]Install:$c[reset] $inst"
+    echo "$cs[h3]Install:$c[reset] $inst"
   fi
 }
 
@@ -47,7 +47,7 @@ function deps() {
 
   for dependency in "$@"; do
     if is not available "$dependency"; then
-      echo "$c[red]Missing dependency:$c[reset] $dependency"
+      echo "$cs[error]Missing dependency:$c[reset] $dependency"
       deps-command "${dependency}"
       missing=1
     fi
