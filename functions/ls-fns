@@ -2,21 +2,29 @@
 
 #SOME_VAR="${SOME_VAR:-"default-value"}"
 
-_ls_fns_description="This is the description"
-_ls_fns_positional="positional"
-_ls_fns_positional_desc="This is a positional argument"
+_ls_fns_description="Lists custom functions and their descriptions"
+_ls_fns_positional=""
+_ls_fns_positional_desc=""
 _ls_fns_flag_names[1]="--help"
 _ls_fns_flag_messages[1]="shows help"
-_ls_fns_flag_names[2]="--sub [param]"
-_ls_fns_flag_messages[2]="Runs a sub function with [param]."
 
-function _ls_fns_subfn() {
-  if is empty "$1"; then
-    echo "$cs[warn]Nothing passed to subfn$c[reset]"
-    return 1
-  fi
+function _ls_fns_list() {
+  local fns=$(ls "$FN_DIR")
 
-  echo "$cs[success]subfn$c[reset] $1"
+  echo "$cs[h2]Available Functions:$c[reset]"
+
+  while IFS= read -r fn; do
+    $fn --help &> /dev/null
+    local fn_record="$cs[info]$fn$c[reset]"
+    local underscored=${fn//-/_}
+    local desc_ptr="_${underscored}_description"
+    local description=${(P)${desc_ptr}}
+    if is not empty "$description"; then
+      fn_record="$fn_record - $description"
+    fi
+
+    echo $fn_record
+  done <<< "$fns"
 }
 
 function ls-fns() {
@@ -28,7 +36,7 @@ function ls-fns() {
     return 1
   fi
 
-  if is empty "$1" || has-flag '--help' $@; then
+  if has-flag '--help' $@; then
     print-help \
       "$0" \
       "$_ls_fns_description" \
@@ -39,16 +47,7 @@ function ls-fns() {
     return 0
   fi
 
-  local POSITIONAL="$@[-1]"
-
-  if has-flag '--sub' $@; then
-    _ls_fns_subfn "$(flag-value '--sub' $@)"
-#    return $?
-  fi
-
-  if is not empty "$POSITIONAL"; then
-    echo "$cs[param]$POSITIONAL$c[reset]"
-  fi
+  _ls_fns_list "$@"
 }
 
 ls-fns "$@"

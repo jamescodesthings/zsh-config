@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-_auto_notify_description="Adds a shell command to the list of commands ignored by auto-notify"
+_auto_notify_ignore_description="Adds a shell command to the list of commands ignored by auto-notify"
 _auto_notify_flag_names[1]="--help"
 _auto_notify_flag_messages[1]="shows help"
 _auto_notify_flag_names[2]="--list"
@@ -37,7 +37,7 @@ function auto-notify-ignore () {
   if is empty "$1" || has-flag "--help" $@; then
     print-help \
       "$0" \
-      "$_auto_notify_description" \
+      "$_auto_notify_ignore_description" \
       "_auto_notify_flag_names" \
       "_auto_notify_flag_messages"
     return

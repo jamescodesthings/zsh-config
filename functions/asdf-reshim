@@ -1,9 +1,9 @@
 #!/usr/bin/env zsh
 
 
-_reshim_description="Runs asdf reshim and fixes shims to avoid collision"
-_reshim_flags[1]="--help"
-_reshim_flag_descriptions[1]="Prints Help"
+_asdf_reshim_description="Runs asdf reshim and fixes shims to avoid collision"
+_asdf_reshim_flags[1]="--help"
+_asdf_reshim_flag_descriptions[1]="Prints Help"
 
 shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst')
 
@@ -39,7 +39,7 @@ function asdf-reshim () {
   fi
 
   if has-flag '--help' $@; then
-    print-help $0 "$_reshim_description" "_reshim_flags" "_reshim_flag_descriptions"
+    print-help $0 "$_asdf_reshim_description" "_asdf_reshim_flags" "_asdf_reshim_flag_descriptions"
     echo "\n$cs[h2]Shims:$c[reset]"
     for shim in $shims; do
       echo "- $shim"
