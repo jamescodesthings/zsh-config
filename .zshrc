@@ -1,7 +1,9 @@
 #!/usr/bin/env zsh
 
-# Custom Functions
-export CUSTOM_DIR=$HOME/.custom
+# Project root
+export CUSTOM_DIR="$HOME/.custom"
+# Custom Function Directory
+export FN_DIR="$CUSTOM_DIR/functions"
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]

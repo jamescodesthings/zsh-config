@@ -1,21 +1,44 @@
 #!/usr/bin/env zsh
 
 # The function template
-FN_TEMPLATE="${FN_TEMPLATE:-$CUSTOM_DIR/functions/template}"
+FN_TEMPLATE="${FN_TEMPLATE:-$FN_DIR/template}"
+FN_TEMPLATE_REPLACE="template"
 
 _new_fn_description="Creates a new function in $CUSTOM_DIR/functions"
 _new_fn_positional="name"
-_new_fn_positional_desc="The function name"
+_new_fn_positional_desc="The function name (kebab-case)"
 _new_fn_flag_names[1]="--help"
 _new_fn_flag_messages[1]="shows help"
 
 function _new_fn_create() {
-  if is empty "$1"; then
-    echo "$cs[warn]Nothing passed to subfn$c[reset]"
-    return 1
+  local NAME=$1
+  local LOWER_NAME=${NAME:l}
+  local UNDER_NAME=${LOWER_NAME//-/_}
+  local FN_PATH="$FN_DIR/$LOWER_NAME"
+
+  if is existing "$FN_PATH"; then
+    if ! confirm "$FN_PATH $cs[warn]already exists, overwrite it?$c[reset]"; then
+      return 0
+    fi
   fi
 
-  echo "$cs[success]subfn$c[reset] $1"
+  echo "$cs[info]Creating$c[reset] $LOWER_NAME"
+  echo "$cs[info]Using$c[reset] $FN_TEMPLATE"
+
+  local TEMPLATE=$(cat "$FN_TEMPLATE")
+  # Replace everything with underscore'd name
+  TEMPLATE=${TEMPLATE//$FN_TEMPLATE_REPLACE/$UNDER_NAME}
+
+  # Then replace any "function $UNDER_NAME" with kebab-case
+  TEMPLATE=${TEMPLATE//"function $UNDER_NAME"/"function $LOWER_NAME"}
+
+  # replace calls to $UNDER_NAME with kebab-case
+  local repl="$UNDER_NAME \"\$@\""
+  TEMPLATE=${TEMPLATE//$repl/"$LOWER_NAME \"\$@\""}
+
+  # echo "$TEMPLATE"
+  echo "$TEMPLATE" > "$FN_PATH"
+  echo "$cs[success]Created$c[reset] $LOWER_NAME"
 }
 
 function new-fn() {
@@ -40,13 +63,8 @@ function new-fn() {
 
   local POSITIONAL="$@[-1]"
 
-  if has-flag '--sub' $@; then
-    _new_fn_subfn "$(flag-value '--sub' $@)"
-#    return $?
-  fi
-
   if is not empty "$POSITIONAL"; then
-    echo "$cs[param]$POSITIONAL$c[reset]"
+    _new_fn_create "$POSITIONAL"
   fi
 }
 
