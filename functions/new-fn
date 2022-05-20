@@ -38,7 +38,10 @@ function _new_fn_create() {
 
   # echo "$TEMPLATE"
   echo "$TEMPLATE" > "$FN_PATH"
+
   echo "$cs[success]Created$c[reset] $LOWER_NAME"
+  autoload -Uz "$LOWER_NAME"
+  echo "$cs[success]Loaded$c[reset] $LOWER_NAME"
 }
 
 function new-fn() {
