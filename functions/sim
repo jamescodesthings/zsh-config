@@ -15,6 +15,8 @@ _sim_flag_names[5]="--install [path]"
 _sim_flag_messages[5]="Installs the app at [path] (.app)"
 _sim_flag_names[6]="--logs"
 _sim_flag_messages[6]="Prints the simulator's logs"
+_sim_flag_names[7]="--data-dir [bundle-id]"
+_sim_flag_messages[7]="Open's the running simulator's data directory for [bundle-id], if ommitted xcrun simctl com.engineius.app.driver is used."
 
 function _sim_install() {
   APP="$1"
@@ -85,6 +87,13 @@ function _sim_logs() {
   xcrun simctl spawn booted log stream --level=debug
 }
 
+function _sim_data_dir() {
+  local BUNDLE_ID=${1:="com.engineius.app.driver"}
+  local DATA_DIR=$(xcrun simctl get_app_container booted $BUNDLE_ID data)
+  echo "$cs[info]Opening$c[reset] $DATA_DIR"
+  open $DATA_DIR
+}
+
 # Git Super Merge
 function sim () {
   local DEPS=(
@@ -133,6 +142,10 @@ function sim () {
   if has-flag '--logs' $@; then
     _sim_logs
     return $?
+  fi
+
+  if has-flag '--data-dir' $@; then
+    _sim_data_dir $(flag-value '--data-dir' $@)
   fi
 
 }
