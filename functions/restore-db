@@ -208,6 +208,7 @@ function restore-db() {
     mysql
     pv
     aws
+    jq
   )
 
   if ! deps $DEPS; then
