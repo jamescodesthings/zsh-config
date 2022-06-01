@@ -208,7 +208,6 @@ function restore-db() {
     mysql
     pv
     aws
-    aria2c
   )
 
   if ! deps $DEPS; then
