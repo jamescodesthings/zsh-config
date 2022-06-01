@@ -7,6 +7,8 @@ DB_PASS="engineius"
 CNF_FILE="db.cnf"
 EXTRACTED_FILE="backup.sql"
 DB_AFTER_RESTORE_SCRIPT="$HOME/projects/sql/db-mobile-seed.sql"
+AWS_PROFILE="readonly"
+AWS_BUCKET="bucket.engineius.portal-development-dataset"
 DEBUG=0
 
 _restore_db_description="Restores a DB from the .tar.gz for the db"
@@ -20,9 +22,50 @@ _restore_db_flag_names[3]="--no-delete"
 _restore_db_flag_messages[3]="Does not DROP and recreate the DB"
 _restore_db_flag_names[4]="--compare"
 _restore_db_flag_messages[4]="Restores to db-compare for comparison"
+_restore_db_flag_names[5]="--latest"
+_restore_db_flag_messages[5]="Also downloads the latest db"
+
+
+function _restore-db_latest() {
+  AVAILABLE_DBS=$(aws s3api list-objects-v2 --bucket "$AWS_BUCKET" --profile $AWS_PROFILE)
+  AVAILABLE_DBS=$(echo $AVAILABLE_DBS | jq ".Contents[] | .Key" -r | sort --reverse)
+  FILTERED_DBS=$(echo $AVAILABLE_DBS| grep .sql.gz | grep -v TaskTracking | grep -v T12)
+  LATEST_DB=$(echo $FILTERED_DBS | head -n 1)
+  if is not empty "$LATEST_DB"; then
+    echo $LATEST_DB
+    return 0
+  else
+    return 1
+  fi
+}
+
+function _restore-db_download() {
+  DB_FILE="$1"
+  if is existing "$DB_FILE"; then
+    if confirm "$cs[warn]$DB_FILE already exists, delete?"; then
+      echo "$cs[info]Removing:$c[reset] $DB_FILE"
+      rm $DB_FILE
+    else
+      echo "$cs[error]Cool, doing nothing$c[reset]"
+      return 1
+    fi
+  fi
+  echo "$cs[info]Downloading:$c[reset] $DB_FILE"
+  aws s3api get-object --profile $AWS_PROFILE --bucket "$AWS_BUCKET" --key $DB_FILE $DB_FILE
+}
 
 function _restore-db_restore() {
   DB_FILE="$@[-1]"
+  if has-flag '--latest' $@; then
+    DB_FILE=$(_restore-db_latest)
+    if is equal $? 0; then
+      # Download it
+      _restore-db_download $DB_FILE
+    else
+      echo "$cs[error]Error Getting Latest DB$cs[reset]"
+    fi
+  fi
+
   echo "$cs[info]Restoring$c[reset] $DB_FILE"
 
   if is not existing "$DB_FILE"; then
@@ -164,6 +207,8 @@ function restore-db() {
     gzip
     mysql
     pv
+    aws
+    aria2c
   )
 
   if ! deps $DEPS; then
