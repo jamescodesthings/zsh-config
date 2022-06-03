@@ -23,7 +23,7 @@ _update_commands[1]="softwareupdate --all --install --force"
 # Homebrew
 _update_flags[2]="brew"
 _update_names[2]="Homebrew"
-_update_checks[2]="is available brew"
+_update_checks[2]="is osx && is available brew"
 _update_commands[2]="brew update && brew upgrade && brew cask upgrade"
 
 # ZInit
@@ -73,6 +73,18 @@ _update_flags[7]="node"
 _update_names[7]="NodeJS"
 _update_checks[7]="is available asdf"
 _update_commands[7]="_update_node"
+
+
+_update_flags[8]="arch"
+_update_names[8]="Arch"
+_update_checks[8]="is available pacman"
+_update_commands[8]="sudo pacman -Syu"
+
+_update_flags[9]="yay"
+_update_names[9]="Arch: Yay"
+_update_checks[9]="is available yay"
+_update_commands[9]="yay -Syu"
+
 
 # Testing
 if is equal $_UPDATE_TEST 1; then
@@ -218,7 +230,7 @@ function update() {
     echo "$cs[info]Updating Everything$c[reset]"
     local index=1
     for NAME in ${_update_names[@]}; do
-      _update_do_update $index
+      (_update_do_update $index)
 
       index=$(expr $index + 1)
     done
