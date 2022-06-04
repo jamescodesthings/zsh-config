@@ -164,7 +164,7 @@ if is available conda; then
   alias conda-save='conda env export > environment.yml'
 fi
 
-if alias fd 2>/dev/null; then
+if is alias fd; then
   unalias fd
 fi
 

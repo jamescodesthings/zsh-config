@@ -135,6 +135,9 @@ EOF
             [[ "$TERM_PROGRAM" == "iTerm.app" ]]; return $?;;
         osx)
             [[ "$(uname)" == "Darwin" ]]; return $?;;
+        alias)
+            cap=$(alias $value_a);
+            return $?;;
         m1)
             [[ "$(uname)" == "Darwin" && "$(uname -m)" == "arm64" ]]; return $?;;
 
