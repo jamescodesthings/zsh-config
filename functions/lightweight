@@ -1,0 +1,96 @@
+#!/usr/bin/env zsh
+
+#SOME_VAR="${SOME_VAR:-"default-value"}"
+
+# Example usage:
+# if is equal "$(lightweight --status)" "off"; then
+
+_lightweight_description="Sets the shell environment as lightweight."
+_lightweight_positional=""
+_lightweight_positional_desc=""
+_lightweight_flag_names[1]="--help"
+_lightweight_flag_messages[1]="shows help"
+_lightweight_flag_names[2]="--on"
+_lightweight_flag_messages[2]="Turns lightweight shell mode on"
+_lightweight_flag_names[3]="--off"
+_lightweight_flag_messages[3]="Turns lightweight shell mode off"
+_lightweight_flag_names[4]="--status"
+_lightweight_flag_messages[4]="Checks status and returns 1 if off, 0 if on."
+
+function _lightweight_status(){
+  if is empty "$LIGHTWEIGHT_INDICATOR"; then
+    echo "$cs[error]LIGHTWEIGHT_INDICATOR variable not found.$cs[reset]";
+    return 1
+  fi
+
+  if is existing "$LIGHTWEIGHT_INDICATOR"; then
+    echo "on"
+    return 0
+  else
+    echo "off"
+    return 1
+  fi
+}
+
+function _lightweight_on() {
+  if is empty "$LIGHTWEIGHT_INDICATOR"; then
+    echo "$cs[error]LIGHTWEIGHT_INDICATOR variable not found.$cs[reset]";
+    return 1
+  fi
+
+  touch "$LIGHTWEIGHT_INDICATOR"
+  echo "$cs[success]Lightweight mode on$cs[reset]"
+  return 0
+}
+
+function _lightweight_off() {
+  if is empty "$LIGHTWEIGHT_INDICATOR"; then
+    echo "$cs[error]LIGHTWEIGHT_INDICATOR variable not found.$cs[reset]";
+    return 1
+  fi
+
+  if is existing "$LIGHTWEIGHT_INDICATOR"; then
+    rm "$LIGHTWEIGHT_INDICATOR"
+  fi
+
+  echo "$cs[success]Lightweight mode off$cs[reset]"
+  return 0
+}
+
+function lightweight() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_lightweight_description" \
+      "_lightweight_flag_names" \
+      "_lightweight_flag_messages" \
+      "$_lightweight_positional" \
+      "$_lightweight_positional_desc"
+    return 0
+  fi
+
+  if has-flag '--on' $@; then
+    _lightweight_on
+   return $?
+  fi
+
+  if has-flag '--off' $@; then
+    _lightweight_off
+   return $?
+  fi
+
+  if has-flag '--status' $@; then
+    _lightweight_status
+   return $?
+  fi
+}
+
+lightweight "$@"

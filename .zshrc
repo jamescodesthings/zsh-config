@@ -5,6 +5,10 @@ export CUSTOM_DIR="$HOME/.custom"
 # Custom Function Directory
 export FN_DIR="$CUSTOM_DIR/functions"
 
+# Lightweight indicator is used to avoid loading heavy plugins
+# lightweight fn manages this
+export LIGHTWEIGHT_INDICATOR="$HOME/.lightweight-sh"
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
