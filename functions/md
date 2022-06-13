@@ -1,0 +1,59 @@
+#!/usr/bin/env zsh
+
+#SOME_VAR="${SOME_VAR:-"default-value"}"
+
+_md_description="Makes a directory and cds into it at once"
+_md_positional="path"
+_md_positional_desc="the directory name or path to create"
+_md_flag_names[1]="--help"
+_md_flag_messages[1]="shows help"
+_md_flag_names[2]="--no-follow"
+_md_flag_messages[2]='Just `mkdir -p`s'
+
+function _md_subfn() {
+  if is empty "$1"; then
+    echo "$cs[warn]Nothing passed to subfn$c[reset]"
+    return 1
+  fi
+
+  echo "$cs[success]subfn$c[reset] $1"
+}
+
+function md() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_md_description" \
+      "_md_flag_names" \
+      "_md_flag_messages" \
+      "$_md_positional" \
+      "$_md_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+
+  $(has-flag '--no-follow' $@)
+  NO_FOLLOW=$?
+  DIRPATH="$POSITIONAL"
+
+  mkdir -p "$DIRPATH"
+  if is not equal $NO_FOLLOW 0; then
+    cd "$DIRPATH"
+    echo "$cs[success]Created $DIRPATH and followed$cs[reset]"
+  else
+    echo "$cs[success]Created $DIRPATH$cs[reset]"
+  fi
+
+
+}
+
+md "$@"

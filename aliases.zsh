@@ -21,8 +21,8 @@ if is osx; then
   alias flush-dns='sudo killall -HUP mDNSResponder'
 
   # Engineius: Mac Mini SSH
-  alias mac-mini='sudo ssh administrator@92.207.254.162 -p8004 -L5900:127.0.0.1:5900'
-
+  # alias mac-mini='sudo ssh administrator@92.207.254.162 -p8004 -L5900:127.0.0.1:5900'
+  alias mac-mini='sudo ssh administrator@37.191.100.181 -p8003 -L5900:127.0.0.1:5900'
   alias set-xcode-12='sudo xcode-select -s /Applications/Xcode_12.app'
   alias set-xcode-13='sudo xcode-select -s /Applications/Xcode.app'
 
@@ -168,3 +168,7 @@ if is alias fd; then
   unalias fd
 fi
 
+# Replaced by fn md
+if is alias md; then
+  unalias md
+fi
