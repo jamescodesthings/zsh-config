@@ -60,12 +60,15 @@ zinit ice wait"0b" lucid light-mode patch"${pchf}/%PLUGIN%.patch" reset nocompil
     atload'ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(__fz_zsh_completion)'
 zinit $LOAD_METHOD changyuheng/fz
 
-# Per Directory History
-# swap between Global/Local history with Option+L
-# Also sets local as the default
-_per_directory_history_is_global=false
-zinit ice wait"0b" light-mode atload'_per_directory_history_is_global=false' lucid
-zinit light kadaan/per-directory-history
+if is equal "$(lightweight --status)" "off"; then
+    export TEST_PASS=yep
+    # Per Directory History
+    # swap between Global/Local history with Option+L
+    # Also sets local as the default
+    _per_directory_history_is_global=false
+    zinit ice wait"0b" light-mode atload'_per_directory_history_is_global=false' lucid
+    zinit light kadaan/per-directory-history
+fi
 
 # FZF Tab completion
 # Ctrl + Space Selects multiple results
