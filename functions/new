@@ -1,0 +1,170 @@
+#!/usr/bin/env zsh
+
+TEMPLATE_DIR="${TEMPLATE_DIR:-"$CUSTOM_DIR/templates"}"
+
+_new_description="Creates new projects from templates stored in the template dir"
+_new_positional=""
+_new_positional_desc=""
+_new_flag_names[1]="--help"
+_new_flag_messages[1]="shows help"
+_new_flag_names[2]="--name [name]"
+_new_flag_messages[2]="Uses [name] as the project name (snake-case)"
+_new_flag_names[3]="--lang [language]"
+_new_flag_messages[3]="Uses [language] as the project language"
+_new_flag_names[4]="--list"
+_new_flag_messages[4]="Lists available languages"
+
+function _new_subfn() {
+  if is empty "$1"; then
+    echo "$cs[warn]Nothing passed to subfn$c[reset]"
+    return 1
+  fi
+
+  echo "$cs[success]subfn$c[reset] $1"
+}
+
+function _new_available() {
+  echo "\n$cs[h2]Available Languages:$cs[reset]"
+  # echo "$TEMPLATE_DIR";
+  TEMPLATES=$(ls $TEMPLATE_DIR)
+  echo "$cs[info]$TEMPLATES$cs[reset]"
+}
+
+function _new_create() {
+  LANGUAGE=$1
+  NAME=$2
+
+
+  # Confirm language exists
+  PROJ_TMPL=$TEMPLATE_DIR/$LANGUAGE
+
+  if is not existing "$PROJ_TMPL"; then
+    echo "$cs[warn]$LANGUAGE template does not exist, check --list for available templates$cs[reset]"
+    return 1
+  fi
+
+  echo "$cs[sub]Creating $cs[reset]$cs[param]$LANGUAGE$cs[reset]$cs[sub] project $cs[reset]$cs[flag]$NAME$cs[reset]"
+  if is directory "$NAME"; then
+  echo "$cs[warn]Overwriting existing projects if they exist$cs[reset]"
+    if confirm "Delete $NAME?"; then
+      rm -r "$NAME"
+    fi
+  fi
+
+  echo "$cs[info]Copying from$cs[reset] $PROJ_TMPL $cs[info]to$cs[reset] ./$NAME"
+  cp -R $PROJ_TMPL $NAME
+
+  PROJECT_NAME="$NAME"
+  PROJECT_NAME_ALMOST_TITLE="${${(C)PROJECT_NAME//_/ }:t}"
+  PROJECT_NAME_TITLE="${PROJECT_NAME_ALMOST_TITLE/-/}"
+  PROJECT_NAME_PRETTY="${PROJECT_NAME_ALMOST_TITLE/-/ }"
+  PROJECT_NAME_CAMEL="${PROJECT_NAME_TITLE:0:1:l}${PROJECT_NAME_TITLE:1}"
+
+  echo "\n$cs[h2]Available Vars:$cs[reset]"
+  echo "$cs[param]\$PROJECT_NAME:$cs[reset] $PROJECT_NAME"
+  echo "$cs[param]\$PROJECT_NAME_TITLE:$cs[reset] $PROJECT_NAME_TITLE"
+  echo "$cs[param]\$PROJECT_NAME_PRETTY:$cs[reset] $PROJECT_NAME_PRETTY"
+  echo "$cs[param]\$PROJECT_NAME_CAMEL:$cs[reset] $PROJECT_NAME_CAMEL"
+  echo "\n$cs[h2]Replacing template vars in filenames:$cs[reset]"
+
+  exa -R1 $PROJECT_NAME | while IFS= read -r file; do
+    NEW_NAME=$file
+    if is substring "PROJECT_NAME_TITLE" "$NEW_NAME"; then
+      NEW_NAME=${NEW_NAME/PROJECT_NAME_TITLE/$PROJECT_NAME_TITLE}
+    fi
+    if is substring "PROJECT_NAME_PRETTY" "$NEW_NAME"; then
+      NEW_NAME=${NEW_NAME/PROJECT_NAME_PRETTY/$PROJECT_NAME_PRETTY}
+    fi
+    if is substring "PROJECT_NAME_CAMEL" "$NEW_NAME"; then
+      NEW_NAME=${NEW_NAME/PROJECT_NAME_CAMEL/$PROJECT_NAME_CAMEL}
+    fi
+    if is substring "PROJECT_NAME" "$NEW_NAME"; then
+      NEW_NAME=${NEW_NAME/PROJECT_NAME/$PROJECT_NAME}
+    fi
+    mv $PROJECT_NAME/$file $PROJECT_NAME/$NEW_NAME
+  done
+
+  echo "\n$cs[h2]Replacing template vars in files:$cs[reset]"
+
+  exa -Ra1 $PROJECT_NAME | while IFS= read -r file; do
+    echo -n "$cs[flag]$file$cs[reset] -> "
+    NEW_FILENAME=${file/.tpl/}
+    echo -n "$cs[param]$NEW_FILENAME$cs[reset]"
+    if is equal "$NEW_FILENAME" "$file"; then
+      echo ": $cs[warn]not a template $cs[reset]"
+      continue;
+    fi
+
+    TEMPL=$(cat $PROJECT_NAME/$file)
+    TEMPL=${TEMPL//\$PROJECT_NAME_PRETTY/$PROJECT_NAME_PRETTY}
+    TEMPL=${TEMPL//\$PROJECT_NAME_TITLE/$PROJECT_NAME_TITLE}
+    TEMPL=${TEMPL//\$PROJECT_NAME_CAMEL/$PROJECT_NAME_CAMEL}
+    TEMPL=${TEMPL//\$PROJECT_NAME/$PROJECT_NAME}
+    echo $TEMPL > $PROJECT_NAME/$NEW_FILENAME
+
+    rm $PROJECT_NAME/$file
+
+    echo ": $cs[success]Done$cs[reset]"
+  done
+
+  echo "\n$cs[success]Created$cs[reset] ./$PROJECT_NAME$cs[success]:$cs[reset]"
+  exa -Ra1 $PROJECT_NAME
+}
+
+function new() {
+  local DEPS=(
+    is
+    bash-tpl
+    exa
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_new_description" \
+      "_new_flag_names" \
+      "_new_flag_messages" \
+      "$_new_positional" \
+      "$_new_positional_desc"
+    _new_available
+    return 0
+  fi
+
+  if has-flag '--list' $@; then
+    _new_available
+    return $?
+  fi
+
+  if ! has-flag '--name' $@; then
+    echo "$cs[warn]Missing --name, check --help for usage.$cs[reset]"
+    return 1
+  fi
+
+  if ! has-flag '--lang' $@; then
+    echo "$cs[warn]Missing --lang, check --help for usage.$cs[reset]"
+    return 1
+  fi
+
+  NAME="$(flag-value '--name' $@)"
+  LANGUAGE="$(flag-value '--lang' $@)"
+
+
+  if is empty "$NAME"; then
+    echo "$cs[warn]Missing --name value, check --help for usage.$cs[reset]"
+    return 1
+  fi
+
+  if is equal "$NAME" "$LANGUAGE"; then
+    echo "$cs[warn]Missing language option, check --help for usage.$c[reset]"
+    return 1
+  fi
+
+  _new_create "$LANGUAGE" "$NAME"
+  return $?
+}
+
+new "$@"

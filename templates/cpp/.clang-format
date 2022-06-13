@@ -1,0 +1,10 @@
+---
+BasedOnStyle: Google
+Standard: 'Latest'
+MaxEmptyLinesToKeep: 2
+AlignAfterOpenBracket: BlockIndent
+BinPackArguments: false
+BinPackParameters: false
+PackConstructorInitializers: CurrentLine
+InsertTrailingCommas: Wrapped
+...

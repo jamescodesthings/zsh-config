@@ -6,6 +6,10 @@ if is m1; then
   alias rosetta-shell='arch -x86_64 /usr/local/bin/zsh'
 fi
 
+if is existing "$CUSTOM_DIR/bash-tpl/bash-tpl"; then
+  alias bash-tpl="$CUSTOM_DIR/bash-tpl/bash-tpl"
+fi
+
 # OSX Development
 if is osx; then
   alias xcode='open /Applications/Xcode.app'
