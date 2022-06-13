@@ -8,7 +8,7 @@ _new_positional_desc=""
 _new_flag_names[1]="--help"
 _new_flag_messages[1]="shows help"
 _new_flag_names[2]="--name [name]"
-_new_flag_messages[2]="Uses [name] as the project name (snake-case)"
+_new_flag_messages[2]="Uses [name] as the project name (kebab-case)"
 _new_flag_names[3]="--lang [language]"
 _new_flag_messages[3]="Uses [language] as the project language"
 _new_flag_names[4]="--list"
@@ -28,6 +28,15 @@ function _new_available() {
   # echo "$TEMPLATE_DIR";
   TEMPLATES=$(ls $TEMPLATE_DIR)
   echo "$cs[info]$TEMPLATES$cs[reset]"
+}
+
+function _new_available_vars() {
+  echo "\n$cs[h2]Available Template Vars:$cs[reset]"
+
+  echo "$cs[info]\$PROJECT_NAME$cs[reset]: Project name in input case (kebab-case), e.g. zombie-arena"
+  echo "$cs[info]\$PROJECT_NAME_TITLE$cs[reset]: Project name in TitleCase, e.g. ZombieArena"
+  echo "$cs[info]\$PROJECT_NAME_CAMEL$cs[reset]: Project name in camelCase, e.g. zombieArena"
+  echo "$cs[info]\$PROJECT_NAME_PRETTY$cs[reset]: Project name in readable (pretty) case, e.g. Zombie Arena"
 }
 
 function _new_create() {
@@ -114,7 +123,6 @@ function _new_create() {
 function new() {
   local DEPS=(
     is
-    bash-tpl
     exa
   )
 
@@ -131,11 +139,13 @@ function new() {
       "$_new_positional" \
       "$_new_positional_desc"
     _new_available
+    _new_available_vars
     return 0
   fi
 
   if has-flag '--list' $@; then
     _new_available
+    _new_available_vars
     return $?
   fi
 
