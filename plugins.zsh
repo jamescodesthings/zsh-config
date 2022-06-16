@@ -104,12 +104,12 @@ zinit ice wait"0a" lucid atload'source $CUSTOM_DIR/color_scheme.zsh'
 zinit $LOAD_METHOD zpm-zsh/colors
 
 # Aliases
-zinit ice wait"0a" lucid
-zinit $LOAD_METHOD djui/alias-tips
+# zinit ice wait"0a" lucid
+# zinit $LOAD_METHOD djui/alias-tips
 
 # Notify on command completion
-zinit ice wait"0a" atload'source $CUSTOM_DIR/.auto-notify-ignore.zsh' lucid
-zinit $LOAD_METHOD MichaelAquilina/zsh-auto-notify
+# zinit ice wait"0a" atload'source $CUSTOM_DIR/.auto-notify-ignore.zsh' lucid
+# zinit $LOAD_METHOD MichaelAquilina/zsh-auto-notify
 
 # Double escape = sudo [last command]
 zinit ice wait"0a" lucid
@@ -148,8 +148,8 @@ zinit ice wait"0c" lucid
 zinit $LOAD_METHOD agkozak/zhooks
 
 # iTerm touchbar support
-if has-touch-bar; then
-  # zload iam4x/zsh-iterm-touchbar
-  # zload jamescodesthings/zsh-iterm-touchbar
-  zinit $LOAD_METHOD %HOME/projects/personal/zsh-iterm-touchbar
-fi
+# if has-touch-bar; then
+#   # zload iam4x/zsh-iterm-touchbar
+#   # zload jamescodesthings/zsh-iterm-touchbar
+#   zinit $LOAD_METHOD %HOME/projects/personal/zsh-iterm-touchbar
+# fi
