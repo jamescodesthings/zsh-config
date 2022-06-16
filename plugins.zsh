@@ -137,8 +137,8 @@ zinit ice wait"0c" lucid
 zinit $LOAD_METHOD bobthecow/git-flow-completion
 
 # Auto Activate conda env from environment.yml
-zinit ice wait"0c" lucid
-zinit $LOAD_METHOD jamescodesthings/zsh-activate-py-environment
+# zinit ice wait"0c" lucid
+# zinit $LOAD_METHOD jamescodesthings/zsh-activate-py-environment
 
 zinit ice wait"0c" lucid
 zinit $LOAD_METHOD esc/conda-zsh-completion
