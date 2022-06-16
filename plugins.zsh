@@ -83,8 +83,8 @@ zinit ice wait"0b" light-mode autoload'#manydots-magic' lucid
 zinit light knu/zsh-manydots-magic
 
 # Reentry of deleted and recreated dirs
-zinit ice wait"0b" light-mode lucid
-zinit light RobSis/zsh-reentry-hook
+# zinit ice wait"0b" light-mode lucid
+# zinit light RobSis/zsh-reentry-hook
 
 # Fast Syntax Highlighting
 zinit ice light lucid \
@@ -142,6 +142,10 @@ zinit $LOAD_METHOD jamescodesthings/zsh-activate-py-environment
 
 zinit ice wait"0c" lucid
 zinit $LOAD_METHOD esc/conda-zsh-completion
+
+# Use zhooks to check out zsh hooks
+zinit ice wait"0c" lucid
+zinit $LOAD_METHOD agkozak/zhooks
 
 # iTerm touchbar support
 if has-touch-bar; then
