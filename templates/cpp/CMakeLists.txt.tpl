@@ -26,8 +26,33 @@ find_package(SFML 2.5
     system window graphics network audio REQUIRED
   )
 
+SET(Boost_USE_STATIC_LIBS ON)
+find_package(Boost
+  1.78
+  COMPONENTS log
+  REQUIRED
+)
+
+set(LIBS_TO_LINK)
+
+if (Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories(/usr/local/opt/icu4c/lib)
+  message("Boost VERSION: ${Boost_VERSION}")
+  message("Boost INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+  message("Boost Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
+  message("Boost LIBRARIES: ${Boost_LIBRARIES}")
+  set(LIBS_TO_LINK ${Boost_LIBRARIES})
+endif ()
+
+# Sources here
+set(SOURCES
+  $PROJECT_NAME_TITLE.h
+  $PROJECT_NAME_TITLE.cpp
+)
+
 # Compile executable
-add_executable($PROJECT_NAME_TITLE $PROJECT_NAME_TITLE.cpp)
+add_executable($PROJECT_NAME_TITLE ${SOURCES})
 
 # Set include directory search paths
 target_include_directories($PROJECT_NAME_TITLE
@@ -36,12 +61,19 @@ target_include_directories($PROJECT_NAME_TITLE
         )
 
 # Link executable to required SFML libraries
-target_link_libraries($PROJECT_NAME_TITLE sfml-graphics sfml-audio)
+target_link_libraries($PROJECT_NAME_TITLE
+  sfml-audio
+  sfml-graphics
+  sfml-network
+  sfml-system
+  sfml-window
+  ${LIBS_TO_LINK}
+)
 
 # Copy assets
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/graphics/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/graphics/)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/fonts/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/fonts/)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sound/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/sound/)
+# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/graphics/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/graphics/)
+# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/fonts/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/fonts/)
+# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sound/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/sound/)
 
 # Install target
 install(TARGETS $PROJECT_NAME_TITLE DESTINATION bin)
