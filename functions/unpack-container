@@ -103,25 +103,32 @@ function _unpack-container_db() {
     return
   fi
 
-  echo "[\n" > $OUT_PATH
+  cblite ls --pretty "$DB_PATH" > $OUT_PATH
 
-  FIRST="TRUE"
-  while IFS= read -r DOC; do
-    echo $DOC
-    if is equal "$FIRST" "TRUE"; then
-      FIRST="FALSE"
-    else
-      echo ",\n" >> $OUT_PATH
-    fi
-    cblite cat $DB_PATH $DOC >> $OUT_PATH
+  # echo "[\n" > $OUT_PATH
+  # # echo "FIXME: $DB_PATH"
+  # local BODIES=$(cblite ls --json5 "$DB_PATH")
+  # BODIES=$(echo $BODIES | rg --passthrough -U "\}\n\{" -r "},{")
+  # echo $BODIES >> $OUT_PATH
+  # echo $BODIES
 
-  done <<< "$ITEMS_NL"
+  # FIRST="TRUE"
+  # while IFS= read -r DOC; do
+  #   echo $DOC
+  #   if is equal "$FIRST" "TRUE"; then
+  #     FIRST="FALSE"
+  #   else
+  #     echo ",\n" >> $OUT_PATH
+  #   fi
+  #   cblite cat $DB_PATH $DOC >> $OUT_PATH
 
-  echo "\n]" >> $OUT_PATH
+  # done <<< "$ITEMS_NL"
 
-  cp $OUT_PATH $OUT_PATH.temp
-  jq "." $OUT_PATH.temp > $OUT_PATH
-  rm $OUT_PATH.temp
+  # echo "\n]" >> $OUT_PATH
+
+  # cp $OUT_PATH $OUT_PATH.temp
+  # jq "." $OUT_PATH.temp > $OUT_PATH
+  # rm $OUT_PATH.temp
 }
 
 function _unpack-container_logs() {
