@@ -5,6 +5,8 @@ _unpack_container_positional="path"
 _unpack_container_positional_desc="The path to the .xcappdata file"
 _unpack_container_flag_names[1]="--help"
 _unpack_container_flag_messages[1]="shows help"
+_unpack_container_flag_names[2]="--output-dir [OUTPUT_DIR]"
+_unpack_container_flag_messages[2]="The output directory for the dump"
 
 # unpack-container: Lazy issue mentions in a git commit -m
 function unpack-container () {
@@ -33,21 +35,41 @@ function unpack-container () {
     return 0
   fi
 
-  CONTAINER_PATH=${1%/}
-  CONTAINER_NAME="${CONTAINER_PATH%.*}"
-  OUTPUT_PATH="$CONTAINER_NAME"
+  local CONTAINER_PATH="$@[-1]"
+  if is substring ".xcappdata" "$CONTAINER_PATH"; then
+    CONTAINER_PATH="${CONTAINER_PATH}/AppData"
+  fi
+  local CONTAINER_NAME="${CONTAINER_PATH%.*}"
+  local OUTPUT_PATH="$CONTAINER_NAME"
 
-  mkdir -p $OUTPUT_PATH
+  if has-flag '--output-dir' $@; then
+    OUTPUT_PATH=$(flag-value '--output-dir' $@)
+    OUTPUT_PATH_LINES=$(echo $OUTPUT_PATH | tr " " "\n")
+    for i in "${(f)OUTPUT_PATH_LINES[@]}"; do
+      OUTPUT_PATH=$i
+      break
+    done
+  fi
 
-  _unpack-container_dbs $CONTAINER_PATH $OUTPUT_PATH
-  _unpack-container_logs $CONTAINER_PATH $OUTPUT_PATH
-  _unpack-container_images $CONTAINER_PATH $OUTPUT_PATH
+  # echo "FIX: $OUTPUT_PATH"
+
+  mkdir -p "$OUTPUT_PATH"
+
+  _unpack-container_dbs "$CONTAINER_PATH" "$OUTPUT_PATH"
+  _unpack-container_logs "$CONTAINER_PATH" "$OUTPUT_PATH"
+  _unpack-container_images "$CONTAINER_PATH" "$OUTPUT_PATH"
 }
 
 function _unpack-container_dbs() {
-  BASE_PATH="$1/AppData/Library/Application Support/CouchbaseLite"
+  BASE_PATH="$1/Library/Application Support/CouchbaseLite"
   OUT=$2
-  DBS=$(ls -1 $BASE_PATH)
+  # echo "$cs[info]_unpack-container_dbs$cs[reset]"
+  # echo "$cs[param]$BASE_PATH$cs[reset]"
+  # echo "$cs[param]$OUT$cs[reset]"
+
+  DBS=$(/bin/ls -1 $BASE_PATH)
+
+  echo "$DBS"
 
   while IFS= read -r DB; do
     _unpack-container_db $BASE_PATH $DB $OUT
@@ -55,13 +77,17 @@ function _unpack-container_dbs() {
 }
 
 function _unpack-container_db() {
+  # echo "$cs[info]_unpack_container_db$cs[reset]"
+  # echo "$cs[param]$1$cs[reset]"
+  # echo "$cs[param]$2$cs[reset]"
+  # echo "$cs[param]$3$cs[reset]"
   OUT="$3"
   DB_PATH="$1/$2"
   DB_NAME=${2%.*}
   OUT_NAME="$DB_NAME.json"
   OUT_PATH="$OUT/$OUT_NAME"
 
-  echo "$cs[info]Unpacking$c[reset] $TEMP_FILE $cs[info]to$c[reset] $OUT_PATH"
+  echo "$cs[info]Unpacking$c[reset] $DB_NAME $cs[info]to$c[reset] $OUT_PATH"
 
   ITEMS=$(cblite ls $DB_PATH)
   if is equal "$ITEMS" "(No documents)"; then
@@ -101,10 +127,10 @@ function _unpack-container_db() {
 function _unpack-container_logs() {
   OUT="$2/logs"
   mkdir -p $OUT
-  LOGS_PATH="$1/AppData/Documents"
+  LOGS_PATH="$1/Documents"
   echo "$cs[info]Logs from$c[reset] $LOGS_PATH $cs[info]to$c[reset] $OUT"
 
-  LOGS=$(ls -1 $LOGS_PATH/*.json)
+  LOGS=$(/bin/ls -1 $LOGS_PATH/*.json)
   while IFS= read -r LOG; do
     cp $LOG $OUT/
   done <<< "$LOGS"
@@ -113,10 +139,10 @@ function _unpack-container_logs() {
 function _unpack-container_images() {
   OUT="$2/images"
   mkdir -p $OUT
-  IMAGES_PATH="$1/AppData/Documents/images/gallery"
+  IMAGES_PATH="$1/Documents/images/gallery"
   echo "$cs[info]Images from$c[reset] $IMAGES_PATH $cs[info]to$c[reset] $OUT"
 
-  IMAGES=$(ls -1 $IMAGES_PATH/*)
+  IMAGES=$(/bin/ls -1 $IMAGES_PATH/*)
   while IFS= read -r IMAGE; do
     cp $IMAGE $OUT/
   done <<< "$IMAGES"

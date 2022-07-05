@@ -1,0 +1,52 @@
+#!/usr/bin/env zsh
+
+#SOME_VAR="${SOME_VAR:-"default-value"}"
+
+_simulator_description="Opens the currently selected xcode simulator"
+_simulator_positional=""
+_simulator_positional_desc=""
+_simulator_flag_names[1]="--help"
+_simulator_flag_messages[1]="shows help"
+# _simulator_flag_names[2]="--sub [param]"
+# _simulator_flag_messages[2]="Runs a sub function with [param]."
+
+function _simulator_subfn() {
+  if is empty "$1"; then
+    echo "$cs[warn]Nothing passed to subfn$c[reset]"
+    return 1
+  fi
+
+  echo "$cs[success]subfn$c[reset] $1"
+}
+
+function simulator() {
+  local DEPS=(
+    is
+    xcodes
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_simulator_description" \
+      "_simulator_flag_names" \
+      "_simulator_flag_messages" \
+      "$_simulator_positional" \
+      "$_simulator_positional_desc"
+    return 0
+  fi
+
+  local SELECTED="/Applications/Xcode.app/Contents/Developer"
+  if is available xcodes; then
+    SELECTED=$(xcodes select -p)
+  fi
+
+  local SIMULATOR="${SELECTED}/Applications/Simulator.app"
+  open $SIMULATOR
+}
+
+simulator "$@"

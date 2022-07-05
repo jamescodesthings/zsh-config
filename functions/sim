@@ -17,6 +17,10 @@ _sim_flag_names[6]="--logs"
 _sim_flag_messages[6]="Prints the simulator's logs"
 _sim_flag_names[7]="--data-dir [bundle-id]"
 _sim_flag_messages[7]="Open's the running simulator's data directory for [bundle-id], if ommitted xcrun simctl com.engineius.app.driver is used."
+_sim_flag_names[8]="--cd-data-dir [bundle-id]"
+_sim_flag_messages[8]="CDs to the running simulator's data directory for [bundle-id], if ommitted xcrun simctl com.engineius.app.driver is used."
+_sim_flag_names[9]="--dump-sim-data [bundle-id]"
+_sim_flag_messages[9]="Dumps sim data using unpack-container function."
 
 function _sim_install() {
   APP="$1"
@@ -94,6 +98,22 @@ function _sim_data_dir() {
   open $DATA_DIR
 }
 
+function _sim_cd_data_dir() {
+  local BUNDLE_ID=${1:="com.engineius.app.driver"}
+  local DATA_DIR=$(xcrun simctl get_app_container booted $BUNDLE_ID data)
+  echo "$cs[info]Opening$c[reset] $DATA_DIR"
+  cd $DATA_DIR
+}
+
+function _sim_dump_data() {
+  local BUNDLE_ID=${1:="com.engineius.app.driver"}
+  local DATA_DIR=$(xcrun simctl get_app_container booted $BUNDLE_ID data)
+  echo "$cs[info]Dumping Simulator Data from$c[reset] $DATA_DIR"
+  local OUTPUT_DIR="$(pwd)/$(date -u +%Y%m%d%H%M%S)"
+  echo "$cs[info]To$cs[reset] $OUTPUT_DIR"
+  unpack-container --output-dir "$OUTPUT_DIR" "$DATA_DIR"
+}
+
 # Git Super Merge
 function sim () {
   local DEPS=(
@@ -148,6 +168,13 @@ function sim () {
     _sim_data_dir $(flag-value '--data-dir' $@)
   fi
 
+  if has-flag '--cd-data-dir' $@; then
+    _sim_cd_data_dir $(flag-value '--cd-data-dir' $@)
+  fi
+
+  if has-flag '--dump-data' $@; then
+    _sim_dump_data $(flag-value '---dump-data' $@)
+  fi
 }
 
 sim "$@"
