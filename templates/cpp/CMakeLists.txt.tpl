@@ -47,7 +47,6 @@ endif ()
 
 # Sources here
 set(SOURCES
-  $PROJECT_NAME_TITLE.h
   $PROJECT_NAME_TITLE.cpp
 )
 
