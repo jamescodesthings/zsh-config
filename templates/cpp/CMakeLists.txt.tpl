@@ -8,6 +8,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+set(USE_BOOST TRUE) # Boost for logging
+set(USE_SDL TRUE) # SDL2
+set(USE_SFML FALSE) # SFML
+set(HAS_ASSETS_DIR FALSE) # True if we should copy ./Assets to build dir
+
 # Enable debug symbols by default
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug
@@ -17,33 +22,61 @@ if(NOT CMAKE_BUILD_TYPE)
     )
 endif()
 
+message("Configuration:")
+message("Build Type: ${CMAKE_BUILD_TYPE}")
+message("Use Boost: ${USE_BOOST}")
+message("Use SDL: ${USE_SDL}")
+message("Use SFML: ${USE_SFML}")
+message("Has Assets Dir: ${HAS_ASSETS_DIR}")
+
 # Generate config.h
 configure_file(config.h.in config.h)
 
-# Find SFML shared libraries
-find_package(SFML 2.5
-  COMPONENTS
-    system window graphics network audio REQUIRED
-  )
-
-SET(Boost_USE_STATIC_LIBS ON)
-find_package(Boost
-  1.78
-  COMPONENTS log
-  REQUIRED
-)
-
 set(LIBS_TO_LINK)
 
-if (Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(/usr/local/opt/icu4c/lib)
-  message("Boost VERSION: ${Boost_VERSION}")
-  message("Boost INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-  message("Boost Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
-  message("Boost LIBRARIES: ${Boost_LIBRARIES}")
-  set(LIBS_TO_LINK ${Boost_LIBRARIES})
+# Include and Link SFML 2.5
+if (USE_SFML)
+  message("Using SFML")
+  find_package(SFML 2.5
+    COMPONENTS
+      system window graphics network audio REQUIRED
+    )
+
+  set(LIBS_TO_LINK ${LIBS_TO_LINK}
+    sfml-audio
+    sfml-graphics
+    sfml-network
+    sfml-system
+    sfml-window
+  )
 endif ()
+
+if (USE_SDL)
+  message("Using SDL2")
+  # Include and Link SDL2
+  find_package(SDL2 REQUIRED)
+  include_directories(${SDL2_INCLUDE_DIRS})
+  SET(LIBS_TO_LINK ${SDL2_LIBRARIES})
+endif ()
+
+if (USE_BOOST)
+  message("Using Boost")
+  SET(Boost_USE_STATIC_LIBS ON)
+  find_package(Boost
+    1.78
+    COMPONENTS log
+    REQUIRED
+  )
+  if (Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(/usr/local/opt/icu4c/lib)
+    message("Boost VERSION: ${Boost_VERSION}")
+    message("Boost INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+    message("Boost Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
+    message("Boost LIBRARIES: ${Boost_LIBRARIES}")
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${Boost_LIBRARIES})
+  endif ()
+endif()
 
 # Sources here
 set(SOURCES
@@ -60,19 +93,13 @@ target_include_directories($PROJECT_NAME_TITLE
         )
 
 # Link executable to required SFML libraries
-target_link_libraries($PROJECT_NAME_TITLE
-  sfml-audio
-  sfml-graphics
-  sfml-network
-  sfml-system
-  sfml-window
-  ${LIBS_TO_LINK}
-)
+message("Linking: ${LIBS_TO_LINK}")
+target_link_libraries($PROJECT_NAME_TITLE ${LIBS_TO_LINK})
 
+if (HAS_ASSETS_DIR)
 # Copy assets
-# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/graphics/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/graphics/)
-# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/fonts/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/fonts/)
-# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sound/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/sound/)
+  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets/)
+endif()
 
 # Install target
 install(TARGETS $PROJECT_NAME_TITLE DESTINATION bin)
