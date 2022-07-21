@@ -8,24 +8,28 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
 set(USE_BOOST TRUE) # Boost for logging
 set(USE_SDL TRUE) # SDL2
+set(USE_SDL_IMAGE FALSE) # SDL2_image
 set(USE_SFML FALSE) # SFML
 set(HAS_ASSETS_DIR FALSE) # True if we should copy ./Assets to build dir
 
 # Enable debug symbols by default
-if(NOT CMAKE_BUILD_TYPE)
+if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug
     CACHE STRING
-      "Choose the type of build (Debug or Release)"
-      FORCE
+    "Choose the type of build (Debug or Release)"
+    FORCE
     )
-endif()
+endif ()
 
 message("Configuration:")
 message("Build Type: ${CMAKE_BUILD_TYPE}")
 message("Use Boost: ${USE_BOOST}")
 message("Use SDL: ${USE_SDL}")
+message("Use SDL Image: ${USE_SDL_IMAGE}")
 message("Use SFML: ${USE_SFML}")
 message("Has Assets Dir: ${HAS_ASSETS_DIR}")
 
@@ -39,7 +43,7 @@ if (USE_SFML)
   message("Using SFML")
   find_package(SFML 2.5
     COMPONENTS
-      system window graphics network audio REQUIRED
+    system window graphics network audio REQUIRED
     )
 
   set(LIBS_TO_LINK ${LIBS_TO_LINK}
@@ -48,15 +52,23 @@ if (USE_SFML)
     sfml-network
     sfml-system
     sfml-window
-  )
+    )
 endif ()
 
 if (USE_SDL)
   message("Using SDL2")
   # Include and Link SDL2
   find_package(SDL2 REQUIRED)
+  message("Include: ${SDL2_INCLUDE_DIRS}")
   include_directories(${SDL2_INCLUDE_DIRS})
-  SET(LIBS_TO_LINK ${SDL2_LIBRARIES})
+  SET(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_LIBRARIES})
+endif ()
+
+if (USE_SDL_IMAGE)
+  message("Using SDL2")
+  find_package(SDL2_image REQUIRED)
+  include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
+  set(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_IMAGE_LIBRARIES})
 endif ()
 
 if (USE_BOOST)
@@ -66,7 +78,7 @@ if (USE_BOOST)
     1.78
     COMPONENTS log
     REQUIRED
-  )
+    )
   if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(/usr/local/opt/icu4c/lib)
@@ -76,31 +88,30 @@ if (USE_BOOST)
     message("Boost LIBRARIES: ${Boost_LIBRARIES}")
     set(LIBS_TO_LINK ${LIBS_TO_LINK} ${Boost_LIBRARIES})
   endif ()
-endif()
+endif ()
 
 # Sources here
 set(SOURCES
   $PROJECT_NAME_TITLE.cpp
-)
+  )
 
 # Compile executable
 add_executable($PROJECT_NAME_TITLE ${SOURCES})
 
 # Set include directory search paths
 target_include_directories($PROJECT_NAME_TITLE
-        PRIVATE
-        "${PROJECT_BINARY_DIR}"
-        )
+  PRIVATE
+  "${PROJECT_BINARY_DIR}"
+  )
 
 # Link executable to required SFML libraries
-message("Linking: ${LIBS_TO_LINK}")
+message("Linking Libraries: ${LIBS_TO_LINK}")
 target_link_libraries($PROJECT_NAME_TITLE ${LIBS_TO_LINK})
 
 if (HAS_ASSETS_DIR)
-# Copy assets
+  # Copy assets
   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets/)
-endif()
+endif ()
 
 # Install target
 install(TARGETS $PROJECT_NAME_TITLE DESTINATION bin)
-
