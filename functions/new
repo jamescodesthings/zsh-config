@@ -96,7 +96,10 @@ function _new_create() {
     if is substring "PROJECT_NAME" "$NEW_NAME"; then
       NEW_NAME=${NEW_NAME/PROJECT_NAME/$PROJECT_NAME}
     fi
-    mv $OUT_DIR/$file $OUT_DIR/$NEW_NAME
+
+    if is not equal "$OUT_DIR/$file" "$OUT_DIR/$NEW_NAME"; then
+      mv $OUT_DIR/$file $OUT_DIR/$NEW_NAME
+    fi
   done
 
   echo "\n$cs[h2]Replacing template vars in files:$cs[reset]"
