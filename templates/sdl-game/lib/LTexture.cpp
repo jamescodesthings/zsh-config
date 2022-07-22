@@ -52,3 +52,9 @@ int LTexture::getHeight() { return height; }
 void LTexture::setColor(Uint8 r, Uint8 g, Uint8 b) {
   SDL_SetTextureColorMod(texture, r, g, b);
 }
+
+void LTexture::setBlendMode(SDL_BlendMode blendMode) {
+  SDL_SetTextureBlendMode(texture, blendMode);
+}
+
+void LTexture::setAlpha(Uint8 alpha) { SDL_SetTextureAlphaMod(texture, alpha); }

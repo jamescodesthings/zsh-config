@@ -38,6 +38,12 @@ class LTexture {
   // Set color
   void setColor(Uint8 r, Uint8 g, Uint8 b);
 
+  // Set blend mode
+  void setBlendMode(SDL_BlendMode blendMode);
+
+  // Set alpa
+  void setAlpha(Uint8 alpha);
+
   // gets dims
   int getWidth();
   int getHeight();
