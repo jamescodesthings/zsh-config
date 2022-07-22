@@ -48,7 +48,7 @@ bool init() {
     return false;
   }
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (renderer == nullptr) {
     BOOST_LOG_TRIVIAL(error)
         << boost::format("Could not create renderer: %s") % SDL_GetError();
