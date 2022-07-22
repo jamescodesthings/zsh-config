@@ -67,7 +67,7 @@ bool init() {
 }
 
 bool loadMedia() {
-  montserrat = TTF_OpenFont("assets/lazy.ttf", 16);
+  montserrat = TTF_OpenFont("assets/montserrat-light-300.ttf", 16);
   if (montserrat == nullptr) {
     BOOST_LOG_TRIVIAL(error)
       << boost::format("Could not load font: %s") % TTF_GetError();
