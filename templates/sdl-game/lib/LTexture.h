@@ -4,6 +4,7 @@
 
 #include <SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
@@ -26,6 +27,10 @@ class LTexture {
 
   // as it sounds
   bool loadFromFile(SDL_Renderer* renderer, std::string path);
+
+  bool loadFromRenderedText(
+      SDL_Renderer* renderer, TTF_Font* font, std::string text, SDL_Color color
+  );
 
   // deallocate texture
   void free();

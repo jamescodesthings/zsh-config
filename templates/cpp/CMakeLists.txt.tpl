@@ -12,9 +12,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 set(USE_BOOST TRUE) # Boost for logging
 set(USE_SDL TRUE) # SDL2
-set(USE_SDL_IMAGE FALSE) # SDL2_image
+set(USE_SDL_IMAGE TRUE) # SDL2_image
+set(USE_SDL_GFX FALSE) # SDL2_GFX
+set(USE_SDL_MIXER FALSE) # SDL2_Mixer
+set(USE_SDL_NET FALSE) # SDL2_Net
+set(USE_SDL_TTF FALSE) # SDL2_TTF
 set(USE_SFML FALSE) # SFML
-set(HAS_ASSETS_DIR FALSE) # True if we should copy ./Assets to build dir
+set(HAS_ASSETS_DIR TRUE) # True if we should copy ./Assets to build dir
 
 # Enable debug symbols by default
 if (NOT CMAKE_BUILD_TYPE)
@@ -55,20 +59,56 @@ if (USE_SFML)
     )
 endif ()
 
-if (USE_SDL)
-  message("Using SDL2")
-  # Include and Link SDL2
-  find_package(SDL2 REQUIRED)
-  message("Include: ${SDL2_INCLUDE_DIRS}")
-  include_directories(${SDL2_INCLUDE_DIRS})
-  SET(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_LIBRARIES})
-endif ()
 
 if (USE_SDL_IMAGE)
-  message("Using SDL2")
+  message("Using SDL2 Image")
   find_package(SDL2_image REQUIRED)
-  include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
-  set(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_IMAGE_LIBRARIES})
+  if (SDL2_IMAGE_FOUND)
+    message("SDL2_Image Found")
+    include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_IMAGE_LIBRARIES})
+  endif ()
+endif ()
+
+if (USE_SDL_GFX)
+  message("Using SDL2 GFX")
+  find_package(SDL2_gfx REQUIRED)
+  if (SDL2_GFX_FOUND)
+    message("SDL2_GFX Found")
+    include_directories(${SDL2_GFX_INCLUDE_DIRS})
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_GFX_LIBRARIES})
+  endif ()
+endif ()
+
+if (USE_SDL_MIXER)
+  message("Using SDL2 MIXER")
+  find_package(SDL2_mixer REQUIRED)
+  if (SDL2_MIXER_FOUND)
+    message("SDL2_MIXER Found")
+    include_directories(${SDL2_MIXER_INCLUDE_DIRS})
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_MIXER_LIBRARIES})
+  endif ()
+endif ()
+
+if (USE_SDL_NET)
+  message("Using SDL2 NET")
+  find_package(SDL2_net REQUIRED)
+  if (SDL2_NET_FOUND)
+    message("SDL2_NET Found")
+    include_directories(${SDL2_NET_INCLUDE_DIRS})
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_NET_LIBRARIES})
+  endif ()
+endif ()
+
+if (USE_SDL_TTF)
+  message("Using SDL2 TTF")
+  find_package(SDL2_ttf REQUIRED)
+  if (SDL2_TTF_FOUND)
+    message("SDL2_TTF Found")
+    include_directories(${SDL2_TTF_INCLUDE_DIRS})
+
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_TTF_LIBRARIES})
+  endif ()
 endif ()
 
 if (USE_BOOST)
@@ -93,6 +133,8 @@ endif ()
 # Sources here
 set(SOURCES
   $PROJECT_NAME_TITLE.cpp
+  lib/LTexture.h
+  lib/LTexture.cpp
   )
 
 # Compile executable

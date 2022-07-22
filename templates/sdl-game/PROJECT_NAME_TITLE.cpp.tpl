@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
@@ -13,6 +14,7 @@ void close();
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
+TTF_Font* montserrat = nullptr;
 LTexture texture;
 
 const int SCREEN_WIDTH = 640;
@@ -31,6 +33,12 @@ bool init() {
   if (!(IMG_Init(imgFlags) & imgFlags)) {
     BOOST_LOG_TRIVIAL(error)
         << boost::format("Error initializing SDL_Image: %s") % IMG_GetError();
+  }
+
+  if (TTF_Init() == -1) {
+    BOOST_LOG_TRIVIAL(error)
+        << boost::format("Error Initializing SDL_TTF: %s") % TTF_GetError();
+    return false;
   }
 
   window = SDL_CreateWindow(
@@ -59,15 +67,24 @@ bool init() {
 }
 
 bool loadMedia() {
+  montserrat = TTF_OpenFont("assets/lazy.ttf", 16);
+  if (montserrat == nullptr) {
+    BOOST_LOG_TRIVIAL(error)
+      << boost::format("Could not load font: %s") % TTF_GetError();
+  }
+
   return true;
 }
 
 void close() {
   texture.free();
+  TTF_CloseFont(montserrat);
+  montserrat = nullptr;
   SDL_DestroyRenderer(renderer);
   renderer = nullptr;
   SDL_DestroyWindow(window);
   window = nullptr;
+  TTF_Quit();
   IMG_Quit();
   SDL_Quit();
 }

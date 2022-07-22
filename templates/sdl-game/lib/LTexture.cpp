@@ -66,3 +66,32 @@ void LTexture::setBlendMode(SDL_BlendMode blendMode) {
 }
 
 void LTexture::setAlpha(Uint8 alpha) { SDL_SetTextureAlphaMod(texture, alpha); }
+
+bool LTexture::loadFromRenderedText(
+    SDL_Renderer* renderer, TTF_Font* font, std::string text, SDL_Color color
+) {
+  // Free existing resources
+  free();
+
+  SDL_Surface* textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
+  if (textSurface == nullptr) {
+    BOOST_LOG_TRIVIAL(error) << boost::format("Error rendering text: %s: %s") %
+                                    text % SDL_GetError();
+    return false;
+  }
+
+  // Create texture
+  texture = SDL_CreateTextureFromSurface(renderer, textSurface);
+  if (texture == nullptr) {
+    BOOST_LOG_TRIVIAL(error)
+        << boost::format("Error converting to texture: %s: %s") % text %
+               SDL_GetError();
+    return false;
+  }
+
+  width = textSurface->w;
+  height = textSurface->h;
+
+  SDL_FreeSurface(textSurface);
+  return true;
+}
