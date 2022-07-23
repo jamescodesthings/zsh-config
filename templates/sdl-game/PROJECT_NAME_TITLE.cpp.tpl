@@ -71,6 +71,7 @@ bool loadMedia() {
   if (montserrat == nullptr) {
     BOOST_LOG_TRIVIAL(error)
       << boost::format("Could not load font: %s") % TTF_GetError();
+    return false;
   }
 
   return true;
