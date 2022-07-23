@@ -165,10 +165,18 @@ endif ()
 install(TARGETS $PROJECT_NAME_TITLE DESTINATION bin)
 
 
+
 # copy compile_commands.json
-add_custom_target(
-  copy-compile-comands ALL
-  ${CMAKE_COMMAND} -E copy_if_different
+# add_custom_target(
+#   copy-compile-comands ALL
+#   ${CMAKE_COMMAND} -E copy_if_different
+#     ${CMAKE_BINARY_DIR}/compile_commands.json
+#     ${CMAKE_CURRENT_SOURCE_DIR}
+# )
+
+# alternative
+execute_process(
+  COMMAND ${CMAKE_COMMAND} -E create_symlink
     ${CMAKE_BINARY_DIR}/compile_commands.json
-    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_SOURCE_DIR}/compile_commands.json
 )
