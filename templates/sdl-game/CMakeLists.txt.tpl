@@ -141,6 +141,8 @@ set(SOURCES
   $PROJECT_NAME_TITLE.cpp
   lib/LTexture.h
   lib/LTexture.cpp
+  lib/LTimer.h
+  lib/LTimer.cpp
   )
 
 # Compile executable
