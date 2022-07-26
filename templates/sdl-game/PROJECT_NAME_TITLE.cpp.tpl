@@ -7,6 +7,7 @@
 #include <string>
 
 #include "lib/LTexture.h"
+#include "declarations.h"
 
 bool init();
 bool loadMedia();
@@ -16,9 +17,6 @@ SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 TTF_Font* montserrat = nullptr;
 LTexture texture;
-
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
 
 bool init() {
   auto initialized = SDL_Init(SDL_INIT_VIDEO);
