@@ -1,6 +1,9 @@
 # Build DIR
 build/
 
+# Cache Dir
+.cache/
+
 compile_commands.json
 
 # Created by https://www.toptal.com/developers/gitignore/api/c++
