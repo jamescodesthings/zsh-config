@@ -13,4 +13,21 @@
   { "keys": ["super+]"], "command": "jump_forward" },
   { "keys": ["super+g"], "command": "find_next" },
   { "keys": ["super+shift+g"], "command": "find_prev" },
+  // From OSX Default:
+  { "keys": ["super+s"], "command": "save", "args": { "async": true } },
+  { "keys": ["super+shift+s"], "command": "prompt_save_as" },
+  { "keys": ["super+alt+s"], "command": "save_all" },
+  { "keys": ["super+w"], "command": "close" },
+  { "keys": ["super+w"], "command": "close_transient", "context":
+    [
+      { "key": "group_has_transient_sheet", "operator": "equal", "operand": true }
+    ]
+  },
+  { "keys": ["super+o"], "command": "prompt_open" },
+  { "keys": ["super+x"], "command": "cut" },
+  { "keys": ["super+c"], "command": "copy" },
+  { "keys": ["super+v"], "command": "paste" },
+  { "keys": ["super+z"], "command": "undo" },
+  { "keys": ["super+shift+z"], "command": "redo" },
+  { "keys": ["super+a"], "command": "select_all" },
 ]
