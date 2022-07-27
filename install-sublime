@@ -18,7 +18,7 @@ else
 fi
 
 if [[ "$SUBLIME_SETTINGS" != "" ]]; then
-  echo "From $SHARED_SNIPPETS"
+  echo "From $SHARED_FILES"
   echo "To $SUBLIME_SETTINGS"
 
   if [[ -h $SUBLIME_SETTINGS/snippets || -e $SUBLIME_SETTINGS/snippets ]]; then
