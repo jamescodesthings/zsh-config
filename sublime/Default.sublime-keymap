@@ -1,0 +1,16 @@
+[
+  { "keys": ["shift+super+up"], "command": "swap_line_up" },
+  { "keys": ["shift+super+down"], "command": "swap_line_down" },
+  { "keys": ["super+d"], "command": "duplicate_line" },
+  { "keys": ["super+r"], "command": "show_panel", "args": {"panel": "replace", "reverse": false} },
+  { "keys": ["super+shift+a"], "command": "show_overlay", "args": {"overlay": "command_palette"} },
+  { "keys": ["super+r"], "command": "show_panel", "args": {"panel": "replace", "reverse": false} },
+  { "keys": ["super+shift+f"], "command": "show_panel", "args": {"panel": "find_in_files"} },
+  { "keys": ["super+1"], "command": "toggle_side_bar" },
+  { "keys": ["super+n"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} },
+  { "keys": ["ctrl+n"], "command": "new_file" },
+  { "keys": ["super+["], "command": "jump_back" },
+  { "keys": ["super+]"], "command": "jump_forward" },
+  { "keys": ["super+g"], "command": "find_next" },
+  { "keys": ["super+shift+g"], "command": "find_prev" },
+]
