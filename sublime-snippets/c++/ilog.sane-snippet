@@ -1,0 +1,7 @@
+---
+tabTrigger: ilog
+scope: source.c++, meta.preprocessor.include.c++, keyword.control.import.include.c++
+description: Include Boost Logger
+---
+#include <boost/format.hpp>
+#include <boost/log/trivial.hpp>
