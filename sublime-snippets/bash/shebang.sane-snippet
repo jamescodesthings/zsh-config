@@ -1,0 +1,7 @@
+---
+tabTrigger: shebang
+scope: source.shell
+description: Bash Shebang
+---
+#!/usr/bin/env ${1:zsh}
+$0
