@@ -1,0 +1,6 @@
+---
+tabTrigger: fmt
+scope: source.c++, meta.function.c++, meta.block.c++, meta.block.c++, meta.assumed-macro.c
+description: Boost string format
+---
+boost::format("${1:string}") % ${2:params}$0

@@ -3,4 +3,4 @@ tabTrigger: loge
 scope: source.c++, meta.function.c++, meta.block.c++, meta.block.c++, meta.assumed-macro.c
 description: Boost Log Error
 ---
-BOOST_LOG_TRIVIAL(error) << boost::format("${1:message}") % ${2:params};
+BOOST_LOG_TRIVIAL(error) << boost::format("${1:message}") % ${2:params};$0

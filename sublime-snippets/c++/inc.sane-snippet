@@ -1,0 +1,7 @@
+---
+tabTrigger: inc
+scope: source.c++
+description: Shorthand Local Include
+---
+#include "${1:include}"
+$0

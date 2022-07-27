@@ -1,0 +1,25 @@
+#!/usr/bin/env zsh
+
+# link Sublime Snippets
+echo 'Linking Sublime Snippets'
+
+local SNIPPET_LOCATION=""
+
+if  [[ "$(uname)" == "Darwin" ]];then
+  # Is OSX
+  SNIPPET_LOCATION=~/Library/Application\ Support/Sublime\ Text\ 3/Packages/User
+
+elif [[ -f "/etc/arch-release" ]]; then
+  # Is Arch
+  SNIPPET_LOCATION="~/.config/sublime-text/Packages/User"
+else
+  echo 'Not sure where to put snippets.'
+  echo 'Do sudo ln -s $HOME/.custom/sublime-snippets $SNIPPET_LOCATION '
+fi
+
+if [[ "$SNIPPET_LOCATION" != "" ]]; then
+  ln -s $HOME/.custom/sublime-snippets $SNIPPET_LOCATION/snippets
+  echo 'Done'
+else
+  echo 'Nothing to do here.'
+fi
