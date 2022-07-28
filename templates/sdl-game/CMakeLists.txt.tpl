@@ -3,6 +3,16 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 # Set project name and version
 project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 
+# Project Sources
+set(SOURCES
+  declarations.h
+  $PROJECT_NAME_TITLE.cpp
+  lib/LTexture.h
+  lib/LTexture.cpp
+  lib/LTimer.h
+  lib/LTimer.cpp
+  )
+
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -135,16 +145,6 @@ if (USE_BOOST)
     set(LIBS_TO_LINK ${LIBS_TO_LINK} ${Boost_LIBRARIES})
   endif ()
 endif ()
-
-# Sources here
-set(SOURCES
-  declarations.h
-  $PROJECT_NAME_TITLE.cpp
-  lib/LTexture.h
-  lib/LTexture.cpp
-  lib/LTimer.h
-  lib/LTimer.cpp
-  )
 
 # Compile executable
 add_executable($PROJECT_NAME_TITLE ${SOURCES})
