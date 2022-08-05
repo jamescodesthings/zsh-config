@@ -65,6 +65,16 @@ if (USE_SFML)
     )
 endif ()
 
+if (USE_SDL)
+  message("Using SDL2")
+  # Include and Link SDL2
+  find_package(SDL2 REQUIRED)
+  if (SDL2_FOUND)
+    message("Found SDL2")
+    include_directories(${SDL2_INCLUDE_DIRS})
+    SET(LIBS_TO_LINK ${LIBS_TO_LINK} ${SDL2_LIBRARIES})
+  endif ()
+endif ()
 
 if (USE_SDL_IMAGE)
   message("Using SDL2 Image")
