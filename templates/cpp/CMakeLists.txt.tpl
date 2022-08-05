@@ -5,7 +5,7 @@ project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 
 # Project Sources
 set(SOURCES
-  src/$PROJECT_NAME_TITLE.cpp
+  src/main.cpp
   )
 
 # Set C++ standard
