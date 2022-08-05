@@ -5,9 +5,7 @@ project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 
 # Project Sources
 set(SOURCES
-  $PROJECT_NAME_TITLE.cpp
-  lib/LTexture.h
-  lib/LTexture.cpp
+  src/$PROJECT_NAME_TITLE.cpp
   )
 
 # Set C++ standard
@@ -158,15 +156,6 @@ endif ()
 
 # Install target
 install(TARGETS $PROJECT_NAME_TITLE DESTINATION bin)
-
-
-# copy compile_commands.json
-# add_custom_target(
-#   copy-compile-comands ALL
-#   ${CMAKE_COMMAND} -E copy_if_different
-#     ${CMAKE_BINARY_DIR}/compile_commands.json
-#     ${CMAKE_CURRENT_SOURCE_DIR}
-# )
 
 # alternative
 execute_process(

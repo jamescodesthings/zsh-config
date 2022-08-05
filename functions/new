@@ -82,7 +82,7 @@ function _new_create() {
   echo "$cs[param]\$PROJECT_NAME_CAMEL:$cs[reset] $PROJECT_NAME_CAMEL"
   echo "\n$cs[h2]Replacing template vars in filenames:$cs[reset]"
 
-  exa -R1 $OUT_DIR | while IFS= read -r file; do
+  find $OUT_DIR | while IFS= read -r file; do
     NEW_NAME=$file
     if is substring "PROJECT_NAME_TITLE" "$NEW_NAME"; then
       NEW_NAME=${NEW_NAME/PROJECT_NAME_TITLE/$PROJECT_NAME_TITLE}
@@ -98,13 +98,13 @@ function _new_create() {
     fi
 
     if is not equal "$OUT_DIR/$file" "$OUT_DIR/$NEW_NAME"; then
-      mv $OUT_DIR/$file $OUT_DIR/$NEW_NAME
+      mv $file $NEW_NAME
     fi
   done
 
   echo "\n$cs[h2]Replacing template vars in files:$cs[reset]"
 
-  exa -Ra1 $OUT_DIR| while IFS= read -r file; do
+  find $OUT_DIR | while IFS= read -r file; do
     echo -n "$cs[flag]$file$cs[reset] -> "
     NEW_FILENAME=${file/.tpl/}
     echo -n "$cs[param]$NEW_FILENAME$cs[reset]"
@@ -113,14 +113,14 @@ function _new_create() {
       continue;
     fi
 
-    TEMPL=$(cat $OUT_DIR/$file)
+    TEMPL=$(cat $file)
     TEMPL=${TEMPL//\$PROJECT_NAME_PRETTY/$PROJECT_NAME_PRETTY}
     TEMPL=${TEMPL//\$PROJECT_NAME_TITLE/$PROJECT_NAME_TITLE}
     TEMPL=${TEMPL//\$PROJECT_NAME_CAMEL/$PROJECT_NAME_CAMEL}
     TEMPL=${TEMPL//\$PROJECT_NAME/$PROJECT_NAME}
-    echo $TEMPL > $OUT_DIR/$NEW_FILENAME
+    echo $TEMPL > $NEW_FILENAME
 
-    rm $OUT_DIR/$file
+    rm $file
 
     echo ": $cs[success]Done$cs[reset]"
   done
