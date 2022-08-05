@@ -126,13 +126,13 @@ function _new_create() {
   done
 
   echo "\n$cs[success]Created$cs[reset] ./$OUT_DIR$cs[success]:$cs[reset]"
-  exa -Ra1 $OUT_DIR
+  find $OUT_DIR
 }
 
 function new() {
   local DEPS=(
     is
-    exa
+    find
   )
 
   if ! deps $DEPS; then
