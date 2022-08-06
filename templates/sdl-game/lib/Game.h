@@ -3,10 +3,13 @@
 #pragma once
 
 #include <SDL.h>
+#include <SDL_image.h>
 
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 #include <string>
+
+#include "./TextureManager.h"
 
 namespace ct {
 class Game {

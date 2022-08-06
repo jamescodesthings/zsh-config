@@ -8,7 +8,9 @@ set(SOURCES
   src/main.cpp
   lib/Game.cpp
   lib/Game.h
-)
+  lib/TextureManager.cpp
+  lib/TextureManager.h
+  )
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)

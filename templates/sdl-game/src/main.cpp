@@ -2,10 +2,14 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 
+#include "../lib/Game.h"
+
 void setLogLevel();
 
 int main(int argc, char* args[]) {
   auto* game = new ct::Game();
+
+  setLogLevel();
 
   if (!game->init()) return -1;
 
@@ -16,6 +20,7 @@ int main(int argc, char* args[]) {
   }
 
   game->clean();
+
 
   return 0;
 }

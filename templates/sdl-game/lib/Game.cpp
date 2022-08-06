@@ -2,7 +2,10 @@
 
 ct::Game::Game() {}
 
-ct::Game::~Game() {}
+ct::Game::~Game() {
+  renderer = nullptr;
+  window = nullptr;
+}
 
 bool ct::Game::init(
     const std::string& title, int x, int y, int w, int h, bool fullscreen
@@ -10,6 +13,7 @@ bool ct::Game::init(
   BOOST_LOG_TRIVIAL(debug) << "Game::init()";
   Uint32 windowFlags = 0;
   Uint32 rendererFlags = SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED;
+  int imageFlags = IMG_INIT_PNG;
 
   if (fullscreen) {
     BOOST_LOG_TRIVIAL(debug) << "Will create fullscreen screen";
@@ -23,6 +27,15 @@ bool ct::Game::init(
     return false;
   }
   BOOST_LOG_TRIVIAL(debug) << "SDL Initialized";
+
+  // Initialize SDL_Image
+  if (!(IMG_Init(imageFlags) & imageFlags)) {
+    BOOST_LOG_TRIVIAL(error)
+        << boost::format("Could not init SDL_Image") % IMG_GetError();
+    return false;
+  }
+
+  BOOST_LOG_TRIVIAL(debug) << "SDL_Image initialized";
 
   window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowFlags);
 
@@ -45,6 +58,9 @@ bool ct::Game::init(
   running = true;
   BOOST_LOG_TRIVIAL(debug) << "Set running true, initialization finished.";
 
+  TheTextureManager::Instance()->setRenderer(renderer);
+  // TheTextureManager::Instance()->load("./assets/animate-alpha.png", "animate");
+
   // Return true for error coding in parent
   return true;
 }
@@ -55,10 +71,16 @@ void ct::Game::render() {
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   SDL_RenderClear(renderer);
 
+  // TheTextureManager::Instance()->draw("animate", 0, 0, 128, 82);
+
+
   SDL_RenderPresent(renderer);
 }
 
-void ct::Game::update() { BOOST_LOG_TRIVIAL(trace) << "Game::update()"; }
+void ct::Game::update() {
+  BOOST_LOG_TRIVIAL(trace) << "Game::update()";
+
+}
 
 void ct::Game::handleEvents() {
   SDL_Event event;
@@ -77,6 +99,8 @@ void ct::Game::clean() {
   BOOST_LOG_TRIVIAL(debug) << "Game::clean()";
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
+  TheTextureManager::Instance()->clean();
+  IMG_Quit();
   SDL_Quit();
 }
 
