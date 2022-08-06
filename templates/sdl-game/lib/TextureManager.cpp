@@ -3,7 +3,7 @@
 TextureManager *TextureManager::instance = nullptr;
 
 void TextureManager::setRenderer(SDL_Renderer *renderer) {
-  BOOST_LOG_TRIVIAL(debug) << "TxtureManager renderer set";
+  BOOST_LOG_TRIVIAL(debug) << "TextureManager renderer set";
   this->renderer = renderer;
 }
 
