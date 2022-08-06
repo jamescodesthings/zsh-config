@@ -6,7 +6,9 @@ project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 # Project Sources
 set(SOURCES
   src/main.cpp
-  lib/Game.cpp lib/Game.h)
+  lib/Game.cpp
+  lib/Game.h
+)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)

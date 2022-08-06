@@ -1,4 +1,8 @@
-#include "../lib/Game.h"
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
+
+void setLogLevel();
 
 int main(int argc, char* args[]) {
   auto* game = new ct::Game();
@@ -14,4 +18,10 @@ int main(int argc, char* args[]) {
   game->clean();
 
   return 0;
+}
+
+void setLogLevel() {
+  boost::log::core::get()->set_filter(
+      boost::log::trivial::severity >= boost::log::trivial::debug
+  );
 }
