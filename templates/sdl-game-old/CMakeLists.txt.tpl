@@ -5,8 +5,13 @@ project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 
 # Project Sources
 set(SOURCES
-  src/main.cpp
-  lib/Game.cpp lib/Game.h)
+  declarations.h
+  $PROJECT_NAME_TITLE.cpp
+  lib/LTexture.h
+  lib/LTexture.cpp
+  lib/LTimer.h
+  lib/LTimer.cpp
+  )
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -22,7 +27,7 @@ set(USE_SDL_IMAGE TRUE) # SDL2_image
 set(USE_SDL_GFX FALSE) # SDL2_GFX
 set(USE_SDL_MIXER FALSE) # SDL2_Mixer
 set(USE_SDL_NET FALSE) # SDL2_Net
-set(USE_SDL_TTF FALSE) # SDL2_TTF
+set(USE_SDL_TTF TRUE) # SDL2_TTF
 set(USE_SFML FALSE) # SFML
 set(HAS_ASSETS_DIR TRUE) # True if we should copy ./Assets to build dir
 
@@ -37,11 +42,6 @@ endif ()
 
 message("Configuration:")
 message("Build Type: ${CMAKE_BUILD_TYPE}")
-message("Use Boost: ${USE_BOOST}")
-message("Use SDL: ${USE_SDL}")
-message("Use SDL Image: ${USE_SDL_IMAGE}")
-message("Use SFML: ${USE_SFML}")
-message("Has Assets Dir: ${HAS_ASSETS_DIR}")
 
 # Generate config.h
 configure_file(config.h.in config.h)
@@ -167,9 +167,19 @@ endif ()
 # Install target
 install(TARGETS $PROJECT_NAME_TITLE DESTINATION bin)
 
+
+
+# copy compile_commands.json
+# add_custom_target(
+#   copy-compile-comands ALL
+#   ${CMAKE_COMMAND} -E copy_if_different
+#     ${CMAKE_BINARY_DIR}/compile_commands.json
+#     ${CMAKE_CURRENT_SOURCE_DIR}
+# )
+
 # alternative
 execute_process(
   COMMAND ${CMAKE_COMMAND} -E create_symlink
-  ${CMAKE_BINARY_DIR}/compile_commands.json
-  ${CMAKE_SOURCE_DIR}/compile_commands.json
+    ${CMAKE_BINARY_DIR}/compile_commands.json
+    ${CMAKE_SOURCE_DIR}/compile_commands.json
 )
