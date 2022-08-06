@@ -5,11 +5,19 @@ project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 
 # Project Sources
 set(SOURCES
-  src/main.cpp
-  lib/Game.cpp
-  lib/Game.h
   lib/TextureManager.cpp
   lib/TextureManager.h
+  lib/LoaderParams.h
+  lib/GameObject.h
+  lib/SDLGameObject.h
+  lib/SDLGameObject.cpp
+  lib/Player.cpp
+  lib/Player.h
+  lib/Enemy.cpp
+  lib/Enemy.h
+  lib/Game.cpp
+  lib/Game.h
+  src/main.cpp
   )
 
 # Set C++ standard

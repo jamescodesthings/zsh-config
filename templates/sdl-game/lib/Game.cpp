@@ -1,13 +1,13 @@
 #include "Game.h"
 
-ct::Game::Game() {}
+Game* Game::instance = nullptr;
 
-ct::Game::~Game() {
+Game::~Game() {
   renderer = nullptr;
   window = nullptr;
 }
 
-bool ct::Game::init(
+bool Game::init(
     const std::string& title, int x, int y, int w, int h, bool fullscreen
 ) {
   BOOST_LOG_TRIVIAL(debug) << "Game::init()";
@@ -59,30 +59,42 @@ bool ct::Game::init(
   BOOST_LOG_TRIVIAL(debug) << "Set running true, initialization finished.";
 
   TheTextureManager::Instance()->setRenderer(renderer);
-  // TheTextureManager::Instance()->load("./assets/animate-alpha.png", "animate");
+  TheTextureManager::Instance()->load("./assets/animate-alpha.png", "animate");
+
+
+  // gameObjects.emplace_back(
+  //     new Player(new LoaderParams(100, 100, 128, 82, "animate"))
+  // );
+  // gameObjects.emplace_back(
+  //     new Enemy(new LoaderParams(300, 300, 128, 82, "animate"))
+  // );
 
   // Return true for error coding in parent
   return true;
 }
 
-void ct::Game::render() {
+void Game::render() {
   BOOST_LOG_TRIVIAL(trace) << "Game::render()";
   // Set initial draw color
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   SDL_RenderClear(renderer);
 
   // TheTextureManager::Instance()->draw("animate", 0, 0, 128, 82);
-
+  for (auto& gameObject : gameObjects) {
+    gameObject->draw();
+  }
 
   SDL_RenderPresent(renderer);
 }
 
-void ct::Game::update() {
+void Game::update() {
   BOOST_LOG_TRIVIAL(trace) << "Game::update()";
-
+  for (auto& gameObject : gameObjects) {
+    gameObject->update();
+  }
 }
 
-void ct::Game::handleEvents() {
+void Game::handleEvents() {
   SDL_Event event;
 
   while (SDL_PollEvent(&event)) {
@@ -95,8 +107,11 @@ void ct::Game::handleEvents() {
   }
 }
 
-void ct::Game::clean() {
+void Game::clean() {
   BOOST_LOG_TRIVIAL(debug) << "Game::clean()";
+  for (auto& gameObject : gameObjects) {
+    gameObject->clean();
+  }
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   TheTextureManager::Instance()->clean();
@@ -104,4 +119,12 @@ void ct::Game::clean() {
   SDL_Quit();
 }
 
-bool ct::Game::isRunning() { return running; }
+bool Game::isRunning() { return running; }
+
+Game* Game::Instance() {
+  if (Game::instance == nullptr) {
+    Game::instance = new Game();
+  }
+
+  return Game::instance;
+}

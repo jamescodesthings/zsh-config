@@ -8,19 +8,31 @@
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 #include <string>
+#include <vector>
 
-#include "./TextureManager.h"
+#include "GameObject.h"
+#include "LoaderParams.h"
+#include "TextureManager.h"
 
-namespace ct {
 class Game {
  private:
+  static Game* instance;
+
+  /**
+   * Do not use, singleton.
+   */
+  Game() {}
+
   bool running = false;
 
   SDL_Window* window;
   SDL_Renderer* renderer;
 
+  vector<GameObject*> gameObjects;
+
  public:
-  Game();
+  static Game* Instance();
+
   ~Game();
 
   /**
@@ -48,8 +60,10 @@ class Game {
   void clean();
 
   bool isRunning();
-};
-}  // namespace ct
 
+  SDL_Renderer* getRenderer() const { return renderer; }
+};
+
+typedef Game TheGame;
 
 #endif  // GAMECLASS_GAME_H

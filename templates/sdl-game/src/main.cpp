@@ -7,20 +7,22 @@
 void setLogLevel();
 
 int main(int argc, char* args[]) {
-  auto* game = new ct::Game();
-
   setLogLevel();
 
-  if (!game->init()) return -1;
+  BOOST_LOG_TRIVIAL(debug) << "Initializing";
 
-  while (game->isRunning()) {
-    game->handleEvents();
-    game->update();
-    game->render();
+  if (!TheGame::Instance()->init()) {
+    BOOST_LOG_TRIVIAL(error) << "Game Init failure";
+    return -1;
   }
 
-  game->clean();
+  while (TheGame::Instance()->isRunning()) {
+    TheGame::Instance()->handleEvents();
+    TheGame::Instance()->update();
+    TheGame::Instance()->render();
+  }
 
+  TheGame::Instance()->clean();
 
   return 0;
 }
