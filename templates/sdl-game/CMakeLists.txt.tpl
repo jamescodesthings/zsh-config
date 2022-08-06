@@ -11,10 +11,6 @@ set(SOURCES
   lib/GameObject.h
   lib/SDLGameObject.h
   lib/SDLGameObject.cpp
-  lib/Player.cpp
-  lib/Player.h
-  lib/Enemy.cpp
-  lib/Enemy.h
   lib/Game.cpp
   lib/Game.h
   src/main.cpp
