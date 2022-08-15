@@ -5,18 +5,21 @@ project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 
 # Project Sources
 set(SOURCES
+  lib/Vector2D.h
   lib/TextureManager.cpp
   lib/TextureManager.h
   lib/LoaderParams.h
   lib/GameObject.h
   lib/SDLGameObject.h
   lib/SDLGameObject.cpp
-  lib/Player.cpp
   lib/Player.h
-  lib/Enemy.cpp
+  lib/Player.cpp
   lib/Enemy.h
+  lib/Enemy.cpp
   lib/Game.cpp
   lib/Game.h
+  lib/InputHandler.cpp
+  lib/InputHandler.h
   src/main.cpp
   )
 

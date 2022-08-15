@@ -23,7 +23,7 @@
     "ignored_packages":
     [
         "Preferences Editor",
-        "Vintage"
+        "Vintage",
     ],
     "indent_guide_options":
     [

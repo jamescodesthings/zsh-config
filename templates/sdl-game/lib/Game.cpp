@@ -37,6 +37,8 @@ bool Game::init(
 
   BOOST_LOG_TRIVIAL(debug) << "SDL_Image initialized";
 
+  TheInputHandler::Instance()->initializeJoysticks();
+
   window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowFlags);
 
   if (window == nullptr) {
@@ -62,12 +64,12 @@ bool Game::init(
   TheTextureManager::Instance()->load("./assets/animate-alpha.png", "animate");
 
 
-  // gameObjects.emplace_back(
-  //     new Player(new LoaderParams(100, 100, 128, 82, "animate"))
-  // );
-  // gameObjects.emplace_back(
-  //     new Enemy(new LoaderParams(300, 300, 128, 82, "animate"))
-  // );
+  gameObjects.emplace_back(
+      new Player(new LoaderParams(100, 100, 128, 82, "animate"))
+  );
+  gameObjects.emplace_back(
+      new Enemy(new LoaderParams(300, 300, 128, 82, "animate"))
+  );
 
   // Return true for error coding in parent
   return true;
@@ -94,24 +96,14 @@ void Game::update() {
   }
 }
 
-void Game::handleEvents() {
-  SDL_Event event;
-
-  while (SDL_PollEvent(&event)) {
-    if (event.type == SDL_QUIT) {
-      running = false;
-    }
-    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-      running = false;
-    }
-  }
-}
+void Game::handleEvents() { TheInputHandler::Instance()->update(); }
 
 void Game::clean() {
   BOOST_LOG_TRIVIAL(debug) << "Game::clean()";
   for (auto& gameObject : gameObjects) {
     gameObject->clean();
   }
+  TheInputHandler::Instance()->clean();
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   TheTextureManager::Instance()->clean();
@@ -127,4 +119,9 @@ Game* Game::Instance() {
   }
 
   return Game::instance;
+}
+
+void Game::quit() {
+  BOOST_LOG_TRIVIAL(debug) << "Game::quit()";
+  this->running = false;
 }
