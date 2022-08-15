@@ -10,8 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "Enemy.h"
 #include "GameObject.h"
+#include "InputHandler.h"
 #include "LoaderParams.h"
+#include "Player.h"
 #include "TextureManager.h"
 
 class Game {
@@ -58,6 +61,8 @@ class Game {
   void update();
   void handleEvents();
   void clean();
+
+  void quit();
 
   bool isRunning();
 

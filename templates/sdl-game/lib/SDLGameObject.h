@@ -7,12 +7,18 @@
 #include "GameObject.h"
 #include "LoaderParams.h"
 #include "TextureManager.h"
+#include "Vector2D.h"
+
 
 class Game;
 
 class SDLGameObject : public GameObject {
  protected:
-  int x, y, w, h;
+  Vector2D position;
+  Vector2D velocity;
+  Vector2D acceleration;
+
+  int w, h;
   int row, frame;
   string textureId;
 
