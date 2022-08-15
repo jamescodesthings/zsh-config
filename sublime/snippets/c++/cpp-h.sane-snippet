@@ -1,0 +1,16 @@
+---
+tabTrigger: cpp-h
+scope: source.c++
+description: CPP: Header
+---
+#ifndef ${1/./\u$0/g}_H
+#define ${1/./\u$0/g}_H
+#pragma once
+
+class $1 {
+
+};
+
+
+#endif
+
