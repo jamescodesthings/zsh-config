@@ -1,11 +1,8 @@
 #include "TextureManager.h"
 
-TextureManager *TextureManager::instance = nullptr;
+#include "Game.h"
 
-void TextureManager::setRenderer(SDL_Renderer *renderer) {
-  BOOST_LOG_TRIVIAL(debug) << "TextureManager renderer set";
-  this->renderer = renderer;
-}
+TextureManager *TextureManager::instance = nullptr;
 
 bool TextureManager::load(string filename, string id) {
   if (TextureManager::renderer == nullptr) {
@@ -136,4 +133,23 @@ void TextureManager::clean() {
   for (auto &texture : textures) {
     SDL_DestroyTexture(texture.second);
   }
+}
+
+void TextureManager::clearTexture(string id) {
+  BOOST_LOG_TRIVIAL(debug) << boost::format("Clearing %s") % id;
+  textures.erase(id);
+}
+
+TextureManager *TextureManager::Instance() {
+  if (instance == nullptr) {
+    BOOST_LOG_TRIVIAL(debug) << "Created TextureManager singleton";
+    instance = new TextureManager();
+  }
+
+  if (instance->renderer == nullptr) {
+    BOOST_LOG_TRIVIAL(debug) << "Setting the renderer";
+    instance->renderer = TheGame::Instance()->getRenderer();
+  }
+
+  return instance;
 }

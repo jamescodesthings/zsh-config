@@ -19,7 +19,7 @@ class SDLGameObject : public GameObject {
   Vector2D acceleration;
 
   int w, h;
-  int row, frame;
+  int row, frame, frameCount;
   string textureId;
 
  public:
@@ -28,6 +28,12 @@ class SDLGameObject : public GameObject {
   void draw() override;
   void update() override;
   void clean() override;
+
+  Vector2D getPosition() { return position; }
+
+  int getWidth() { return w; }
+
+  int getHeight() { return h; }
 };
 
 #endif  // ENGINEUPDATE_SDLGAMEOBJECT_H

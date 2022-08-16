@@ -10,6 +10,8 @@
 #include <map>
 #include <string>
 
+class Game;
+
 using namespace std;
 
 class TextureManager {
@@ -24,19 +26,7 @@ class TextureManager {
   TextureManager() {}
 
  public:
-  static TextureManager* Instance() {
-    if (instance == nullptr) {
-      BOOST_LOG_TRIVIAL(debug) << "Created TextureManager singleton";
-      instance = new TextureManager();
-    }
-    return instance;
-  }
-
-  /**
-   * Sets the renderer so we don't have to pass it in subsequent calls to TM.
-   * @param renderer The renderer
-   */
-  void setRenderer(SDL_Renderer* renderer);
+  static TextureManager* Instance();
 
   /**
    * Loads a texture (Must call setRenderer before using this method)
@@ -140,6 +130,8 @@ class TextureManager {
 
   //  SDL_QueryTexture(newTexture, nullptr, nullptr, &width, &height);
   void clean();
+
+  void clearTexture(string id);
 };
 
 typedef TextureManager TheTextureManager;

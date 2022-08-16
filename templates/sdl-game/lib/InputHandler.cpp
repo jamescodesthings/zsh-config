@@ -67,10 +67,10 @@ void InputHandler::handleQuitEvent(const SDL_Event& event
     TheGame::Instance()->quit();
   }
 
-  // Quit on Escape
-  if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-    TheGame::Instance()->quit();
-  }
+  //  // Quit on Escape
+  //  if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+  //    TheGame::Instance()->quit();
+  //  }
 }
 
 void InputHandler::handleMouseEvent(const SDL_Event& event) {
@@ -222,4 +222,11 @@ bool InputHandler::isKeyDown(SDL_Scancode key) {
   if (keystates[key] == 1) return true;
 
   return false;
+}
+
+void InputHandler::reset() {
+  BOOST_LOG_TRIVIAL(debug) << "Reset Mouse Button States";
+  mouseButtonStates[LEFT] = false;
+  mouseButtonStates[MIDDLE] = false;
+  mouseButtonStates[RIGHT] = false;
 }

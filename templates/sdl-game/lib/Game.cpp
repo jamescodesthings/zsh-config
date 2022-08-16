@@ -56,20 +56,13 @@ bool Game::init(
   }
 
   BOOST_LOG_TRIVIAL(debug) << "Created Renderer";
+
+  gameStateMachine = new GameStateMachine();
+  gameStateMachine->pushState(new MenuState());
+
   // Set running to start game loop
   running = true;
   BOOST_LOG_TRIVIAL(debug) << "Set running true, initialization finished.";
-
-  TheTextureManager::Instance()->setRenderer(renderer);
-  TheTextureManager::Instance()->load("./assets/animate-alpha.png", "animate");
-
-
-  gameObjects.emplace_back(
-      new Player(new LoaderParams(100, 100, 128, 82, "animate"))
-  );
-  gameObjects.emplace_back(
-      new Enemy(new LoaderParams(300, 300, 128, 82, "animate"))
-  );
 
   // Return true for error coding in parent
   return true;
@@ -82,27 +75,27 @@ void Game::render() {
   SDL_RenderClear(renderer);
 
   // TheTextureManager::Instance()->draw("animate", 0, 0, 128, 82);
-  for (auto& gameObject : gameObjects) {
-    gameObject->draw();
-  }
+  // for (auto& gameObject : gameObjects) {
+  //   gameObject->draw();
+  // }
+  gameStateMachine->render();
 
   SDL_RenderPresent(renderer);
 }
 
 void Game::update() {
   BOOST_LOG_TRIVIAL(trace) << "Game::update()";
-  for (auto& gameObject : gameObjects) {
-    gameObject->update();
-  }
+  // for (auto& gameObject : gameObjects) {
+  //   gameObject->update();
+  // }
+
+  gameStateMachine->update();
 }
 
 void Game::handleEvents() { TheInputHandler::Instance()->update(); }
 
 void Game::clean() {
   BOOST_LOG_TRIVIAL(debug) << "Game::clean()";
-  for (auto& gameObject : gameObjects) {
-    gameObject->clean();
-  }
   TheInputHandler::Instance()->clean();
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);

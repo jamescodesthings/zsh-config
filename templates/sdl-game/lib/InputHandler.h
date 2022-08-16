@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Game.h"
+#include "Vector2D.h"
 
 using namespace std;
 
@@ -30,6 +31,7 @@ class InputHandler {
 
   void update();
   void clean();
+  void reset();
 
   int xValue(int joy, int stick);
   int yValue(int joy, int stick);

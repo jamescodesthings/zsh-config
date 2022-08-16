@@ -5,7 +5,7 @@ project($PROJECT_NAME_TITLE LANGUAGES CXX VERSION 1.0.0)
 
 # Project Sources
 set(SOURCES
-  lib/Vector2D.h
+lib/Vector2D.h
   lib/TextureManager.cpp
   lib/TextureManager.h
   lib/LoaderParams.h
@@ -20,6 +20,21 @@ set(SOURCES
   lib/Game.h
   lib/InputHandler.cpp
   lib/InputHandler.h
+  lib/GameState.h
+  lib/GameStateMachine.h
+  lib/GameStateMachine.cpp
+  lib/AnimatedGraphic.cpp
+  lib/AnimatedGraphic.h
+  gui/MenuButton.cpp
+  gui/MenuButton.h
+  states/MenuState.h
+  states/MenuState.cpp
+  states/PlayState.h
+  states/PlayState.cpp
+  states/PauseState.cpp
+  states/PauseState.h
+  states/GameOverState.cpp
+  states/GameOverState.h
   src/main.cpp
   )
 

@@ -10,8 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "../states/MenuState.h"
+#include "../states/PlayState.h"
 #include "Enemy.h"
 #include "GameObject.h"
+#include "GameStateMachine.h"
 #include "InputHandler.h"
 #include "LoaderParams.h"
 #include "Player.h"
@@ -20,6 +23,8 @@
 class Game {
  private:
   static Game* instance;
+
+  GameStateMachine* gameStateMachine;
 
   /**
    * Do not use, singleton.
@@ -30,8 +35,6 @@ class Game {
 
   SDL_Window* window;
   SDL_Renderer* renderer;
-
-  vector<GameObject*> gameObjects;
 
  public:
   static Game* Instance();
@@ -67,6 +70,8 @@ class Game {
   bool isRunning();
 
   SDL_Renderer* getRenderer() const { return renderer; }
+
+  GameStateMachine* getStateMachine() { return gameStateMachine; }
 };
 
 typedef Game TheGame;

@@ -12,6 +12,7 @@ SDLGameObject::SDLGameObject(const LoaderParams *params)
   textureId = params->getTextureId();
   row = 1;
   frame = 1;
+  frameCount = params->getFrameCount();
 }
 
 void SDLGameObject::draw() {

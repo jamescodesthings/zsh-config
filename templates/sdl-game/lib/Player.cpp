@@ -9,33 +9,33 @@ void Player::update() {
   velocity.setY(0);
   handleInput();
 
-  frame = int((SDL_GetTicks() / 100) % 6);
+  frame = int((SDL_GetTicks() / 100) % 5);
   SDLGameObject::update();
 }
 
 void Player::clean() { SDLGameObject::clean(); }
 
 void Player::handleInput() {
-  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_RIGHT)) {
-    velocity.setX(2);
-  }
-  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_LEFT)) {
-    velocity.setX(-2);
-  }
-  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_UP)) {
-    velocity.setY(-2);
-  }
-  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_DOWN)) {
-    velocity.setY(2);
-  }
+  //  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_RIGHT)) {
+  //    velocity.setX(2);
+  //  }
+  //  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_LEFT)) {
+  //    velocity.setX(-2);
+  //  }
+  //  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_UP)) {
+  //    velocity.setY(-2);
+  //  }
+  //  if (TheInputHandler::Instance()->isKeyDown(SDL_SCANCODE_DOWN)) {
+  //    velocity.setY(2);
+  //  }
 
   //  if (TheInputHandler::Instance()->getMouseButtonState(mouse_buttons::LEFT))
   //  {
   //    velocity.setX(1);
   //  }
   //
-  //  Vector2D* mousePosition = TheInputHandler::Instance()->getMousePosition();
-  //  velocity = (*mousePosition - position) / 100;  // 100 steps from the mouse
+  Vector2D* mousePosition = TheInputHandler::Instance()->getMousePosition();
+  velocity = (*mousePosition - position) / 100;  // 100 steps from the mouse
   //
   //  if (TheInputHandler::Instance()->areJoysticksInitialized()) {
   //    // Controller 1 Left Stick
