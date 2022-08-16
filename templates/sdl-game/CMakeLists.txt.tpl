@@ -54,6 +54,8 @@ set(USE_SDL_MIXER FALSE) # SDL2_Mixer
 set(USE_SDL_NET FALSE) # SDL2_Net
 set(USE_SDL_TTF FALSE) # SDL2_TTF
 set(USE_SFML FALSE) # SFML
+set(USE_TINYXML FALSE) # TinyXML
+set(USE_TINYXML2 FALSE) # TinyXML2
 set(HAS_ASSETS_DIR TRUE) # True if we should copy ./Assets to build dir
 
 # Enable debug symbols by default
@@ -173,6 +175,30 @@ if (USE_BOOST)
     message("Boost Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
     message("Boost LIBRARIES: ${Boost_LIBRARIES}")
     set(LIBS_TO_LINK ${LIBS_TO_LINK} ${Boost_LIBRARIES})
+  endif ()
+endif ()
+
+# TinyXML
+if (USE_TINYXML)
+  message("Using TinyXML")
+  find_package(TinyXML REQUIRED)
+  if (TINYXML_FOUND)
+    message("TinyXML Found")
+    include_directories(${TINYXML_INCLUDE_DIRS})
+
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${TINYXML_LIBRARIES})
+  endif ()
+endif ()
+
+# TinyXML 2
+if (USE_TINYXML2)
+  message("Using TinyXML2")
+  find_package(TINYXML2 REQUIRED)
+  if (TINYXML2_FOUND)
+    message("TinyXML2 Found")
+    include_directories(${TINYXML2_INCLUDE_DIR})
+
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${TINYXML2_LIBRARIES})
   endif ()
 endif ()
 
