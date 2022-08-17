@@ -56,6 +56,7 @@ set(USE_SDL_TTF FALSE) # SDL2_TTF
 set(USE_SFML FALSE) # SFML
 set(USE_TINYXML FALSE) # TinyXML
 set(USE_TINYXML2 FALSE) # TinyXML2
+set(USE_ZLIB FALSE) # Zlib
 set(HAS_ASSETS_DIR TRUE) # True if we should copy ./Assets to build dir
 
 # Enable debug symbols by default
@@ -201,6 +202,18 @@ if (USE_TINYXML2)
     include_directories(${TINYXML2_INCLUDE_DIR})
 
     set(LIBS_TO_LINK ${LIBS_TO_LINK} ${TINYXML2_LIBRARIES})
+  endif ()
+endif ()
+
+# ZLIB
+if (USE_ZLIB)
+  message("Using ZLIB")
+  find_package(ZLIB REQUIRED)
+  if (ZLIB_FOUND)
+    message("ZLIB Found")
+    include_directories(${ZLIB_INCLUDE_DIRS})
+
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${ZLIB_LIBRARIES})
   endif ()
 endif ()
 
