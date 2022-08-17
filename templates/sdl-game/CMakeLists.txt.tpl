@@ -182,7 +182,7 @@ endif ()
 if (USE_TINYXML)
   message("Using TinyXML")
   find_package(TinyXML REQUIRED)
-  if (TINYXML_FOUND)
+  if (TinyXML_FOUND)
     message("TinyXML Found")
     include_directories(${TinyXML_INCLUDE_DIRS})
 
