@@ -184,9 +184,11 @@ if (USE_TINYXML)
   find_package(TinyXML REQUIRED)
   if (TINYXML_FOUND)
     message("TinyXML Found")
-    include_directories(${TINYXML_INCLUDE_DIRS})
+    include_directories(${TinyXML_INCLUDE_DIRS})
 
-    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${TINYXML_LIBRARIES})
+    set(LIBS_TO_LINK ${LIBS_TO_LINK} ${TinyXML_LIBRARIES})
+    message("Include Dir: ${TinyXML_INCLUDE_DIRS}")
+    message("Libraries: ${TinyXML_LIBRARIES}")
   endif ()
 endif ()
 
