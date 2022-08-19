@@ -1,9 +1,26 @@
+/* eslint-disable no-undef */
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-module.exports = {
+const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+
+const cssLoader = {
+  test: /\.(s(a|c)ss)$/,
+  use: ['style-loader', 'css-loader', 'sass-loader'],
+};
+
+if (mode === 'production') {
+  cssLoader.use = [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'];
+}
+
+let config = {
+  mode,
+
+  target: 'web',
+
   entry: {
     app: './src/main.ts',
     vendors: ['phaser'],
@@ -15,6 +32,11 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
+      },
+      cssLoader,
+      {
+        test: /\.(woff|woff2|eot|ttf|svg)$/,
+        type: 'asset/resource',
       },
     ],
   },
@@ -28,12 +50,11 @@ module.exports = {
     path: path.resolve(__dirname, 'www'),
   },
 
-  mode: process.env.NODE_ENV == 'production' ? 'production' : 'development',
-
   devServer: {
     allowedHosts: 'all',
     host: '0.0.0.0',
     port: 8080,
+    hot: false,
   },
 
   plugins: [
@@ -47,10 +68,16 @@ module.exports = {
     new webpack.DefinePlugin({
       'typeof CANVAS_RENDERER': JSON.stringify(true),
       'typeof WEBGL_RENDERER': JSON.stringify(true),
-      DEBUG: process.env.NODE_ENV == 'development' ? true : false,
+      DEBUG: mode === 'development',
     }),
-    new HtmlWebpackPlugin({ template: './src/index.ejs', title: '$PROJECT_NAME_PRETTY' }),
+    new HtmlWebpackPlugin({ template: './src/index.ejs', title: 'Phaser Game' }),
   ],
 
   optimization: { splitChunks: { chunks: 'all' } },
 };
+
+if (mode === 'production') {
+  config.plugins.push(new MiniCssExtractPlugin());
+}
+
+module.exports = config;

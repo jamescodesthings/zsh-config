@@ -21,17 +21,25 @@
     "chore:update": "npx npm-check-updates -u"
   },
   "dependencies": {
+    "lodash": "4.17.21",
     "phaser": "3.55.2"
   },
   "devDependencies": {
+    "@types/lodash": "4.14.184",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
     "copy-webpack-plugin": "11.0.0",
+    "css-loader": "6.7.1",
+    "debug": "4.3.4",
     "eslint": "8.22.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
     "html-webpack-plugin": "5.5.0",
+    "mini-css-extract-plugin": "2.6.1",
     "prettier": "2.7.1",
+    "sass": "1.54.4",
+    "sass-loader": "13.0.2",
+    "style-loader": "3.3.1",
     "ts-loader": "9.3.1",
     "typescript": "4.7.4",
     "typescript-tslint-plugin": "0.5.5",

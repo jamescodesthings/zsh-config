@@ -8,6 +8,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'prettier'],
   extends: ['eslint:recommended', 'prettier'],
+  rules: {},
   overrides: [
     {
       files: ['*.ts', '*.tsx'],
@@ -22,5 +23,4 @@ module.exports = {
       },
     },
   ],
-  rules: {},
 };

@@ -1,10 +1,12 @@
+import { debounce } from 'lodash';
 import * as Phaser from 'phaser';
 import Scenes from './scenes';
 import { Logger } from './services/logger';
+
 import Center = Phaser.Scale.Center;
 import ScaleModes = Phaser.Scale.ScaleModes;
 
-declare var DEBUG: boolean;
+declare const DEBUG: boolean;
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   title: '$PROJECT_NAME_PRETTY',
@@ -31,8 +33,9 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 
 export const game = new Phaser.Game(gameConfig);
 
-
-window.addEventListener('resize', () => {
+const resize = () => {
   Logger.log('resize event fired');
   game.scale.refresh();
-});
+};
+
+window.addEventListener('resize', debounce(resize, 100, { maxWait: 1000 }));
