@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -24,27 +24,21 @@ module.exports = {
   },
 
   output: {
-    filename: 'app.bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    // filename: 'app.bundle.js',
+    path: path.resolve(__dirname, 'www'),
   },
 
   mode: process.env.NODE_ENV == 'production' ? 'production' : 'development',
 
   devServer: {
-    contentBase: path.resolve(__dirname, 'dist'),
+    allowedHosts: 'all',
     host: '0.0.0.0',
     port: 8080,
-    writeToDisk: true,
-    open: true,
-    allowedHosts: 'all',
   },
 
   plugins: [
     new CopyPlugin({
       patterns: [
-        {
-          from: 'index.html',
-        },
         {
           from: 'assets/**/*',
         },
@@ -54,18 +48,9 @@ module.exports = {
       'typeof CANVAS_RENDERER': JSON.stringify(true),
       'typeof WEBGL_RENDERER': JSON.stringify(true),
     }),
+    new HtmlWebpackPlugin({template: "./src/index.ejs", title: "$PROJECT_NAME_PRETTY"}),
   ],
 
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        commons: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all',
-          filename: '[name].app.bundle.js',
-        },
-      },
-    },
-  },
+  optimization: { splitChunks: { chunks: "all" } },
+
 };
