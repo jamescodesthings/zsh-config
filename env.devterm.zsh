@@ -6,6 +6,7 @@ alias battery="echo \"$(battery-raw)%\""
 
 alias visudo="sudo EDITOR=nano /usr/bin/visudo"
 
+export CMAKE_GENERATOR=Ninja
 export CC=/usr/bin/clang
 export CXX=/usr/bin/clang++
 export LDFLAGS=-fuse-ld=lld

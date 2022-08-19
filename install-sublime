@@ -42,6 +42,13 @@ if [[ "$SUBLIME_SETTINGS" != "" ]]; then
 
   ln -s $SHARED_FILES/Default.sublime-keymap $SUBLIME_SETTINGS/Default.sublime-keymap
 
+  if [[ -h $SUBLIME_SETTINGS/Default.sublime-mousemap || -e $SUBLIME_SETTINGS/Default.sublime-mousemap ]]; then
+    echo 'Default.sublime-mousemap already exists, replacing it'
+    rm $SUBLIME_SETTINGS/Default.sublime-mousemap
+  fi
+
+  ln -s $SHARED_FILES/Default.sublime-mousemap $SUBLIME_SETTINGS/Default.sublime-mousemap
+
   echo 'Done'
 else
   echo 'Nothing to do here.'
