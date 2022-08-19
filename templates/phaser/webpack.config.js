@@ -47,6 +47,7 @@ module.exports = {
     new webpack.DefinePlugin({
       'typeof CANVAS_RENDERER': JSON.stringify(true),
       'typeof WEBGL_RENDERER': JSON.stringify(true),
+      DEBUG: process.env.NODE_ENV == 'development' ? true : false,
     }),
     new HtmlWebpackPlugin({ template: './src/index.ejs', title: '$PROJECT_NAME_PRETTY' }),
   ],

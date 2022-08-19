@@ -1,31 +1,38 @@
 import * as Phaser from 'phaser';
 import Scenes from './scenes';
+import { Logger } from './services/logger';
+import Center = Phaser.Scale.Center;
+import ScaleModes = Phaser.Scale.ScaleModes;
+
+declare var DEBUG: boolean;
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
-  title: 'Phaser Game',
-
+  title: '$PROJECT_NAME_PRETTY',
+  parent: 'game',
   type: Phaser.AUTO,
 
-  scale: {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  },
+  backgroundColor: '#3498db',
 
-  scene: Scenes,
+  width: 500,
+  height: 340,
+
+  scale: {
+    mode: ScaleModes.FIT,
+    autoCenter: Center.CENTER_BOTH,
+  },
 
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true,
+      debug: DEBUG,
     },
   },
-
-  parent: 'game',
-  backgroundColor: '#000000',
 };
 
 export const game = new Phaser.Game(gameConfig);
 
+
 window.addEventListener('resize', () => {
+  Logger.log('resize event fired');
   game.scale.refresh();
 });
