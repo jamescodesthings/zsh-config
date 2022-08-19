@@ -2,8 +2,9 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackInjectPreload = require('@principalstudio/html-webpack-inject-preload');
 
 const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -71,6 +72,14 @@ let config = {
       DEBUG: mode === 'development',
     }),
     new HtmlWebpackPlugin({ template: './src/index.ejs', title: 'Phaser Game' }),
+    new HtmlWebpackInjectPreload({
+      files: [
+        {
+          match: /\.(woff|woff2|eot|ttf|svg)$/,
+          attributes: { as: 'font', crossorigin: true },
+        },
+      ],
+    }),
   ],
 
   optimization: { splitChunks: { chunks: 'all' } },
