@@ -48,9 +48,8 @@ module.exports = {
       'typeof CANVAS_RENDERER': JSON.stringify(true),
       'typeof WEBGL_RENDERER': JSON.stringify(true),
     }),
-    new HtmlWebpackPlugin({template: "./src/index.ejs", title: "$PROJECT_NAME_PRETTY"}),
+    new HtmlWebpackPlugin({ template: './src/index.ejs', title: '$PROJECT_NAME_PRETTY' }),
   ],
 
-  optimization: { splitChunks: { chunks: "all" } },
-
+  optimization: { splitChunks: { chunks: 'all' } },
 };

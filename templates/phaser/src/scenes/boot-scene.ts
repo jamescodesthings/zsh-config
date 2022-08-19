@@ -36,7 +36,9 @@ export class BootScene extends Phaser.Scene {
       0x888888,
     );
 
-    const loadingText = this.add.text(halfWidth - 75, halfHeight - 100, 'Loading...').setFontSize(24);
+    const loadingText = this.add
+      .text(halfWidth - 75, halfHeight - 100, 'Loading...')
+      .setFontSize(24);
     const percentText = this.add.text(halfWidth - 25, halfHeight, '0%').setFontSize(24);
     const assetText = this.add.text(halfWidth - 25, halfHeight + 100, '').setFontSize(24);
 

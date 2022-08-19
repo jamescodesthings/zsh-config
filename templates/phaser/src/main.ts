@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import Scenes from './scenes';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
-  title: '$PROJECT_NAME_PRETTY',
+  title: 'Phaser Game',
 
   type: Phaser.AUTO,
 
