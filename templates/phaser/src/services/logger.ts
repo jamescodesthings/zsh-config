@@ -10,12 +10,16 @@ interface LogLevelLogger {
   [key: string]: Debug;
 }
 
+/**
+ * Available log levels
+ * @todo: could make the constructor generate methods for these & typedef
+ */
 export enum LogLevel {
   TRACE = 'trace',
   DEBUG = 'debug',
   INFO = 'info',
-  warn = 'warn',
-  error = 'error',
+  WARN = 'warn',
+  ERROR = 'error',
 }
 
 /**
@@ -88,10 +92,10 @@ export class Logger {
   }
 
   warn(...args) {
-    this.logger[LogLevel.warn](...args);
+    this.logger[LogLevel.WARN](...args);
   }
 
   error(...args) {
-    this.logger[LogLevel.error](...args);
+    this.logger[LogLevel.ERROR](...args);
   }
 }
