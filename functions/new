@@ -106,21 +106,21 @@ function _new_create() {
 
   find $OUT_DIR | while IFS= read -r file; do
     echo -n "$cs[flag]$file$cs[reset] -> "
-    NEW_FILENAME=${file/.tpl/}
-    echo -n "$cs[param]$NEW_FILENAME$cs[reset]"
-    if is equal "$NEW_FILENAME" "$file"; then
-      echo ": $cs[warn]not a template $cs[reset]"
-      continue;
-    fi
+    # NEW_FILENAME=${file/.tpl/}
+    # echo -n "$cs[param]$NEW_FILENAME$cs[reset]"
+    # if is equal "$NEW_FILENAME" "$file"; then
+    #   echo ": $cs[warn]not a template $cs[reset]"
+    #   continue;
+    # fi
 
     TEMPL=$(cat $file)
     TEMPL=${TEMPL//\$PROJECT_NAME_PRETTY/$PROJECT_NAME_PRETTY}
     TEMPL=${TEMPL//\$PROJECT_NAME_TITLE/$PROJECT_NAME_TITLE}
     TEMPL=${TEMPL//\$PROJECT_NAME_CAMEL/$PROJECT_NAME_CAMEL}
     TEMPL=${TEMPL//\$PROJECT_NAME/$PROJECT_NAME}
-    echo $TEMPL > $NEW_FILENAME
+    echo $TEMPL > $file
 
-    rm $file
+    # rm $file
 
     echo ": $cs[success]Done$cs[reset]"
   done
