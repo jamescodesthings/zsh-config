@@ -106,7 +106,7 @@ class StateService {
 
       // Depending on browser this may be no good, but it's worth a shot so fuck it right?
       window.addEventListener('beforeunload', (event) => {
-        this.save();
+        void this.save();
       });
     } catch (error) {
       this.logger.error('Could not init state:', error);

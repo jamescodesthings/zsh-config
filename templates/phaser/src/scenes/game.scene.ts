@@ -5,6 +5,12 @@ import { getGameHeight } from '../utils/get-game-height';
 import { isMobile } from '../utils/is-mobile';
 import { isNative } from '../utils/is-native';
 
+const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+  active: false,
+  visible: false,
+  key: 'game',
+};
+
 /**
  * The main game scene
  */
@@ -16,8 +22,11 @@ export class GameScene extends Phaser.Scene {
   private cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
   private image: Phaser.Physics.Arcade.Sprite;
 
-  constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
-    super(config);
+  constructor(config: Phaser.Types.Scenes.SettingsConfig) {
+    super({
+      ...sceneConfig,
+      ...config,
+    });
     this.logger = Logger.create('scene:game');
   }
 

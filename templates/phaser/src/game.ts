@@ -1,9 +1,14 @@
 import { debounce } from 'lodash';
 import * as Phaser from 'phaser';
 import { config } from './config';
-import { defaultScene, scenes } from './scenes/scenes';
 import { Logger } from './services/logger';
 import { state } from './services/state';
+
+declare global {
+  interface Window {
+    sizeChanged: () => void;
+  }
+}
 
 /**
  * A game wrapper class
@@ -25,38 +30,28 @@ export class Game {
   async run() {
     try {
       this.logger.debug('game.run();');
-      this.game = new Phaser.Game(config);
-      await state.init();
-      this.addScenes();
-      this.startDefaultScene();
       this.addResizeListener();
+      await state.init();
+      this.game = new Phaser.Game(config);
     } catch (error) {
       this.logger.error('Error running the game:', error);
     }
   }
 
-  private addScenes() {
-    Object.keys(scenes).forEach((key) => {
-      const scene = scenes[key];
-      this.logger.debug('Adding scene %s', key);
-      this.game.scene.add(key, scene);
-    });
-  }
-
-  private startDefaultScene() {
-    this.logger.info('Starting scene %s', defaultScene);
-    this.game.scene.start(defaultScene);
-  }
-
   private addResizeListener() {
-    window.addEventListener(
-      'resize',
-      debounce(() => this.onResize(), 100, { maxWait: 1000 }),
-    );
+    window.sizeChanged = debounce(() => this.onResize(), 100, { maxWait: 1000 });
+
+    window.addEventListener('resize', () => window.sizeChanged());
   }
 
   private onResize() {
+    if (!this.game) return;
+
     this.logger.debug('resize fired');
-    this.game.scale.refresh();
+    this.game.scale.resize(window.innerWidth, window.innerHeight);
+    this.game.canvas.setAttribute(
+      'style',
+      `display: block; width: ${window.innerWidth}px; height: ${window.innerHeight}px;`,
+    );
   }
 }

@@ -3,6 +3,12 @@ import { Logger } from '../services/logger';
 import { state } from '../services/state';
 import { getGameHeight } from '../utils/get-game-height';
 
+const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+  active: false,
+  visible: false,
+  key: 'game.osc',
+};
+
 /**
  * On Screen controller scene
  */
@@ -16,8 +22,11 @@ export class GameOSCScene extends Phaser.Scene {
   /**
    * @constructor
    */
-  constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
-    super(config);
+  constructor(config: Phaser.Types.Scenes.SettingsConfig) {
+    super({
+      ...sceneConfig,
+      ...config,
+    });
     this.logger = Logger.create('scene:osc');
   }
 

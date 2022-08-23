@@ -1,14 +1,22 @@
 import Phaser from 'phaser';
 import { Logger } from '../services/logger';
-import { state } from '../services/state';
 import { getGameWidth } from '../utils/get-game-width';
+
+const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+  active: false,
+  visible: false,
+  key: 'game.fullscreen',
+};
 
 export class GameFullscreenScene extends Phaser.Scene {
   private readonly logger: Logger;
   private button: Phaser.GameObjects.Sprite;
 
-  constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
-    super(config);
+  constructor(config: Phaser.Types.Scenes.SettingsConfig) {
+    super({
+      ...sceneConfig,
+      ...config,
+    });
     this.logger = Logger.create('scene:fullscreen');
   }
 

@@ -13,7 +13,7 @@
     "start": "npm run -s start:dev",
     "start:dev": "NODE_ENV=development webpack-dev-server",
     "start:prod": "NODE_ENV=production webpack-dev-server",
-    "cap:init": "npm run -s build:dev && cap add android && cap add ios npm run -s cap:sync",
+    "cap:init": "npm run -s build:dev && cap add android && cap add ios && npm run -s cap:sync",
     "cap:build": "npm run -s cap:build:dev",
     "cap:sync": "cap sync",
     "cap:build:dev": "npm run -s build:dev && npm run -s cap:sync",

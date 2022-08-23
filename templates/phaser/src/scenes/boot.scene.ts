@@ -1,12 +1,21 @@
 import { getGameWidth } from '../utils/get-game-width';
 import { getGameHeight } from '../utils/get-game-height';
 
+const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+  active: false,
+  visible: false,
+  key: 'boot',
+};
+
 /**
  * Boot scene, loads assets
  */
 export class BootScene extends Phaser.Scene {
-  constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
-    super(config);
+  constructor(config: Phaser.Types.Scenes.SettingsConfig) {
+    super({
+      ...sceneConfig,
+      ...config,
+    });
   }
 
   public preload(): void {
@@ -63,7 +72,7 @@ export class BootScene extends Phaser.Scene {
   private loadAssets() {
     // Load sample assets
 
-    // Source: Open Game Art
+    // Source: tutorial source
     this.load.image('man', 'assets/sprites/character.png');
 
     // Source: Kenney Assets

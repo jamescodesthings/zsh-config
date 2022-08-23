@@ -2,6 +2,12 @@ import Phaser from 'phaser';
 import { Logger } from '../services/logger';
 import { state } from '../services/state';
 
+const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+  active: false,
+  visible: false,
+  key: 'game.hud',
+};
+
 /**
  * Hud Scene, displays hud text
  */
@@ -11,8 +17,11 @@ export class GameHUDScene extends Phaser.Scene {
   private logger: Logger;
   private scoreLabel: Phaser.GameObjects.Text;
 
-  constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
-    super(config);
+  constructor(config: Phaser.Types.Scenes.SettingsConfig) {
+    super({
+      ...sceneConfig,
+      ...config,
+    });
     this.logger = Logger.create('scene:hud');
   }
 
