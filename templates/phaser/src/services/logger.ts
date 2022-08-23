@@ -1,13 +1,12 @@
-import * as Debug from 'debug';
-
-declare var DEBUG: boolean;
+import Debug, { debug } from 'debug';
+import { isDebug } from '../utils/is-debug';
 
 interface Loggers {
   [key: string]: Logger;
 }
 
 interface LogLevelLogger {
-  [key: string]: Debug;
+  [key: string]: debug.Debugger;
 }
 
 /**
@@ -36,12 +35,8 @@ export class Logger {
   // Logger Manager
   static loggers: Loggers;
 
-  static create(tag: string = 'global'): Logger {
-    if (!this.loggers) {
-      this.loggers = {
-        global: new Logger('global'),
-      };
-    }
+  static create(tag = 'global'): Logger {
+    this.initLoggers();
 
     if (!this.loggers[tag]) {
       this.loggers[tag] = new Logger(tag);
@@ -50,8 +45,17 @@ export class Logger {
     return this.loggers[tag];
   }
 
-  static log(...args) {
-    this.loggers['global'].debug(...args);
+  private static initLoggers() {
+    if (!this.loggers) {
+      this.loggers = {
+        global: new Logger('global'),
+      };
+    }
+  }
+
+  static log(formatter: any, ...args: any[]) {
+    this.initLoggers();
+    this.loggers['global'].debug(formatter, ...args);
   }
 
   static list() {
@@ -66,7 +70,6 @@ export class Logger {
     });
   }
 
-  // Single Logger Interface:
   private readonly logger: LogLevelLogger;
 
   private constructor(tag: string = null) {
@@ -75,27 +78,27 @@ export class Logger {
     Object.values(LogLevel).forEach((level) => {
       const levelTag = `${tag}:${level}`;
       this.logger[level] = Debug(levelTag);
-      if (DEBUG) this.logger[level].enabled = true;
+      if (isDebug()) this.logger[level].enabled = true;
     });
   }
 
-  trace(...args) {
-    this.logger[LogLevel.TRACE](...args);
+  trace(formatter: any, ...args: any[]) {
+    this.logger[LogLevel.TRACE](formatter, ...args);
   }
 
-  debug(...args) {
-    this.logger[LogLevel.DEBUG](...args);
+  debug(formatter: any, ...args: any[]) {
+    this.logger[LogLevel.DEBUG](formatter, ...args);
   }
 
-  info(...args) {
-    this.logger[LogLevel.INFO](...args);
+  info(formatter: any, ...args: any[]) {
+    this.logger[LogLevel.INFO](formatter, ...args);
   }
 
-  warn(...args) {
-    this.logger[LogLevel.WARN](...args);
+  warn(formatter: any, ...args: any[]) {
+    this.logger[LogLevel.WARN](formatter, ...args);
   }
 
-  error(...args) {
-    this.logger[LogLevel.ERROR](...args);
+  error(formatter: any, ...args: any[]) {
+    this.logger[LogLevel.ERROR](formatter, ...args);
   }
 }

@@ -1,17 +1,12 @@
-import { getGameWidth, getGameHeight } from '../helpers';
-
-const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
-  active: false,
-  visible: false,
-  key: 'Boot',
-};
+import { getGameWidth } from '../utils/get-game-width';
+import { getGameHeight } from '../utils/get-game-height';
 
 /**
- * The initial scene that loads all necessary assets to the game and displays a loading bar.
+ * Boot scene, loads assets
  */
 export class BootScene extends Phaser.Scene {
-  constructor() {
-    super(sceneConfig);
+  constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
+    super(config);
   }
 
   public preload(): void {
@@ -49,21 +44,15 @@ export class BootScene extends Phaser.Scene {
       percentText.setText(`${percent}%`);
     });
 
-    this.load.on('fileprogress', (file) => {
+    this.load.on('fileprogress', (file: Phaser.Loader.File) => {
       assetText.setText(file.key);
     });
 
-    this.load.on('complete', () => {
-      loadingText.destroy();
-      percentText.destroy();
-      assetText.destroy();
-      progressBar.destroy();
-      progressBarContainer.destroy();
-
-      this.scene.start('MainMenu');
-    });
-
     this.loadAssets();
+  }
+
+  create() {
+    this.scene.start('menu');
   }
 
   /**
@@ -76,5 +65,20 @@ export class BootScene extends Phaser.Scene {
 
     // Source: Open Game Art
     this.load.image('man', 'assets/sprites/character.png');
+
+    // Source: Kenney Assets
+    this.load.image('menu-bg', 'assets/sprites/tile_0018.64.png');
+    this.load.image('button-bg', 'assets/sprites/tile_0017.64.png');
+    this.load.image('banner-left', 'assets/sprites/tile_0056.64.png');
+    this.load.image('banner-mid', 'assets/sprites/tile_0057.64.png');
+    this.load.image('banner-right', 'assets/sprites/tile_0058.64.png');
+
+    this.load.image('osc.up', 'assets/controls/flatDark02@1.5.png');
+    this.load.image('osc.left', 'assets/controls/flatDark04@1.5.png');
+    this.load.image('osc.right', 'assets/controls/flatDark05@1.5.png');
+    this.load.image('osc.down', 'assets/controls/flatDark09@1.5.png');
+
+    this.load.image('fullscreen.enter', 'assets/controls/larger.png');
+    this.load.image('fullscreen.exit', 'assets/controls/smaller.png');
   }
 }

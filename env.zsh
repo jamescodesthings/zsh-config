@@ -32,5 +32,9 @@ export WORDCHARS=${WORDCHARS/-/}
 
 export POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
 
+# NNN Plugins
+export NNN_PLUG='j:autojump'
+
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh
+

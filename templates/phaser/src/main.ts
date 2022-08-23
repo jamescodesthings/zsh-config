@@ -1,41 +1,11 @@
-import { debounce } from 'lodash';
-import * as Phaser from 'phaser';
-import Scenes from './scenes';
-import { Logger } from './services/logger';
+import './styles/app.scss';
+import { Game } from './game';
 
-import Center = Phaser.Scale.Center;
-import ScaleModes = Phaser.Scale.ScaleModes;
-
-declare const DEBUG: boolean;
-
-const gameConfig: Phaser.Types.Core.GameConfig = {
-  title: '$PROJECT_NAME_PRETTY',
-  parent: 'game',
-  type: Phaser.AUTO,
-
-  backgroundColor: '#3498db',
-
-  width: 500,
-  height: 340,
-
-  scale: {
-    mode: ScaleModes.FIT,
-    autoCenter: Center.CENTER_BOTH,
-  },
-
-  physics: {
-    default: 'arcade',
-    arcade: {
-      debug: DEBUG,
-    },
-  },
-};
-
-export const game = new Phaser.Game(gameConfig);
-
-const resize = () => {
-  Logger.log('resize event fired');
-  game.scale.refresh();
-};
-
-window.addEventListener('resize', debounce(resize, 100, { maxWait: 1000 }));
+void (async () => {
+  try {
+    const game = new Game();
+    await game.run();
+  } catch (e) {
+    console.error(e);
+  }
+})();

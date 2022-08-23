@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+
+./resize $1
+./resize128 $1
+./resize256 $1
+

@@ -21,6 +21,14 @@ module.exports = {
       parserOptions: {
         project: ['./tsconfig.json'], // Specify it only for TypeScript files
       },
+      rules: {
+        '@typescript-eslint/no-unsafe-call': 0,
+        '@typescript-eslint/no-unsafe-assignment': 0,
+        '@typescript-eslint/no-unsafe-member-access': 0,
+        '@typescript-eslint/no-unsafe-argument': 0,
+        '@typescript-eslint/no-unsafe-return': 0,
+        '@typescript-eslint/no-explicit-any': 0,
+      },
     },
   ],
 };

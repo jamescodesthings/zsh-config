@@ -1,0 +1,22 @@
+#!/usr/bin/env zsh
+
+INPUT=$1
+SCALE=$2
+
+if [[ -z "$INPUT" ]] || [[ -z "$SCALE" ]]; then
+  echo './resize [path_to.png] [scale]'
+  echo 'scale: 1.5 for 150%'
+  exit 1
+fi
+
+
+EXT=${INPUT##*.}
+OUTPUT=${INPUT%.$EXT}@$SCALE.${EXT}
+
+echo "Resizing $INPUT by $SCALE to $OUTPUT"
+
+AS_PERCENTAGE=$(($SCALE * 100))
+WITHOUT_POINT=${AS_PERCENTAGE%.}
+WITH_PERCENT="$WITHOUT_POINT%"
+
+convert $INPUT -filter Point -resize $WITH_PERCENT -antialias $OUTPUT

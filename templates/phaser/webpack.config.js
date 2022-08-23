@@ -9,7 +9,7 @@ const HtmlWebpackInjectPreload = require('@principalstudio/html-webpack-inject-p
 const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const cssLoader = {
-  test: /\.(s(a|c)ss)$/,
+  test: /\.(s([ac])ss)$/,
   use: ['style-loader', 'css-loader', 'sass-loader'],
 };
 
@@ -71,7 +71,10 @@ let config = {
       'typeof WEBGL_RENDERER': JSON.stringify(true),
       DEBUG: mode === 'development',
     }),
-    new HtmlWebpackPlugin({ template: './src/index.ejs', title: 'Phaser Game' }),
+    new HtmlWebpackPlugin({
+      template: './src/index.ejs',
+      title: '$PROJECT_NAME_PRETTY',
+    }),
     new HtmlWebpackInjectPreload({
       files: [
         {
@@ -81,7 +84,6 @@ let config = {
       ],
     }),
   ],
-
   optimization: { splitChunks: { chunks: 'all' } },
 };
 

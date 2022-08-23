@@ -1,8 +1,27 @@
-// Font Exmaple
-// @font-face {
-//   font-family: AlumniSansPinstripe;
-//   src: url('../../fonts/alumni-sans-pinstripe.ttf');
-// }
+@font-face {
+  font-family: geo;
+  src: url('../../fonts/geo.ttf');
+}
+
+@font-face {
+  font-family: alumni;
+  src: url('../../fonts/alumni-sans.ttf');
+}
+
+@font-face {
+  font-family: teko;
+  src: url('../../fonts/teko.ttf');
+}
+
+@font-face {
+  font-family: germania;
+  src: url('../../fonts/germania.ttf');
+}
+
+@font-face {
+  font-family: roboto;
+  src: url('../../fonts/roboto.ttf');
+}
 
 html,
 body,
@@ -13,14 +32,33 @@ canvas {
   width: 100%;
   height: 100%;
 }
+
 body {
   background-color: #3498db;
 }
 
-// Font Exmaple
-// div#font-loader {
-//   font-family: AlumniSansPinstripe;
-//   position: absolute;
-//   left: -1000px;
-//   visibility: hidden;
-// }
+div.font-loader {
+  position: absolute;
+  left: -1000px;
+  visibility: hidden;
+
+  &.geo {
+    font-family: geo, sans-serif;
+  }
+
+  &.alumni {
+    font-family: alumni, sans-serif;
+  }
+
+  &.teko {
+    font-family: teko, sans-serif;
+  }
+
+  &.germania {
+    font-family: germania, sans-serif;
+  }
+
+  &.roboto {
+    font-family: roboto, sans-serif;
+  }
+}
