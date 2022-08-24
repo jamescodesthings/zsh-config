@@ -43,6 +43,9 @@ alias count='ls -b1 | wc -l' # Count files in current directory
 alias cx='chmod +x'
 alias lla='ls -la'
 alias la='ls -a'
+alias l1='ls -1'
+alias l1a='ls -1a'
+alias la1='l1a'
 alias j='z'
 
 if is available exa; then
