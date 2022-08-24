@@ -143,6 +143,29 @@ if is existing "$ASDF_DIR/shims/npm"; then
   alias ncu='npm-check-update'
 fi
 
+if is existing "$ASDF_DIR/shims/yarn"; then
+
+  alias y="yarn"
+  alias yr="yarn run"
+  alias yst="yarn start"
+  alias yt="yarn test"
+
+  alias yinit="yarn init"
+  alias yi="yarn install"
+  alias ySE="yarn add --exact"
+  alias yDE="yarn add --dev --exact"
+  alias yrm="yarn remove"
+  alias yout="yarn outdated"
+  alias yui="yarn upgrade-interactive"
+  alias yG="yarn global add"
+  alias yGu="yarn global upgrade --exact"
+  alias yGrm="yarn global remove"
+  alias yL0g="yarn global list"
+  alias yL0="yarn list --depth=0"
+  alias ycc="yarn cache clean"
+  alias yuc="yarn global upgrade && yarn cache clean"
+fi
+
 # Python
 if is available python; then
   alias pip='python -m pip'

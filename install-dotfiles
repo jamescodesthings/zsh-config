@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+DOTFILES=$(/bin/ls -a1 "$CUSTOM_DIR/dotfiles" | tail --lines=+3)
+
+echo "Installing Dotfiles to $HOME"
+
+for filename in "$DOTFILES"; do
+  local PATH="$HOME/$filename"
+  local SRC_PATH="$CUSTOM_DIR/dotfiles/$filename"
+  if [[ ! -h "$PATH" ]]; then
+    echo "creating $PATH -> $SRC_PATH"
+    /bin/ln -s $SRC_PATH $PATH
+  fi
+done
+
+echo "Done installing dotfiles"
