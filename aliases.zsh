@@ -198,3 +198,7 @@ fi
 if is alias md; then
   unalias md
 fi
+
+if is available webstorm; then
+  alias ws="webstorm"
+fi
