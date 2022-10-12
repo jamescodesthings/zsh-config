@@ -159,7 +159,7 @@ if is existing "$ASDF_DIR/shims/yarn"; then
   alias yDE="yarn add --dev --exact"
   alias yrm="yarn remove"
   alias yout="yarn outdated"
-  alias yui="yarn upgrade-interactive"
+  alias yui="yarn upgrade-interactive --latest"
   alias yG="yarn global add"
   alias yGu="yarn global upgrade --exact"
   alias yGrm="yarn global remove"
