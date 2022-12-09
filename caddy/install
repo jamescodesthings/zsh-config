@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+
+# Depends on is and get-hostname
+autoload "$CUSTOM_DIR/functions/is"
+autoload "$CUSTOM_DIR/functions/get-hostname"
+
+BOX=$(get-hostname)
+BOX_CADDY="$CUSTOM_DIR/caddy/$BOX.Caddyfile"
+CADDY_DEST="/opt/homebrew/etc/Caddyfile"
+
+DEBUG_INSTALL=0
+
+function _caddy_install() {
+  if is not osx; then
+    if is equal "$DEBUG_INSTALL" "1"; then
+      echo "Not sure where to put caddy file."
+      echo "You need to update $(pwd)/$0"
+      return
+    fi
+  fi
+
+  if is existing "$BOX_CADDY"; then
+    if is equal "$DEBUG_INSTALL" "1"; then
+      echo "$BOX_CADDY exists, linking it to $CADDY_DEST"
+      echo "Will Run:"
+      echo "sudo ln -s $BOX_CADDY $CADDY_DEST"
+    fi
+
+    sudo ln -s $BOX_CADDY $CADDY_DEST
+    echo "Linked $BOX_CADDY to $CADDY_DEST"
+  else
+    if is equal "$DEBUG_INSTALL" "1"; then
+      echo "$BOX_CADDY does not exist, no caddy file to link"
+    fi
+  fi
+
+}
+
+_caddy_install

@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+
+# Depends on is and get-hostname
+autoload "$CUSTOM_DIR/functions/is"
+autoload "$CUSTOM_DIR/functions/get-hostname"
+
+BOX=$(get-hostname)
+BOX_MASQ="$CUSTOM_DIR/dnsmasq/$BOX.dnsmasq.conf"
+MASQ_DEST="/opt/homebrew/etc/dnsmasq.conf"
+
+RESOLVER="$CUSTOM_DIR/dnsmasq/localhost"
+RESOLVER_DEST="/etc/resolver/localhost"
+
+DEBUG_INSTALL=0
+
+function _masq_install() {
+  if is not osx; then
+    if is equal "$DEBUG_INSTALL" "1"; then
+      echo "Not sure where to put dnsmasq file."
+      echo "You need to update $(pwd)/$0"
+      return
+    fi
+  fi
+
+  if is existing "$BOX_MASQ"; then
+    if is equal "$DEBUG_INSTALL" "1"; then
+      echo "$BOX_MASQ exists, linking it to $MASQ_DEST"
+      echo "Will Run:"
+      echo "sudo ln -s $BOX_MASQ $MASQ_DEST"
+    fi
+
+    sudo ln -s $BOX_MASQ $MASQ_DEST
+    echo "Linked $BOX_MASQ to $MASQ_DEST"
+
+    sudo mkdir -p /etc/resolver
+    sudo ln -s $RESOLVER $RESOLVER_DEST
+    echo "Linked $RESOLVER to $RESOLVER_DEST"
+
+  else
+    if is equal "$DEBUG_INSTALL" "1"; then
+      echo "$BOX_MASQ does not exist, no dnsmasq file to link"
+    fi
+  fi
+
+}
+
+_masq_install

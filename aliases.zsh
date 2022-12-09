@@ -95,8 +95,10 @@ if is available git; then
     unalias g;
     unalias gcm;
     unalias gcd;
+    unalias grbi;
   fi;
 
+  alias grbi='git rebase -i --ignore-date'
   alias gcm='git commit -m'
   alias gcmn='git commit --no-verify -m'
   alias gbD='git branch -D'
@@ -201,4 +203,9 @@ fi
 
 if is available webstorm; then
   alias ws="webstorm"
+fi
+
+if is available http; then
+  alias http="http --verify=no"
+  alias https="https --verify=no"
 fi
