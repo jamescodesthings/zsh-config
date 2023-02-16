@@ -19,7 +19,7 @@ _sim_flag_names[7]="--data-dir [bundle-id]"
 _sim_flag_messages[7]="Open's the running simulator's data directory for [bundle-id], if ommitted xcrun simctl com.engineius.app.driver is used."
 _sim_flag_names[8]="--cd-data-dir [bundle-id]"
 _sim_flag_messages[8]="CDs to the running simulator's data directory for [bundle-id], if ommitted xcrun simctl com.engineius.app.driver is used."
-_sim_flag_names[9]="--dump-sim-data [bundle-id]"
+_sim_flag_names[9]="--dump-data [bundle-id]"
 _sim_flag_messages[9]="Dumps sim data using unpack-container function."
 
 function _sim_install() {
