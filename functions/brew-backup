@@ -15,14 +15,25 @@ function _brew_backup_backup() {
 
   BACKUP_FILE="$BREW_BACKUPS/Brewfile-$FILE_DATE"
 
-  echo "$cs[info]Backing up to $BACKUP_FILE"
+
+  if is existing $BACKUP_FILE; then
+    if confirm "$BACKUP_FILE $cs[info]already exists overwrite?$c[reset]"; then
+      echo "$cs[error]Removing$c[reset] $BACKUP_FILE"
+      rm $BACKUP_FILE
+    else
+      echo "$cs[error]Okay, won't overwrite$c[reset]"
+      return 1
+    fi
+  fi
+
+  echo "$cs[info]Backing up to $BACKUP_FILE$c[reset]"
 
   brew bundle dump --file=$BACKUP_FILE
 
   if is existing $BACKUP_FILE; then
-    echo "$cs[success]Backed up to $BACKUP_FILE$c[reset] $1"
+    echo "$cs[success]Backed up to $c[reset]$BACKUP_FILE"
   else
-    echo "$cs[error]Something went wrong backing up, check out brew-backup"
+    echo "$cs[error]Something went wrong backing up, check out brew-backup$c[reset]"
   fi
 
 
