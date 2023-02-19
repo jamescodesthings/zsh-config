@@ -1,0 +1,55 @@
+#!/usr/bin/env zsh
+
+BREW_BACKUPS="${BREW_BACKUPS:-"$CUSTOM_DIR/brew"}"
+
+_brew_backup_description="Backs up current brew installation by today's date"
+_brew_backup_positional=""
+_brew_backup_positional_desc=""
+_brew_backup_flag_names[1]="--help"
+_brew_backup_flag_messages[1]="shows help"
+# _brew_backup_flag_names[2]="--sub [param]"
+# _brew_backup_flag_messages[2]="Runs a sub function with [param]."
+
+function _brew_backup_backup() {
+  FILE_DATE=$(date -u +%y%m%d)
+
+  BACKUP_FILE="$BREW_BACKUPS/Brewfile-$FILE_DATE"
+
+  echo "$cs[info]Backing up to $BACKUP_FILE"
+
+  brew bundle dump --file=$BACKUP_FILE
+
+  if is existing $BACKUP_FILE; then
+    echo "$cs[success]Backed up to $BACKUP_FILE$c[reset] $1"
+  else
+    echo "$cs[error]Something went wrong backing up, check out brew-backup"
+  fi
+
+
+}
+
+function brew-backup() {
+  local DEPS=(
+    is
+    brew
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_brew_backup_description" \
+      "_brew_backup_flag_names" \
+      "_brew_backup_flag_messages" \
+      "$_brew_backup_positional" \
+      "$_brew_backup_positional_desc"
+    return 0
+  fi
+
+  _brew_backup_backup
+}
+
+brew-backup "$@"

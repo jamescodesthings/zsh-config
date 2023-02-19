@@ -1,0 +1,26 @@
+tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
+brew "fzf"
+brew "git"
+brew "mas"
+brew "tldr"
+brew "yank"
+brew "zsh"
+cask "alfred"
+cask "firefox"
+cask "font-dejavu"
+cask "font-victor-mono"
+cask "font-victor-mono-nerd-font"
+cask "google-chrome"
+cask "iterm2"
+cask "jetbrains-toolbox"
+cask "nordvpn"
+cask "runjs"
+cask "sublime-text"
+cask "the-unarchiver"
+cask "transmission"
+mas "Copy 'Em", id: 876540291
+mas "Keynote", id: 409183694
+mas "Numbers", id: 409203825
+mas "Pages", id: 409201541
+mas "Trello", id: 1278508951

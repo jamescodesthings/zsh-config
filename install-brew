@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+
+# Install Homebrew
+if ! command -v brew &> /dev/null
+then
+  echo "Installing Homebrew\n"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+if [[ -f $CUSTOM_DIR/brew/Brewfile-000000 ]]; then
+  # Restore packages from Brewfile-initial (day 0 requirements)
+  echo "Restoring $CUSTOM_DIR/brew/Brewfile-000000\n"
+  # brew bundle --file=$CUSTOM_DIR/brew/Brewfile-000000
+fi
+
+# Mention that we have rolling backups
+echo "Run:"
+echo "brew bundle --file=$CUSTOM_DIR/brew/Brewfile-000000"
+echo "\nto restore bundles"
+echo "\nAvailable Brewfiles:"
+ls $CUSTOM_DIR/brew/
