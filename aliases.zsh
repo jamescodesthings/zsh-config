@@ -27,11 +27,16 @@ if is osx; then
   alias set-xcode-13='sudo xcode-select -s /Applications/Xcode.app'
 
   alias plistbuddy="/usr/libexec/PlistBuddy"
+  alias copy="pbcopy"
+  alias paste="pbpaste"
 fi
 
 # Linux Specific
 if is linux; then
   alias open='xdg-open'
+  alias copy='xclip -sel clipboard'
+  alias paste='xclip -sel clipboard'
+  alias ls='ls --color -h --group-directories-first'
 fi
 
 # Shell related
@@ -54,6 +59,8 @@ fi
 
 if is available subl; then
   alias zshconfig='subl ~/.custom'
+elif is available code; then
+  alias zshconfig='code ~/.custom'
 elif is available nano; then
   alias zshconfig='nano ~/.zshrc'
 else
