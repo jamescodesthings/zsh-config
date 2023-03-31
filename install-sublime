@@ -9,7 +9,7 @@ local SUBLIME_SETTINGS=""
 if  [[ "$(uname)" == "Darwin" ]]; then
   # Is OSX
   SUBLIME_SETTINGS=~/Library/Application\ Support/Sublime\ Text/Packages/User
-elif [[ -f "/etc/arch-release" ]]; then
+elif [[ -f "/etc/arch-release" ]] || [[ "$(uname -a)" == *Ubuntu* ]]; then
   # Is Arch
   SUBLIME_SETTINGS=~/.config/sublime-text/Packages/User
 else
@@ -41,6 +41,13 @@ if [[ "$SUBLIME_SETTINGS" != "" ]]; then
   fi
 
   ln -s $SHARED_FILES/Default.sublime-keymap $SUBLIME_SETTINGS/Default.sublime-keymap
+
+  if [[ -h "$SUBLIME_SETTINGS/Default (Linux).sublime-keymap" || -e "$SUBLIME_SETTINGS/Default.sublime-keymap" ]]; then
+    echo 'Default (Linux).sublime-keymap already exists, replacing it'
+    rm "$SUBLIME_SETTINGS/Default (Linux).sublime-keymap"
+  fi
+
+  ln -s "$SHARED_FILES/Default (Linux).sublime-keymap" "$SUBLIME_SETTINGS/Default (Linux).sublime-keymap"
 
   if [[ -h $SUBLIME_SETTINGS/Default.sublime-mousemap || -e $SUBLIME_SETTINGS/Default.sublime-mousemap ]]; then
     echo 'Default.sublime-mousemap already exists, replacing it'

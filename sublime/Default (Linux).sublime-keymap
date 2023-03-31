@@ -1,0 +1,33 @@
+[
+  { "keys": ["shift+ctrl+up"], "command": "swap_line_up" },
+  { "keys": ["shift+ctrl+down"], "command": "swap_line_down" },
+  { "keys": ["ctrl+d"], "command": "duplicate_line" },
+  { "keys": ["ctrl+r"], "command": "show_panel", "args": {"panel": "replace", "reverse": false} },
+  { "keys": ["ctrl+shift+a"], "command": "show_overlay", "args": {"overlay": "command_palette"} },
+  { "keys": ["ctrl+r"], "command": "show_panel", "args": {"panel": "replace", "reverse": false} },
+  { "keys": ["ctrl+shift+f"], "command": "show_panel", "args": {"panel": "find_in_files"} },
+  { "keys": ["ctrl+1"], "command": "toggle_side_bar" },
+  { "keys": ["ctrl+n"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} },
+  { "keys": ["ctrl+shift+n"], "command": "new_file" },
+  { "keys": ["ctrl+["], "command": "jump_back" },
+  { "keys": ["ctrl+]"], "command": "jump_forward" },
+  { "keys": ["ctrl+g"], "command": "find_next" },
+  { "keys": ["ctrl+shift+g"], "command": "find_prev" },
+  // From OSX Default:
+  { "keys": ["ctrl+s"], "command": "save", "args": { "async": true } },
+  { "keys": ["ctrl+shift+s"], "command": "prompt_save_as" },
+  { "keys": ["ctrl+alt+s"], "command": "save_all" },
+  { "keys": ["ctrl+w"], "command": "close" },
+  { "keys": ["ctrl+w"], "command": "close_transient", "context":
+    [
+      { "key": "group_has_transient_sheet", "operator": "equal", "operand": true }
+    ]
+  },
+  { "keys": ["ctrl+o"], "command": "prompt_open" },
+  { "keys": ["ctrl+x"], "command": "cut" },
+  { "keys": ["ctrl+c"], "command": "copy" },
+  { "keys": ["ctrl+v"], "command": "paste" },
+  { "keys": ["ctrl+z"], "command": "undo" },
+  { "keys": ["ctrl+shift+z"], "command": "redo" },
+  { "keys": ["ctrl+a"], "command": "select_all" },
+]
