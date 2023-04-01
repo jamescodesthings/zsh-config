@@ -1,0 +1,33 @@
+tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
+brew "circleci"
+brew "fzf"
+brew "git"
+brew "git-lfs"
+brew "mas"
+brew "tldr"
+brew "yank"
+brew "zsh"
+cask "alfred"
+cask "font-dejavu"
+cask "font-golos-text"
+cask "font-roboto"
+cask "font-stalinist-one"
+cask "font-victor-mono"
+cask "font-victor-mono-nerd-font"
+cask "google-chrome"
+cask "iterm2"
+cask "jetbrains-toolbox"
+cask "nordvpn"
+cask "runjs"
+cask "sublime-text"
+cask "the-unarchiver"
+cask "transmission"
+cask "vlc"
+cask "vnc-viewer"
+cask "whatsapp"
+mas "Copy 'Em", id: 876540291
+mas "Keynote", id: 409183694
+mas "Numbers", id: 409203825
+mas "Pages", id: 409201541
+mas "Trello", id: 1278508951
