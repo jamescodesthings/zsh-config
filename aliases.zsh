@@ -3,7 +3,7 @@
 # Compatibility architecture mode (rosetta)
 if is m1; then
   alias rosetta='arch -x86_64'
-  alias rosetta-shell='arch -x86_64 /usr/local/bin/zsh'
+  alias rosetta-shell='arch -x86_64 $(which zsh)'
 fi
 
 # OSX Development
