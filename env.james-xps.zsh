@@ -1,3 +1,7 @@
 #!/usr/bin/env zsh
 
-alias ls='exa'
+export PATH="$HOME/.bin:$PATH"
+
+alias ls='exa --group-directories-first'
+
+export HAS_RUN_ENV=true

@@ -21,16 +21,21 @@ source $CUSTOM_DIR/bash_colors.zsh
 source $CUSTOM_DIR/zsh_options.zsh
 source $CUSTOM_DIR/custom_functions.zsh
 source $CUSTOM_DIR/env.zsh
+source $CUSTOM_DIR/completions.zsh
 source $CUSTOM_DIR/load_zinit.zsh
 source $CUSTOM_DIR/load_omz.zsh
 source $CUSTOM_DIR/fzf-key-bindings.zsh
 source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
-source $CUSTOM_DIR/completions.zsh
-source $CUSTOM_DIR/conda_init.zsh
+source $CUSTOM_DIR/completions.after.zsh
+
+# source $CUSTOM_DIR/conda_init.zsh
 
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
 ### End of Zinit's installer chunk
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /home/james/.asdf/installs/terraform/1.4.2/bin/terraform terraform

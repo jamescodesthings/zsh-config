@@ -57,6 +57,18 @@ if is available exa; then
   alias ls='exa'
 fi
 
+if is available terraform; then
+  alias tf='terraform'
+fi
+
+if is available batcat; then
+  alias bat='batcat'
+fi
+
+if is available yank-cli; then
+  alias yank='yank-cli'
+fi
+
 if is available subl; then
   alias zshconfig='subl ~/.custom'
 elif is available code; then
