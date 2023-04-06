@@ -85,6 +85,11 @@ _update_names[9]="Arch: Yay"
 _update_checks[9]="is available yay"
 _update_commands[9]="yay -Syu"
 
+_update_flags[10]="debian"
+_update_names[10]="Debian"
+_update_checks[10]="is available apt"
+_update_commands[10]="sudo apt update && sudo apt -y upgrade"
+
 
 # Testing
 if is equal $_UPDATE_TEST 1; then
