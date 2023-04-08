@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+ln -s $CUSTOM_DIR/.vimrc $HOME/.vimrc
+
