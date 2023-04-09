@@ -22,14 +22,14 @@ set background=dark
 colorscheme solarized
 set termguicolors
 
-" disable status
-" set laststatus=0
+" disable Status & Ruler
+set laststatus=0
+set noruler
 
-" disble ruler
-" set noruler
-
-" clipboard
+" clipboard to global clipboard
 set clipboard=unnamedplus,unnamed
 
-" save clipboard on exit
-autocmd VimLeave * call system("echo -n $'" . escape(getreg(), "'") . "' | xsel --input --clipboard")
+" ARCH/linux: save clipboard on exit
+if executable('xsel')
+  autocmd VimLeave * call system("echo -n $'" . escape(getreg(), "'") . "' | xsel --input --clipboard")
+endif

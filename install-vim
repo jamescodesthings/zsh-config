@@ -1,4 +1,19 @@
 #!/usr/bin/env sh
 
+source $CUSTOM_DIR/functions/is
+
+echo "Installing vim via package manager"
+
+if is osx; then
+  brew install vim
+elif is arch; then
+  sudo pacman -S gvim xsel
+elif is linux; then
+  sudo apt install vim-gtk3 xsel
+fi
+
+echo "Linking .vimrc"
+
 ln -s $CUSTOM_DIR/.vimrc $HOME/.vimrc
 
+echo "installed vim, open it to install plugins"
