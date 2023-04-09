@@ -23,7 +23,13 @@ colorscheme solarized
 set termguicolors
 
 " disable status
-set laststatus=0
+" set laststatus=0
 
 " disble ruler
-set noruler
+" set noruler
+
+" clipboard
+set clipboard=unnamedplus,unnamed
+
+" save clipboard on exit
+autocmd VimLeave * call system("echo -n $'" . escape(getreg(), "'") . "' | xsel --input --clipboard")
