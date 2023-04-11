@@ -129,8 +129,8 @@ zinit $LOAD_METHOD torifat/npms
 # zinit $LOAD_METHOD lukechilds/zsh-better-npm-completion
 
 # almost on top (clears previous output on new command)
-zinit ice wait"0b" lucid
-zinit $LOAD_METHOD Valiev/almostontop
+# zinit ice wait"0b" lucid
+# zinit $LOAD_METHOD Valiev/almostontop
 
 # git flow completion:
 zinit ice wait"0c" lucid

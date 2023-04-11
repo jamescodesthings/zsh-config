@@ -7,7 +7,9 @@ export PROJECTS="$HOME/projects"
 export ASDF_DIR="$HOME/.asdf"
 
 # Set the editor to sublime
-if is available subl; then
+if is available vim; then
+  export EDITOR='vim'
+elif is available subl; then
   export EDITOR='subl -w'
 fi
 
