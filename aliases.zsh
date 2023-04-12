@@ -1,5 +1,8 @@
 #!/usr/bin/env zsh
 
+alias protontricks='flatpak run com.github.Matoking.protontricks'
+alias protontricks-launch='flatpak run --command=protontricks-launch com.github.Matoking.protontricks'
+
 # Compatibility architecture mode (rosetta)
 if is m1; then
   alias rosetta='arch -x86_64'
