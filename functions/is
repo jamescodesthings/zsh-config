@@ -140,6 +140,8 @@ EOF
             return $?;;
         m1)
             [[ "$(uname)" == "Darwin" && "$(uname -m)" == "arm64" ]]; return $?;;
+        windows)
+            echo $(uname) | grep "MINGW"; return $?;;
 
     esac > /dev/null
 

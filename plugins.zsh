@@ -1,10 +1,36 @@
 #!/usr/bin/env zsh
 
+
+
 # Make it 1 to log the script output
 export ZINIT_DEBUG=0
 
 # Change zinit load method
 export LOAD_METHOD='light'
+
+if is windows; then
+    # Powerlevel10k prompt
+    zinit ice depth=1
+    zinit $LOAD_METHOD romkatv/powerlevel10k
+
+    zinit ice wait"0a" lucid
+    zinit $LOAD_METHOD rupa/z
+
+    # OMZ Libraries
+    zinit ice wait"0a" light-mode for \
+            OMZL::history.zsh \
+        atload'zstyle ":completion:*" special-dirs false' \
+            OMZL::completion.zsh
+
+    # Additional Zsh completions
+    zinit ice wait"0a" lucid light-mode as'completion' atpull'zinit cclear' blockf
+    zinit $LOAD_METHOD zsh-users/zsh-completions
+
+    zinit ice wait"0a" lucid light-mode as'completion' nocompile mv'*.zsh -> _git' patch"${pchf}/%PLUGIN%.patch" reset
+    zinit $LOAD_METHOD felipec/git-completion
+
+    return;
+fi
 
 # Powerlevel10k prompt
 zinit ice depth=1

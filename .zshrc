@@ -36,6 +36,3 @@ if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
 ### End of Zinit's installer chunk
-
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /home/james/.asdf/installs/terraform/1.4.2/bin/terraform terraform

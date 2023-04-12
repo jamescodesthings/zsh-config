@@ -8,6 +8,8 @@ if [[ -z "$HOME" ]]; then
   exit 1
 fi
 
+source ./functions/is
+
 # Expected destination
 DEST_DIR=$HOME/.custom
 DEST_ZSHRC=$HOME/.zshrc
