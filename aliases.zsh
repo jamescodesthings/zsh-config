@@ -122,6 +122,7 @@ if is available git; then
 
   alias grbi='git rebase -i --ignore-date'
   alias gcm='git commit -m'
+  alias gcmm='gcm'
   alias gcmn='git commit --no-verify -m'
   alias gbD='git branch -D'
   alias gbDi='gbD $(gb | fzf)'
