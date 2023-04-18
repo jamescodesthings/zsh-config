@@ -142,6 +142,8 @@ EOF
             [[ "$(uname)" == "Darwin" && "$(uname -m)" == "arm64" ]]; return $?;;
         windows)
             echo $(uname) | grep "MINGW"; return $?;;
+        ubuntu)
+            echo $(uname -a) | grep "Ubuntu"; return $?;;
 
     esac > /dev/null
 

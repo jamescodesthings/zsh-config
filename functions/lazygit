@@ -1,0 +1,50 @@
+#!/usr/bin/env zsh
+
+function _lazygit_install() {
+  echo "$cs[warn]lazygit not found, trying to install it$c[reset]"
+  # https://github.com/jesseduffield/lazygit
+  if is osx; then
+    brew install lazygit
+  elif is arch; then
+    sudo pacman -S lazygit
+  elif is ubuntu; then
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    tar xf lazygit.tar.gz lazygit
+    sudo install lazygit /usr/local/bin
+  fi
+
+  # check again
+  if is available lazygit; then
+    echo "$cs[success]installed, calling$cs[reset]"
+    lazygit $@
+  else
+    echo "$cs[error]could not install lazygit, check lazygit function for known install methods$c[reset]"
+    autoload -Uz "lazygit"
+  fi
+}
+
+function lazygit() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  # Drop this function
+  unfunction "lazygit"
+
+  # Check if lazygit exists
+  if is available lazygit; then
+    # just pass all params to lazygit and do nothing else
+    lazygit $@
+  else
+    _lazygit_install $@
+  fi
+
+
+}
+
+lazygit "$@"
