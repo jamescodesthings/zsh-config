@@ -48,6 +48,13 @@ zinit ice wait"0a" light-mode for \
     atload'zstyle ":completion:*" special-dirs false' \
         OMZL::completion.zsh
 
+# OMZ Plugins
+zinit ice lucid
+zinit snippet OMZP::docker
+zinit ice lucid
+zinit snippet OMZP::docker-compose
+
+
 # ASDF w/Direnv support
 zinit ice lucid
 zinit $LOAD_METHOD redxtech/zsh-asdf-direnv
