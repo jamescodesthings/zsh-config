@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+
+function _lazydocker_install() {
+  echo "$cs[warn]lazydocker not found, trying to install it$c[reset]"
+  # https://github.com/jesseduffield/lazydocker
+  if is osx; then
+    brew install lazydocker
+  elif is available asdf; then
+    asdf plugin add lazydocker https://github.com/comdotlinux/asdf-lazydocker.git
+    asdf install lazydocker latest
+    asdf global lazydocker latest
+  fi
+
+  # check again
+  if is available lazydocker; then
+    echo "$cs[success]installed, calling$cs[reset]"
+    lazydocker $@
+  else
+    echo "$cs[error]could not install lazydocker, check lazydocker function for known install methods$c[reset]"
+    autoload -Uz "lazydocker"
+  fi
+}
+
+function lazydocker() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  # Drop this function
+  unfunction "lazydocker"
+
+  # Check if lazydocker exists
+  if is available lazydocker; then
+    # just pass all params to lazydocker and do nothing else
+    lazydocker $@
+  else
+    _lazydocker_install $@
+  fi
+
+
+}
+
+lazydocker "$@"

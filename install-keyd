@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+
+source $CUSTOM_DIR/functions/is
+
+DEST_DEFAULT_CONFIG=/etc/keyd/default.conf
+
+if is not linux; then
+  echo "keyd is only for linux"
+  exit 1
+fi
+
+if is not available keyd; then
+  echo "Need to install keyd from here: https://github.com/rvaiya/keyd"
+  exit 1
+fi
+
+if is existing $DEST_DEFAULT_CONFIG; then
+  echo "Removing existing $DEST_DEFAULT_CONFIG"
+  sudo rm $DEST_DEFAULT_CONFIG
+fi
+
+
+echo "Linking DEST_DEFAULT_CONFIG"
+
+sudo ln -s $CUSTOM_DIR/keyd/default.config $DEST_DEFAULT_CONFIG
+
+echo "Installed default.config, reloading keyd"
+
+sudo keyd reload
+echo "Everything done, try hit page up/page down."
