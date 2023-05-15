@@ -1,0 +1,82 @@
+#!/usr/bin/env zsh
+
+ORG="7digital"
+PROJECT_DIR="${PROJECT_DIR:-$HOME/projects/$ORG}"
+USER_NAME="${USER_NAME:-jamesm}"
+GH_REPO="${GH_REPO:-developer-cloud-workstation}"
+WORKFLOW_ID="${WORKFLOW_ID:-start-workstation}"
+
+_start_workstation_description="Starts the Dev Cloud Workstation"
+_start_workstation_flag_names[1]="--help"
+_start_workstation_flag_messages[1]="shows help"
+
+
+function _start_workstation_local_dir() {
+  if is not existing "$PROJECT_DIR"; then
+    echo "$cs[info]Creating $PROJECT_DIR$cs[reset]"
+    mkdir -p $PROJECT_DIR
+  fi
+}
+
+function _start_workstation_gh_logged_in() {
+  STATUS=$(gh auth status 2>&1)
+
+  if is not equal "$?" "0"; then
+    echo "$cs[warn]Github CLI needs auth$cs[reset]."
+    echo "$cs[info]run $cs[reset]gh auth login$cs[info] then try again$cs[reset]:"
+    echo "$STATUS"
+    return 1
+  fi
+}
+
+function _start_workstation_repo() {
+  if is not existing "$PROJECT_DIR/$GH_REPO"; then
+    OUTPUT=$(cd $PROJECT_DIR && gh repo clone $ORG/$GH_REPO 2>&1)
+    if is not equal "$?" "0"; then
+      echo "$cs[error]Could not clone $cs[reset]$GH_REPO:"
+      echo $OUTPUT
+      return 1
+    fi
+  fi
+}
+
+function _start_workstation_run_action() {
+  OUTPUT=$(cd $PROJECT_DIR/$GH_REPO && gh workflow run $WORKFLOW_ID -f name=$USER_NAME 2>&1)
+  if is not equal "$?" "0"; then
+    echo "$cs[error]Could not run workflow$cs[reset]:"
+    echo $OUTPUT
+    return 1
+  fi
+}
+
+function start-workstation() {
+  local DEPS=(
+    is
+    gh
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  _start_workstation_gh_logged_in
+  if is not equal "$?" "0"; then
+    return 1
+  fi
+
+  _start_workstation_local_dir
+
+  _start_workstation_repo
+  if is not equal "$?" "0"; then
+    return 1
+  fi
+
+  _start_workstation_run_action
+  if is not equal "$?" "0"; then
+    return 1
+  fi
+
+  echo "$cs[success]Workstation Started$cs[reset]"
+}
+
+start-workstation "$@"

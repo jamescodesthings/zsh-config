@@ -1,0 +1,100 @@
+#!/usr/bin/env zsh
+
+#SOME_VAR="${SOME_VAR:-"default-value"}"
+
+_download_ddex_description="Downloads DDEX to current folder from releases bucket"
+_download_ddex_positional="filepath"
+_download_ddex_positional_desc="The path in the bucket to the DDEX file"
+_download_ddex_flag_names[1]="--help"
+_download_ddex_flag_messages[1]="shows help"
+_download_ddex_flag_names[2]="--archive"
+_download_ddex_flag_messages[2]="Use the archive bucket"
+_download_ddex_flag_names[3]="--express"
+_download_ddex_flag_messages[3]="Use the express bucket"
+_download_ddex_flag_names[4]="--draft"
+_download_ddex_flag_messages[4]="Use the draft bucket"
+
+function _download_ddex_download() {
+  bucket=$1
+
+  if is empty "$2"; then
+    echo "$cs[warn]Nothing passed to _download subfn$c[reset]"
+    return 1
+  fi
+
+  santized=$(_download_ddex_sanitize $2)
+
+  if is not equal "$?" "0" || is empty "$sanitized"; then
+    echo "$cs[error]Could not sanitize $2: $sanitized$c[reset]"
+    return 1
+  fi
+
+  gsutil -m cp "gs://$bucket/$sanitized" .
+
+  if is not equal "$?" "0"; then
+    return_code=$?
+    echo "$cs[error]gsutil was not happy$c[reset]"
+    return $return_code
+  else
+    echo "$cs[success]Downloaded$c[reset] $sanitized"
+    return 0
+  fi
+}
+
+function _download_ddex_sanitize() {
+  if is empty "$1"; then
+    echo "$1"
+    return 1
+  fi
+  original=$1
+  sanitized="${original//\\//}"
+  echo $sanitized
+  return 0
+}
+
+
+function download-ddex() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_download_ddex_description" \
+      "_download_ddex_flag_names" \
+      "_download_ddex_flag_messages" \
+      "$_download_ddex_positional" \
+      "$_download_ddex_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+
+
+  if is empty "$POSITIONAL"; then
+    echo "$cs[error]Missing path argument, try again$cs[reset]"
+    return 1
+  fi
+
+  if has-flag '--archive' $@; then
+    _download_ddex_download "releases-archive-prod" "$POSITIONAL"
+    return $?
+  elif has-flag '--express' $@; then
+    _download_ddex_download "express-releases-prod" "$POSITIONAL"
+    return $?
+  elif has-flag '--draft' $@; then
+    _download_ddex_download "draft-releases-prod" "$POSITIONAL"
+    return $?
+  else
+    _download_ddex_download "releases-prod" "$POSITIONAL"
+    return $?
+  fi
+
+}
+
+download-ddex "$@"

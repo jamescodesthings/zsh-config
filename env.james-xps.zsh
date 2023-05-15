@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 export PATH="$HOME/.bin:$PATH"
+export PATH="$PATH:/opt/mssql-tools/bin"
 
 alias ls='exa --group-directories-first'
 
