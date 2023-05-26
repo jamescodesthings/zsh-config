@@ -47,7 +47,7 @@ function _new_create() {
   OUT_DIR=$3
 
   if is empty "$OUT_DIR"; then
-    OUT_DIR=$1
+    OUT_DIR=$2
   fi
 
   # Confirm language exists

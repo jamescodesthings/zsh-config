@@ -72,10 +72,10 @@ if is available yank-cli; then
   alias yank='yank-cli'
 fi
 
-if is available subl; then
-  alias zshconfig='subl ~/.custom'
-elif is available code; then
+if is available code; then
   alias zshconfig='code ~/.custom'
+elif is available subl; then
+  alias zshconfig='subl ~/.custom'
 elif is available nano; then
   alias zshconfig='nano ~/.zshrc'
 else
@@ -234,4 +234,8 @@ fi
 if is available http; then
   alias http="http --verify=no"
   alias https="https --verify=no"
+fi
+
+if is available docker; then
+  alias dsp="docker system prune"
 fi

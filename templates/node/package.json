@@ -1,0 +1,28 @@
+{
+  "name": "$PROJECT_NAME",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "postinstall": "npx husky install",
+    "test": "mocha test/*.js",
+    "lint:check": "eslint .",
+    "lint:fix": "npm run lint:check -- --fix",
+    "format": "prettier .",
+    "format:check": "npm run format -- --check",
+    "format:fix": "npm run format -- --write"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.41.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.2",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.8"
+  }
+}
