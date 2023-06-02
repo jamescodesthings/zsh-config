@@ -10,7 +10,7 @@ _gpl_flag_messages[2]="lists branches to delete"
 _gpl_flag_names[3]="--prune"
 _gpl_flag_messages[3]="runs the prune"
 
-function git-prune-local_delete() {
+function git-prune-local_prune() {
   echo "$cs[info]The following branches will be deleted$c[reset]"
 
   git-prune-local_list
@@ -54,8 +54,8 @@ function git-prune-local() {
     return $?
   fi
 
-  if has-flag '--delete' $@; then
-    git-prune-local_delete
+  if has-flag '--prune' $@; then
+    git-prune-local_prune
     return $?
   fi
 }
