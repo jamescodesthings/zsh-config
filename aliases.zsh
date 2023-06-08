@@ -237,6 +237,8 @@ if is available http; then
 fi
 
 if is available docker; then
-  alias dsp="docker system prune"
   alias docker-stop-all="docker stop $(docker ps -q)"
+  alias dsa="docker-stop-all"
+  unalias dsp;
+  alias dsp="docker system prune -f"
 fi
