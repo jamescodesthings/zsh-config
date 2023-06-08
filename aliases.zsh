@@ -238,4 +238,5 @@ fi
 
 if is available docker; then
   alias dsp="docker system prune"
+  alias docker-stop-all="docker stop $(docker ps -q)"
 fi
