@@ -55,9 +55,10 @@ zinit ice lucid
 zinit snippet OMZP::docker-compose
 
 
-# ASDF w/Direnv support
+# ASDF
 zinit ice lucid
-zinit $LOAD_METHOD redxtech/zsh-asdf-direnv
+zinit $LOAD_METHOD asdf-vm/asdf
+# zinit $LOAD_METHOD redxtech/zsh-asdf-direnv
 
 # Better RM
 zinit ice wait"0c" lucid
