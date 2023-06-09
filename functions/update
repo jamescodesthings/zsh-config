@@ -88,7 +88,7 @@ _update_commands[9]="yay -Syu"
 _update_flags[10]="debian"
 _update_names[10]="Debian"
 _update_checks[10]="is not osx && is available apt"
-_update_commands[10]="sudo apt update && sudo apt -y upgrade"
+_update_commands[10]="sudo apt update && sudo apt -y upgrade && sudo apt autoremove"
 
 _update_flags[11]="snap"
 _update_names[11]="Snapcraft"
