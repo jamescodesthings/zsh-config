@@ -237,7 +237,7 @@ if is available http; then
 fi
 
 if is available docker; then
-  alias docker-stop-all="docker stop $(docker ps -q)"
+  alias docker-stop-all='docker stop $(docker ps -q)'
   alias dsa="docker-stop-all"
   if is alias dsp; then
     unalias dsp;
