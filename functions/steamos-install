@@ -1,0 +1,82 @@
+#!/usr/bin/env zsh
+
+$DESKTOP="${DESKTOP:-"$HOME/Desktop"}"
+$CUSTOM_STEAM="${CUSTOM_STEAM:-"$CUSTOM_DIR/steamos"}"
+
+_steamos_install_description="Installs stuff wiped by SteamOS update"
+_steamos_install_flag_names[1]="--help"
+_steamos_install_flag_messages[1]="shows help"
+
+function _steamos_install_subfn() {
+  echo "$cs[info]Installing SteamOS Stuff$cs[reset]"
+  echo "$cs[default]Will need sudo!$cs[reset]"
+  echo ""
+
+  echo "$cs[info]Readonly Disable:$cs[reset]"
+  sudo steamos-readonly disable
+
+  echo "$cs[info]Install Script Desktop Entry:$cs[reset]"
+  if is not link "$DESKTOP/steamos-install.desktop"; then
+    sudo ln -s "$CUSTOM_STEAM/steamos-install.desktop" "$DESKTOP/steamos-install.desktop"
+    echo "$cs[success]Done$cs[reset]"
+  else
+    echo "$cs[success]Already Installed$cs[reset]"
+  fi
+
+  echo "$cs[info]VNC Desktop Entry:$cs[reset]"
+  if is not link "$DESKTOP/start-vnc.desktop"; then
+    sudo ln -s "$CUSTOM_STEAM/start-vnc.desktop" "$DESKTOP/start-vnc.desktop"
+    echo "$cs[success]Done$cs[reset]"
+  else
+    echo "$cs[success]Already Installed$cs[reset]"
+  fi
+
+  echo "$cs[info]Pacman Keys:$cs[reset]"
+  sudo pacman-key --init
+  sudo pacman-key --populate archlinux
+  echo "$cs[success]Done$cs[reset]"
+
+  echo "$cs[info]VNC:$cs[reset]"
+  if is not available "x0vncserver"; then
+    sudo pacman -S tigervnc --noconfirm
+    sudo pacman -S xorg-xinit --noconfirm
+
+    echo "$cs[success]Done$cs[reset]"
+  else
+    echo "$cs[success]Already Installed$cs[reset]"
+  fi
+
+  echo "$cs[info]VNC Password:$cs[reset]"
+  if is not existing "$HOME/.vnc/passwd"; then
+    sudo vncpasswd ~/.vnc/passwd
+
+    echo "$cs[success]Done$cs[reset]"
+  else
+    echo "$cs[success]Already Installed$cs[reset]"
+  fi
+}
+
+function steamos-install() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_steamos_install_description" \
+      "_steamos_install_flag_names" \
+      "_steamos_install_flag_messages" \
+      "$_steamos_install_positional" \
+      "$_steamos_install_positional_desc"
+    return 0
+  fi
+    _steamos_install_subfn "$(flag-value '--sub' $@)"
+    return $?
+}
+
+steamos-install "$@"
