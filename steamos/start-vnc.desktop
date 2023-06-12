@@ -13,10 +13,7 @@ Name=Start VNC
 Comment=Start VNC Server 
 
 # The path to the folder in which the executable is run
-Path=$HOME/.custom/steamos
+Path=
 
 # The executable of the application, possibly with arguments.
-Exec=xfce4-terminal -H -e "$HOME/.custom/steamos/start-vnc.sh"
-
-# Describes whether this application needs to be run in a terminal or not
-Terminal=true
+Exec=konsole --hold -e "$HOME/.custom/steamos/start-vnc.sh"

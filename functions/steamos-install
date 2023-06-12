@@ -41,6 +41,35 @@ function _steamos_install_subfn() {
   sudo pacman -Syu --overwrite \* --noconfirm
   echo "$cs[success]Done$cs[reset]"
 
+  echo "$cs[info]Konsole:$cs[reset]"
+  if is not available "konsole"; then
+    sudo pacman -S --overwrite \* konsole --noconfirm
+
+    echo "$cs[success]Done$cs[reset]"
+  else
+    echo "$cs[success]Already Installed$cs[reset]"
+  fi
+
+  echo "$cs[info]ZSH:$cs[reset]"
+  if is not available "zsh"; then
+    sudo pacman -S --overwrite \* zsh --noconfirm
+
+    # Ensure it's on shell
+    ZSH=$(which zsh)
+
+    cat /etc/shells | grep $(which zsh)
+
+    if is not equal "$?" "0"; then
+      sudo echo "$ZSH" >> /etc/shells
+    fi
+
+    chsh -s "$ZSH"
+    sudo chsh -s "$ZSH"
+
+    echo "$cs[success]Done$cs[reset]"
+  else
+    echo "$cs[success]Already Installed$cs[reset]"
+  fi
 
   echo "$cs[info]Sublime:$cs[reset]"
   if is not available "sublime"; then
