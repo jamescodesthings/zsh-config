@@ -18,4 +18,4 @@ Path=
 Icon=konsole
 
 # The executable of the application, possibly with arguments.
-Exec=konsole --hold -e "$HOME/.custom/steamos/start-vnc.sh"
+Exec=konsole -e "$HOME/.custom/steamos/start-vnc.sh"
