@@ -15,5 +15,7 @@ Comment=Run after SteamOS Update to
 # The path to the folder in which the executable is run
 Path=
 
+Icon=konsole
+
 # The executable of the application, possibly with arguments.
 Exec=konsole --hold -e "$HOME/.custom/steamos/steamos-install.sh"
