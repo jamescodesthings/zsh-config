@@ -16,7 +16,7 @@ Comment=Run after SteamOS Update to
 Path=$HOME/.custom
 
 # The executable of the application, possibly with arguments.
-Exec=sh $HOME/.custom/steamos/steamos-install.sh
+Exec=xfce4-terminal -H -e "$HOME/.custom/steamos/steamos-install.sh"
 
 # Describes whether this application needs to be run in a terminal or not
 Terminal=true
