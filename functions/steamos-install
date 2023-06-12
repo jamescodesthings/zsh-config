@@ -36,6 +36,21 @@ function _steamos_install_subfn() {
   sudo pacman-key --populate archlinux
   echo "$cs[success]Done$cs[reset]"
 
+
+  echo "$cs[info]Update Pacman:$cs[reset]"
+  sudo pacman -Syu --noconfirm
+  echo "$cs[success]Done$cs[reset]"
+
+
+  echo "$cs[info]Sublime:$cs[reset]"
+  if is not available "sublime"; then
+    sudo pacman -S sublime-text --noconfirm
+
+    echo "$cs[success]Done$cs[reset]"
+  else
+    echo "$cs[success]Already Installed$cs[reset]"
+  fi
+
   echo "$cs[info]VNC:$cs[reset]"
   if is not available "x0vncserver"; then
     sudo pacman -S tigervnc --noconfirm
