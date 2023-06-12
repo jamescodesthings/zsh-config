@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
-$DESKTOP="${DESKTOP:-"$HOME/Desktop"}"
-$CUSTOM_STEAM="${CUSTOM_STEAM:-"$CUSTOM_DIR/steamos"}"
+DESKTOP="${DESKTOP:-"$HOME/Desktop"}"
+CUSTOM_STEAM="${CUSTOM_STEAM:-"$CUSTOM_DIR/steamos"}"
 
 _steamos_install_description="Installs stuff wiped by SteamOS update"
 _steamos_install_flag_names[1]="--help"
@@ -38,13 +38,13 @@ function _steamos_install_subfn() {
 
 
   echo "$cs[info]Update Pacman:$cs[reset]"
-  sudo pacman -Syu --noconfirm
+  sudo pacman -Syu --overwrite \* --noconfirm
   echo "$cs[success]Done$cs[reset]"
 
 
   echo "$cs[info]Sublime:$cs[reset]"
   if is not available "sublime"; then
-    sudo pacman -S sublime-text --noconfirm
+    sudo pacman -S --overwrite \* sublime-text --noconfirm
 
     echo "$cs[success]Done$cs[reset]"
   else
@@ -53,8 +53,8 @@ function _steamos_install_subfn() {
 
   echo "$cs[info]VNC:$cs[reset]"
   if is not available "x0vncserver"; then
-    sudo pacman -S tigervnc --noconfirm
-    sudo pacman -S xorg-xinit --noconfirm
+    sudo pacman -S --overwrite \* tigervnc --noconfirm
+    sudo pacman -S --overwrite \* xorg-xinit --noconfirm
 
     echo "$cs[success]Done$cs[reset]"
   else
