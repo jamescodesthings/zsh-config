@@ -9,3 +9,8 @@ for file in $CUSTOM_FUNCTIONS/**; do
   # echo "Loading ${file##*/}"
   autoload -Uz ${file##*/}
 done
+
+# Load zsh move, copy and ln
+autoload zmv
+autoload zcp
+autoload zln
