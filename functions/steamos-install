@@ -98,6 +98,8 @@ function _steamos_install_subfn() {
   else
     echo "$cs[success]Already Installed$cs[reset]"
   fi
+
+  echo "Done"
 }
 
 function steamos-install() {
