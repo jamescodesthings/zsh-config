@@ -244,3 +244,10 @@ if is available docker; then
   fi
   alias dsp="docker system prune -f"
 fi
+
+export PATH="$PATH:/home/james/.dotnet/tools"
+
+if is available upgrade-assistant; then
+  export ORIGINAL_UPGRADE_ASSISTANT=$(which upgrade-assistant)
+  alias upgrade-assistant='DOTNET_ROOT=$(asdf where dotnet) $ORIGINAL_UPGRADE_ASSISTANT'
+fi

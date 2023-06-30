@@ -37,6 +37,8 @@ export POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
 # NNN Plugins
 export NNN_PLUG='j:autojump'
 
+# Local Environment to run against
+export ENVIRONMENT=${ENVIRONMENT:-uat}
+
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh
-

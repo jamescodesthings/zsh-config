@@ -1,0 +1,71 @@
+#!/usr/bin/env zsh
+
+_environment_description="Flips the ENVIRONMENT env var from uat to prod"
+_environment_positional="env"
+_environment_positional_desc="The environment to use (uat/prod)"
+_environment_flag_names[1]="--help"
+_environment_flag_messages[1]="shows help"
+
+function _environment_print() {
+  ENV_MESSAGE="$cs[warn]unset$cs[reset]"
+
+  if is equal "$ENVIRONMENT" "uat"; then
+    ENV_MESSAGE="$cs[success]uat$cs[reset]"
+  elif is equal "$ENVIRONMENT" "prod"; then
+    ENV_MESSAGE="$cs[error]prod$cs[reset]"
+  fi
+
+  echo "$cs[info]Current Environment:$cs[reset] $ENV_MESSAGE"
+}
+
+function _environment_set() {
+  NEW_ENV="$1"
+  ENV_MESSAGE="$cs[warn]unset$cs[reset]"
+
+  if is equal "$NEW_ENV" "uat"; then
+    ENV_MESSAGE="$cs[success]uat$cs[reset]"
+    export ENVIRONMENT="uat"
+  elif is equal "$NEW_ENV" "prod"; then
+    ENV_MESSAGE="$cs[error]prod$cs[reset]"
+    export ENVIRONMENT="prod"
+  else
+    echo "$cs[error]Invalid Environment$cs[reset].\n"
+    echo "$cs[info]Valid Environments:$cs[reset] $cs[param]uat$cs[reset], $cs[param]prod$cs[reset]."
+    return 1
+  fi
+
+  echo "$cs[info]Environment Changed to:$cs[reset] $ENV_MESSAGE"
+}
+
+function environment() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    _environment_print
+
+    print-help \
+      "$0" \
+      "$_environment_description" \
+      "_environment_flag_names" \
+      "_environment_flag_messages" \
+      "$_environment_positional" \
+      "$_environment_positional_desc"
+
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+
+  if is not empty "$POSITIONAL"; then
+    _environment_set "$POSITIONAL"
+    return $?
+  fi
+}
+
+environment "$@"

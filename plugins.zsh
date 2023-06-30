@@ -152,6 +152,8 @@ zinit $LOAD_METHOD hcgraf/zsh-sudo
 
 # Aliased to J: Zsh autojump
 zinit ice wait"0a" lucid
+zinit $LOAD_METHOD changyuheng/fz
+zinit ice wait"0b" lucid
 zinit $LOAD_METHOD rupa/z
 
 # Extra Git commands
