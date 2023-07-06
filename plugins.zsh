@@ -49,10 +49,10 @@ zinit ice wait"0a" light-mode for \
         OMZL::completion.zsh
 
 # OMZ Plugins
-zinit ice lucid
-zinit snippet OMZL::docker
-zinit ice lucid
-zinit snippet OMZP::docker
+# zinit ice lucid
+# zinit snippet OMZL::docker
+# zinit ice lucid
+# zinit snippet OMZP::docker
 zinit ice lucid
 zinit snippet OMZP::docker-compose
 
