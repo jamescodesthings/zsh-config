@@ -56,6 +56,9 @@ zinit ice wait"0a" light-mode for \
 zinit ice lucid
 zinit snippet OMZP::docker-compose
 
+# zinit ice wait"0c" lucid
+# zinit snippet OMZP::gcloud
+
 
 # ASDF
 zinit ice lucid
