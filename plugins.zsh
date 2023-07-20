@@ -61,7 +61,20 @@ zinit snippet OMZP::docker-compose
 
 
 # ASDF
-zinit ice lucid
+function __asdf_loaded_callback() {
+  GCLOUD_COMPLETIONS="/usr/share/google-cloud-sdk/completion.zsh.inc"
+  if [ -x "$(which direnv)" ]; then
+    eval "$(direnv hook zsh)"
+  fi
+  if [ -n "$(asdf which gcloud)" ]; then
+    GCLOUD_COMPLETIONS=$(asdf where gcloud)
+    if [ -n "$GCLOUD_COMPLETIONS" ]; then
+      source "$GCLOUD_COMPLETIONS/completion.zsh.inc"
+    fi
+  fi
+ }
+
+zinit ice lucid atload'__asdf_loaded_callback'
 zinit $LOAD_METHOD asdf-vm/asdf
 # zinit $LOAD_METHOD redxtech/zsh-asdf-direnv
 
