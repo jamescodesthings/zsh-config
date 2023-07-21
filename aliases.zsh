@@ -9,6 +9,8 @@ if is m1; then
   alias rosetta-shell='arch -x86_64 $(which zsh)'
 fi
 
+alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt sandreas/m4b-tool:latest'
+
 # OSX Development
 if is osx; then
   alias xcode='open /Applications/Xcode.app'
