@@ -56,7 +56,13 @@ alias la='ls -a'
 alias l1='ls -1'
 alias l1a='ls -1a'
 alias la1='l1a'
-alias j='z'
+
+# https://github.com/rupa/z
+if is available z; then
+  alias j='z'
+  alias jx='z -x .'
+  alias jl='z -l'
+fi
 
 if is available exa; then
   alias ls='exa'
@@ -124,33 +130,29 @@ if is available git; then
 
   alias grbi='git rebase -i --ignore-date'
   alias gcm='git commit -m'
-  alias gcmm='gcm'
   alias gcmn='git commit --no-verify -m'
   alias gbD='git branch -D'
-  alias gbDi='gbD $(gb | fzf)'
-  alias gtD='git tag -d'
-  alias gm='git merge --no-ff'
+  alias gm='git merge'
+  alias gmff='git merge --ff-only'
+  alias gms="git merge --squash"
+
   alias gt='git tag'
-  alias rls='echo release_$(date -u +"%Y-%m-%d")'
-  alias gtmapt='git tag $(rls)'
   alias git-skip='git update-index --skip-worktree'
   alias git-unskip='git update-index --no-skip-worktree'
   alias git-list-skipped='git ls-files -v . | grep "^S"'
-  alias git-delete-untracked-check='git clean -n';
-  alias git-delete-untracked='git clean -f';
-  alias git-update-from-upstream='git pull upstream $(current_branch)'
-  alias git-update='git-update-from-upstream'
+
+  # When you fuck up a commit, but don't push
+  alias git-i-fucked-up='git reset HEAD~1'
+  # When you fuck up local so bad it looks unfixable
   alias grhho='git-i-really-fucked-up'
 
-  # When I committed to the wrong branch, but didn't push yet (phew)
-  alias git-i-fucked-up='git reset HEAD~1'
+  # For easier programmatic use
   alias gb='git --no-pager branch'
   alias gbr='git --no-pager branch --remote'
+  alias gd="git --no-pager diff"
 
   # Git Cherry pick and edit message
   alias gcpe="git cherry-pick -e"
-  alias gd="git --no-pager diff"
-  alias gms="git merge --squash"
 fi
 
 # Node
