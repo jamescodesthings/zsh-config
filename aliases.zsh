@@ -58,11 +58,9 @@ alias l1a='ls -1a'
 alias la1='l1a'
 
 # https://github.com/rupa/z
-if is available z; then
-  alias j='z'
-  alias jx='z -x .'
-  alias jl='z -l'
-fi
+alias j='z'
+alias jx='z -x .'
+alias jl='z -l'
 
 if is available exa; then
   alias ls='exa'
@@ -170,7 +168,7 @@ if is existing "$ASDF_DIR/shims/npm"; then
   alias npmDE='npm i -D -E'
   alias npmSEl='npm i -E --legacy-peer-deps'
   alias npmDEl='npm i -D -E --legacy-peer-deps'
-  alias npmIY='npm init -y'
+  alias npmiy='npm init -y'
   alias npmU='npm uninstall -S -D'
   alias npmUl='npm uninstall -S -D --legacy-peer-deps'
   alias npmUG='npm uninstall -g'
