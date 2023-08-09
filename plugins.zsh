@@ -66,7 +66,7 @@ function __asdf_loaded_callback() {
   if [ -x "$(which direnv)" ]; then
     eval "$(direnv hook zsh)"
   fi
-  if [ -n "$(asdf which gcloud)" ]; then
+  if [ -n "$(asdf which gcloud >& /dev/null)" ]; then
     GCLOUD_COMPLETIONS=$(asdf where gcloud)
     if [ -n "$GCLOUD_COMPLETIONS" ]; then
       source "$GCLOUD_COMPLETIONS/completion.zsh.inc"
