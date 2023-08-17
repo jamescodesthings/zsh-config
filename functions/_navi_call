@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+_navi_call() {
+   local result="$(navi "$@" </dev/tty)"
+   printf "%s" "$result"
+}
+
+
+_navi_call "$@"
