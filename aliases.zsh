@@ -122,6 +122,7 @@ if is available navi; then
   
   export NAVI_INTEGRATED=true
 
+  alias navi='navi --print'
   alias navic='navi --cheatsh'
   alias navit='navi --tldr'
   alias naviq='navi --query'
