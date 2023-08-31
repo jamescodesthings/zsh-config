@@ -7,6 +7,8 @@ alias protontricks-launch='flatpak run --command=protontricks-launch com.github.
 if is m1; then
   alias rosetta='arch -x86_64'
   alias rosetta-shell='arch -x86_64 $(which zsh)'
+
+  alias unquarantine='sudo xattr -rd com.apple.quarantine'
 fi
 
 alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt sandreas/m4b-tool:latest'
