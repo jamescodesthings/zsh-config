@@ -34,6 +34,7 @@ function _steamos_install_subfn() {
   echo "$cs[info]Pacman Keys:$cs[reset]"
   sudo pacman-key --init
   sudo pacman-key --populate archlinux
+  # sudo pacman --refresh-keys
   echo "$cs[success]Done$cs[reset]"
 
 
@@ -99,7 +100,22 @@ function _steamos_install_subfn() {
     echo "$cs[success]Already Installed$cs[reset]"
   fi
 
-  echo "Done"
+
+  echo "$cs[info]base-devel:$cs[reset]"
+  sudo pacman -S base-devel --overwrite \* --noconfirm
+  echo "$cs[success]Done$cs[reset]"
+
+  echo "$cs[info]yay:$cs[reset]"
+  if is not existing "$HOME/projects/yay-bin"; then
+    git clone https://aur.archlinux.org/yay-bin.git "$HOME/projects/yay-bin"
+  fi
+  $(cd "$HOME/projects/yay-bin" && makepkg -si)
+  echo "$cs[success]Done$cs[reset]"
+
+
+
+
+  echo "$cs[success]Finished running all post-install steps$cs[reset]"
 }
 
 function steamos-install() {
