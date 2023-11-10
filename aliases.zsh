@@ -269,3 +269,6 @@ if is available upgrade-assistant; then
   export ORIGINAL_UPGRADE_ASSISTANT=$(which upgrade-assistant)
   alias upgrade-assistant='DOTNET_ROOT=$(asdf where dotnet) $ORIGINAL_UPGRADE_ASSISTANT'
 fi
+
+alias random_line="shuf -n 1"
+alias random_lines="shuf -n"

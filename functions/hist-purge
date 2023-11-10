@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+
+#SOME_VAR="${SOME_VAR:-"default-value"}"
+
+_hist_purge_description="Purges the given phrase from zsh history, useful for removing secrets from zsh history."
+_hist_purge_positional="needle"
+_hist_purge_positional_desc="History items containing this phrase will be purged"
+
+function hist-purge() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_hist_purge_description" \
+      "_hist_purge_flag_names" \
+      "_hist_purge_flag_messages" \
+      "$_hist_purge_positional" \
+      "$_hist_purge_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+
+  if has-flag '--sub' $@; then
+    _hist_purge_purge "$(flag-value '--sub' $@)"
+#    return $?
+  fi
+
+  if is not empty "$POSITIONAL"; then
+    echo "Will remove history items containing $cs[param]$POSITIONAL$c[reset]"
+    if confirm; then
+      LC_ALL=C sed -i "/$POSITIONAL/d" $HISTFILE
+    fi
+    echo "$cs[success]Done$cs[reset]"
+  fi
+}
+
+hist-purge "$@"
