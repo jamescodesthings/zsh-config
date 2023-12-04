@@ -270,5 +270,17 @@ if is available upgrade-assistant; then
   alias upgrade-assistant='DOTNET_ROOT=$(asdf where dotnet) $ORIGINAL_UPGRADE_ASSISTANT'
 fi
 
+if is available gh; then
+  alias ghc='gh copilot'
+  alias ghcs='gh copilot suggest'
+  alias ghce='gh copilot explain'
+  alias copilot='gh copilot suggest'
+fi
+
 alias random_line="shuf -n 1"
 alias random_lines="shuf -n"
+
+# alias fuck='sudo $(fc -ln -1)'
+if is available thefuck; then
+  eval $(thefuck --alias)
+fi

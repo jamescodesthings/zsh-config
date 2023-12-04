@@ -1,0 +1,53 @@
+#!/usr/bin/env zsh
+
+#SOME_VAR="${SOME_VAR:-"default-value"}"
+
+_format_xmls_description="Formats all .xml files in this directory"
+_format_xmls_flag_names[1]="--help"
+_format_xmls_flag_messages[1]="shows help"
+
+function _format-xmls_format() {
+  i=$1
+  TEMP_FILE="$i.tmp"
+
+  xq $i > $TEMP_FILE
+
+  if [ $? -eq 0 ]; then
+    mv $TEMP_FILE $i
+    echo "$cs[success]Formatted$cs[reset] $i"
+  else
+    echo "Error formatting $i"
+    rm $TEMP_FILE
+  fi
+}
+
+function format-xmls() {
+  local DEPS=(
+    is
+    xq
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_format_xmls_description" \
+      "_format_xmls_flag_names" \
+      "_format_xmls_flag_messages" \
+      "$_format_xmls_positional" \
+      "$_format_xmls_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+
+
+  for i in ./*.xml; do
+    _format-xmls_format $i
+  done
+}
+
+format-xmls "$@"
