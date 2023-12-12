@@ -22,7 +22,6 @@
     "hot_exit": false,
     "ignored_packages":
     [
-        "Preferences Editor",
         "Vintage",
     ],
     "indent_guide_options":
@@ -49,4 +48,5 @@
     "theme": "Afterglow.sublime-theme",
     "translate_tabs_to_spaces": true,
     "trim_trailing_white_space_on_save": "not_on_caret",
+    "index_files": true,
 }

@@ -254,13 +254,21 @@ if is available http; then
   alias https="https --verify=no"
 fi
 
+if is ubuntu; then
+  alias bigfiles="sudo du -ahd1 | sort -rh | head"
+fi
+
 if is available docker; then
   alias docker-stop-all='docker stop $(docker ps -q)'
   alias dsa="docker-stop-all"
   if is alias dsp; then
     unalias dsp;
   fi
-  alias dsp="docker system prune -f"
+  alias dsp='docker system prune -f && docker volume rm $(docker volume ls -qf dangling=true)'
+  if is alias dcdn; then
+    unalias dcdn;
+  fi
+  alias dcdn='docker-compose down -v'
 fi
 
 export PATH="$PATH:/home/james/.dotnet/tools"
