@@ -105,6 +105,11 @@ function _steamos_install_subfn() {
   sudo pacman -S base-devel --overwrite \* --noconfirm
   echo "$cs[success]Done$cs[reset]"
 
+
+  echo "$cs[info]fzf:$cs[reset]"
+  sudo pacman -S fzf --overwrite \* --noconfirm
+  echo "$cs[success]Done$cs[reset]"
+
   echo "$cs[info]yay:$cs[reset]"
   if is not existing "$HOME/projects/yay-bin"; then
     git clone https://aur.archlinux.org/yay-bin.git "$HOME/projects/yay-bin"
