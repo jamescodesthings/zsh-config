@@ -26,9 +26,10 @@ if is windows; then
     zinit ice wait"0a" lucid light-mode as'completion' atpull'zinit cclear' blockf
     zinit $LOAD_METHOD zsh-users/zsh-completions
 
-    zinit ice wait"0a" lucid light-mode as'completion' nocompile mv'*.zsh -> _git' patch"${pchf}/%PLUGIN%.patch" reset
-    zinit $LOAD_METHOD felipec/git-completion
-
+    # zinit ice wait"0a" lucid light-mode as'completion' nocompile mv'*.zsh -> _git' patch"${pchf}/%PLUGIN%.patch" reset
+    # zinit $LOAD_METHOD felipec/git-completion
+    unset '_comps[git]'
+    
     return;
 fi
 
