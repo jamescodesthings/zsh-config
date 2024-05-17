@@ -13,11 +13,13 @@ source ./functions/is
 # Expected destination
 DEST_DIR=$HOME/.custom
 DEST_ZSHRC=$HOME/.zshrc
+DEST_ZSHENV=$HOME/.zshenv
 
 echo 'Linking zsh-config:'
 echo "From: $SOURCE_DIR"
 echo "To: $DEST_DIR"
 echo "linking .zshrc to: $DEST_ZSHRC"
+echo "linking .zshenv to: $DEST_ZSHENV"
 
 # Clean old instances if they exist
 if [[ -h $DEST_DIR ]]; then
@@ -28,5 +30,10 @@ if [[ -h $DEST_ZSHRC ]]; then
   rm $DEST_ZSHRC
 fi
 
+if [[ -h $DEST_ZSHENV ]]; then
+  rm $DEST_ZSHENV
+fi
+
 sudo ln -s $SOURCE_DIR $DEST_DIR
 sudo ln -s $DEST_DIR/.zshrc $DEST_ZSHRC
+sudo ln -s $DEST_DIR/.zshenv $DEST_ZSHENV

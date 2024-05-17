@@ -9,5 +9,3 @@ alias ls='exa --group-directories-first'
 
 export HAS_RUN_ENV=true
 
-alias BarbieGirl='echo QgBhAHIAYgBpAGUARwBpAHIAbAA='
-

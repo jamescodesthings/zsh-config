@@ -95,6 +95,7 @@ _update_names[11]="Snapcraft"
 _update_checks[11]="is available snap"
 _update_commands[11]="sudo snap refresh"
 
+
 function _update_zsh_config() {
   OUTPUT=$(cd $CUSTOM_DIR && git pull)
   RESULT=$?
@@ -110,6 +111,10 @@ _update_checks[12]="is not empty '$CUSTOM_DIR' && is available git"
 _update_commands[12]="_update_zsh_config"
 
 
+_update_flags[13]="gcloud"
+_update_names[13]="Google Cloud"
+_update_checks[13]="is available gcloud"
+_update_commands[13]="gcloud components update"
 
 # Testing
 if is equal $_UPDATE_TEST 1; then

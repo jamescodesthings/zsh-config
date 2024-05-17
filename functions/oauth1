@@ -1,0 +1,67 @@
+#!/usr/bin/env zsh
+
+_oauth1_description="Signs a request using oauth1"
+_oauth1_positional="url"
+_oauth1_positional_desc="The url to pass"
+_oauth1_flag_names[1]="--help"
+_oauth1_flag_messages[1]="shows help"
+_oauth1_flag_names[2]="--method [param]"
+_oauth1_flag_messages[2]="Sets the method (GET/POST/etc.)"
+
+function _oauth1_urlencode () {
+  [ -n "$1" ] \
+  && echo -n "$1" | perl -p -e 's/([^A-Za-z0-9-._~])/sprintf("%%%02X", ord($1))/seg'
+}
+
+function _oauth1_oauth() {
+  if [[ -z $1 ]]; then
+    echo "Usage: oauth1 <url> <method>"
+    return 1
+  fi
+  url=$1
+  method=${2:-GET}
+
+  timestamp=$(date +%s)
+  nonce=$(md5sum <<< "$RANDOM-$(date +%s.%N)" | cut -d' ' -f 1)
+
+  encodedURL=$(_oauth1_urlencode $url)
+  PARAM=$(_oauth1_urlencode "oauth_consumer_key=$consumer_key&oauth_nonce=$nonce&oauth_signature_method=$signature_method&oauth_timestamp=$timestamp&oauth_version=1.0")
+  signature=$(echo -n "$method&"$URL'&'$PARAM|openssl dgst -sha1 -binary -hmac "$consumer_secret" |base64)
+  encoded_signature=$(_oauth1_urlencode $signature)
+
+  echo "$url&oauth_consumer_key=$consumer_key&oauth_signature_method=$signature_method&oauth_timestamp=$timestamp&oauth_nonce=$nonce&oauth_version=1.0&oauth_signature=$encoded_signature"
+  return 0
+}
+
+function oauth1() {
+  local DEPS=(
+    is
+    openssl
+    base64
+    md5sum
+    date
+    cut
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_oauth1_description" \
+      "_oauth1_flag_names" \
+      "_oauth1_flag_messages" \
+      "$_oauth1_positional" \
+      "$_oauth1_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+  local METHOD="$(flag-value '--sub' $@)"
+  _oauth1_oauth "$POSITIONAL" "$METHOD"
+  return $?
+}
+
+oauth1 "$@"

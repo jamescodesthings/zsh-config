@@ -19,7 +19,7 @@ fi
 # todo: remove bash_colors
 source $CUSTOM_DIR/bash_colors.zsh
 source $CUSTOM_DIR/zsh_options.zsh
-source $CUSTOM_DIR/custom_functions.zsh
+# source $CUSTOM_DIR/custom_functions.zsh
 source $CUSTOM_DIR/env.zsh
 source $CUSTOM_DIR/completions.zsh
 source $CUSTOM_DIR/load_zinit.zsh
