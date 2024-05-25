@@ -23,6 +23,8 @@ export GOPATH="${HOME}/.go"
 export GOROOT="/usr/local/opt/go/libexec"
 export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin"
 
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+
 # Android Home for Android studio
 # /Users/james/Library/Android/sdk
 export ANDROID_HOME=$HOME/Library/Android/sdk
@@ -45,7 +47,8 @@ fi
 
 # Brew Ruby
 export PATH="/usr/local/opt/ruby/bin:$PATH"
-export PATH="/usr/local/lib/ruby/gems/2.7.0/bin:$PATH"
+export GEM_HOME=$HOME/.gem
+export PATH=$GEM_HOME/bin:$PATH
 export LDFLAGS="-L/usr/local/opt/ruby/lib"
 export CPPFLAGS="-I/usr/local/opt/ruby/include"
 export PKG_CONFIG_PATH="/usr/local/opt/ruby/lib/pkgconfig"
