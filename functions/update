@@ -14,12 +14,6 @@ _update_flag_names[2]="--quiet"
 _update_flag_messages[2]="hide command output"
 
 # Update commands
-# XCode CLTs
-_update_flags[1]="soft"
-_update_names[1]="Software Updates"
-_update_checks[1]="is available softwareupdate"
-_update_commands[1]="softwareupdate --all --install --force"
-
 # Homebrew
 _update_flags[2]="brew"
 _update_names[2]="Homebrew"
@@ -115,6 +109,12 @@ _update_flags[13]="gcloud"
 _update_names[13]="Google Cloud"
 _update_checks[13]="is available gcloud"
 _update_commands[13]="gcloud components update"
+
+# XCode CLTs
+_update_flags[14]="soft"
+_update_names[14]="Software Updates"
+_update_checks[14]="is available softwareupdate"
+_update_commands[14]="softwareupdate --all --install --force"
 
 # Testing
 if is equal $_UPDATE_TEST 1; then
