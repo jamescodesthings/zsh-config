@@ -1,0 +1,49 @@
+#!/usr/bin/env zsh
+
+DOWNLOADS="${DOWNLOADS:-"/home/james/Downloads/"}"
+
+_gsdl_description="Quick and dirty gsutil wrapper to copy files locally, by just pasting the 'copied path to clipboard'"
+_gsdl_positional="url"
+_gsdl_positional_desc="The url/path/etc."
+_gsdl_flag_names[1]="--help"
+_gsdl_flag_messages[1]="shows help"
+
+function _gsdl_download() {
+  local DOWNLOAD_FROM="$1"
+
+  if [[ ! $DOWNLOAD_FROM == gs://* ]]; then
+    DOWNLOAD_FROM="gs://$DOWNLOAD_FROM"
+  fi
+  
+  if [[ ! $DOWNLOAD_FROM == *.* ]]; then
+    gsutil -m cp -r "$DOWNLOAD_FROM" "$DOWNLOADS"
+  else 
+    gsutil cp "$DOWNLOAD_FROM" "$DOWNLOADS"
+  fi
+}
+
+function gsdl() {
+  local DEPS=(
+    is
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_gsdl_description" \
+      "_gsdl_flag_names" \
+      "_gsdl_flag_messages" \
+      "$_gsdl_positional" \
+      "$_gsdl_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+  _gsdl_download "$POSITIONAL"
+}
+
+gsdl "$@"
