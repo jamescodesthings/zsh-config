@@ -292,3 +292,5 @@ alias random_lines="shuf -n"
 if is available thefuck; then
   eval $(thefuck --alias)
 fi
+
+alias sw="start-workstation"
