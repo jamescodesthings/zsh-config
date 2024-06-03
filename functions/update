@@ -15,10 +15,10 @@ _update_flag_messages[2]="hide command output"
 
 # Update commands
 # Homebrew
-_update_flags[2]="brew"
-_update_names[2]="Homebrew"
-_update_checks[2]="is osx && is available brew"
-_update_commands[2]="brew update && brew upgrade && brew cask upgrade"
+_update_flags[1]="brew"
+_update_names[1]="Homebrew"
+_update_checks[1]="is osx && is available brew"
+_update_commands[1]="brew update && brew upgrade && brew cask upgrade"
 
 # ZInit
 function _update_zinit() {
@@ -27,28 +27,28 @@ function _update_zinit() {
   # Plugin parallel update
   zinit update --parallel
 }
-_update_flags[3]="zinit"
-_update_names[3]="ZInit"
-_update_checks[3]="is available zinit"
-_update_commands[3]="_update_zinit"
+_update_flags[2]="zinit"
+_update_names[2]="ZInit"
+_update_checks[2]="is available zinit"
+_update_commands[2]="_update_zinit"
 
 # xcodes
-_update_flags[4]="xcodes"
-_update_names[4]="xcodes"
-_update_checks[4]="is available xcodes"
-_update_commands[4]="xcodes update"
+_update_flags[3]="xcodes"
+_update_names[3]="xcodes"
+_update_checks[3]="is available xcodes"
+_update_commands[3]="xcodes update"
 
 # TLDR
-_update_flags[5]="tldr"
-_update_names[5]="TLDR"
-_update_checks[5]="is available tldr"
-_update_commands[5]="tldr --update"
+_update_flags[4]="tldr"
+_update_names[4]="TLDR"
+_update_checks[4]="is available tldr"
+_update_commands[4]="tldr --update"
 
 # ASDF
-_update_flags[6]="asdf"
-_update_names[6]="ASDF"
-_update_checks[6]="is available asdf"
-_update_commands[6]="asdf update && asdf plugin-update --all"
+_update_flags[5]="asdf"
+_update_names[5]="ASDF"
+_update_checks[5]="is available asdf"
+_update_commands[5]="asdf update && asdf plugin-update --all"
 
 function _update_node() {
   asdf install nodejs latest
@@ -63,31 +63,31 @@ function _update_node() {
   _update_updated "NPM"
 }
 
-_update_flags[7]="node"
-_update_names[7]="NodeJS"
-_update_checks[7]="is available asdf"
-_update_commands[7]="_update_node"
+_update_flags[6]="node"
+_update_names[6]="NodeJS"
+_update_checks[6]="is available asdf"
+_update_commands[6]="_update_node"
 
 
-_update_flags[8]="arch"
-_update_names[8]="Arch"
-_update_checks[8]="is available pacman"
-_update_commands[8]="sudo pacman -Syu"
+_update_flags[7]="arch"
+_update_names[7]="Arch"
+_update_checks[7]="is available pacman"
+_update_commands[7]="sudo pacman -Syu"
 
-_update_flags[9]="yay"
-_update_names[9]="Arch: Yay"
-_update_checks[9]="is available yay"
-_update_commands[9]="yay -Syu"
+_update_flags[8]="yay"
+_update_names[8]="Arch: Yay"
+_update_checks[8]="is available yay"
+_update_commands[8]="yay -Syu"
 
-_update_flags[10]="debian"
-_update_names[10]="Debian"
-_update_checks[10]="is not osx && is available apt"
-_update_commands[10]="sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove"
+_update_flags[9]="debian"
+_update_names[9]="Debian"
+_update_checks[9]="is not osx && is available apt"
+_update_commands[9]="sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove"
 
-_update_flags[11]="snap"
-_update_names[11]="Snapcraft"
-_update_checks[11]="is available snap"
-_update_commands[11]="sudo snap refresh"
+_update_flags[10]="snap"
+_update_names[10]="Snapcraft"
+_update_checks[10]="is available snap"
+_update_commands[10]="sudo snap refresh"
 
 
 function _update_zsh_config() {
@@ -99,22 +99,22 @@ function _update_zsh_config() {
   return $RESULT
 }
 
-_update_flags[12]="zsh-config"
-_update_names[12]="ZSH Config"
-_update_checks[12]="is not empty '$CUSTOM_DIR' && is available git"
-_update_commands[12]="_update_zsh_config"
+_update_flags[11]="zsh-config"
+_update_names[11]="ZSH Config"
+_update_checks[11]="is not empty '$CUSTOM_DIR' && is available git"
+_update_commands[11]="_update_zsh_config"
 
 
-_update_flags[13]="gcloud"
-_update_names[13]="Google Cloud"
-_update_checks[13]="is available gcloud"
-_update_commands[13]="gcloud components update"
+_update_flags[12]="gcloud"
+_update_names[12]="Google Cloud"
+_update_checks[12]="is available gcloud"
+_update_commands[12]="gcloud components update"
 
 # XCode CLTs
-_update_flags[14]="soft"
-_update_names[14]="Software Updates"
-_update_checks[14]="is available softwareupdate"
-_update_commands[14]="softwareupdate --all --install --force"
+_update_flags[13]="soft"
+_update_names[13]="Software Updates"
+_update_checks[13]="is available softwareupdate"
+_update_commands[13]="softwareupdate --all --install --force"
 
 # Testing
 if is equal $_UPDATE_TEST 1; then
