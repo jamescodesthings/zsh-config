@@ -37,5 +37,8 @@ export POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
 # NNN Plugins
 export NNN_PLUG='j:autojump'
 
+# Gcloud use local packages
+export CLOUDSDK_PYTHON_SITEPACKAGES=1
+
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh
