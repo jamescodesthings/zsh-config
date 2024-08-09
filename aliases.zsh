@@ -268,7 +268,7 @@ if is available docker; then
   if is alias dcdn; then
     unalias dcdn;
   fi
-  alias dcdn='docker-compose down -v'
+  alias dcdn='docker compose down -v'
 fi
 
 export PATH="$PATH:/home/james/.dotnet/tools"
