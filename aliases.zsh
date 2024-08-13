@@ -298,3 +298,5 @@ alias sw="start-workstation"
 alias clock="watch -n 1 date +%H:%M:%S"
 
 alias cqe="cq-editor . &>/dev/null &"
+
+alias pacman="sudo dkp-pacman"

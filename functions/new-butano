@@ -1,0 +1,90 @@
+#!/usr/bin/env zsh
+
+BUTANO_DIR="${BUTANO_DIR:-"/home/james/projects/third-party/butano/butano"}"
+BUTANO_TEMPLATE_DIR="${BUTANO_TEMPLATE_DIR:-"/home/james/projects/third-party/butano/template"}"
+
+_new_butano_description="Creates a new Butano project from template"
+_new_butano_positional="project-directory"
+_new_butano_positional_desc="The directory to create the project in"
+_new_butano_flag_names[1]="--help"
+_new_butano_flag_messages[1]="shows help"
+
+function _new_butano_create() {
+  DIR_NAME="$1"
+
+  echo "$cs[info]Creating Butano project in $DIR_NAME$c[reset]"
+  if [ -d "$DIR_NAME" ]; then
+    echo "$cs[error]Directory $DIR_NAME already exists$c[reset]"
+    return 1
+  fi
+
+  cp -r "$BUTANO_TEMPLATE_DIR" "$DIR_NAME"
+
+  if [ $? -ne 0 ]; then
+    echo "$cs[error]Failed to create Butano project$c[reset]"
+    return 1
+  fi
+
+  echo "$cs[info]Updating template butano directory$c[reset]"
+
+node - << EOF
+  const fs = require('fs/promises');
+
+  const butanoDir = "$BUTANO_DIR";
+  const makefilePath = "$DIR_NAME/Makefile";
+
+
+  (async () => {
+    const makefile = await fs.readFile(makefilePath, 'utf8');
+    const updatedMakefile = makefile.replace('../butano', butanoDir);
+    await fs.writeFile(makefilePath, updatedMakefile);
+    console.log('Updated Makefile');
+  })();
+EOF
+
+  if [ $? -ne 0 ]; then
+    echo "$cs[error]Failed to create Butano project$c[reset]"
+    return 1
+  fi
+
+  echo "$cs[success]Created Butano project in $DIR_NAME$c[reset]"
+  echo "$cs[info]Building for the first time$c[reset]"
+
+  cd "$DIR_NAME" && make -j8 && cd ..
+  
+  echo "$cs[success]Complete$c[reset]"
+
+  return 0
+}
+
+function new-butano() {
+  local DEPS=(
+    is
+    node
+    make
+  )
+
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  if is empty "$1" || has-flag '--help' $@; then
+    print-help \
+      "$0" \
+      "$_new_butano_description" \
+      "_new_butano_flag_names" \
+      "_new_butano_flag_messages" \
+      "$_new_butano_positional" \
+      "$_new_butano_positional_desc"
+    return 0
+  fi
+
+  local POSITIONAL="$@[-1]"
+
+  if is not empty "$POSITIONAL"; then
+    _new_butano_create "$POSITIONAL"
+    return $?
+  fi
+}
+
+new-butano "$@"
