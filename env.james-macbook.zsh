@@ -5,6 +5,10 @@
 export PATH="/opt/homebrew/bin:$PATH"
 export PATH="/opt/homebrew/sbin:$PATH"
 
+# Devkit arm
+export DEVKITARM="/opt/devkitpro/devkitARM"
+export PATH="$DEVKITARM/bin:/opt/devkitpro/tools/bin:$PATH"
+
 # Created by `pipx` on 2021-10-09 18:17:15
 export PATH="$PATH:/Users/jamesmacmillan/.local/bin"
 
