@@ -72,3 +72,6 @@ export TOUCHBAR_YARN_ENABLED=false
 export LANG=en_GB.UTF-8
 export LC_ALL=en_GB.UTF-8
 export LC_CTYPE=en_GB.UTF-8
+
+export BUTANO_DIR="/Users/jamesmacmillan/projects/third-party/butano/butano"
+export BUTANO_TEMPLATE_DIR="/Users/jamesmacmillan/projects/third-party/butano/template"
