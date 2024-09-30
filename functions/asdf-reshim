@@ -5,7 +5,7 @@ _asdf_reshim_description="Runs asdf reshim and fixes shims to avoid collision"
 _asdf_reshim_flags[1]="--help"
 _asdf_reshim_flag_descriptions[1]="Prints Help"
 
-shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst' 'openssl' 'xz')
+shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst' 'openssl' 'xz' 'bzip2')
 
 function _asdf_reshim_fix() {
   if is not existing "$ASDF_DIR/shims"; then

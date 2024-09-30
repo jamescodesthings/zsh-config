@@ -4,6 +4,7 @@ export PATH="$HOME/.bin:$PATH"
 export PATH="$PATH:/opt/mssql-tools/bin"
 export PATH="$PATH:/home/james/.cargo/bin"
 export PATH="$PATH:/home/james/.local/bin"
+export PATH="$PATH:/home/james/projects/personal/pico-8/pico-8"
 
 export DEVKITARM="/opt/devkitpro/devkitARM"
 export DEVKITPRO="/opt/devkitpro"

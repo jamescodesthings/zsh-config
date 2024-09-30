@@ -285,6 +285,11 @@ if is available gh; then
   alias copilot='gh copilot suggest'
 fi
 
+if is available apt; then
+  alias apts='apt search -n'
+  alias apti='sudo apt install -y'
+fi
+
 alias random_line="shuf -n 1"
 alias random_lines="shuf -n"
 
