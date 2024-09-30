@@ -293,6 +293,12 @@ if is available apt; then
   alias apti='sudo apt install -y'
 fi
 
+if is available snap; then
+  alias snapi="sudo snap install"
+  alias snaps="snap find"
+  alias snapr="sudo snap remove"
+fi
+
 alias random_line="shuf -n 1"
 alias random_lines="shuf -n"
 
