@@ -167,6 +167,9 @@ if is available git; then
 
   # Git Cherry pick and edit message
   alias gcpe="git cherry-pick -e"
+
+  unalias gap
+  alias gap='git add -p'
 fi
 
 # Node
