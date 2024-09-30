@@ -9,7 +9,7 @@ local SUBLIME_SETTINGS=""
 if  [[ "$(uname)" == "Darwin" ]]; then
   # Is OSX
   SUBLIME_SETTINGS=~/Library/Application\ Support/Sublime\ Text/Packages/User
-elif [[ -f "/etc/arch-release" ]] || [[ "$(uname -a)" == *Ubuntu* ]]; then
+elif [[ -f "/etc/arch-release" ]] || [[ "$(uname -a)" == *Ubuntu* ]] || [[ "$(uname)" == "Linux" ]]; then
   # Is Arch
   SUBLIME_SETTINGS=~/.config/sublime-text/Packages/User
 else
