@@ -312,6 +312,10 @@ if is available sgpt; then
   alias gpts="sgpt --shell"
   alias gptc="sgpt --code"
   alias gptd="sgpt -d"
+  alias gptcc="git diff --cached | gpt 'a good one line commit message under 120 chars'"
+  alias git-gpt='git commit -m "$(gptcc)"'
+  alias git-fuckit='git commit -m "$(gptcc)"'
+  alias gptccc="git diff --cached | gpt 'a good commit message'"
 fi
 
 alias sw="start-workstation"
