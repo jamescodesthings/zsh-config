@@ -40,5 +40,7 @@ export NNN_PLUG='j:autojump'
 # Gcloud use local packages
 export CLOUDSDK_PYTHON_SITEPACKAGES=1
 
+export DEFAULT_MODEL=gpt-4o-mini
+
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh

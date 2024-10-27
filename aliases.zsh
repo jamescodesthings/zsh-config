@@ -307,9 +307,16 @@ if is available thefuck; then
   eval $(thefuck --alias)
 fi
 
+if is available sgpt; then
+  alias gpt="sgpt"
+  alias gpts="sgpt -s --no-interaction"
+  alias gptc="sgpt --code"
+  alias gptd="sgpt -d"
+fi
+
 alias sw="start-workstation"
 alias clock="watch -n 1 date +%H:%M:%S"
 alias cqe="cq-editor . &>/dev/null &"
 alias crc="crc32"
 alias pacman="sudo dkp-pacman"
-alias sgpts="sgpt -s"
+
