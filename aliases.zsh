@@ -309,7 +309,7 @@ fi
 
 if is available sgpt; then
   alias gpt="sgpt"
-  alias gpts="sgpt -s --no-interaction"
+  alias gpts="sgpt --shell"
   alias gptc="sgpt --code"
   alias gptd="sgpt -d"
 fi
