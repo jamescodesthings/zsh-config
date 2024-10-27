@@ -30,4 +30,9 @@
   { "keys": ["ctrl+z"], "command": "undo" },
   { "keys": ["ctrl+shift+z"], "command": "redo" },
   { "keys": ["ctrl+a"], "command": "select_all" },
+  {
+    "keys": ["ctrl+super+p"],
+    "command": "copilot_ask_completions",
+    "context": [{ "key": "copilot.is_authorized" }],
+  },
 ]

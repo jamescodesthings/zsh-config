@@ -1,7 +1,7 @@
 {
     "auto_complete": false,
     "auto_find_in_selection": true,
-    "auto_match_enabled": true,
+    "auto_match_enabled": false,
     "caret_extra_bottom": 0,
     "caret_extra_top": 0,
     "caret_extra_width": 0,
@@ -49,5 +49,5 @@
     "theme": "Afterglow.sublime-theme",
     "translate_tabs_to_spaces": true,
     "trim_trailing_white_space_on_save": "not_on_caret",
-    "index_files": true,
+    "index_files": false,
 }

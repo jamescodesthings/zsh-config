@@ -69,7 +69,9 @@ function _new_create() {
   echo "$cs[info]Copying from$cs[reset] $PROJ_TMPL $cs[info]to$cs[reset] ./$OUT_DIR"
   cp -R $PROJ_TMPL $OUT_DIR
 
-  PROJECT_NAME="$NAME"
+  PROJECT_NAME_TRIMMED=$(echo $NAME | grep -oP '^[0-9-]*(\K.*)')
+
+  PROJECT_NAME="$PROJECT_NAME_TRIMMED"
   PROJECT_NAME_ALMOST_TITLE="${${(C)PROJECT_NAME//_/ }:t}"
   PROJECT_NAME_TITLE="${PROJECT_NAME_ALMOST_TITLE/-/}"
   PROJECT_NAME_PRETTY="${PROJECT_NAME_ALMOST_TITLE/-/ }"
