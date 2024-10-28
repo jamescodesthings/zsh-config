@@ -14,3 +14,4 @@ alias ls='exa --group-directories-first'
 
 export HAS_RUN_ENV=true
 
+export ASDF_LUA_LINUX_READLINE=1
