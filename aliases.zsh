@@ -317,8 +317,8 @@ if is available sgpt; then
   alias gpt="sgpt"
   alias gptc="sgpt --code"
   alias gptd="sgpt -d"
-  alias gptcc="git diff --cached | gpt 'Generate a good commit message based on the following changes:'"
-  alias gpt-commit="git diff --cached | sgpt 'Generate a good commit message based on the following changes:' > /tmp/sgpt_commit_msg && git commit -F /tmp/sgpt_commit_msg && rm /tmp/sgpt_commit_msg"
+  alias gptcc="git diff --cached | gpts 'Generate a good commit message based on the following changes:'"
+  alias gpt-commit="git diff --cached | gpts 'Generate a good commit message based on the following changes:' > /tmp/sgpt_commit_msg && git commit -F /tmp/sgpt_commit_msg && rm /tmp/sgpt_commit_msg"
   alias git-fuckit='gpt-commit'
 fi
 
