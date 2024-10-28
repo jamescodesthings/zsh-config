@@ -15,3 +15,4 @@ alias ls='exa --group-directories-first'
 export HAS_RUN_ENV=true
 
 export ASDF_LUA_LINUX_READLINE=1
+export GPT_HAS_NO_INTERACTION=1

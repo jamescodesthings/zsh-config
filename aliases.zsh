@@ -308,14 +308,18 @@ if is available thefuck; then
 fi
 
 if is available sgpt; then
+  if is equal "$GPT_HAS_NO_INTERACTION" "1"; then
+    alias gpts="sgpt --shell --no-interaction"
+  else
+    alias gpts="sgpt --shell"
+  fi
+
   alias gpt="sgpt"
-  alias gpts="sgpt --shell"
   alias gptc="sgpt --code"
   alias gptd="sgpt -d"
-  alias gptcc="git diff --cached | gpt 'a good one line commit message under 120 chars'"
-  alias git-gpt='git commit -m "$(gptcc)"'
-  alias git-fuckit='git commit -m "$(gptcc)"'
-  alias gptccc="git diff --cached | gpt 'a good commit message'"
+  alias gptcc="git diff --cached | gpt 'Generate a good commit message based on the following changes:'"
+  alias gpt-commit="git diff --cached | sgpt 'Generate a good commit message based on the following changes:' > /tmp/sgpt_commit_msg && git commit -F /tmp/sgpt_commit_msg && rm /tmp/sgpt_commit_msg"
+  alias git-fuckit='gpt-commit'
 fi
 
 alias sw="start-workstation"
