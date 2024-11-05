@@ -272,6 +272,7 @@ if is available docker; then
     unalias dcdn;
   fi
   alias dcdn='docker compose down -v'
+  alias browsh="docker run -it --rm browsh/browsh"
 fi
 
 export PATH="$PATH:/home/james/.dotnet/tools"
@@ -310,6 +311,7 @@ fi
 if is available sgpt; then
   if is equal "$GPT_HAS_NO_INTERACTION" "1"; then
     alias gpts="sgpt --shell --no-interaction"
+    alias gptsd="sgpt --shell"
   else
     alias gpts="sgpt --shell"
   fi
@@ -327,4 +329,5 @@ alias clock="watch -n 1 date +%H:%M:%S"
 alias cqe="cq-editor . &>/dev/null &"
 alias crc="crc32"
 alias pacman="sudo dkp-pacman"
+
 
