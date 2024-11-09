@@ -4,6 +4,7 @@
 # export PATH="/usr/local/bin:${PATH}"
 export PATH="$PATH:/opt/homebrew/bin"
 export PATH="$PATH:/opt/homebrew/sbin"
+export PATH="$PATH:/Users/jamesmacmillan/.meteor"
 
 export PKG_CONFIG_PATH="/opt/homebrew/opt/pixman/lib/pkgconfig"
 for i in /opt/homebrew/opt/*; do
@@ -92,5 +93,6 @@ alias pico8="/Applications/PICO-8.app/Contents/MacOS/pico8"
 export PICO8="/Applications/PICO-8.app/Contents/MacOS/pico8"
 
 export GPT_HAS_NO_INTERACTION=1
+
 
 . ~/.asdf/plugins/golang/set-env.zsh
