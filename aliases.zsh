@@ -329,5 +329,4 @@ alias clock="watch -n 1 date +%H:%M:%S"
 alias cqe="cq-editor . &>/dev/null &"
 alias crc="crc32"
 alias pacman="sudo dkp-pacman"
-
-
+alias new-love="new --lang love --name"
