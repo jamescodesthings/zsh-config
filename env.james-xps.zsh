@@ -16,3 +16,5 @@ export HAS_RUN_ENV=true
 
 export ASDF_LUA_LINUX_READLINE=1
 export GPT_HAS_NO_INTERACTION=1
+
+export EC2_IP="10.117.141.208"
