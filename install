@@ -34,6 +34,11 @@ if [[ -h $DEST_ZSHENV ]]; then
   rm $DEST_ZSHENV
 fi
 
+if [[ -h $HOME/.default-python-packages ]]; then
+  rm $HOME/.default-python-packages
+fi
+
 sudo ln -s $SOURCE_DIR $DEST_DIR
 sudo ln -s $DEST_DIR/.zshrc $DEST_ZSHRC
 sudo ln -s $DEST_DIR/.zshenv $DEST_ZSHENV
+sudo ln -s $DEST_DIR/.default-python-packages $HOME/.default-python-packages

@@ -308,21 +308,23 @@ if is available thefuck; then
   eval $(thefuck --alias)
 fi
 
-if is available sgpt; then
-  if is equal "$GPT_HAS_NO_INTERACTION" "1"; then
-    alias gpts="sgpt --shell"
-    alias gptss="sgpt --shell --no-interaction"
-  else
-    alias gpts="sgpt --shell"
-  fi
+alias gpt="zev"
 
-  alias gpt="sgpt"
-  alias gptc="sgpt --code"
-  alias gptd="sgpt -d"
-  alias gptcc="git diff --cached | gpts 'generate a short, casual commit message based on the following changes:'"
-  alias gpt-commit="git diff --cached | gptc 'generate a short, casual commit message based on the following changes:' > /tmp/sgpt_commit_msg && git commit -F /tmp/sgpt_commit_msg && rm /tmp/sgpt_commit_msg"
-  alias git-fuckit='gpt-commit'
-fi
+# if is available sgpt; then
+#   if is equal "$GPT_HAS_NO_INTERACTION" "1"; then
+#     alias gpts="sgpt --shell"
+#     alias gptss="sgpt --shell --no-interaction"
+#   else
+#     alias gpts="sgpt --shell"
+#   fi
+
+#   alias gpt="sgpt"
+#   alias gptc="sgpt --code"
+#   alias gptd="sgpt -d"
+#   alias gptcc="git diff --cached | gpts 'generate a short, casual commit message based on the following changes:'"
+#   alias gpt-commit="git diff --cached | gptc 'generate a short, casual commit message based on the following changes:' > /tmp/sgpt_commit_msg && git commit -F /tmp/sgpt_commit_msg && rm /tmp/sgpt_commit_msg"
+#   alias git-fuckit='gpt-commit'
+# fi
 
 alias sw="start-workstation"
 alias clock="watch -n 1 date +%H:%M:%S"
