@@ -6,6 +6,8 @@ export PROJECTS="$HOME/projects"
 # ASDF dir
 export ASDF_DIR="$HOME/.asdf"
 
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
+
 # Set the editor to sublime
 if is available vim; then
   export EDITOR='vim'

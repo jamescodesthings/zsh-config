@@ -29,7 +29,7 @@ if is windows; then
     # zinit ice wait"0a" lucid light-mode as'completion' nocompile mv'*.zsh -> _git' patch"${pchf}/%PLUGIN%.patch" reset
     # zinit $LOAD_METHOD felipec/git-completion
     unset '_comps[git]'
-    
+
     return;
 fi
 
@@ -140,12 +140,20 @@ zinit light knu/zsh-manydots-magic
 # zinit light RobSis/zsh-reentry-hook
 
 # Fast Syntax Highlighting
-zinit ice light lucid \
-    atinit'zicompinit_fast; zicdreplay' atload'FAST_HIGHLIGHT[chroma-man]=' \
-    atclone'(){local f;cd -q →*;for f (*~*.zwc){zcompile -Uz -- ${f}};}' \
-    compile'.*fast*~*.zwc' nocompletions atpull'%atclone'
+# zinit ice light lucid \
+#     atinit'zicompinit_fast; zicdreplay' atload'FAST_HIGHLIGHT[chroma-man]=' \
+#     atclone'(){local f;cd -q →*;for f (*~*.zwc){zcompile -Uz -- ${f}};}' \
+#     compile'.*fast*~*.zwc' nocompletions atpull'%atclone'
 
-zinit $LOAD_METHOD zdharma-continuum/fast-syntax-highlighting
+# zinit $LOAD_METHOD zdharma-continuum/fast-syntax-highlighting
+
+zinit wait lucid for \
+  atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
+    zdharma-continuum/fast-syntax-highlighting \
+  blockf \
+    zsh-users/zsh-completions \
+  atload"!_zsh_autosuggest_start" \
+    zsh-users/zsh-autosuggestions
 
 # # Binds up/down to history substring search
 zinit wait"0b" lucid light-mode for \
@@ -188,15 +196,15 @@ zinit $LOAD_METHOD torifat/npms
 # zinit $LOAD_METHOD Valiev/almostontop
 
 # git flow completion:
-zinit ice wait"0c" lucid
-zinit $LOAD_METHOD bobthecow/git-flow-completion
+# zinit ice wait"0c" lucid
+# zinit $LOAD_METHOD bobthecow/git-flow-completion
 
 # Auto Activate conda env from environment.yml
 # zinit ice wait"0c" lucid
 # zinit $LOAD_METHOD jamescodesthings/zsh-activate-py-environment
 
-zinit ice wait"0c" lucid
-zinit $LOAD_METHOD esc/conda-zsh-completion
+# zinit ice wait"0c" lucid
+# zinit $LOAD_METHOD esc/conda-zsh-completion
 
 # Use zhooks to check out zsh hooks
 zinit ice wait"0c" lucid
