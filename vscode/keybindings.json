@@ -1,0 +1,95 @@
+// Place your key bindings in this file to override the defaultsauto[]
+[
+  {
+    "key": "cmd+n",
+    "command": "workbench.action.quickOpen"
+  },
+  {
+    "key": "shift shift",
+    "command": "-workbench.action.quickOpen"
+  },
+  {
+    "key": "ctrl+enter",
+    "command": "welcome.showNewFileEntries"
+  },
+  {
+    "key": "ctrl+alt+cmd+n",
+    "command": "-welcome.showNewFileEntries"
+  },
+  {
+    "key": "shift+cmd+down",
+    "command": "-cursorBottomSelect",
+    "when": "textInputFocus"
+  },
+  {
+    "key": "shift+cmd+up",
+    "command": "-list.collapseAll",
+    "when": "listFocus && !inputFocus"
+  },
+  {
+    "key": "shift+cmd+up",
+    "command": "-cursorTopSelect",
+    "when": "textInputFocus"
+  },
+  {
+    "key": "shift+cmd+down",
+    "command": "editor.action.moveLinesDownAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "alt+down",
+    "command": "-editor.action.moveLinesDownAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "shift+cmd+up",
+    "command": "editor.action.moveLinesUpAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "alt+up",
+    "command": "-editor.action.moveLinesUpAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "shift+cmd+w",
+    "command": "-workbench.action.closeWindow"
+  },
+  {
+    "key": "shift+cmd+w",
+    "command": "workbench.action.closeAllEditors"
+  },
+  {
+    "key": "cmd+k cmd+w",
+    "command": "-workbench.action.closeAllEditors"
+  },
+  {
+    "key": "cmd+t",
+    "command": "-git.sync",
+    "when": "!operationInProgress"
+  },
+  {
+    "key": "cmd+t",
+    "command": "-workbench.action.showAllSymbols"
+  },
+  {
+    "key": "cmd+t",
+    "command": "editor.action.rename",
+    "when": "editorHasRenameProvider && editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "shift+f6",
+    "command": "-editor.action.rename",
+    "when": "editorHasRenameProvider && editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "cmd+t",
+    "command": "renameFile",
+    "when": "explorerViewletVisible && filesExplorerFocus"
+  },
+  {
+    "key": "shift+f6",
+    "command": "-renameFile",
+    "when": "explorerViewletVisible && filesExplorerFocus"
+  }
+]

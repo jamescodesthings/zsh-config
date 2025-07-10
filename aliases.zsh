@@ -136,11 +136,11 @@ fi
 if is available git; then
   if is available g; then
     # Unalias g from OMZ:git
-    unalias g;
-    unalias gcm;
-    unalias gcd;
-    unalias grbi;
-  fi;
+    unalias g
+    unalias gcm
+    unalias gcd
+    unalias grbi
+  fi
 
   alias grbi='git rebase -i --ignore-date'
   alias gcm='git commit -m'
@@ -265,11 +265,11 @@ if is available docker; then
   alias docker-stop-all='docker stop $(docker ps -q)'
   alias dsa="docker-stop-all"
   if is alias dsp; then
-    unalias dsp;
+    unalias dsp
   fi
   alias dsp='docker system prune -f && docker volume rm $(docker volume ls -qf dangling=true)'
   if is alias dcdn; then
-    unalias dcdn;
+    unalias dcdn
   fi
   alias dcdn='docker compose down -v'
   alias browsh="docker run -it --rm browsh/browsh"
@@ -332,3 +332,5 @@ alias cqe="cq-editor . &>/dev/null &"
 alias crc="crc32"
 alias pacman="sudo dkp-pacman"
 alias new-love="new --lang love --name"
+
+alias localai='local-ai'

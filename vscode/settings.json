@@ -1,0 +1,127 @@
+{
+  "workbench.colorTheme": "Darcula Theme from IntelliJ",
+  "editor.fontFamily": "'VictorMono Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+  "editor.tabSize": 2,
+  "editor.fontSize": 14,
+  "terminal.external.osxExec": "iTerm.app",
+  "terminal.integrated.fontSize": 14,
+  "debug.console.fontSize": 14,
+  "editor.quickSuggestions": {
+    "other": "off"
+  },
+  "editor.suggestOnTriggerCharacters": false,
+  "prettier.configPath": ".prettierrc.json",
+  "editor.autoClosingQuotes": "never",
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform"
+  },
+  "javascript.autoClosingTags": false,
+  "typescript.autoClosingTags": false,
+  "html.autoClosingTags": false,
+  "[xml]": {
+    "editor.defaultFormatter": "DotJoshJohnson.xml"
+  },
+  "vs-kubernetes": {
+    "vscode-kubernetes.minikube-path.linux": "/home/james/.local/state/vs-kubernetes/tools/minikube/linux-amd64/minikube",
+    "vscode-kubernetes.helm-path.linux": "/home/james/.local/state/vs-kubernetes/tools/helm/linux-amd64/helm"
+  },
+  // Using the light mode
+  "indentRainbow.indicatorStyle": "light",
+  // we use a simple 1 pixel wide line
+  "indentRainbow.lightIndicatorStyleLineWidth": 1,
+  "indentRainbow.colors": [
+    "rgba(255,255,64,0.3)",
+    "rgba(127,255,127,0.3)",
+    "rgba(255,127,255,0.3)",
+    "rgba(79,236,236,0.3)"
+  ],
+  "editor.stickyScroll.enabled": true,
+  "security.workspace.trust.enabled": false,
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmDelete": false,
+  "git.openRepositoryInParentFolders": "always",
+  "[python]": {
+    "editor.formatOnType": true
+  },
+  "python.formatting.autopep8Args": [
+    "--max-line-length",
+    "80",
+    "--experimental"
+  ],
+  "editor.autoSurround": "never",
+  "editor.autoClosingBrackets": "never",
+  "todohighlight.isCaseSensitive": false,
+  "todohighlight.keywords": [
+    {
+      // todo: testing
+      "text": "todo",
+      "backgroundColor": "none",
+      "color": "yellow",
+      "fontWeight": "bold"
+    }
+  ],
+  "todohighlight.defaultStyle": {
+    "backgroundColor": "none",
+    "color": "yellow",
+    "fontWeight": "bold"
+  },
+  "cSpell.language": "en-GB",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "cSpell.customDictionaries": {
+    "custom-dictionary-user": {
+      "name": "custom-dictionary-user",
+      "path": "~/.cspell/custom-dictionary-user.txt",
+      "addWords": true,
+      "scope": "user"
+    }
+  },
+  "sql-formatter.uppercase": true,
+  "[sql]": {
+    "editor.defaultFormatter": "inferrinizzard.prettier-sql-vscode"
+  },
+  "editor.tabCompletion": "on",
+  "Prettier-SQL.keywordCase": "upper",
+  "Prettier-SQL.SQLFlavourOverride": "transactsql",
+  "files.trimTrailingWhitespace": true,
+  "omnisharp.dotnetPath": "/home/james/.asdf/installs/dotnet/6.0.411/dotnet",
+  "omnisharp.sdkPath": "/home/james/.asdf/installs/dotnet/6.0.411/sdk/6.0.411",
+  "omnisharp.sdkVersion": "6.0.411",
+  "editor.detectIndentation": false,
+  "workbench.startupEditor": "none",
+  "auto-build.defaultEnv.name": "STM32F103RE_creality",
+  "auto-build.build.reveal": false,
+  "auto-build.build.silent": true,
+  "platformio-ide.autoOpenPlatformIOIniFile": false,
+  "Lua.runtime.version": "LuaJIT",
+  "Lua.diagnostics.globals": [
+      "love",
+  ],
+  "Lua.workspace.library": [
+      "${3rd}/love2d/library"
+  ],
+  "Lua.workspace.checkThirdParty": false,    "Lua.runtime.version": "LuaJIT",
+  "Lua.diagnostics.globals": [
+      "love",
+  ],
+  "Lua.workspace.library": [
+      "${3rd}/love2d/library"
+  ],
+  "Lua.workspace.checkThirdParty": false,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  },
+  "explorer.confirmPasteNative": false,
+  "geminicodeassist.project": "",
+  "makefile.configureOnOpen": true,
+  "window.restoreWindows": "none",
+}

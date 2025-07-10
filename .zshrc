@@ -30,8 +30,6 @@ source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/completions.after.zsh
 
-source $CUSTOM_DIR/conda_init.zsh
-
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
