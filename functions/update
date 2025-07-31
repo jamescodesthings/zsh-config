@@ -48,7 +48,7 @@ _update_commands[4]="tldr --update"
 _update_flags[5]="asdf"
 _update_names[5]="ASDF"
 _update_checks[5]="is available asdf"
-_update_commands[5]="asdf update && asdf plugin-update --all"
+_update_commands[5]="asdf plugin update --all"
 
 function _update_node() {
   asdf install nodejs latest

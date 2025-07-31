@@ -44,5 +44,7 @@ export CLOUDSDK_PYTHON_SITEPACKAGES=1
 
 export DEFAULT_MODEL=gpt-4o-mini
 
+export GOOGLE_CLOUD_PROJECT=467061286120
+
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh

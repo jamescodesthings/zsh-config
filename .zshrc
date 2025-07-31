@@ -28,7 +28,6 @@ source $CUSTOM_DIR/fzf-key-bindings.zsh
 source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
-source $CUSTOM_DIR/completions.after.zsh
 
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
