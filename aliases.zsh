@@ -292,6 +292,7 @@ fi
 if is available apt; then
   alias apts='apt search -n'
   alias apti='sudo apt install -y'
+  alias aptu='sudo apt update && sudo apt upgrade -y'
 fi
 
 if is available snap; then
