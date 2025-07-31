@@ -3,6 +3,9 @@
 # Projects Directory
 export PROJECTS="$HOME/projects"
 
+# Custom bin directory
+export PATH="$HOME/.bin:$PATH"
+
 # ASDF dir
 export ASDF_DIR="$HOME/.asdf"
 
