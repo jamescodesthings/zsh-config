@@ -79,6 +79,10 @@ zinit snippet OMZP::docker-compose
 # zinit $LOAD_METHOD asdf-vm/asdf
 # zinit $LOAD_METHOD redxtech/zsh-asdf-direnv
 
+  if [ -x "$(which direnv)" ]; then
+    eval "$(direnv hook zsh)"
+  fi
+
 # Better RM
 zinit ice wait"0c" lucid
 zinit $LOAD_METHOD jamescodesthings/careful_rm
