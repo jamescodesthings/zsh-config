@@ -7,7 +7,12 @@ export PROJECTS="$HOME/projects"
 export PATH="$HOME/.bin:$PATH"
 
 # ASDF dir
-export ASDF_DIR="$HOME/.asdf"
+export ASDF_DATA_DIR="$HOME/.asdf"
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+if is existing "$ASDF_DATA_DIR/completions/_asdf"; then
+  fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
+  autoload -Uz compinit && compinit
+fi
 
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 

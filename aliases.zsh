@@ -173,7 +173,7 @@ if is available git; then
 fi
 
 # Node
-if is existing "$ASDF_DIR/shims/npm"; then
+if is existing "$ASDF_DATA_DIR/shims/npm"; then
   alias npmst='npm start'
   alias npmg='npm i -g'
   alias npmL0g='npm list -g --depth=0 2>/dev/null'
@@ -195,7 +195,7 @@ if is existing "$ASDF_DIR/shims/npm"; then
   alias ncu='npm-check-update'
 fi
 
-if is existing "$ASDF_DIR/shims/yarn"; then
+if is existing "$ASDF_DATA_DIR/shims/yarn"; then
 
   alias y="yarn"
   alias yr="yarn run"
@@ -331,7 +331,9 @@ alias sw="start-workstation"
 alias clock="watch -n 1 date +%H:%M:%S"
 alias cqe="cq-editor . &>/dev/null &"
 alias crc="crc32"
-alias pacman="sudo dkp-pacman"
+if is arch; then
+  alias pacman="sudo dkp-pacman"
+fi
 alias new-love="new --lang love --name"
 
 alias localai='local-ai'

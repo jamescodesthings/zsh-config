@@ -52,7 +52,7 @@ _update_commands[5]="asdf plugin update --all"
 
 function _update_node() {
   asdf install nodejs latest
-  asdf global nodejs latest
+  asdf set -u nodejs latest
   _update_updating "NPM"
   # Updates NPM
   node --version

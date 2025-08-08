@@ -8,14 +8,14 @@ _asdf_reshim_flag_descriptions[1]="Prints Help"
 shims=('clear' 'tput' 'curl' 'gettext.sh' 'gettext' 'envsubst' 'openssl' 'xz' 'bzip2')
 
 function _asdf_reshim_fix() {
-  if is not existing "$ASDF_DIR/shims"; then
-    echo "$ASDF_DIR/shims $cs[error]not found, check that $c[reset]\$ASDF_DIR $cs[error]points to the right place.$c[reset]"
+  if is not existing "$ASDF_DATA_DIR/shims"; then
+    echo "$ASDF_DATA_DIR/shims $cs[error]not found, check that $c[reset]\$ASDF_DATA_DIR $cs[error]points to the right place.$c[reset]"
     return 1
   fi
 
   for shim in $shims; do
     without_nl=${shim:-1}
-    SHIM="$ASDF_DIR/shims/$without_nl"
+    SHIM="$ASDF_DATA_DIR/shims/$without_nl"
     if is file "$SHIM"; then
       sudo chmod -x "$SHIM"
       rm -f "$SHIM"
