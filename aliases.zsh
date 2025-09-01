@@ -118,20 +118,6 @@ if is osx && is existing /Applications/Simplify3D-4.1.2/Simplify3D.app; then
   alias wipe-simplify='rm ~/Library/Preferences/com.Simplify3D.S3D-Software.plist && rm -rf ~/Library/Application\ Support/Simplify3D'
 fi
 
-if is available navi; then
-  zle -N _navi_widget
-  bindkey '^a' _navi_widget
-
-  export NAVI_INTEGRATED=true
-
-  alias navi='navi --print'
-  alias navic='navi --cheatsh'
-  alias navit='navi --tldr'
-  alias naviq='navi --query'
-else
-  export NAVI_INTEGRATED=false
-fi
-
 # Git
 if is available git; then
   if is available g; then
