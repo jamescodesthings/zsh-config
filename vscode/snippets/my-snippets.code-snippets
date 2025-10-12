@@ -1,0 +1,10 @@
+{
+	"shebang": {
+		"prefix": "bash",
+		"body": [
+			"#!/usr/bin/env bash"
+		],
+		"description": "portable bash shebang",
+		"scope": "plaintext,shellscript"
+	}
+}

@@ -74,3 +74,5 @@ export BUTANO_DIR="/Users/jamesmacmillan/projects/third-party/butano/butano"
 export BUTANO_TEMPLATE_DIR="/Users/jamesmacmillan/projects/third-party/butano/template"
 
 export MODELS_PATH="/users/jamesmacmillan/projects/models"
+
+alias outpaint="iopaint start --model=Sanster/PowerPaint-V1-stable-diffusion-inpainting --device=cpu --port=8080"
