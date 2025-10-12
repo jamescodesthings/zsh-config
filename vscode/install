@@ -2,15 +2,29 @@
 
 SOURCE_DIR="${PWD}/snippets"
 OSX_DIR="$HOME/Library/Application Support/Code/User/snippets"
+LINUX_DIR="$HOME/.config/Code/User/snippets"
+
+DEST_DIR=""
 
 # Install VSCode Snippets
 if is osx; then
-  echo "installing to $OSX_DIR"
-  if is existing "$OSX_DIR" || is symlink "$OSX_DIR"; then
-    echo "snippets directory already exists, removing"
-    rm -rf "$OSX_DIR"
-  fi
-
-  echo "linking $SOURCE_DIR to $OSX_DIR"
-  sudo ln -s $SOURCE_DIR "$OSX_DIR"
+  DEST_DIR="$OSX_DIR"
 fi
+
+if is linux; then
+  DEST_DIR="$LINUX_DIR"
+fi
+
+if [ "$DEST_DIR" = "" ]; then
+  echo "Could not identify system, update ./install"
+  exit 1
+fi
+
+echo "installing to $DEST_DIR"
+if is existing "$DEST_DIR" || is symlink "$DEST_DIR"; then
+  echo "snippets directory already exists, removing"
+  rm -rf "$DEST_DIR"
+fi
+
+echo "linking $SOURCE_DIR to $DEST_DIR"
+sudo ln -s $SOURCE_DIR "$DEST_DIR"
