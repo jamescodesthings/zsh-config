@@ -26,7 +26,7 @@ source $CUSTOM_DIR/load_zinit.zsh
 source $CUSTOM_DIR/load_omz.zsh
 source $CUSTOM_DIR/fzf-key-bindings.zsh
 source $CUSTOM_DIR/plugins.zsh
-source $CUSTOM_DIR/load_iterm.zsh
+# source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
 
 if is existing $CUSTOM_DIR/private.zsh; then
