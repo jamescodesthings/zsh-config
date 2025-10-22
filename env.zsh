@@ -8,6 +8,7 @@ export PATH="$HOME/.bin:$PATH"
 
 # ASDF dir
 export ASDF_DATA_DIR="$HOME/.asdf"
+export ASDF_DIR="$ASDF_DATA_DIR"
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 if is existing "$ASDF_DATA_DIR/completions/_asdf"; then
   fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
