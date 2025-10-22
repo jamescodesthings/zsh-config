@@ -71,6 +71,10 @@ if is available exa; then
   alias ls='exa --group-directories-first'
 fi
 
+if is available eza; then
+  alias ls='eza --group-directories-first'
+fi
+
 if is available terraform; then
   alias tf='terraform'
 fi

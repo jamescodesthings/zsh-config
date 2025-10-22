@@ -10,8 +10,6 @@ export DEVKITARM="/opt/devkitpro/devkitARM"
 export DEVKITPRO="/opt/devkitpro"
 export PATH="$DEVKITARM/bin:$DEVKITPRO/tools/bin:$PATH"
 
-alias ls='exa --group-directories-first'
-
 export HAS_RUN_ENV=true
 
 export ASDF_LUA_LINUX_READLINE=1

@@ -33,8 +33,8 @@ fi
 
 
 ## almost on top (clears previous output on new command)
-zinit ice wait"0" light-mode
-zinit $load Valiev/almostontop
+# zinit ice wait"0" light-mode
+# zinit $load Valiev/almostontop
 
 # Tools
 ## Cd to git root using "root" alias
