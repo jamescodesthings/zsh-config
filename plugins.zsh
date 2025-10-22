@@ -1,7 +1,5 @@
 #!/usr/bin/env zsh
 
-
-
 # Make it 1 to log the script output
 export ZINIT_DEBUG=0
 
@@ -25,8 +23,13 @@ zinit $load romkatv/powerlevel10k
 zinit $load willghatch/zsh-saneopt
 
 ## LS_COLORS
-zinit ice nocompile:! pick:c.zsh atpull:%atclone atclone:'dircolors -b LS_COLORS > c.zsh'
-zinit $load trapd00r/LS_COLORS
+if is existing $CUSTOM_DIR/ls_colors/ls-colors.sh; then
+    source $CUSTOM_DIR/ls_colors/ls-colors.sh
+else
+  zinit ice nocompile:! pick:c.zsh atpull:%atclone atclone:'dircolors -b LS_COLORS > c.zsh'
+  zinit $load trapd00r/LS_COLORS
+fi
+
 
 ## almost on top (clears previous output on new command)
 zinit $ice_async

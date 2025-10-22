@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+dircolors -b LS_COLORS > ./ls-colors.sh
+chmod +x ./ls-colors.sh
