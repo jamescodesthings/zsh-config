@@ -68,7 +68,7 @@ alias jx='z -x .'
 alias jl='z -l'
 
 if is available exa; then
-  alias ls='exa'
+  alias ls='exa --group-directories-first'
 fi
 
 if is available terraform; then

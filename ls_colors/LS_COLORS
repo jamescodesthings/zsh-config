@@ -34,12 +34,15 @@
 # https://github.com/trapd00r/LS_COLORS/issues/11
 #NORMAL               38;5;254
 
+# do 'colo --ansi' to get colors
+# pip install colo if it's missing
+
 BLK                   38;5;68             # core
 CAPABILITY            38;5;17             # core
 CHR                   38;5;113;1          # core
-DIR                   38;5;30;1           # core
+DIR                   38;5;146            # core
 DOOR                  38;5;127            # core
-EXEC                  38;5;208;1          # core
+EXEC                  38;5;208            # core
 FIFO                  38;5;126            # core
 FILE                  0                   # core
 LINK                  target              # core
@@ -351,6 +354,7 @@ STICKY_OTHER_WRITABLE 48;5;235;38;5;139;3 # core
 *dune-project         38;5;243            # Build process (OCaml Dune)
 .opam                 38;5;240            # Build process (OCaml Opam)
 *Makefile             38;5;155            # Build process (Make)
+.mk                   38;5;155            # Build process (Make)
 *MANIFEST             38;5;243            # Build process (Make)
 *pm_to_blib           38;5;240            # Build process (Perl)
 .nix                  38;5;155            # Functional configuration
