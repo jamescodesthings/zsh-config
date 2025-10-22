@@ -93,4 +93,6 @@ export PICO8="/Applications/PICO-8.app/Contents/MacOS/pico8"
 
 export GPT_HAS_NO_INTERACTION=1
 
-. ~/.asdf/plugins/golang/set-env.zsh
+if is not existing ~/.hushlogin; then
+  touch ~/.hushlogin
+fi

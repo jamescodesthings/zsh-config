@@ -76,3 +76,7 @@ export BUTANO_TEMPLATE_DIR="/Users/jamesmacmillan/projects/third-party/butano/te
 export MODELS_PATH="/users/jamesmacmillan/projects/models"
 
 alias outpaint="iopaint start --model=Sanster/PowerPaint-V1-stable-diffusion-inpainting --device=cpu --port=8080"
+
+if is not existing ~/.hushlogin; then
+  touch ~/.hushlogin
+fi

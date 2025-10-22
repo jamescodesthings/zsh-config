@@ -3,9 +3,9 @@
 # Per Directory History P10k
 function prompt_my_per_dir_status() {
     if $_per_directory_history_is_global; then
-        p10k segment -i ' Global'
+        p10k segment -i '🌍 Global'
     else
-        p10k segment -i ' Local'
+        p10k segment -i '🏠 Local'
     fi
 }
 
