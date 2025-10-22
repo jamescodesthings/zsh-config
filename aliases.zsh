@@ -13,6 +13,8 @@ fi
 
 alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt sandreas/m4b-tool:latest'
 
+alias root='cd-gitroot'
+
 # OSX Development
 if is osx; then
   alias xcode='open /Applications/Xcode.app'
@@ -58,6 +60,7 @@ alias la='ls -a'
 alias l1='ls -1'
 alias l1a='ls -1a'
 alias la1='l1a'
+alias l='k -h'
 
 # https://github.com/rupa/z
 alias j='z'

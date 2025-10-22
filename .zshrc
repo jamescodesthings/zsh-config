@@ -32,4 +32,3 @@ source $CUSTOM_DIR/aliases.zsh
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
-### End of Zinit's installer chunk
