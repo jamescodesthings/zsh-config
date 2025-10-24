@@ -1,12 +1,14 @@
 #!/usr/bin/env zsh
 
-
-# TMUX_EXECUTABLE=$(which tmux)
-# if [[ $? -eq 0 ]]; then
-#   tmux new -A -s main
-# else
-#   echo "Not tmuxing because tmux is not installed."
-# fi
+if command -v tmux &>/dev/null
+then
+  # do stuff
+  if [ -z "$TMUX" ]; then
+    tmux new -A -s default
+  fi
+else
+  echo "you should probably install tmux bruh"
+fi
 
 # Project root
 export CUSTOM_DIR="$HOME/.custom"
