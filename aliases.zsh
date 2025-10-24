@@ -133,6 +133,7 @@ if is available git; then
     unalias gcm
     unalias gcd
     unalias grbi
+    unalias gsu
   fi
 
   alias grbi='git rebase -i --ignore-date'
@@ -163,6 +164,9 @@ if is available git; then
 
   unalias gap
   alias gap='git add -p'
+
+  alias gsu='git submodule update --init --recursive'
+  alias gsa='git submodule add'
 fi
 
 # Node
