@@ -1,5 +1,12 @@
 #!/usr/bin/env zsh
 
+TMUX_ACTIVE=$(tmux ls 2> /dev/null)
+TMUX_EXECUTABLE=$(which tmux)
+
+if [[ $TMUX_EXECUTABLE && ! $TMUX_ACTIVE ]]; then
+  tmux new -s main
+fi
+
 # Project root
 export CUSTOM_DIR="$HOME/.custom"
 # Custom Function Directory
