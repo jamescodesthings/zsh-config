@@ -5,6 +5,7 @@ then
   # do stuff
   if [ -z "$TMUX" ]; then
     tmux new -A -s default
+    exit
   fi
 else
   echo "you should probably install tmux bruh"
