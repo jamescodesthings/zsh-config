@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+echo "Linking tmux.conf to home directory..."
+if [ -f ~/.tmux.conf ]; then
+    rm -rf ~/.tmux.conf
+fi
+
+cp -f ./tmux.conf ~/.tmux.conf
+
+echo "linked, use r to reload tmux config"
+
+if ! command -v tmux &> /dev/null
+then
+    echo "tmux could not be found, installing..."
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sudo apt-get update
+        sudo apt-get install -y tmux
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install tmux
+    else
+        echo "Unsupported OS. Please install tmux manually."
+        exit 1
+    fi
+else
+    echo "tmux is already installed."
+fi
