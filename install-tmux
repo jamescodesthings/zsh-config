@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 
-echo "Linking tmux.conf to home directory..."
-if [ -f ~/.tmux.conf ]; then
-    rm -rf ~/.tmux.conf
-fi
-
-cp -f ./tmux.conf ~/.tmux.conf
-
-echo "linked, use r to reload tmux config"
-
 if ! command -v tmux &> /dev/null
 then
     echo "tmux could not be found, installing..."
@@ -22,5 +13,26 @@ then
         exit 1
     fi
 else
-    echo "tmux is already installed."
+    echo "tmux is installed"
 fi
+
+echo ""
+echo "Linking tmux.conf to home directory..."
+
+if [ "$CUSTOM_DIR" == "" ]; then
+  echo '$CUSTOM_DIR is not set, cannot install tmu config'
+  exit 1
+fi
+
+
+stub="
+# Source the custom tmux conf
+source $CUSTOM_DIR/tmux.conf
+
+# reload config file (change file location to your the tmux.conf you want to use)
+bind -n C-M-r source-file $CUSTOM_DIR/tmux.conf
+"
+
+echo "$stub" > ~/.tmux.conf
+
+echo "linked, use Ctrl+Meta+r to reload tmux config"

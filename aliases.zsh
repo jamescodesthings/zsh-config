@@ -1,5 +1,7 @@
 #!/usr/bin/env zsh
 
+alias tmuxk='tmux kill-session'
+
 alias protontricks='flatpak run com.github.Matoking.protontricks'
 alias protontricks-launch='flatpak run --command=protontricks-launch com.github.Matoking.protontricks'
 
@@ -61,11 +63,6 @@ alias l1='ls -1'
 alias l1a='ls -1a'
 alias la1='l1a'
 alias l='k -h'
-
-# https://github.com/rupa/z
-alias j='z'
-alias jx='z -x .'
-alias jl='z -l'
 
 if is available exa; then
   alias ls='exa --group-directories-first'

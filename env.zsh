@@ -3,6 +3,8 @@
 # Projects Directory
 export PROJECTS="$HOME/projects"
 
+export _Z_CMD="j"
+
 # Custom bin directory
 export PATH="$HOME/.bin:$PATH"
 
@@ -22,11 +24,6 @@ if is available vim; then
   export EDITOR='vim'
 elif is available subl; then
   export EDITOR='subl -w'
-fi
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-if is existing $CUSTOM_DIR/.p10k.zsh; then
-  source $CUSTOM_DIR/.p10k.zsh
 fi
 
 if is existing $HOME/.cargo/env; then

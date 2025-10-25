@@ -6,9 +6,20 @@ export ZINIT_DEBUG=0
 # Change zinit load method
 load=light
 
+# OMZ!
+## Libraries
+zi snippet OMZL::git.zsh
+zi snippet OMZL::history.zsh
+
+## Plugins
+zi snippet OMZP::git
+## clear completions
+zi cdclear -q
+
+
 # Prompt
 ## Asynchronous prompt
-zinit $load mafredri/zsh-async
+# zinit $load mafredri/zsh-async
 
 ## Powerlevel10k Prompt
 zinit $load romkatv/powerlevel10k
@@ -42,16 +53,12 @@ zinit ice wait"1" light-mode
 zinit $load mollifier/cd-gitroot
 
 ## J/Z navigation
-zinit ice wait"0" light-mode
+# zinit ice wait"0" light-mode
 zinit $load rupa/z
 
 ## Git LS (using k or l alias)
 zinit ice wait"1" light-mode
 zinit $load supercrabtree/k
-
-## ASDF and Direnv integration
-zinit ice wait"0" light-mode
-zinit $load redxtech/zsh-asdf-direnv
 
 ## Safe rm - move to recycle bin instead of deleting
 if is not file ${HOME}/.rm_recycle; then

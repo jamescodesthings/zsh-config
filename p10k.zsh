@@ -11,12 +11,6 @@
 #
 #   for i in {0..255}; do print -Pn "%K{$i}  %k%F{$i}${(l:3::0:)i}%f " ${${(M)$((i%6)):#3}:+$'\n'}; done
 
-
-if is windows && is existing $CUSTOM_DIR/.p10k.windows.zsh; then
-  source $CUSTOM_DIR/.p10k.windows.zsh
-  return
-fi
-
 # Temporarily change options.
 'builtin' 'local' '-a' 'p10k_config_opts'
 [[ ! -o 'aliases'         ]] || p10k_config_opts+=('aliases')
@@ -34,7 +28,7 @@ fi
   # Zsh >= 5.1 is required.
   autoload -Uz is-at-least && is-at-least 5.1 || return
 
-  source $CUSTOM_DIR/.p10k.prompt.zsh
+  source $CUSTOM_DIR/p10k.prompt.zsh
 
   typeset -g POWERLEVEL9K_MY_PER_DIR_STATUS_FOREGROUND=197
 

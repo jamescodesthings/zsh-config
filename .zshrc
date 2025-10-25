@@ -30,17 +30,17 @@ fi
 # todo: remove bash_colors
 source $CUSTOM_DIR/bash_colors.zsh
 source $CUSTOM_DIR/zsh_options.zsh
-# source $CUSTOM_DIR/custom_functions.zsh
+source $CUSTOM_DIR/custom_functions.zsh
 source $CUSTOM_DIR/env.zsh
-source $CUSTOM_DIR/completions.zsh
 source $CUSTOM_DIR/load_zinit.zsh
-source $CUSTOM_DIR/load_omz.zsh
-source $CUSTOM_DIR/fzf-key-bindings.zsh
+source $CUSTOM_DIR/p10k.prompt.zsh
+source $CUSTOM_DIR/p10k.zsh
 source $CUSTOM_DIR/plugins.zsh
-# source $CUSTOM_DIR/load_iterm.zsh
 source $CUSTOM_DIR/aliases.zsh
+source $CUSTOM_DIR/load-direnv.zsh
+source $CUSTOM_DIR/load-fzf.zsh
+
 
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
-### End of Zinit's installer chunk
