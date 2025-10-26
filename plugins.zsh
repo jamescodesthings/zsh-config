@@ -8,13 +8,28 @@ load=light
 
 # OMZ!
 ## Libraries
-zi snippet OMZL::git.zsh
-zi snippet OMZL::history.zsh
+zinit snippet OMZL::git.zsh
+zinit snippet OMZL::history.zsh
 
 ## Plugins
-zi snippet OMZP::git
+zinit snippet OMZP::git
+
+# tmux.extra.conf and tmux.only.conf can be found at OMZ
+
+zinit ice \
+  atinit"
+  ZSH_TMUX_FIXTERM=true
+  ZSH_TMUX_AUTOSTART=true
+  ZSH_TMUX_AUTOCONNECT=true
+  " \
+  atclone"
+    curl https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/refs/heads/master/plugins/tmux/tmux.extra.conf -o ./tmux.extra.conf && curl https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/refs/heads/master/plugins/tmux/tmux.only.conf -o ./tmux.only.conf
+  " \
+  atpull"%atclone"
+zinit snippet OMZP::tmux
+
 ## clear completions
-zi cdclear -q
+zinit cdclear -q
 
 
 # Prompt
