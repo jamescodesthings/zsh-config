@@ -1,9 +1,11 @@
 #!/usr/bin/env zsh
 
+env > /home/james/Downloads/zshenv.txt
+
 if command -v tmux &>/dev/null
 then
   # do stuff
-  if [ -z "$TMUX" ]; then
+  if [ -z "$TMUX" ] && [ -z "$VSCODE_RESOLVING_ENVIRONMENT" ]; then
     tmux new -A -s default
     exit
   fi
