@@ -24,6 +24,18 @@ if [ "$CUSTOM_DIR" == "" ]; then
   exit 1
 fi
 
+TMUX_PLUGIN_DIR=$HOME/.tmux/plugins
+if [ ! -d "$TMUX_PLUGIN_DIR" ]; then
+  mkdir -p $TMUX_PLUGIN_DIR
+fi
+
+if [ ! -d "$TMUX_PLUGIN_DIR/tpm" ]; then
+  echo "Installing tmux plugin manager..."
+  git clone https://github.com/tmux-plugins/tpm $TMUX_PLUGIN_DIR/tpm
+  echo "tmux plugin manager installed"
+else
+  echo "tmux plugin manager already installed"
+fi
 
 stub="
 # Source the custom tmux conf

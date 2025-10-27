@@ -1,4 +1,0 @@
-#!/usr/bin/env zsh
-
-# Grabs and runs the install script for nnn plugins
-curl -Ls https://raw.githubusercontent.com/jarun/nnn/master/plugins/getplugs | sh
