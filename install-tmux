@@ -47,4 +47,8 @@ bind -n C-M-r source-file $CUSTOM_DIR/tmux.conf
 
 echo "$stub" > ~/.tmux.conf
 
-echo "linked, use Ctrl+Meta+r to reload tmux config"
+echo "linked config"
+echo ""
+echo "Install new plugins with prefix + I (capital i) inside tmux"
+echo "Cleanup old plugins with prefix + alt + u inside tmux"
+echo "use Ctrl+Meta+r to reload tmux config"
