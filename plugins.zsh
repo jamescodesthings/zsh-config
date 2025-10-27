@@ -15,11 +15,15 @@ zinit snippet OMZL::history.zsh
 zinit snippet OMZP::git
 
 # tmux.extra.conf and tmux.only.conf can be found at OMZ
+ZSH_TMUX_AUTOSTART=true
+if [[ "$(uname -n)" == "uconsole" ]]; then
+  ZSH_TMUX_AUTOSTART=false
+fi
 
-zinit ice \
+zinit ice wait"1" \
   atinit"
   ZSH_TMUX_FIXTERM=true
-  ZSH_TMUX_AUTOSTART=true
+  ZSH_TMUX_AUTOSTART=$ZSH_TMUX_AUTOSTART
   ZSH_TMUX_AUTOCONNECT=true
   " \
   atclone"
