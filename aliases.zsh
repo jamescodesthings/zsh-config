@@ -304,6 +304,7 @@ if is available thefuck; then
 fi
 
 alias gpt="zev"
+alias gpto="ollama run llama3.2:zev"
 
 # if is available sgpt; then
 #   if is equal "$GPT_HAS_NO_INTERACTION" "1"; then
