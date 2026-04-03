@@ -16,6 +16,8 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+export DISABLE_TMUX=false
+
 # todo: remove bash_colors
 source $CUSTOM_DIR/bash_colors.zsh
 source $CUSTOM_DIR/zsh_options.zsh
@@ -33,3 +35,10 @@ source $CUSTOM_DIR/load-fzf.zsh
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
+
+# bun completions
+[ -s "/Users/jamesmacmillan/.bun/_bun" ] && source "/Users/jamesmacmillan/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

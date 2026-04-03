@@ -17,7 +17,7 @@ zinit snippet OMZP::git
 # tmux.extra.conf and tmux.only.conf can be found at OMZ
 ZSH_TMUX_AUTOSTART=true
 ZSH_TMUX_DEFAULT_SESSION_NAME="main"
-if [[ "$(uname -n)" == "uconsole" ]]; then
+if [[ "$(uname -n)" == "uconsole" ]] || [[ "$DISABLE_TMUX" == "true" ]]; then
   ZSH_TMUX_AUTOSTART=false
 fi
 
