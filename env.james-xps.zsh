@@ -20,3 +20,6 @@ export EC2_IP="10.117.141.208"
 export PAGER=
 
 export TLDR_PAGES_SOURCE_LOCATION="file:////home/james/projects/third-party/tldr/pages"
+
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
