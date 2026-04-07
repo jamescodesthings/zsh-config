@@ -36,9 +36,5 @@ if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
 
-# bun completions
-[ -s "/Users/jamesmacmillan/.bun/_bun" ] && source "/Users/jamesmacmillan/.bun/_bun"
-
-# bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
