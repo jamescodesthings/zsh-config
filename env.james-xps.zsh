@@ -21,5 +21,7 @@ export PAGER=
 
 export TLDR_PAGES_SOURCE_LOCATION="file:////home/james/projects/third-party/tldr/pages"
 
+export ANTHROPIC_MODEL="sonnet"
+
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
