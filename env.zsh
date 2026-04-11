@@ -52,7 +52,7 @@ export DEFAULT_MODEL=gpt-4o-mini
 
 export GOOGLE_CLOUD_PROJECT=467061286120
 
-export ANTHROPIC_MODEL="sonnet"
+# export ANTHROPIC_MODEL="sonnet"
 
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh
