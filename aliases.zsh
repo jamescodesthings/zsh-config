@@ -308,34 +308,44 @@ alias gpt="zev"
 if is available claude; then
   alias cld="claude --dangerously-skip-permissions"
   alias cldr="cld --resume"
-fi
 
-if is available ollama; then
-  alias cldo="ollama launch claude"
-  alias test-cldo="ollama run"
 
-  alias cldo1="ollama launch claude --model devstral-small-2"
-  alias cldo2="ollama launch claude --model qwen2.5:14b"
-  alias cldo3="ollama launch claude --model qwen2.5-coder"
-  alias cldo4="ollama launch claude --model qwen2.5-coder:32b"
-  alias cldo5="ollama launch claude --model deepseek-coder-v2"
-  alias cldo6="ollama launch claude --model glm4.7-flash:q8_0"
+  local OLLAMA_MODELS=(
+    devstral-small-2
+    qwen2.5:14b
+    qwen2.5-coder
+    deepseek-coder-v2
+    glm4.7-flash:q8_0
+    qwen2.5-coder:32b
+  )
 
-  alias get-cldo1="ollama pull devstral-small-2"
-  alias get-cldo2="ollama pull qwen2.5:14b"
-  alias get-cldo3="ollama pull qwen2.5-coder"
-  alias get-cldo4="ollama pull qwen2.5-coder:32b"
-  alias get-cldo5="ollama pull deepseek-coder-v2"
-  alias get-cldo6="ollama pull glm4.7-flash:q8_0"
+  if is available ollama; then
+    alias ocld="ollama launch claude --dangerously-skip-permissions"
+    alias ocldr="ocld --resume"
+    alias ocld-run="ollama run"
+    alias ocld-models="ollama ls"
 
-  alias get-cldo="get-cldo1 && get-cldo2 && get-cldo3 && get-cldo4 && get-cldo5 && get-cldo6"
+    function ocld-get() {
+      for MODEL in "${OLLAMA_MODELS[@]}"; do
+        echo "Getting $MODEL:"
+        ollama pull $MODEL
+        if [ $? -ne 0 ]; then
+          echo "Failed to get $MODEL"
+        else
+          echo "Done\n"
+        fi
+      done
+    }
 
-  alias test-cldo1="ollama run devstral-small-2"
-  alias test-cldo2="ollama run qwen2.5:14b"
-  alias test-cldo3="ollama run qwen2.5-coder"
-  alias test-cldo4="ollama run qwen2.5-coder:32b"
-  alias test-cldo5="ollama run deepseek-coder-v2"
-  alias test-cldo6="ollama run glm4.7-flash:q8_0"
+    local i=0
+    for MODEL in "${OLLAMA_MODELS[@]}"; do
+      i=$((i+1))
+      local ALIAS="ocld$i"
+      alias $ALIAS="ocld --model $MODEL"
+      alias "${ALIAS}r"="ocldr --model $MODEL"
+      alias "$ALIAS-run"="ollama run $MODEL"
+    done
+  fi
 fi
 
 alias sw="start-workstation"
