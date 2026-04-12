@@ -304,23 +304,39 @@ if is available thefuck; then
 fi
 
 alias gpt="zev"
-alias gpto="ollama run llama3.2:zev"
 
-# if is available sgpt; then
-#   if is equal "$GPT_HAS_NO_INTERACTION" "1"; then
-#     alias gpts="sgpt --shell"
-#     alias gptss="sgpt --shell --no-interaction"
-#   else
-#     alias gpts="sgpt --shell"
-#   fi
+if is available claude; then
+  alias cld="claude --dangerously-skip-permissions"
+  alias cldr="cld --resume"
+fi
 
-#   alias gpt="sgpt"
-#   alias gptc="sgpt --code"
-#   alias gptd="sgpt -d"
-#   alias gptcc="git diff --cached | gpts 'generate a short, casual commit message based on the following changes:'"
-#   alias gpt-commit="git diff --cached | gptc 'generate a short, casual commit message based on the following changes:' > /tmp/sgpt_commit_msg && git commit -F /tmp/sgpt_commit_msg && rm /tmp/sgpt_commit_msg"
-#   alias git-fuckit='gpt-commit'
-# fi
+if is available ollama; then
+  alias cldo="ollama launch claude"
+  alias test-cldo="ollama run"
+
+  alias cldo1="ollama launch claude --model devstral-small-2"
+  alias cldo2="ollama launch claude --model qwen2.5:14b"
+  alias cldo3="ollama launch claude --model qwen2.5-coder"
+  alias cldo4="ollama launch claude --model qwen2.5-coder:32b"
+  alias cldo5="ollama launch claude --model deepseek-coder-v2"
+  alias cldo6="ollama launch claude --model glm4.7-flash:q8_0"
+
+  alias get-cldo1="ollama pull devstral-small-2"
+  alias get-cldo2="ollama pull qwen2.5:14b"
+  alias get-cldo3="ollama pull qwen2.5-coder"
+  alias get-cldo4="ollama pull qwen2.5-coder:32b"
+  alias get-cldo5="ollama pull deepseek-coder-v2"
+  alias get-cldo6="ollama pull glm4.7-flash:q8_0"
+
+  alias get-cldo="get-cldo1 && get-cldo2 && get-cldo3 && get-cldo4 && get-cldo5 && get-cldo6"
+
+  alias test-cldo1="ollama run devstral-small-2"
+  alias test-cldo2="ollama run qwen2.5:14b"
+  alias test-cldo3="ollama run qwen2.5-coder"
+  alias test-cldo4="ollama run qwen2.5-coder:32b"
+  alias test-cldo5="ollama run deepseek-coder-v2"
+  alias test-cldo6="ollama run glm4.7-flash:q8_0"
+fi
 
 alias sw="start-workstation"
 alias clock="watch -n 1 date +%H:%M:%S"
