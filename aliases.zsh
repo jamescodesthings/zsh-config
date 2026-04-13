@@ -320,7 +320,7 @@ if is available claude; then
   )
 
   if is available ollama; then
-    alias ocld="ollama launch claude --dangerously-skip-permissions"
+    alias ocld="ollama launch claude -- --dangerously-skip-permissions"
     alias ocldr="ocld --resume"
     alias ocld-run="ollama run"
     alias ocld-models="ollama ls"
@@ -341,8 +341,8 @@ if is available claude; then
     for MODEL in "${OLLAMA_MODELS[@]}"; do
       i=$((i+1))
       local ALIAS="ocld$i"
-      alias $ALIAS="ocld --model $MODEL"
-      alias "${ALIAS}r"="ocldr --model $MODEL"
+      alias $ALIAS="ollama launch claude  --model $MODEL -- --dangerously-skip-permissions"
+      alias "${ALIAS}r"="$ALIAS --resume"
       alias "$ALIAS-run"="ollama run $MODEL"
     done
   fi
