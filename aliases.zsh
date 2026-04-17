@@ -311,6 +311,8 @@ if is available claude; then
 
 
   local OLLAMA_MODELS=(
+    gemma4
+    qwen3.5
     devstral-small-2
     qwen2.5:14b
     qwen2.5-coder
