@@ -20,8 +20,12 @@ _lc() {
 lean-ctx-on() {
   local SUPPRESS_ECHO=$1
   for _lc_cmd in "${_lean_ctx_cmds[@]}"; do
-      # shellcheck disable=SC2139
-      alias "$_lc_cmd"='_lc '"$_lc_cmd"
+    if is alias "$_lc_cmd"; then
+      ALIAS_CMD=$(alias "$_lc_cmd" | sed -E "s/alias $_lc_cmd='(.*)'/\1/")
+      alias "$_lc_cmd"="_lc $ALIAS_CMD"
+    else
+      alias "$_lc_cmd"="_lc $_lc_cmd"
+    fi
   done
   alias k='_lc kubectl'
   export LEAN_CTX_ENABLED=1
