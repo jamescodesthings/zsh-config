@@ -21,7 +21,8 @@ lean-ctx-on() {
   local SUPPRESS_ECHO=$1
   for _lc_cmd in "${_lean_ctx_cmds[@]}"; do
     if is alias "$_lc_cmd"; then
-      ALIAS_CMD=$(alias "$_lc_cmd" | sed -E "s/alias $_lc_cmd='(.*)'/\1/")
+      ALIAS_CMD=$(alias "$_lc_cmd" | sed -E "s/$_lc_cmd='(.*)'/\1/")
+      echo "alias $_lc_cmd already exists. Wrapping it with lean-ctx: $_lc_cmd -> _lc $ALIAS_CMD"
       alias "$_lc_cmd"="_lc $ALIAS_CMD"
     else
       alias "$_lc_cmd"="_lc $_lc_cmd"
