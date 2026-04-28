@@ -16,7 +16,11 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+
+
 export DISABLE_TMUX=false
+export LEAN_CTX_DISABLED=true
+fpath=(${fpath[@]:1} $fpath[1])
 
 # todo: remove bash_colors
 source $CUSTOM_DIR/bash_colors.zsh
@@ -30,7 +34,7 @@ source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/load-direnv.zsh
 source $CUSTOM_DIR/load-fzf.zsh
-source $CUSTOM_DIR/lean-ctx.zsh
+# source $CUSTOM_DIR/lean-ctx.zsh
 
 
 if is existing $CUSTOM_DIR/private.zsh; then

@@ -52,7 +52,20 @@ _update_commands[5]="asdf plugin update --all"
 
 function _update_node() {
   asdf install nodejs latest
+  if is not equal "$?" "0"; then
+    echo "Failed to install NodeJS with ASDF"
+    local LATEST_NODE=$(asdf list nodejs | grep -v 'lts' | sort -r | head --lines 1)
+    if is not empty "$LATEST_NODE"; then
+      asdf set -u nodejs $LATEST_NODE
+      echo "Set NodeJS to latest installed version $LATEST_NODE"
+    else
+      echo "No versions of NodeJS are currently installed, skipping update."
+    fi
+    return 1
+  fi
+
   asdf set -u nodejs latest
+
   _update_updating "NPM"
   # Updates NPM
   node --version
