@@ -10,3 +10,6 @@ export PATH="/home/james/projects/pico-8:$PATH"
 
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+export PICO8="/home/james/projects/pico-8/pico8"
+

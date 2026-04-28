@@ -89,11 +89,6 @@ export BUTANO_DIR="/Users/jamesmacmillan/projects/third-party/butano/butano"
 export BUTANO_TEMPLATE_DIR="/Users/jamesmacmillan/projects/third-party/butano/template"
 
 export PICO8="/Applications/PICO-8.app/Contents/MacOS/pico8"
-alias pico="nohup $PICO8 &"
-
-function picoh() {
-  nohup $PICO8 -root_path "$(pwd)" &
-}
 
 export GPT_HAS_NO_INTERACTION=1
 

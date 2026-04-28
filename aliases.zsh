@@ -360,3 +360,11 @@ fi
 alias new-love="new --lang love --name"
 
 alias localai='local-ai'
+
+if is not empty "$PICO8"; then
+  alias pico="nohup $PICO8 &"
+
+  function picoh() {
+    nohup $PICO8 -root_path "$(pwd)" &
+  }
+fi
