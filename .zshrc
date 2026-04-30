@@ -18,7 +18,7 @@ fi
 
 
 
-export DISABLE_TMUX=false
+export DISABLE_TMUX=true
 export LEAN_CTX_DISABLED=true
 fpath=(${fpath[@]:1} $fpath[1])
 
@@ -40,3 +40,4 @@ source $CUSTOM_DIR/load-fzf.zsh
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
+### End of Zinit's installer chunk
