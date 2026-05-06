@@ -34,7 +34,6 @@ source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/aliases.zsh
 source $CUSTOM_DIR/load-direnv.zsh
 source $CUSTOM_DIR/load-fzf.zsh
-# source $CUSTOM_DIR/lean-ctx.zsh
 
 
 if is existing $CUSTOM_DIR/private.zsh; then
