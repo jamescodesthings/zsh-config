@@ -19,7 +19,6 @@ fi
 
 
 export DISABLE_TMUX=false
-export LEAN_CTX_DISABLED=true
 fpath=(${fpath[@]:1} $fpath[1])
 
 # todo: remove bash_colors
