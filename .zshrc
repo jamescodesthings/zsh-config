@@ -18,7 +18,8 @@ fi
 
 
 
-export DISABLE_TMUX=false
+export DISABLE_TMUX=true
+
 fpath=(${fpath[@]:1} $fpath[1])
 
 # todo: remove bash_colors
