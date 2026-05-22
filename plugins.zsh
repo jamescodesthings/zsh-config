@@ -93,8 +93,8 @@ zinit ice wait"1" light-mode light-mode autoload'#manydots-magic'
 zinit $load knu/zsh-manydots-magic
 
 ## Reentry of deleted and recreated dirs
-zinit ice wait"1" light-mode
-zinit $load RobSis/zsh-reentry-hook
+# zinit ice wait"1" light-mode
+# zinit $load RobSis/zsh-reentry-hook
 
 # Per Directory History
 _per_directory_history_is_global=false
