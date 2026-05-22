@@ -309,44 +309,9 @@ if is available claude; then
   alias cld="claude --dangerously-skip-permissions"
   alias cldr="cld --resume"
 
-
-  local OLLAMA_MODELS=(
-    gemma4
-    qwen3.5
-    devstral-small-2
-    qwen2.5:14b
-    qwen2.5-coder
-    deepseek-coder-v2
-    glm4.7-flash:q8_0
-    qwen2.5-coder:32b
-  )
-
-  if is available ollama; then
-    alias ocld="ollama launch claude -- --dangerously-skip-permissions"
-    alias ocldr="ocld --resume"
-    alias ocld-run="ollama run"
-    alias ocld-models="ollama ls"
-
-    function ocld-get() {
-      for MODEL in "${OLLAMA_MODELS[@]}"; do
-        echo "Getting $MODEL:"
-        ollama pull $MODEL
-        if [ $? -ne 0 ]; then
-          echo "Failed to get $MODEL"
-        else
-          echo "Done\n"
-        fi
-      done
-    }
-
-    local i=0
-    for MODEL in "${OLLAMA_MODELS[@]}"; do
-      i=$((i+1))
-      local ALIAS="ocld$i"
-      alias $ALIAS="ollama launch claude  --model $MODEL -- --dangerously-skip-permissions"
-      alias "${ALIAS}r"="$ALIAS --resume"
-      alias "$ALIAS-run"="ollama run $MODEL"
-    done
+  if is available happy; then
+    alias hcld="happy claude --dangerously-skip-permissions"
+    alias hcldr="hcld --resume"
   fi
 fi
 
