@@ -308,11 +308,7 @@ alias gpt="zev"
 if is available claude; then
   alias cld="claude --dangerously-skip-permissions"
   alias cldr="cld --resume"
-
-  if is available happy; then
-    alias hcld="happy claude --dangerously-skip-permissions"
-    alias hcldr="hcld --resume"
-  fi
+  alias cldm="claude-monitor"
 fi
 
 alias sw="start-workstation"
