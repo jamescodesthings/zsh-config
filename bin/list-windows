@@ -3,7 +3,7 @@
 # Usage: list-windows
 
 _gdbus_list() {
-    local js="JSON.stringify(global.get_window_actors().map(a=>a.meta_window).map(w=>({class:w.get_wm_class(),title:w.get_title(),minimized:w.minimized})))"
+    local js="global.get_window_actors().map(a=>a.meta_window).map(w=>({class:w.get_wm_class(),title:w.get_title(),minimized:w.minimized}))"
     local result
     result=$(gdbus call --session \
         --dest org.gnome.Shell \

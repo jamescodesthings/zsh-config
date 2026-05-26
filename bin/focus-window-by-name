@@ -6,7 +6,7 @@ NAME="${1:?Usage: focus-window-by-name <name>}"
 
 _gdbus_focus() {
     local name="${1,,}"
-    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_title()&&w.get_title().toLowerCase().includes('$name')&&!w.minimized); w?(w.activate(global.get_current_time()),true):false;"
+    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_title()&&w.get_title().toLowerCase().includes('$name')&&!w.minimized); w?(Main.activateWindow(w),true):false;"
     local result
     result=$(gdbus call --session \
         --dest org.gnome.Shell \

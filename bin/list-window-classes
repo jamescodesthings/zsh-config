@@ -3,7 +3,7 @@
 # Usage: list-window-classes
 
 _gdbus_list() {
-    local js="JSON.stringify(global.get_window_actors().map(a=>a.meta_window).map(w=>w.get_wm_class()))"
+    local js="global.get_window_actors().map(a=>a.meta_window).map(w=>w.get_wm_class())"
     local result
     result=$(gdbus call --session \
         --dest org.gnome.Shell \

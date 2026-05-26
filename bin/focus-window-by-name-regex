@@ -7,7 +7,7 @@ PATTERN="${1:?Usage: focus-window-by-name-regex <pattern>}"
 
 _gdbus_focus() {
     local pattern="$1"
-    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_title()&&new RegExp('$pattern').test(w.get_title())&&!w.minimized); w?(w.activate(global.get_current_time()),true):false;"
+    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_title()&&new RegExp('$pattern').test(w.get_title())&&!w.minimized); w?(Main.activateWindow(w),true):false;"
     local result
     result=$(gdbus call --session \
         --dest org.gnome.Shell \

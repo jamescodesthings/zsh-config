@@ -6,7 +6,7 @@ CLASS="${1:?Usage: focus-window-by-class <class>}"
 
 _gdbus_focus() {
     local class="${1,,}"
-    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_wm_class().toLowerCase()==='$class'&&!w.minimized); w?(w.activate(global.get_current_time()),true):false;"
+    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_wm_class().toLowerCase()==='$class'&&!w.minimized); w?(Main.activateWindow(w),true):false;"
     local result
     result=$(gdbus call --session \
         --dest org.gnome.Shell \
