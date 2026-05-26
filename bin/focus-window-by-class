@@ -13,7 +13,7 @@ _gdbus_focus() {
         --object-path /org/gnome/Shell \
         --method org.gnome.Shell.Eval \
         "$js" 2>/dev/null) || return 1
-    [[ "$result" == *"true"* ]]
+    [[ "$result" == "(true, 'true')" ]]
 }
 
 _wmctrl_focus() {
