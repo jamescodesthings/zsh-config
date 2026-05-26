@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Focus visible window matching WM_CLASS. Returns 0 if focused, 1 if not found.
+# Usage: focus-window-by-class <class>
+
+CLASS="${1:?Usage: focus-window-by-class <class>}"
+
+_gdbus_focus() {
+    local class="${1,,}"
+    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_wm_class().toLowerCase()==='$class'&&!w.minimized); w?(w.activate(global.get_current_time()),true):false;"
+    local result
+    result=$(gdbus call --session \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell \
+        --method org.gnome.Shell.Eval \
+        "$js" 2>/dev/null) || return 1
+    [[ "$result" == *"true"* ]]
+}
+
+_wmctrl_focus() {
+    wmctrl -x -a "$1" 2>/dev/null
+}
+
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _gdbus_focus "$CLASS" && exit 0
+fi
+
+if command -v wmctrl &>/dev/null; then
+    _wmctrl_focus "$CLASS" && exit 0
+fi
+
+exit 1

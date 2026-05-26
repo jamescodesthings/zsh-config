@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# List all open window WM_CLASS values, one per line (sorted, unique).
+# Usage: list-window-classes
+
+_gdbus_list() {
+    local js="JSON.stringify(global.get_window_actors().map(a=>a.meta_window).map(w=>w.get_wm_class()))"
+    local result
+    result=$(gdbus call --session \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell \
+        --method org.gnome.Shell.Eval \
+        "$js" 2>/dev/null) || return 1
+    [[ "$result" != "(true,"* ]] && return 1
+    local json
+    json=$(printf '%s' "$result" | sed "s/^(true, '//;s/')\$//")
+    if command -v jq &>/dev/null; then
+        printf '%s' "$json" | jq -r '.[]'
+    else
+        python3 -c "import sys,json; [print(x) for x in json.loads(sys.argv[1])]" "$json"
+    fi | sort -u
+}
+
+_wmctrl_list() {
+    wmctrl -l -x 2>/dev/null | awk '{print $3}' | sort -u
+}
+
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _gdbus_list && exit 0
+fi
+
+if command -v wmctrl &>/dev/null; then
+    _wmctrl_list && exit 0
+fi
+
+echo "No method available (need gdbus on Wayland or wmctrl on X11)" >&2
+exit 1

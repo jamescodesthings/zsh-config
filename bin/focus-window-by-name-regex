@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Focus visible window whose title matches PATTERN (regex). Returns 0 if focused, 1 if not found.
+# Usage: focus-window-by-name-regex <pattern>
+# Note: patterns containing single quotes are not supported.
+
+PATTERN="${1:?Usage: focus-window-by-name-regex <pattern>}"
+
+_gdbus_focus() {
+    local pattern="$1"
+    local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_title()&&new RegExp('$pattern').test(w.get_title())&&!w.minimized); w?(w.activate(global.get_current_time()),true):false;"
+    local result
+    result=$(gdbus call --session \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell \
+        --method org.gnome.Shell.Eval \
+        "$js" 2>/dev/null) || return 1
+    [[ "$result" == *"true"* ]]
+}
+
+_wmctrl_focus() {
+    local pattern="$1"
+    local wid
+    wid=$(wmctrl -l | grep -iP "$pattern" | head -1 | awk '{print $1}') || return 1
+    [[ -n "$wid" ]] && wmctrl -i -a "$wid" 2>/dev/null
+}
+
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _gdbus_focus "$PATTERN" && exit 0
+fi
+
+if command -v wmctrl &>/dev/null; then
+    _wmctrl_focus "$PATTERN" && exit 0
+fi
+
+exit 1

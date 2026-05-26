@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# List all window titles, one per line. Minimized windows marked with [minimized].
+# Usage: list-window-names
+
+_gdbus_list() {
+    local js="JSON.stringify(global.get_window_actors().map(a=>a.meta_window).map(w=>({title:w.get_title(),minimized:w.minimized})))"
+    local result
+    result=$(gdbus call --session \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell \
+        --method org.gnome.Shell.Eval \
+        "$js" 2>/dev/null) || return 1
+    [[ "$result" != "(true,"* ]] && return 1
+    local json
+    json=$(printf '%s' "$result" | sed "s/^(true, '//;s/')\$//")
+    if command -v jq &>/dev/null; then
+        printf '%s' "$json" | jq -r '.[] | if .minimized then "[minimized] \(.title)" else .title end'
+    else
+        python3 -c "
+import sys, json
+for w in json.loads(sys.argv[1]):
+    prefix = '[minimized] ' if w['minimized'] else ''
+    print(prefix + (w['title'] or ''))
+" "$json"
+    fi
+}
+
+_wmctrl_list() {
+    # wmctrl -l: WINID DESKTOP HOSTNAME TITLE...
+    wmctrl -l 2>/dev/null | awk '{$1=$2=$3=""; print substr($0,4)}'
+}
+
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _gdbus_list && exit 0
+fi
+
+if command -v wmctrl &>/dev/null; then
+    _wmctrl_list && exit 0
+fi
+
+echo "No method available (need gdbus on Wayland or wmctrl on X11)" >&2
+exit 1

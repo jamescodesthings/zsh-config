@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# List all windows with class, title, and minimized state. Useful for debugging focus scripts.
+# Usage: list-windows
+
+_gdbus_list() {
+    local js="JSON.stringify(global.get_window_actors().map(a=>a.meta_window).map(w=>({class:w.get_wm_class(),title:w.get_title(),minimized:w.minimized})))"
+    local result
+    result=$(gdbus call --session \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell \
+        --method org.gnome.Shell.Eval \
+        "$js" 2>/dev/null) || return 1
+    [[ "$result" != "(true,"* ]] && return 1
+    local json
+    json=$(printf '%s' "$result" | sed "s/^(true, '//;s/')\$//")
+    if command -v jq &>/dev/null; then
+        printf '%s' "$json" | jq -r '
+            ["CLASS","TITLE","MINIMIZED"],
+            ["-----","-----","---------"],
+            (.[] | [.class, (.title // ""), (if .minimized then "yes" else "no" end)])
+            | @tsv' | column -t -s $'\t'
+    else
+        python3 -c "
+import sys, json
+windows = json.loads(sys.argv[1])
+fmt = '{:<30} {:<50} {}'
+print(fmt.format('CLASS', 'TITLE', 'MINIMIZED'))
+print(fmt.format('-----', '-----', '---------'))
+for w in windows:
+    print(fmt.format(w['class'] or '', (w['title'] or '')[:49], 'yes' if w['minimized'] else 'no'))
+" "$json"
+    fi
+}
+
+_wmctrl_list() {
+    # wmctrl -l -x: WINID DESKTOP WMCLASS HOSTNAME TITLE...
+    printf '%-30s %-50s %s\n' "CLASS" "TITLE" "MINIMIZED"
+    printf '%-30s %-50s %s\n' "-----" "-----" "---------"
+    wmctrl -l -x 2>/dev/null | while read -r _wid _desk wclass _host title; do
+        printf '%-30s %-50s %s\n' "$wclass" "$title" "unknown"
+    done
+}
+
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _gdbus_list && exit 0
+fi
+
+if command -v wmctrl &>/dev/null; then
+    _wmctrl_list && exit 0
+fi
+
+echo "No method available (need gdbus on Wayland or wmctrl on X11)" >&2
+exit 1

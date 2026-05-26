@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Diagnose window management environment: checks display, tools, and gdbus Eval status.
+# Usage: window-debug-env
+
+ok()   { printf "  [ok]   %s\n" "$*"; }
+warn() { printf "  [warn] %s\n" "$*"; }
+fail() { printf "  [fail] %s\n" "$*"; }
+
+echo "=== Display ==="
+[[ -n "${WAYLAND_DISPLAY:-}" ]] && ok "Wayland: $WAYLAND_DISPLAY" || warn "WAYLAND_DISPLAY not set"
+[[ -n "${DISPLAY:-}" ]]         && ok "X11: $DISPLAY"             || warn "DISPLAY not set"
+
+echo ""
+echo "=== Tools ==="
+for tool in gdbus wmctrl xdotool xprop; do
+    command -v "$tool" &>/dev/null && ok "$tool: $(command -v $tool)" || fail "$tool: not found"
+done
+
+echo ""
+echo "=== gdbus Eval (org.gnome.Shell.Eval) ==="
+if command -v gdbus &>/dev/null && [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+    result=$(gdbus call --session \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell \
+        --method org.gnome.Shell.Eval \
+        "1+1" 2>&1)
+    if [[ "$result" == "(true,"* ]]; then
+        ok "Eval works — focus-window-by-* scripts will function"
+    elif [[ "$result" == "(false,"* ]]; then
+        fail "Eval disabled (returns false) — focus scripts will not work"
+        warn "Enable via Looking Glass: Alt+F2 → 'lg' → type: global.context.unsafe_mode = true"
+    else
+        fail "Eval error: $result"
+    fi
+else
+    warn "gdbus or Wayland not available — skipping Eval check"
+fi
+
+echo ""
+echo "=== gdbus Introspect (org.gnome.Shell.Introspect.GetWindows) ==="
+if command -v gdbus &>/dev/null; then
+    result=$(gdbus call --session \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell/Introspect \
+        --method org.gnome.Shell.Introspect.GetWindows 2>&1)
+    if [[ "$result" == *"AccessDenied"* ]]; then
+        fail "GetWindows: AccessDenied"
+    elif [[ "$result" == *"Error"* ]]; then
+        fail "GetWindows: $result"
+    else
+        ok "GetWindows works"
+    fi
+fi
+
+echo ""
+echo "=== XWayland windows (xdotool+xprop) ==="
+if command -v xdotool &>/dev/null && command -v xprop &>/dev/null; then
+    count=0
+    while IFS= read -r wid; do
+        cls=$(xprop -id "$wid" WM_CLASS 2>/dev/null | grep -v "not found" | grep -oP '"[^"]+"' | head -1 | tr -d '"')
+        name=$(xdotool getwindowname "$wid" 2>/dev/null)
+        [[ -n "$cls" ]] || continue
+        printf "  %s  %-25s  %s\n" "$wid" "$cls" "$name"
+        ((count++))
+    done < <(xdotool search --class "" 2>/dev/null)
+    [[ $count -eq 0 ]] && warn "No XWayland windows with WM_CLASS found"
+else
+    warn "xdotool or xprop not available"
+fi
