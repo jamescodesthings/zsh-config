@@ -55,7 +55,7 @@ if is not available "glow"; then
   if is osx; then
     brew install glow
   elif is linux; then
-    apti glow
+    sudo apt update && sudo apt install -y glow
   else
     echo "Unsupported OS, please install glow manually and try again"
     exit 1
