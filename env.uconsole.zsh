@@ -13,3 +13,7 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 export PICO8="/home/james/projects/pico8bin/pico8"
 
+
+
+export CHEATSHEET_DIR="/home/james/projects/personal/cheatsheets"
+
