@@ -28,7 +28,11 @@ source $CUSTOM_DIR/zsh_options.zsh
 source $CUSTOM_DIR/custom_functions.zsh
 source $CUSTOM_DIR/env.zsh
 source $CUSTOM_DIR/load_zinit.zsh
-source $CUSTOM_DIR/p10k.prompt.zsh
+if is equal "$(get-hostname)" "zerocalc"; then
+  source $CUSTOM_DIR/p10k.prompt.minimal.zsh
+else
+  source $CUSTOM_DIR/p10k.prompt.zsh
+fi
 source $CUSTOM_DIR/p10k.zsh
 source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/completions.zsh
