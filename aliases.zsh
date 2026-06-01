@@ -85,15 +85,15 @@ if is available yank-cli; then
 fi
 
 if is available code; then
-  alias zshconfig='code ~/.custom'
+  alias zshconfig='code $CUSTOM_DIR'
 elif is available micro; then
-  alias zshconfig='micro ~/.custom'
+  alias zshconfig='micro $CUSTOM_DIR/.zshrc'
 elif is available subl; then
-  alias zshconfig='subl ~/.custom'
+  alias zshconfig='subl $CUSTOM_DIR'
 elif is available nano; then
-  alias zshconfig='nano ~/.zshrc'
+  alias zshconfig='nano $CUSTOM_DIR/.zshrc'
 else
-  alias zshconfig='open ~/.custom'
+  alias zshconfig='open $CUSTOM_DIR'
 fi
 
 # Programs/Application specific

@@ -1,7 +1,0 @@
-up.localhost {
-	respond "Hello, world!"
-}
-
-portal.localhost {
-	reverse_proxy james-ubuntu:5000
-}
