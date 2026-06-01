@@ -1,0 +1,59 @@
+#!/usr/bin/env zsh
+
+# The directory this install script runs from
+SOURCE_DIR=${0:a:h}
+
+GIT_REPO="git@github.com:jamescodesthings/cheatsheets.git"
+
+if [[ -z "$HOME" ]]; then
+  echo '$HOME not set, set it before running this script'
+  exit 1
+fi
+
+source ./functions/is
+source ./functions/get-hostname
+
+if is equal "$CHEATSHEET_DIR" ""; then
+  echo "CHEATSHEET_DIR not set, trying to find a good default location for it..."
+  if is dir "$HOME/projects/personal"; then
+    echo "Found $HOME/projects/personal, using that as the base for CHEATSHEET_DIR"
+    export CHEATSHEET_DIR="$HOME/projects/personal/cheatsheets"
+  elif is dir "$HOME/projects"; then
+    echo "Found $HOME/projects, using that as the base for CHEATSHEET_DIR"
+    export CHEATSHEET_DIR="$HOME/projects/cheatsheets"
+  else
+    echo 'CHEATSHEET_DIR not set and no projects directory found, set it before running this script'
+    exit 1
+  fi
+fi
+
+HOSTNAME=$(get-hostname)
+ENV_FILE="$SOURCE_DIR/env.$HOSTNAME.zsh"
+
+# if the cheatsheet dir doesn't exist, clone the repo
+if [[ ! -d "$CHEATSHEET_DIR" ]]; then
+  echo "Cheatsheet directory does not exist at $CHEATSHEET_DIR, cloning it from $GIT_REPO"
+  git clone "$GIT_REPO" "$CHEATSHEET_DIR"
+  echo "Cloned cheatsheets repo to $CHEATSHEET_DIR"
+else
+  echo "Cheatsheet directory already exists at $CHEATSHEET_DIR, updating it instead"
+  git -C "$CHEATSHEET_DIR" pull
+fi
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Environment file not found at $ENV_FILE, create one based on env.example.zsh and set CHEATSHEET_DIR in it before running this script"
+  exit 1
+fi
+# if the env file doesn't have "CHEATSHEET_DIR" in it, add it to the end of the file
+if ! grep -q "CHEATSHEET_DIR" "$ENV_FILE"; then
+  echo "Adding CHEATSHEET_DIR to $ENV_FILE"
+  echo "\n\nexport CHEATSHEET_DIR=\"$CHEATSHEET_DIR\"\n" >> "$ENV_FILE"
+fi
+
+# install ./cheat-bin to /usr/local/bin
+for file in "$SOURCE_DIR"/cheat-bin/*; do
+  if [[ -f "$file" && -x "$file" ]]; then
+    echo "Installing $file to /usr/local/bin"
+    sudo ln -sf "$file" "/usr/local/bin/$(basename "$file")"
+  fi
+done

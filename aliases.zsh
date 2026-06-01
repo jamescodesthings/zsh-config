@@ -323,9 +323,11 @@ alias new-love="new --lang love --name"
 alias localai='local-ai'
 
 if is not empty "$PICO8"; then
-  alias pico="nohup $PICO8 &"
+  alias pico="nohup $PICO8 -width 512 -height 512 -window_x 0 -window_y 0 &"
+  alias pico-8="pico"
+  alias pico8="pico"
 
   function picoh() {
-    nohup $PICO8 -root_path "$(pwd)" &
+    nohup $PICO8 -width 512 -height 512 -window_x 0 -window_y 0 -root_path "$(pwd)" &
   }
 fi
