@@ -86,6 +86,8 @@ fi
 
 if is available code; then
   alias zshconfig='code ~/.custom'
+elif is available micro; then
+  alias zshconfig='micro ~/.custom'
 elif is available subl; then
   alias zshconfig='subl ~/.custom'
 elif is available nano; then
