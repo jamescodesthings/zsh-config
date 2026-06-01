@@ -1,0 +1,80 @@
+#!/usr/bin/env zsh
+
+# The directory this uninstall script runs from
+SOURCE_DIR=${0:a:h}
+
+GIT_REPO_SSH="git@github.com:jamescodesthings/cheatsheets.git"
+GIT_REPO_HTTPS="https://github.com/jamescodesthings/cheatsheets.git"
+
+if [[ -z "$HOME" ]]; then
+  echo '$HOME not set, set it before running this script'
+  exit 1
+fi
+
+source "$SOURCE_DIR/functions/is"
+source "$SOURCE_DIR/functions/get-hostname"
+
+if is equal "$CHEATSHEET_DIR" ""; then
+  echo "CHEATSHEET_DIR not set, trying to find a good default location for it..."
+  if is dir "$HOME/projects/personal"; then
+    echo "Found $HOME/projects/personal, using that as the base for CHEATSHEET_DIR"
+    export CHEATSHEET_DIR="$HOME/projects/personal/cheatsheets"
+  elif is dir "$HOME/projects"; then
+    echo "Found $HOME/projects, using that as the base for CHEATSHEET_DIR"
+    export CHEATSHEET_DIR="$HOME/projects/cheatsheets"
+  else
+    echo 'CHEATSHEET_DIR not set and no projects directory found, set it before running this script'
+    exit 1
+  fi
+fi
+
+HOSTNAME=$(get-hostname)
+ENV_FILE="$SOURCE_DIR/env.$HOSTNAME.zsh"
+ENV_EXPORT_LINE="export CHEATSHEET_DIR=\"$CHEATSHEET_DIR\""
+
+echo "Preparing to uninstall cheatsheets setup"
+echo "CHEATSHEET_DIR: $CHEATSHEET_DIR"
+echo "ENV_FILE: $ENV_FILE"
+
+# Remove only the exact export line we can safely verify.
+if [[ -f "$ENV_FILE" ]]; then
+  if grep -Fxq "$ENV_EXPORT_LINE" "$ENV_FILE"; then
+    ENV_BACKUP="$ENV_FILE.bak.$(date +%Y%m%d%H%M%S)"
+    cp "$ENV_FILE" "$ENV_BACKUP"
+    awk -v target="$ENV_EXPORT_LINE" '$0 != target { print }' "$ENV_FILE" > "$ENV_FILE.tmp" && mv "$ENV_FILE.tmp" "$ENV_FILE"
+    echo "Removed CHEATSHEET_DIR export from $ENV_FILE"
+    echo "Backup created at $ENV_BACKUP"
+  else
+    echo "No exact CHEATSHEET_DIR export line found in $ENV_FILE, leaving it unchanged"
+  fi
+else
+  echo "Environment file not found at $ENV_FILE, skipping env cleanup"
+fi
+
+# Only archive the cheatsheets directory if it appears to be the installer repo.
+if [[ -d "$CHEATSHEET_DIR" ]]; then
+  can_archive=0
+  if git -C "$CHEATSHEET_DIR" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    origin_url=$(git -C "$CHEATSHEET_DIR" remote get-url origin 2> /dev/null)
+    if [[ "$origin_url" == "$GIT_REPO_SSH" || "$origin_url" == "$GIT_REPO_HTTPS" ]]; then
+      can_archive=1
+    fi
+  fi
+
+  if [[ $can_archive -eq 1 ]]; then
+    read "reply?Archive $CHEATSHEET_DIR to a timestamped backup? [y/N] "
+    if [[ "$reply" =~ ^[Yy]$ ]]; then
+      ARCHIVE_PATH="$CHEATSHEET_DIR.uninstalled.$(date +%Y%m%d%H%M%S)"
+      mv "$CHEATSHEET_DIR" "$ARCHIVE_PATH"
+      echo "Archived cheatsheets directory to $ARCHIVE_PATH"
+    else
+      echo "Skipped directory archival"
+    fi
+  else
+    echo "Directory exists but does not match expected cheatsheets git origin, skipping"
+  fi
+else
+  echo "No cheatsheets directory found at $CHEATSHEET_DIR"
+fi
+
+echo "Note: glow may have been installed by install-cheatsheets, but this script does not uninstall it for safety"

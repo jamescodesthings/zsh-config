@@ -1,0 +1,20 @@
+#compdef cheat
+
+_cheat() {
+  local -a cheatsheets
+
+  if [[ -n "$CHEATSHEET_DIR" && -d "$CHEATSHEET_DIR" ]]; then
+    cheatsheets=("${(@f)$(print -rl -- "$CHEATSHEET_DIR"/*.md(N:t:r))}")
+  fi
+
+  if (( CURRENT == 2 )); then
+    if (( ${#cheatsheets} > 0 )); then
+      compadd -- "${cheatsheets[@]}"
+    else
+      _message 'no cheatsheets found in $CHEATSHEET_DIR'
+    fi
+    return
+  fi
+
+  _files
+}

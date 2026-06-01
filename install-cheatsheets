@@ -50,10 +50,14 @@ if ! grep -q "CHEATSHEET_DIR" "$ENV_FILE"; then
   echo "\n\nexport CHEATSHEET_DIR=\"$CHEATSHEET_DIR\"\n" >> "$ENV_FILE"
 fi
 
-# install ./cheat-bin to /usr/local/bin
-for file in "$SOURCE_DIR"/cheat-bin/*; do
-  if [[ -f "$file" && -x "$file" ]]; then
-    echo "Installing $file to /usr/local/bin"
-    sudo ln -sf "$file" "/usr/local/bin/$(basename "$file")"
+if is not available "glow"; then
+  echo "glow not found, installing it..."
+  if is osx; then
+    brew install glow
+  elif is linux; then
+    apti glow
+  else
+    echo "Unsupported OS, please install glow manually and try again"
+    exit 1
   fi
-done
+fi
