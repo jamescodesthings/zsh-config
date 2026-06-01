@@ -56,6 +56,10 @@ if is not available "glow"; then
     brew install glow
   elif is linux; then
     sudo apt update && sudo apt install -y glow
+    if [ $? -ne 0 ]; then
+      echo "Failed to install glow using apt check out https://github.com/charmbracelet/glow for installation instructions"
+      exit 1
+    fi
   else
     echo "Unsupported OS, please install glow manually and try again"
     exit 1
