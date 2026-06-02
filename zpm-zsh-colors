@@ -215,6 +215,10 @@ if [[ -z "$NO_COLOR" && "$CLICOLOR" != 0 ]]; then
     raw_bg_light_cyan '46;106' # Do not use this. Just for compatibility
 
   )
+  for _zc_key in ${(k)c}; do
+    [[ "$_zc_key" != raw_* ]] && c[$_zc_key]=$'\e'${c[$_zc_key]}
+  done
+  unset _zc_key
 else
   export CLICOLOR=0
   export NO_COLOR=1
