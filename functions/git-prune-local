@@ -1,50 +1,32 @@
 #!/usr/bin/env zsh
 
-function git-prune-local_prune() {
-  echo "$c[info]The following branches will be deleted$c[reset]"
-
-  git-prune-local_list
-
-  if confirm; then
-    echo "$c[success]Deleting stale branches$c[reset]"
-    git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
-  fi
-}
-
 function git-prune-local_list() {
   git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}'
 }
 
 function git-prune-local() {
-  local DEPS=(
-    git
-    grep
-    awk
-    xargs
-    confirm
-  )
-
+  local DEPS=(git grep awk xargs confirm)
   if ! deps $DEPS; then
-    return
+    return 1
   fi
 
-  if is empty "$1" || has-flag '--help' $@; then
-    echo "$c[h1]git prune local$c[reset]"
-    echo "$c[lead]Deletes local branches that have been deleted from the remote$c[reset]"
+  if is equal "$1" "--help"; then
+    echo "$c[h1]git-prune-local$c[reset]"
     echo ""
-    echo "$c[h2]Usage:$c[reset]"
-    echo "git-prune-local $c[flag][--help]$c[reset]"
+    echo "$c[lead]deletes local branches that have been deleted from the remote.$c[reset]"
     echo ""
-    echo "$c[h2]Example:$c[reset]"
+    echo "$c[h2]usage$c[reset]"
+    echo "  git-prune-local $c[flag][--help]$c[reset]"
+    return 0
   fi
 
-  echo "$c[info]The following branches will be deleted:$c[reset]"
-
+  echo "$c[info]the following branches will be deleted:$c[reset]"
   git-prune-local_list
 
-  if confirm "$c[warning]Are you sure you want to delete these branches?$c[reset]"; then
-    echo "$c[success]Deleting stale branches$c[reset]"
+  if confirm "$c[warn]are you sure you want to delete these branches?$c[reset]"; then
+    echo "$c[info]deleting:$c[reset] stale branches"
     git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
+    echo "$c[success]success:$c[reset] stale branches deleted"
   fi
 }
 

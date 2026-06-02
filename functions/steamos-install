@@ -3,10 +3,6 @@
 DESKTOP="${DESKTOP:-"$HOME/Desktop"}"
 CUSTOM_STEAM="${CUSTOM_STEAM:-"$CUSTOM_DIR/steamos"}"
 
-_steamos_install_description="Installs stuff wiped by SteamOS update"
-_steamos_install_flag_names[1]="--help"
-_steamos_install_flag_messages[1]="shows help"
-
 function _steamos_install_subfn() {
   echo "$c[info]Installing SteamOS Stuff$c[reset]"
   echo "$c[default]Will need sudo!$c[reset]"
@@ -34,9 +30,7 @@ function _steamos_install_subfn() {
   echo "$c[info]Pacman Keys:$c[reset]"
   sudo pacman-key --init
   sudo pacman-key --populate archlinux
-  # sudo pacman --refresh-keys
   echo "$c[success]Done$c[reset]"
-
 
   echo "$c[info]Update Pacman:$c[reset]"
   sudo pacman -Syu --overwrite \* --noconfirm
@@ -45,7 +39,6 @@ function _steamos_install_subfn() {
   echo "$c[info]Konsole:$c[reset]"
   if is not available "konsole"; then
     sudo pacman -S --overwrite \* konsole --noconfirm
-
     echo "$c[success]Done$c[reset]"
   else
     echo "$c[success]Already Installed$c[reset]"
@@ -54,19 +47,13 @@ function _steamos_install_subfn() {
   echo "$c[info]ZSH:$c[reset]"
   if is not available "zsh"; then
     sudo pacman -S --overwrite \* zsh --noconfirm
-
-    # Ensure it's on shell
     ZSH=$(which zsh)
-
     cat /etc/shells | grep $(which zsh)
-
     if is not equal "$?" "0"; then
       sudo echo "$ZSH" >> /etc/shells
     fi
-
     chsh -s "$ZSH"
     sudo chsh -s "$ZSH"
-
     echo "$c[success]Done$c[reset]"
   else
     echo "$c[success]Already Installed$c[reset]"
@@ -75,7 +62,6 @@ function _steamos_install_subfn() {
   echo "$c[info]Sublime:$c[reset]"
   if is not available "sublime"; then
     sudo pacman -S --overwrite \* sublime-text --noconfirm
-
     echo "$c[success]Done$c[reset]"
   else
     echo "$c[success]Already Installed$c[reset]"
@@ -85,7 +71,6 @@ function _steamos_install_subfn() {
   if is not available "x0vncserver"; then
     sudo pacman -S --overwrite \* tigervnc --noconfirm
     sudo pacman -S --overwrite \* xorg-xinit --noconfirm
-
     echo "$c[success]Done$c[reset]"
   else
     echo "$c[success]Already Installed$c[reset]"
@@ -94,17 +79,14 @@ function _steamos_install_subfn() {
   echo "$c[info]VNC Password:$c[reset]"
   if is not existing "$HOME/.vnc/passwd"; then
     sudo vncpasswd ~/.vnc/passwd
-
     echo "$c[success]Done$c[reset]"
   else
     echo "$c[success]Already Installed$c[reset]"
   fi
 
-
   echo "$c[info]base-devel:$c[reset]"
   sudo pacman -S base-devel --overwrite \* --noconfirm
   echo "$c[success]Done$c[reset]"
-
 
   echo "$c[info]fzf:$c[reset]"
   sudo pacman -S fzf --overwrite \* --noconfirm
@@ -117,33 +99,27 @@ function _steamos_install_subfn() {
   $(cd "$HOME/projects/yay-bin" && makepkg -si)
   echo "$c[success]Done$c[reset]"
 
-
-
-
   echo "$c[success]Finished running all post-install steps$c[reset]"
 }
 
 function steamos-install() {
-  local DEPS=(
-    is
-  )
-
+  local DEPS=(is)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if has-flag '--help' $@; then
-    print-help \
-      "$0" \
-      "$_steamos_install_description" \
-      "_steamos_install_flag_names" \
-      "_steamos_install_flag_messages" \
-      "$_steamos_install_positional" \
-      "$_steamos_install_positional_desc"
+  if is equal "$1" "--help"; then
+    echo "$c[h1]steamos-install$c[reset]"
+    echo ""
+    echo "$c[lead]installs packages and configuration wiped by a steamos update.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  steamos-install $c[flag][--help]$c[reset]"
     return 0
   fi
-    _steamos_install_subfn "$(flag-value '--sub' $@)"
-    return $?
+
+  _steamos_install_subfn
+  return $?
 }
 
 steamos-install "$@"
