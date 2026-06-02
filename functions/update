@@ -1,0 +1,14 @@
+#!/usr/bin/env zsh
+
+function update() {
+  REPO_DIR=$CUSTOM_DIR/repo
+
+  if is not dir "$REPO_DIR"; then
+    echo "No repository found at $REPO_DIR. Please run 'install' first."
+    return 1
+  fi
+
+  $REPO_DIR/update
+}
+
+update "$@"

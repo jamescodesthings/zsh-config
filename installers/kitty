@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+INSTALL_SCRIPT_SOURCE="https://sw.kovidgoyal.net/kitty/installer.sh"
+CONFIG_SOURCE="$REPO_DIR/configs/kitty"
+
+OSX_INSTALL_LOCATION="/Applications/kitty.app"
+OSX_CONFIG_DEST="$HOME/Library/Preferences/kitty"
+LINUX_CONFIG_DEST="$HOME/.config/kitty"
+
+if is not available curl; then
+  echo "$c[error]failed:$c[reset] curl is required to install kitty, please install it and try again"
+  exit 1
+fi
+
+if is available kitty || is existing "$OSX_INSTALL_LOCATION"; then
+  echo "$c[info]skipping:$c[reset] kitty is already installed"
+else
+  echo "$c[info]installing:$c[reset] kitty from $INSTALL_SCRIPT_SOURCE"
+  curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
+  echo "$c[success]success:$c[reset] kitty installed"
+fi
+
+if is osx; then
+  CONFIG_DEST="$OSX_CONFIG_DEST"
+else
+  CONFIG_DEST="$LINUX_CONFIG_DEST"
+fi
+
+if is not dir "$CONFIG_DEST"; then
+  echo "$c[info]creating:$c[reset] kitty config directory at $CONFIG_DEST"
+  mkdir -p "$CONFIG_DEST"
+else
+  echo "$c[info]skipping:$c[reset] kitty config directory already exists at $CONFIG_DEST"
+fi
+
+install-link "$CONFIG_SOURCE/kitty.conf" "$CONFIG_DEST/kitty.conf"
+install-link "$CONFIG_SOURCE/current-theme.conf" "$CONFIG_DEST/current-theme.conf"
