@@ -26,7 +26,7 @@ if is not available micro; then
   curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
   sudo mv ./micro /usr/local/bin/
   sudo chmod +x /usr/local/bin/micro
-  echo "$c[success]success:$c[reset] Installed micro to /usr/local/bin/micro"
+  echo "$c[success]success:$c[reset] micro installed to /usr/local/bin/micro"
 else
   echo "$c[info]skipping:$c[reset] micro is already installed"
 fi

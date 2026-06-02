@@ -4,54 +4,59 @@ source "${0:a:h}/_stub"
 
 if is available asdf; then
   if is equal "$1" "--force"; then
-    echo "Forcing re-installation of asdf"
+    echo "$c[info]reinstalling:$c[reset] asdf (--force)"
   else
-    echo "asdf is already installed, skipping installation"
+    echo "$c[info]skipping:$c[reset] asdf already installed"
     exit 0
   fi
 fi
 
 if is available brew; then
-  echo "Installing asdf using Homebrew"
   if is equal "$1" "--force"; then
-    echo "Forcing re-installation of asdf using Homebrew"
+    echo "$c[info]reinstalling:$c[reset] asdf via homebrew"
     brew reinstall asdf
     if is not equal "$?" "0"; then
-      echo "Failed to reinstall asdf using Homebrew, try running 'brew reinstall asdf' manually"
+      echo "$c[error]error:$c[reset] homebrew reinstall failed"
+      echo "try: $c[em]brew reinstall asdf$c[reset]"
       exit 1
     fi
-    exit 0
-  else
-    brew install asdf
-    if is not equal "$?" "0"; then
-      echo "Failed to install asdf using Homebrew, try running 'brew install asdf' manually"
-      exit 1
-    fi
+    echo "$c[success]success:$c[reset] asdf reinstalled via homebrew"
     exit 0
   fi
+
+  echo "$c[info]installing:$c[reset] asdf via homebrew"
+  brew install asdf
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] homebrew install failed"
+    echo "try: $c[em]brew install asdf$c[reset]"
+    exit 1
+  fi
+  echo "$c[success]success:$c[reset] asdf installed via homebrew"
+  exit 0
 fi
 
 if is available apt; then
-  echo "Installing asdf using apt and latest release from GitHub"
+  echo "$c[info]installing:$c[reset] asdf dependencies via apt"
   sudo apt install -y git bash
   if is not equal "$?" "0"; then
-    echo "Failed to install required dependencies (git, bash)"
-    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    echo "$c[error]error:$c[reset] failed to install dependencies (git, bash)"
+    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
     exit 1
   fi
 
+  echo "$c[info]downloading:$c[reset] latest asdf release from github"
   download-latest-release asdf-vm/asdf
   if is not equal "$?" "0"; then
-    echo "Failed to download asdf installer"
-    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    echo "$c[error]error:$c[reset] download failed"
+    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
     exit 1
   fi
 
   INSTALLER_CANDIDATES=("$CUSTOM_DIR/.installers"/asdf-*.tar.gz(N))
   ASDF_INSTALLER="$INSTALLER_CANDIDATES[1]"
   if is empty "$ASDF_INSTALLER"; then
-    echo "Failed to download asdf installer"
-    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    echo "$c[error]error:$c[reset] installer file not found after download"
+    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
     exit 1
   fi
 
@@ -59,32 +64,32 @@ if is available apt; then
   rm -rf "$EXTRACT_DIR"
   mkdir -p "$EXTRACT_DIR"
 
-  echo "Installing asdf from $ASDF_INSTALLER"
+  echo "$c[info]extracting:$c[reset] $ASDF_INSTALLER"
   tar -xzf "$ASDF_INSTALLER" -C "$EXTRACT_DIR"
   if is not equal "$?" "0"; then
-    echo "Failed to extract asdf installer"
-    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    echo "$c[error]error:$c[reset] extraction failed"
+    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
     exit 1
   fi
 
   ASDF_EXECUTABLE=$(find "$EXTRACT_DIR" -type f -name "asdf" 2>/dev/null | head -n 1)
   if is empty "$ASDF_EXECUTABLE"; then
-    echo "Failed to find asdf executable in $EXTRACT_DIR"
+    echo "$c[error]error:$c[reset] asdf executable not found in extracted archive"
     exit 1
   fi
 
-  echo "Moving $ASDF_EXECUTABLE to /usr/local/bin/asdf"
+  echo "$c[info]installing:$c[reset] asdf to /usr/local/bin"
   sudo install -m 0755 "$ASDF_EXECUTABLE" "/usr/local/bin/asdf"
   if is not equal "$?" "0"; then
-    echo "Failed to move asdf executable to /usr/local/bin"
-    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    echo "$c[error]error:$c[reset] could not install to /usr/local/bin"
+    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
     exit 1
   fi
 
-  echo "asdf installed successfully"
+  echo "$c[success]success:$c[reset] asdf installed"
   exit 0
 fi
 
-echo "Could not find an install method"
-echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+echo "$c[error]error:$c[reset] no supported package manager found (brew or apt)"
+echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
 exit 1
