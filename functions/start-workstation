@@ -22,7 +22,7 @@ function _start_workstation_gh_logged_in() {
   STATUS=$(gh auth status 2>&1)
 
   if is not equal "$?" "0"; then
-    echo "$c[warn]Github CLI needs auth$c[reset]."
+    echo "$c[warn]github cli needs auth.$c[reset]"
     echo "$c[info]run $c[reset]gh auth login$c[info] then try again$c[reset]:"
     echo "$STATUS"
     return 1

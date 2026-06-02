@@ -3,24 +3,26 @@
 source "${0:a:h}/_stub"
 
 if is available eza; then
-  echo "$c[info]skipping: $c[reset]eza is already installed, skipping"
+  echo "$c[info]skipping:$c[reset] eza already installed"
   exit 0
 fi
 
 if is osx; then
-  echo "$c[info]Installing eza with Homebrew$c[reset]"
+  echo "$c[info]installing:$c[reset] eza via homebrew"
   brew install eza
   if is equal "$?" "0"; then
-    echo "$c[success]success:$c[reset] eza install complete"
+    echo "$c[success]success:$c[reset] eza installed"
   else
-    echo "$c[error]failed to install eza with Homebrew$c[reset]"
+    echo "$c[error]error:$c[reset] homebrew install failed"
     echo ""
     echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
+    exit 1
+  fi
   exit 0
 fi
 
 if is linux; then
-  echo "$c[info]Installing eza with apt$c[reset]"
+  echo "$c[info]installing:$c[reset] eza via apt"
   sudo apt update || exit 1
   sudo apt install -y gpg || exit 1
   sudo mkdir -p /etc/apt/keyrings || exit 1
@@ -30,10 +32,16 @@ if is linux; then
   sudo apt update || exit 1
   sudo apt install -y eza
   if is equal "$?" "0"; then
-    echo "$c[success]success:$c[reset] eza install complete"
+    echo "$c[success]success:$c[reset] eza installed"
   else
-    echo "$c[error]failed to install eza with apt$c[reset]"
+    echo "$c[error]error:$c[reset] apt install failed"
     echo ""
     echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
+    exit 1
+  fi
   exit 0
 fi
+
+echo "$c[error]error:$c[reset] unsupported os"
+echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
+exit 1

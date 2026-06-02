@@ -41,7 +41,7 @@ function download-latest-release() {
   if is empty "$ASSET_URL"; then
     echo "Failed to get asset URL for $OWNER/$REPO"
     echo "urls:"
-    curl -s "https://api.github.com/repos/$OWNER/$REPO/releases/latest" | grep "browser_download_url" | grep -v ".md5" | cut -d '"'
+    curl -s "https://api.github.com/repos/$OWNER/$REPO/releases/latest" | grep "browser_download_url" | grep -v ".md5" | cut -d '"' -f 4
     return 1
   fi
   echo "Asset URL: $ASSET_URL"

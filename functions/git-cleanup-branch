@@ -41,3 +41,5 @@ function git-cleanup-branch() {
     return 1
   fi
 }
+
+git-cleanup-branch "$@"

@@ -28,11 +28,6 @@ function history-purge() {
 
   local POSITIONAL="$@[-1]"
 
-  if has-flag '--sub' $@; then
-    _hist_purge_purge "$(flag-value '--sub' $@)"
-#    return $?
-  fi
-
   if is not empty "$POSITIONAL"; then
     echo "Will remove history items containing $c[param]$POSITIONAL$c[reset]"
     if confirm; then

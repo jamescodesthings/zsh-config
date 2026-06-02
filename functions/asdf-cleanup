@@ -6,7 +6,7 @@ function asdf-cleanup() {
     echo "$c[h1]Cleanup old versions of asdf plugins$c[reset]"
     echo "$c[h2]Usage:$c[reset] asdf-cleanup $c[flag][--help]$c[reset]"
     echo "asdf-cleanup [--help]"
-    return =
+    return 0
   fi
 
   echo "$c[h1]Cleaning up old versions of asdf plugins$c[reset]"
