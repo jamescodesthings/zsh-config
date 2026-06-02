@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+if is available eza; then
+  echo "$c[info]skipping: $c[reset]eza is already installed, skipping"
+  exit 0
+fi
+
+if is osx; then
+  echo "$c[info]Installing eza with Homebrew$c[reset]"
+  brew install eza
+  if is equal "$?" "0"; then
+    echo "$c[success]success:$c[reset] eza install complete"
+  else
+    echo "$c[error]failed to install eza with Homebrew$c[reset]"
+    echo ""
+    echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
+  exit 0
+fi
+
+if is linux; then
+  echo "$c[info]Installing eza with apt$c[reset]"
+  sudo apt update || exit 1
+  sudo apt install -y gpg || exit 1
+  sudo mkdir -p /etc/apt/keyrings || exit 1
+  wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg || exit 1
+  echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list || exit 1
+  sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list || exit 1
+  sudo apt update || exit 1
+  sudo apt install -y eza
+  if is equal "$?" "0"; then
+    echo "$c[success]success:$c[reset] eza install complete"
+  else
+    echo "$c[error]failed to install eza with apt$c[reset]"
+    echo ""
+    echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
+  exit 0
+fi

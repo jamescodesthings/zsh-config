@@ -13,7 +13,7 @@ _start_workstation_flag_messages[1]="shows help"
 
 function _start_workstation_local_dir() {
   if is not existing "$PROJECT_DIR"; then
-    echo "$cs[info]Creating $PROJECT_DIR$cs[reset]"
+    echo "$c[info]Creating $PROJECT_DIR$c[reset]"
     mkdir -p $PROJECT_DIR
   fi
 }
@@ -22,8 +22,8 @@ function _start_workstation_gh_logged_in() {
   STATUS=$(gh auth status 2>&1)
 
   if is not equal "$?" "0"; then
-    echo "$cs[warn]Github CLI needs auth$cs[reset]."
-    echo "$cs[info]run $cs[reset]gh auth login$cs[info] then try again$cs[reset]:"
+    echo "$c[warn]Github CLI needs auth$c[reset]."
+    echo "$c[info]run $c[reset]gh auth login$c[info] then try again$c[reset]:"
     echo "$STATUS"
     return 1
   fi
@@ -33,7 +33,7 @@ function _start_workstation_repo() {
   if is not existing "$PROJECT_DIR/$GH_REPO"; then
     OUTPUT=$(cd $PROJECT_DIR && gh repo clone $ORG/$GH_REPO 2>&1)
     if is not equal "$?" "0"; then
-      echo "$cs[error]Could not clone $cs[reset]$GH_REPO:"
+      echo "$c[error]Could not clone $c[reset]$GH_REPO:"
       echo $OUTPUT
       return 1
     fi
@@ -44,7 +44,7 @@ function _start_workstation_run_action() {
   # echo "$PROJECT_DIR/$GH_REPO: $WORKFLOW_ID ($USER_NAME)"
   OUTPUT=$(cd $PROJECT_DIR/$GH_REPO && gh workflow run "$WORKFLOW_ID" -f name=$USER_NAME 2>&1)
   if is not equal "$?" "0"; then
-    echo "$cs[error]Could not run workflow$cs[reset]:"
+    echo "$c[error]Could not run workflow$c[reset]:"
     echo $OUTPUT
     return 1
   fi
@@ -77,7 +77,7 @@ function start-workstation() {
     return 1
   fi
 
-  echo "$cs[success]Workstation Started$cs[reset]"
+  echo "$c[success]Workstation Started$c[reset]"
 }
 
 start-workstation "$@"

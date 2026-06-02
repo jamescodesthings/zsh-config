@@ -12,11 +12,11 @@ _md_flag_messages[2]='Just `mkdir -p`s'
 
 function _md_subfn() {
   if is empty "$1"; then
-    echo "$cs[warn]Nothing passed to subfn$c[reset]"
+    echo "$c[warn]Nothing passed to subfn$c[reset]"
     return 1
   fi
 
-  echo "$cs[success]subfn$c[reset] $1"
+  echo "$c[success]subfn$c[reset] $1"
 }
 
 function md() {
@@ -48,9 +48,9 @@ function md() {
   mkdir -p "$DIRPATH"
   if is not equal $NO_FOLLOW 0; then
     cd "$DIRPATH"
-    echo "$cs[success]Created $DIRPATH and followed$cs[reset]"
+    echo "$c[success]Created $DIRPATH and followed$c[reset]"
   else
-    echo "$cs[success]Created $DIRPATH$cs[reset]"
+    echo "$c[success]Created $DIRPATH$c[reset]"
   fi
 
 

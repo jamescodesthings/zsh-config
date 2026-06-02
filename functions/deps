@@ -2,44 +2,23 @@
 
 # Usage:
 # To check for availability of dependencies in a function:
-# local DEPS=(clr_cyan clr_missing)
+# local DEPS=(asdf)
 # if ! deps $DEPS; then
 #   return
 # fi
 
 declare -A steps
 
-steps[aws-mfa]="pip install aws-mfa"
-steps[asdf]="brew install asdf"
-steps[circleci]="brew install circleci"
-steps[confirm]="source $CUSTOM_DIR/functions/confirm"
-steps[docker]="brew cask install docker"
-steps[exa]="brew install exa"
-steps[git]="brew install git"
-steps[git-branch]="create a function called git-branch that returns the current branch"
-steps[grep]="brew install grep"
-steps[gron]="brew install gron"
+steps[asdf]="run zshconfig/install to install asdf"
+steps[eza]="$CUSTOM_DIR/installers/eza"
 steps[gh]="Install Github CLI: https://cli.github.com/"
-steps[gzip]="brew install gzip"
-steps[http]="brew install httpie"
-steps[is]="source $CUSTOM_DIR/is.zsh"
-steps[jq]="brew install jq"
-steps[lazygit]="brew install lazygit"
-steps[mysql]="brew install mysql-client && brew link mysql-client"
-steps[pv]="brew install pv"
-steps[python]="brew install asdf && asdf plugin add python && asdf install python latest"
-steps[revolver]="brew install revolver"
-steps[rg]="brew install rg"
-steps[ts]="brew install moreutils"
-steps[webstorm]="brew cask install webstorm"
-steps[zinit]="install-zinit"
-steps[xcrun]="install xcode command line tools (xcode-select --install)"
-
+steps[http]="run zshconfig/install to install httpie"
+steps[python]="asdf plugin add python && asdf install python latest && asdf set -u python latest"
 
 function deps-command() {
   local inst="${steps[$1]}"
   if is not empty $inst; then
-    echo "$cs[h3]Install:$c[reset] $inst"
+    echo "$c[h3]Install:$c[reset] $inst"
   fi
 }
 
@@ -48,7 +27,7 @@ function deps() {
 
   for dependency in "$@"; do
     if is not available "$dependency"; then
-      echo "$cs[error]Missing dependency:$c[reset] $dependency"
+      echo "$c[error]Missing dependency:$c[reset] $dependency"
       deps-command "${dependency}"
       missing=1
     fi

@@ -1,0 +1,25 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+if is available tldr; then
+  echo "$c[info]skipping:$c[reset] tldr is already installed"
+fi
+
+echo "$c[info]installing:$c[reset] tldr (https://github.com/tldr-pages/tlrc)"
+if is osx; then
+  brew install tlrc
+  if is equal "$?" "0"; then
+    echo "$c[success]success:$c[reset] installed tlrc with brew"
+    exit 0
+  else
+    echo "$c[error]failed:$c[reset] failed to install tlrc with brew"
+    exit 1
+  fi
+fi
+
+if is linux; then
+  echo "$c[error]no good install route:$c[reset]"
+  echo "Check the install instructions: https://github.com/tldr-pages/tlrc#from-github-releases"
+  exit 1
+fi

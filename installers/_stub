@@ -1,0 +1,28 @@
+#!/usr/bin/env zsh
+
+# The directory this install script runs from
+INSTALLER_DIR=${0:a:h}
+
+# up one directory
+REPO_DIR=${INSTALLER_DIR:h}
+
+function check-or-load() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    autoload -Uz "$REPO_DIR/functions/$1"
+    if ! command -v "$1" >/dev/null 2>&1; then
+      echo "Failed to load '$1' function, cannot continue with installation"
+      exit 1
+    fi
+  fi
+}
+
+check-or-load is
+
+if is empty "$c"; then
+  source "$REPO_DIR/zpm-zsh-colors"
+fi
+
+if is empty "$HOME"; then
+  echo "\$HOME not set, set it before running this script"
+  exit 1
+fi

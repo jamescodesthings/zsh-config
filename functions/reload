@@ -12,7 +12,7 @@ function _reload_do() {
   FN="$1"
   unfunction "$FN"
   autoload -Uz "$FN"
-  echo "$FN $cs[success]reloaded$c[reset]"
+  echo "$FN $c[success]reloaded$c[reset]"
 }
 
 function reload() {

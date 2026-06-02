@@ -1,0 +1,66 @@
+#!/usr/bin/env zsh
+
+function download-latest-release() {
+  if is not equal "$#" "1" or is equal "$1" "--help"; then
+    echo "Usage: download-latest-release <owner>/<repo>"
+    echo "Owner: the owner of the GitHub repository"
+    echo "Repo: the name of the GitHub repository"
+    echo "Example: download-latest-release asdf-vm/asdf"
+    return 1
+  fi
+
+  OWNER=$(echo "$1" | cut -d '/' -f 1)
+  REPO=$(echo "$1" | cut -d '/' -f 2)
+
+  echo "Downloading latest release of $OWNER/$REPO from GitHub"
+
+  # Get the latest release tag from GitHub API
+  LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+
+  if is empty "$LATEST_RELEASE"; then
+    echo "Failed to get latest release for $OWNER/$REPO"
+    return 1
+  fi
+
+  echo "Latest release: $LATEST_RELEASE"
+
+  # Get links for the current architecture
+  ARCH=$(uname -m)
+  echo "ARCH: $ARCH"
+  if is equal "$ARCH" ""; then
+    echo "Failed to get architecture"
+    return 1
+  fi
+  KERNEL=$(uname -s | tr '[:upper:]' '[:lower:]')
+  if is equal "$KERNEL" ""; then
+    echo "Failed to get kernel"
+    return 1
+  fi
+  echo "KERNEL: $KERNEL"
+  ASSET_URL=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/releases/latest" | grep "browser_download_url" | grep -v ".md5" | grep "$KERNEL-$ARCH" | cut -d '"' -f 4)
+  if is empty "$ASSET_URL"; then
+    echo "Failed to get asset URL for $OWNER/$REPO"
+    echo "urls:"
+    curl -s "https://api.github.com/repos/$OWNER/$REPO/releases/latest" | grep "browser_download_url" | grep -v ".md5" | cut -d '"'
+    return 1
+  fi
+  echo "Asset URL: $ASSET_URL"
+  ASSET_NAME=$(basename "$ASSET_URL")
+  if is empty "$ASSET_NAME"; then
+    echo "Failed to get asset name for $OWNER/$REPO"
+    return 1
+  fi
+  echo "Asset Name: $ASSET_NAME"
+  # Download the asset to $CUSTOM/.installers
+  INSTALL_DIR="$CUSTOM_DIR/.installers"
+  mkdir -p "$INSTALL_DIR"
+  ASSET_PATH="$INSTALL_DIR/$ASSET_NAME"
+  echo "Downloading $ASSET_URL to $ASSET_PATH"
+  curl -L "$ASSET_URL" -o "$ASSET_PATH"
+  if [[ $? -ne 0 ]]; then
+    echo "Failed to download asset from $ASSET_URL"
+    return 1
+  fi
+}
+
+download-latest-release "$@"

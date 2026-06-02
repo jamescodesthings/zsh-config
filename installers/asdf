@@ -1,0 +1,90 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+if is available asdf; then
+  if is equal "$1" "--force"; then
+    echo "Forcing re-installation of asdf"
+  else
+    echo "asdf is already installed, skipping installation"
+    exit 0
+  fi
+fi
+
+if is available brew; then
+  echo "Installing asdf using Homebrew"
+  if is equal "$1" "--force"; then
+    echo "Forcing re-installation of asdf using Homebrew"
+    brew reinstall asdf
+    if is not equal "$?" "0"; then
+      echo "Failed to reinstall asdf using Homebrew, try running 'brew reinstall asdf' manually"
+      exit 1
+    fi
+    exit 0
+  else
+    brew install asdf
+    if is not equal "$?" "0"; then
+      echo "Failed to install asdf using Homebrew, try running 'brew install asdf' manually"
+      exit 1
+    fi
+    exit 0
+  fi
+fi
+
+if is available apt; then
+  echo "Installing asdf using apt and latest release from GitHub"
+  sudo apt install -y git bash
+  if is not equal "$?" "0"; then
+    echo "Failed to install required dependencies (git, bash)"
+    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    exit 1
+  fi
+
+  download-latest-release asdf-vm/asdf
+  if is not equal "$?" "0"; then
+    echo "Failed to download asdf installer"
+    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    exit 1
+  fi
+
+  INSTALLER_CANDIDATES=("$CUSTOM_DIR/.installers"/asdf-*.tar.gz(N))
+  ASDF_INSTALLER="$INSTALLER_CANDIDATES[1]"
+  if is empty "$ASDF_INSTALLER"; then
+    echo "Failed to download asdf installer"
+    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    exit 1
+  fi
+
+  EXTRACT_DIR="$CUSTOM_DIR/.installers/asdf-extract"
+  rm -rf "$EXTRACT_DIR"
+  mkdir -p "$EXTRACT_DIR"
+
+  echo "Installing asdf from $ASDF_INSTALLER"
+  tar -xzf "$ASDF_INSTALLER" -C "$EXTRACT_DIR"
+  if is not equal "$?" "0"; then
+    echo "Failed to extract asdf installer"
+    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    exit 1
+  fi
+
+  ASDF_EXECUTABLE=$(find "$EXTRACT_DIR" -type f -name "asdf" 2>/dev/null | head -n 1)
+  if is empty "$ASDF_EXECUTABLE"; then
+    echo "Failed to find asdf executable in $EXTRACT_DIR"
+    exit 1
+  fi
+
+  echo "Moving $ASDF_EXECUTABLE to /usr/local/bin/asdf"
+  sudo install -m 0755 "$ASDF_EXECUTABLE" "/usr/local/bin/asdf"
+  if is not equal "$?" "0"; then
+    echo "Failed to move asdf executable to /usr/local/bin"
+    echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+    exit 1
+  fi
+
+  echo "asdf installed successfully"
+  exit 0
+fi
+
+echo "Could not find an install method"
+echo "install instructions: https://asdf-vm.com/guide/getting-started.html"
+exit 1

@@ -22,8 +22,8 @@ session    required       pam_permit.so
 EOF
   sudo chmod -w $TOUCH_SUDO_FILE
   sudo chown root $TOUCH_SUDO_FILE
-  echo "$cs[success]Done$c[reset]"
-  echo "$cs[info]run$c[reset] cat $TOUCH_SUDO_FILE $cs[info]to check$c[reset]"
+  echo "$c[success]Done$c[reset]"
+  echo "$c[info]run$c[reset] cat $TOUCH_SUDO_FILE $c[info]to check$c[reset]"
 }
 
 # touch-sudo: Lazy issue mentions in a git commit -m
@@ -49,15 +49,15 @@ function touch-sudo () {
   fi
 
   if is not osx; then
-    echo "$cs[error]Can't do that on non-osx$c[reset]"
+    echo "$c[error]Can't do that on non-osx$c[reset]"
     return 1
   fi
 
-  if confirm "$cs[warn]Enable touch Sudo?$c[reset]"; then
-    echo "$cs[info]Enabling$c[reset]"
+  if confirm "$c[warn]Enable touch Sudo?$c[reset]"; then
+    echo "$c[info]Enabling$c[reset]"
     _touch-sudo-update-sudo
   else
-    echo "$cs[info]Not Enabling$c[reset]"
+    echo "$c[info]Not Enabling$c[reset]"
   fi
 }
 

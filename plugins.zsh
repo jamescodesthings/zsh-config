@@ -55,19 +55,6 @@ zinit $load willghatch/zsh-saneopt
 zinit ice wait"0" light-mode
 zinit $load chrissicool/zsh-256color
 
-## LS_COLORS
-if is existing $CUSTOM_DIR/ls_colors/ls-colors.sh; then
-    source $CUSTOM_DIR/ls_colors/ls-colors.sh
-else
-  zinit ice nocompile:! pick:c.zsh atpull:%atclone atclone:'dircolors -b LS_COLORS > c.zsh'
-  zinit $load trapd00r/LS_COLORS
-fi
-
-
-## almost on top (clears previous output on new command)
-# zinit ice wait"0" light-mode
-# zinit $load Valiev/almostontop
-
 # Tools
 ## Cd to git root using "root" alias
 zinit ice wait"1" light-mode
@@ -129,3 +116,5 @@ zinit $load changyuheng/fz
 ## FZF Tab completion
 zinit ice wait"1" light-mode
 zinit $load Aloxaf/fzf-tab
+
+zinit light voronkovich/gitignore.plugin.zsh

@@ -1,0 +1,33 @@
+#!/usr/bin/env zsh
+
+function zshconfig() {
+  if is equal "$1" "--help"; then
+    echo "Usage: zshconfig --[cd|jump] [--help]"
+    echo "Edit the zsh configuration file"
+    return 0
+  fi
+
+  if is equal "$1" "--cd" || is equal "$1" "--jump"; then
+    if is available realpath; then
+      cd "$(realpath $CUSTOM_DIR)"
+      return 0
+    fi
+
+    cd $CUSTOM_DIR
+    return 0
+  fi
+
+  if is available code; then
+    code $CUSTOM_DIR
+    return 0
+  fi
+
+  if is available micro; then
+    micro $CUSTOM_DIR/.zshrc
+    return 0
+  fi
+
+  echo "No editor found. Run $CUSTOM_DIR/install-micro to install micro."
+}
+
+zshconfig "$@"

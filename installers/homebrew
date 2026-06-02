@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+
+INSTALL_SCRIPT_URL=https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+
+source "${0:a:h}/_stub"
+
+if is not osx; then
+  echo "$c[warn]skipping: $c[reset]homebrew is only for macOS"
+  exit 0
+fi
+
+# Install Homebrew
+if is available brew; then
+  echo "$c[info]Skipping: $c[reset]Homebrew is already installed, skipping"
+  exit 0
+fi
+
+echo "$c[info]Installing Homebrew\n$c[reset]"
+/bin/bash -c "$(curl -fsSL $INSTALL_SCRIPT_URL)"
+
+echo "$c[success]Homebrew install complete$c[reset]"

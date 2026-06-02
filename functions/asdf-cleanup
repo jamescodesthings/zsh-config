@@ -1,0 +1,52 @@
+#!/usr/bin/env zsh
+
+function asdf-cleanup() {
+
+  if is equal "$1" "--help"; then
+    echo "$c[h1]Cleanup old versions of asdf plugins$c[reset]"
+    echo "$c[h2]Usage:$c[reset] asdf-cleanup $c[flag][--help]$c[reset]"
+    echo "asdf-cleanup [--help]"
+    return =
+  fi
+
+  echo "$c[h1]Cleaning up old versions of asdf plugins$c[reset]"
+  local global_versions=$(cat ~/.tool-versions)
+
+  for plugin in $(asdf plugin list); do
+    echo "$plugin:"
+    versions=$(asdf list $plugin 2>/dev/null)
+    no_versions="No compatible versions installed ($plugin)"
+    if is equal "$versions" "$no_versions"; then
+      echo "$c[error]error:$c[reset] No versions installed, remove it."
+      continue
+    fi
+
+    global_version=$(echo "$global_versions" | grep "^$plugin " | awk '{print $2}' 2>/dev/null)
+    if is not empty $global_version; then
+      echo "$c[info]using:$c[reset] $global_version"
+    else
+      echo "$c[error]error:$c[reset] No version is set, remove it"
+      continue
+    fi
+    versions_to_remove=()
+    for version in ${(f)versions}; do
+      if is not substring "$global_version" "$version"; then
+        versions_to_remove+=("$version")
+      fi
+    done
+
+    if is not empty $versions_to_remove; then
+      for version in $versions_to_remove; do
+        echo "$c[info]removing:$c[reset] $version"
+        asdf uninstall "$plugin" "$version" 2>/dev/null
+        if [[ $? -ne 0 ]]; then
+          echo "$c[error]error:$c[reset] Failed to remove $version, try running 'asdf uninstall $plugin $version' manually"
+        fi
+      done
+    else
+      echo "$c[info]info:$c[reset] Already Clean"
+    fi
+  done
+}
+
+asdf-cleanup "$@"

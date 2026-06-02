@@ -5,7 +5,7 @@ export PROJECTS="$HOME/projects"
 
 export _Z_CMD="j"
 
-# Custom bin directory
+# Custom bin directories
 export PATH="$HOME/.bin:$PATH"
 
 # ASDF dir

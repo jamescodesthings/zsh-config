@@ -5,10 +5,6 @@ export CUSTOM_DIR="$HOME/.custom"
 # Custom Function Directory
 export FN_DIR="$CUSTOM_DIR/functions"
 
-# Lightweight indicator is used to avoid loading heavy plugins
-# lightweight fn manages this
-export LIGHTWEIGHT_INDICATOR="$HOME/.lightweight-sh"
-
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -16,29 +12,28 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-
-
 export DISABLE_TMUX=true
 
 fpath=(${fpath[@]:1} $fpath[1])
 
-# todo: remove bash_colors
-source $CUSTOM_DIR/bash_colors.zsh
 source $CUSTOM_DIR/zsh_options.zsh
 source $CUSTOM_DIR/custom_functions.zsh
 source $CUSTOM_DIR/env.zsh
+
+# Echo Color Output
+source $CUSTOM_DIR/zpm-zsh-colors
+
 source $CUSTOM_DIR/load_zinit.zsh
-if is equal "$(get-hostname)" "zerocalc"; then
-  source $CUSTOM_DIR/p10k.prompt.minimal.zsh
-else
-  source $CUSTOM_DIR/p10k.prompt.zsh
-fi
+source $CUSTOM_DIR/p10k.prompt.zsh
 source $CUSTOM_DIR/p10k.zsh
+
 source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/completions.zsh
 source $CUSTOM_DIR/aliases.zsh
+
 source $CUSTOM_DIR/load-direnv.zsh
 source $CUSTOM_DIR/load-fzf.zsh
+source $CUSTOM_DIR/configs/ls_colors/ls-colors.sh
 
 
 if is existing $CUSTOM_DIR/private.zsh; then

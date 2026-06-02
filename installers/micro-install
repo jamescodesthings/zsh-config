@@ -1,0 +1,53 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+INSTALL_SCRIPT_SOURCE="https://getmic.ro"
+CONFIG_DEST="$HOME/.config/micro"
+CONFIG_SOURCE="$REPO_DIR/configs/micro"
+
+local micro_plugins=(
+  cheat
+  filemanager
+  jump
+  manipulator
+  palettero
+)
+
+if is not available curl; then
+  echo "$c[error]failed:$c[reset] curl is required to install micro, please install it and try again"
+  exit 1
+fi
+
+if is not available micro; then
+  echo "$c[info]installing:$c[reset] micro from $INSTALL_SCRIPT_SOURCE"
+  curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
+  sudo mv ./micro /usr/local/bin/
+  sudo chmod +x /usr/local/bin/micro
+  echo "$c[success]success:$c[reset] Installed micro to /usr/local/bin/micro"
+else
+  echo "$c[info]skipping:$c[reset] micro is already installed"
+fi
+
+# install plugins
+for plugin in "${micro_plugins[@]}"; do
+  if micro -plugin list | grep -q "$plugin"; then
+    echo "$c[info]skipping:$c[reset] micro plugin $plugin already installed"
+  else
+    echo "$c[info]installing:$c[reset] micro plugin $plugin"
+    micro -plugin install "$plugin"
+  fi
+done
+
+if is not dir "$CONFIG_DEST"; then
+  echo "$c[info]creating:$c[reset] micro config directory at $CONFIG_DEST"
+  mkdir -p "$CONFIG_DEST"
+else
+  echo "$c[info]skipping:$c[reset] micro config directory already exists at $CONFIG_DEST"
+fi
+
+install-link "$CONFIG_SOURCE/bindings.json" "$CONFIG_DEST/bindings.json"
+install-link "$CONFIG_SOURCE/settings.json" "$CONFIG_DEST/settings.json"
+echo "$c[success]success:$c[reset] micro config installed to $CONFIG_DEST"

@@ -154,13 +154,13 @@ fi
 # End of testing
 
 function _update_updating() {
-  echo "$cs[success]Updating$c[reset] $1"
+  echo "$c[success]Updating$c[reset] $1"
 }
 function _update_updated() {
-  echo "$cs[success]Updated$c[reset] $1"
+  echo "$c[success]Updated$c[reset] $1"
 }
 function _update_skipping() {
-  echo "$cs[warn]Skipping$c[reset] $1$cs[warn], check failed."
+  echo "$c[warn]Skipping$c[reset] $1$c[warn], check failed."
 }
 
 # _update_failed $NAME $COMMAND $UPDATE_RESULT $UPDATE_OUTPUT
@@ -169,23 +169,23 @@ function _update_failed() {
   local COMMAND=$2
   local RESULT=$3
   local OUTPUT=$4
-  echo "\n$cs[error]Update Failed $c[reset]$NAME$cs[error], exit code was not zero ($c[reset]$RESULT$cs[red])$c[reset]"
-  echo "$cs[h3]Command:$c[reset] $COMMAND"
+  echo "\n$c[error]Update Failed $c[reset]$NAME$c[error], exit code was not zero ($c[reset]$RESULT$c[red])$c[reset]"
+  echo "$c[h3]Command:$c[reset] $COMMAND"
   if is not empty "$4"; then
-    echo "$cs[h3]Output:$c[reset] $OUTPUT"
+    echo "$c[h3]Output:$c[reset] $OUTPUT"
   else
-    echo "$cs[h3]Output:$c[reset] No further output"
+    echo "$c[h3]Output:$c[reset] No further output"
   fi
   echo ""
 }
 
 function _update_print_available() {
-  echo "\n$cs[h2]Available $c[reset]$cs[param]targets$c[reset]$cs[h2]:$c[reset]"
+  echo "\n$c[h2]Available $c[reset]$c[param]targets$c[reset]$c[h2]:$c[reset]"
   local index=1
-  echo "$cs[param]all$c[reset]: Updates everything below"
+  echo "$c[param]all$c[reset]: Updates everything below"
   for FLAG in ${_update_flags[@]}; do
     NAME=$_update_names[$index]
-    echo "$cs[param]$FLAG$c[reset]: $NAME"
+    echo "$c[param]$FLAG$c[reset]: $NAME"
 
     index=$(expr $index + 1)
   done
@@ -210,7 +210,7 @@ function _update_do_update() {
   _update_updating $NAME
 
   if is equal 1 $_UPDATE_DEBUG; then
-    echo "$cs[info]$NAME ($index)$c[reset]"
+    echo "$c[info]$NAME ($index)$c[reset]"
     echo "$CHECK"
     echo "$COMMAND"
   fi
@@ -264,7 +264,7 @@ function update() {
   local ALL=$?
 
   if is equal $ALL 0; then
-    echo "$cs[info]Updating Everything$c[reset]"
+    echo "$c[info]Updating Everything$c[reset]"
     local index=1
     for NAME in ${_update_names[@]}; do
       (_update_do_update $index)
@@ -287,7 +287,7 @@ function update() {
   done
 
   if is equal $matched 0; then
-    echo "$cs[warn]Nothing to update, check --help for usage.$c[reset]"
+    echo "$c[warn]Nothing to update, check --help for usage.$c[reset]"
   fi
 }
 

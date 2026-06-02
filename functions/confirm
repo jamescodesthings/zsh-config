@@ -6,13 +6,13 @@ _confirm_positional_desc="The message to show, default used if omitted."
 _confirm_flag_names[1]="--help"
 _confirm_flag_messages[1]="shows help"
 _confirm_example=$(cat <<-END
-$cs[sub]if $c[reset]confirm $cs[param]'are you sure?'$c[reset]$cs[sub]; then
-  $c[reset]$cs[success]echo 'confirmed'$c[reset]
-$cs[sub]fi$c[reset]
+$c[sub]if $c[reset]confirm $c[param]'are you sure?'$c[reset]$c[sub]; then
+  $c[reset]$c[success]echo 'confirmed'$c[reset]
+$c[sub]fi$c[reset]
 
-$cs[sub]if $c[reset]confirm$c[reset]$cs[sub]; then
-  $c[reset]$cs[success]echo 'confirmed'$c[reset]
-$cs[sub]fi$c[reset]
+$c[sub]if $c[reset]confirm$c[reset]$c[sub]; then
+  $c[reset]$c[success]echo 'confirmed'$c[reset]
+$c[sub]fi$c[reset]
 END
 )
 
@@ -26,13 +26,13 @@ function confirm() {
       "$_confirm_positional" \
       "$_confirm_positional_desc"
 
-    echo "$cs[h2]\nExample:$c[reset]"
+    echo "$c[h2]\nExample:$c[reset]"
     echo "$_confirm_example"
     return 0
   fi
 
-  MESSAGE=${1:="$cs[warn]Are you sure?$c[reset]"}
-  read "confirmed?$MESSAGE $cs[sub][y/n]$c[reset] "
+  MESSAGE=${1:="$c[warn]Are you sure?$c[reset]"}
+  read "confirmed?$MESSAGE $c[sub][y/n]$c[reset] "
   if [[ "$confirmed" =~ ^[Yy]$ ]]
   then
     return 0

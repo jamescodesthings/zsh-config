@@ -1,34 +1,71 @@
 #!/usr/bin/env zsh
 
 function cheat() {
-  if [[ -z "$CHEATSHEET_DIR" ]]; then
-    echo "CHEATSHEET_DIR not set, set it before running this script"
+  if is equal "$1" "--help"; then
+    echo "$c[h1]Cheatsheets by glow$c[reset]"
+    echo ""
+    echo "$c[h2]Usage:$c[reset]"
+    echo "cheat $c[flag][--help]$c[reset] show this help message"
+    echo ""
+    echo "$c[h3]List all cheatsheets$c[reset]"
+    echo "cheat $c[flag]--list$c[reset]"
+    echo ""
+    echo "$c[h3]show all cheatsheets$c[reset]"
+    echo "cheat"
+    echo "cheat $c[flag][glow-args]$c[reset]"
+    echo ""
+    echo "$c[h3]show specific cheatsheet$c[reset]"
+    echo "cheat $c[param]sheet-name$c[reset] $c[flag][glow-args]$c[reset]"
+    echo ""
+    echo "$c[h3]edit specific cheatsheet$c[reset]"
+    echo "cheat $c[param]sheet-name$c[reset] $c[flag]--edit$c[reset]"
+    echo ""
+    return 0
+  fi
+
+  if is empty "$CHEATSHEET_DIR"; then
+    echo "CHEATSHEET_DIR not set, run zsh-config/install to install it"
     return 1
   fi
 
-  if ! command -v glow > /dev/null 2>&1; then
-    echo "glow could not be found, please install it before running this script"
+  if is not available glow; then
+    echo "glow could not be found, run zsh-config/install to install it"
     return 1
   fi
 
-  if [[ "$1" != "" ]]; then
-    local sheet_name
-    sheet_name="${1%.md}"
+  if is empty "$1"; then
+    glow "$CHEATSHEET_DIR"
+    return $?
+  fi
 
-    if [[ -f "$CHEATSHEET_DIR/$sheet_name.md" ]]; then
-      local -a other_args
-      other_args=("${(@)argv[2,-1]}")
-      if [[ ${#other_args} -gt 0 ]]; then
-        glow "$CHEATSHEET_DIR/$sheet_name.md" "${other_args[@]}"
-      else
-        glow "$CHEATSHEET_DIR/$sheet_name.md"
-      fi
-    else
-      glow "$CHEATSHEET_DIR" "$@"
-    fi
-  else
+  if is equal "$1" "--list"; then
+    echo "$c[h1]Available Cheatsheets:$c[reset]"
+    ls -1 "$CHEATSHEET_DIR" | grep -v '.DS_Store' | sed 's/\.md$//'
+    return $?
+  fi
+
+  local sheet_name
+  sheet_name="${1%.md}"
+
+  if is not file "$CHEATSHEET_DIR/$sheet_name.md"; then
     glow "$CHEATSHEET_DIR" "$@"
+    return $?
   fi
+
+  local -a other_args
+  other_args=("${(@)argv[2,-1]}")
+  if is equal "${#other_args}" "0"; then
+    glow "$CHEATSHEET_DIR/$sheet_name.md"
+    return $?
+  fi
+
+  if is equal "$other_args[1]" "--edit"; then
+    micro "$CHEATSHEET_DIR/$sheet_name.md"
+    return $?
+  fi
+
+  glow "$CHEATSHEET_DIR/$sheet_name.md" "${other_args[@]}"
+  return $?
 }
 
 cheat "$@"

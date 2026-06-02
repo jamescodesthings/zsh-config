@@ -1,0 +1,32 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+if is available http; then
+  echo "$c[info]skipping: $c[reset]httpie is already installed, skipping"
+  exit 0
+fi
+
+if is osx; then
+  echo "$c[info]Installing httpie with Homebrew$c[reset]"
+  brew install httpie
+  if is equal "$?" "0"; then
+    echo "$c[success]success:$c[reset] httpie install complete"
+  else
+    echo "$c[error]failed:$c[reset] homebrew returned non-zero exit code while installing httpie"
+    echo ""
+    echo "$c[info]install instructions:$c[reset] https://httpie.io/docs#installation"
+  exit 0
+fi
+
+if is linux; then
+  echo "$c[info]Installing httpie with apt$c[reset]"
+  sudo apt install -y httpie
+  if is equal "$?" "0"; then
+    echo "$c[success]success:$c[reset] httpie install complete"
+  else
+    echo "$c[error]failed:$c[reset] pip returned non-zero exit code while installing httpie"
+    echo ""
+    echo "$c[info]install instructions:$c[reset] https://httpie.io/docs#installation"
+  exit 0
+fi

@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+echo "$c[info]installing$c[reset] prettier config"
+
+install-link "$REPO_DIR/configs/prettier/.prettierrc" "$HOME/.prettierrc"
+
+echo "$c[success]success:$c[reset] prettier config installed to $HOME/.prettierrc"

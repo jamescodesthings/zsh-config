@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+if is not available tmux
+then
+    echo "tmux could not be found, installing..."
+    if is linux; then
+        sudo apt-get update
+        sudo apt-get install -y tmux
+    elif is osx; then
+        brew install tmux
+    else
+        echo "Unsupported OS. Please install tmux manually."
+        exit 1
+    fi
+else
+    echo "tmux is installed"
+fi
+
+echo ""
+echo "$c[info]installing:$c[reset] Linking tmux.conf to home directory..."
+
+install-link "$REPO_DIR/configs/tmux/tmux.conf" "$HOME/.tmux.conf"
+
+TMUX_PLUGIN_DIR=$HOME/.tmux/plugins
+if [ ! -d "$TMUX_PLUGIN_DIR" ]; then
+  mkdir -p $TMUX_PLUGIN_DIR
+fi
+
+if [ ! -d "$TMUX_PLUGIN_DIR/tpm" ]; then
+  echo "Installing tmux plugin manager..."
+  git clone https://github.com/tmux-plugins/tpm $TMUX_PLUGIN_DIR/tpm
+  echo "tmux plugin manager installed"
+else
+  echo "tmux plugin manager already installed"
+fi
+
+
+echo "linked config"
+echo ""
+echo "Install new plugins with prefix followed by shift + I inside tmux"
+echo "Cleanup old plugins with prefix followed by alt + u inside tmux"

@@ -1,0 +1,22 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+if is not linux || is not equal "$(get-hostname)" "ubuntu"; then
+  echo "$c[warn]skipping: $c[reset]streamdeck-binaries is only for linux"
+  exit 0
+fi
+
+echo "$cs[info]installing streamdeck bin scripts from $REPO_DIR/bin to $DEST_DIR"
+
+for script in $REPO_DIR/bin/*; do
+  name=$(basename $script)
+  dest=$DEST_DIR/$name
+
+  install-link "$script" "$dest"
+  sudo chmod +x "$script"
+done
+
+echo "$c[success]streamdeck bin scripts install complete$c[reset]"

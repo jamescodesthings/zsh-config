@@ -1,44 +1,37 @@
 #!/usr/bin/env zsh
 
-# The directory this install script runs from
-SOURCE_DIR=${0:a:h}
+source "${0:a:h}/installers/_stub"
 
-if [[ -z "$HOME" ]]; then
-  echo '$HOME not set, set it before running this script'
-  exit 1
+if is equal "$1" "--help"; then
+  echo "$c[h1]Install Everything$c[reset]"
+  echo "$c[lead]requires zsh, and \$HOME to be set$c[reset]"
+  echo ""
+  echo "$c[info-small]Shell:$c[reset] $SHELL"
+  echo "$c[info-small]HOME:$c[reset] $HOME"
+  echo ""
+  echo "$c[h2]Usage:$c[reset]"
+  echo "install $c[flag][--help]$c[reset]"
+  exit 0
 fi
 
-source ./functions/is
+SCRIPTS=$(ls -1 $INSTALLER_DIR | grep -v '.DS_Store' | grep -v '^_' 2> /dev/null)
 
-# Expected destination
-DEST_DIR=$HOME/.custom
-DEST_ZSHRC=$HOME/.zshrc
-DEST_ZSHENV=$HOME/.zshenv
+for script in ${(f)SCRIPTS}; do
+  [[ -z "$script" ]] && continue
+  echo "$c[info]running installer$c[reset] $script"
+  if is not executable "$INSTALLER_DIR/$script"; then
+    echo "$c[warn]warning:$c[reset] $script is not executable, making it executable"
+    chmod +x "$INSTALLER_DIR/$script"
+  fi
 
-echo 'Linking zsh-config:'
-echo "From: $SOURCE_DIR"
-echo "To: $DEST_DIR"
-echo "linking .zshrc to: $DEST_ZSHRC"
-echo "linking .zshenv to: $DEST_ZSHENV"
+  "$INSTALLER_DIR/$script"
 
-# Clean old instances if they exist
-if [[ -h $DEST_DIR ]]; then
-  rm $DEST_DIR
-fi
-
-if [[ -h $DEST_ZSHRC ]]; then
-  rm $DEST_ZSHRC
-fi
-
-if [[ -h $DEST_ZSHENV ]]; then
-  rm $DEST_ZSHENV
-fi
-
-if [[ -h $HOME/.default-python-packages ]]; then
-  rm $HOME/.default-python-packages
-fi
-
-sudo ln -s $SOURCE_DIR $DEST_DIR
-sudo ln -s $DEST_DIR/.zshrc $DEST_ZSHRC
-sudo ln -s $DEST_DIR/.zshenv $DEST_ZSHENV
-sudo ln -s $DEST_DIR/.default-python-packages $HOME/.default-python-packages
+  if is equal "$?" "0"; then
+    echo "$c[success]succesfully ran$c[reset] $script"
+  else
+    echo "$c[error]failed$c[reset] $script"
+    exit 1
+  fi
+  echo ""
+  echo ""
+done

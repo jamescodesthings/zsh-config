@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+
+function install-link() {
+  # if length of arguments is not 2, print usage and exit
+  if is not equal "$#" "2" or is equal "$1" "--help"; then
+    echo "Usage: install-link <from> <to>"
+    echo "From: the source file to link from"
+    echo "To: the target file to link to"
+    echo "Example: install-link ./configs/asdf/.asdfrc ~/.asdfrc"
+    return 1
+  fi
+
+  FROM="$1"
+  TO="$2"
+
+  if is link "$TO"; then
+    echo "Removing Existing Link: $TO"
+    rm "$TO"
+  fi
+
+  if is file "$TO"; then
+    echo "Backing up Existing File: $TO"
+    mv "$TO" "$TO.bak"
+  fi
+
+  if is dir "$TO"; then
+    echo "Backing up Existing Directory: $TO"
+    mv "$TO" "$TO_bak"
+  fi
+
+  echo "link: $FROM > $TO"
+  sudo ln -s "$FROM" "$TO"
+  if is not equal "$?" "0"; then
+    echo "Failed to create link from $FROM to $TO"
+    return 1
+  fi
+}
+
+install-link "$@"

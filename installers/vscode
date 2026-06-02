@@ -1,0 +1,33 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+CONFIG_DIR="$REPO_DIR/configs/vscode"
+
+OSX_DIR="$HOME/Library/Application Support/Code/User"
+LINUX_DIR="$HOME/.config/Code/User"
+
+DEST_DIR=""
+SETTINGS_SUFFIX=""
+
+# Install VSCode Snippets
+if is osx; then
+  DEST_DIR="$OSX_DIR"
+  SETTINGS_SUFFIX="osx"
+fi
+
+if is linux; then
+  DEST_DIR="$LINUX_DIR"
+  SETTINGS_SUFFIX="linux"
+fi
+
+if [ "$DEST_DIR" = "" ]; then
+  echo "Could not identify system, update ./install"
+  exit 1
+fi
+
+install-link "$CONFIG_DIR/snippets" "$DEST_DIR/snippets"
+install-link "$CONFIG_DIR/settings.$SETTINGS_SUFFIX.json" "$DEST_DIR/settings.json"
+install-link "$CONFIG_DIR/keybindings.$SETTINGS_SUFFIX.json" "$DEST_DIR/keybindings.json"

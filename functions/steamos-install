@@ -8,50 +8,50 @@ _steamos_install_flag_names[1]="--help"
 _steamos_install_flag_messages[1]="shows help"
 
 function _steamos_install_subfn() {
-  echo "$cs[info]Installing SteamOS Stuff$cs[reset]"
-  echo "$cs[default]Will need sudo!$cs[reset]"
+  echo "$c[info]Installing SteamOS Stuff$c[reset]"
+  echo "$c[default]Will need sudo!$c[reset]"
   echo ""
 
-  echo "$cs[info]Readonly Disable:$cs[reset]"
+  echo "$c[info]Readonly Disable:$c[reset]"
   sudo steamos-readonly disable
 
-  echo "$cs[info]Install Script Desktop Entry:$cs[reset]"
+  echo "$c[info]Install Script Desktop Entry:$c[reset]"
   if is not link "$DESKTOP/steamos-install.desktop"; then
     sudo ln -s "$CUSTOM_STEAM/steamos-install.desktop" "$DESKTOP/steamos-install.desktop"
-    echo "$cs[success]Done$cs[reset]"
+    echo "$c[success]Done$c[reset]"
   else
-    echo "$cs[success]Already Installed$cs[reset]"
+    echo "$c[success]Already Installed$c[reset]"
   fi
 
-  echo "$cs[info]VNC Desktop Entry:$cs[reset]"
+  echo "$c[info]VNC Desktop Entry:$c[reset]"
   if is not link "$DESKTOP/start-vnc.desktop"; then
     sudo ln -s "$CUSTOM_STEAM/start-vnc.desktop" "$DESKTOP/start-vnc.desktop"
-    echo "$cs[success]Done$cs[reset]"
+    echo "$c[success]Done$c[reset]"
   else
-    echo "$cs[success]Already Installed$cs[reset]"
+    echo "$c[success]Already Installed$c[reset]"
   fi
 
-  echo "$cs[info]Pacman Keys:$cs[reset]"
+  echo "$c[info]Pacman Keys:$c[reset]"
   sudo pacman-key --init
   sudo pacman-key --populate archlinux
   # sudo pacman --refresh-keys
-  echo "$cs[success]Done$cs[reset]"
+  echo "$c[success]Done$c[reset]"
 
 
-  echo "$cs[info]Update Pacman:$cs[reset]"
+  echo "$c[info]Update Pacman:$c[reset]"
   sudo pacman -Syu --overwrite \* --noconfirm
-  echo "$cs[success]Done$cs[reset]"
+  echo "$c[success]Done$c[reset]"
 
-  echo "$cs[info]Konsole:$cs[reset]"
+  echo "$c[info]Konsole:$c[reset]"
   if is not available "konsole"; then
     sudo pacman -S --overwrite \* konsole --noconfirm
 
-    echo "$cs[success]Done$cs[reset]"
+    echo "$c[success]Done$c[reset]"
   else
-    echo "$cs[success]Already Installed$cs[reset]"
+    echo "$c[success]Already Installed$c[reset]"
   fi
 
-  echo "$cs[info]ZSH:$cs[reset]"
+  echo "$c[info]ZSH:$c[reset]"
   if is not available "zsh"; then
     sudo pacman -S --overwrite \* zsh --noconfirm
 
@@ -67,60 +67,60 @@ function _steamos_install_subfn() {
     chsh -s "$ZSH"
     sudo chsh -s "$ZSH"
 
-    echo "$cs[success]Done$cs[reset]"
+    echo "$c[success]Done$c[reset]"
   else
-    echo "$cs[success]Already Installed$cs[reset]"
+    echo "$c[success]Already Installed$c[reset]"
   fi
 
-  echo "$cs[info]Sublime:$cs[reset]"
+  echo "$c[info]Sublime:$c[reset]"
   if is not available "sublime"; then
     sudo pacman -S --overwrite \* sublime-text --noconfirm
 
-    echo "$cs[success]Done$cs[reset]"
+    echo "$c[success]Done$c[reset]"
   else
-    echo "$cs[success]Already Installed$cs[reset]"
+    echo "$c[success]Already Installed$c[reset]"
   fi
 
-  echo "$cs[info]VNC:$cs[reset]"
+  echo "$c[info]VNC:$c[reset]"
   if is not available "x0vncserver"; then
     sudo pacman -S --overwrite \* tigervnc --noconfirm
     sudo pacman -S --overwrite \* xorg-xinit --noconfirm
 
-    echo "$cs[success]Done$cs[reset]"
+    echo "$c[success]Done$c[reset]"
   else
-    echo "$cs[success]Already Installed$cs[reset]"
+    echo "$c[success]Already Installed$c[reset]"
   fi
 
-  echo "$cs[info]VNC Password:$cs[reset]"
+  echo "$c[info]VNC Password:$c[reset]"
   if is not existing "$HOME/.vnc/passwd"; then
     sudo vncpasswd ~/.vnc/passwd
 
-    echo "$cs[success]Done$cs[reset]"
+    echo "$c[success]Done$c[reset]"
   else
-    echo "$cs[success]Already Installed$cs[reset]"
+    echo "$c[success]Already Installed$c[reset]"
   fi
 
 
-  echo "$cs[info]base-devel:$cs[reset]"
+  echo "$c[info]base-devel:$c[reset]"
   sudo pacman -S base-devel --overwrite \* --noconfirm
-  echo "$cs[success]Done$cs[reset]"
+  echo "$c[success]Done$c[reset]"
 
 
-  echo "$cs[info]fzf:$cs[reset]"
+  echo "$c[info]fzf:$c[reset]"
   sudo pacman -S fzf --overwrite \* --noconfirm
-  echo "$cs[success]Done$cs[reset]"
+  echo "$c[success]Done$c[reset]"
 
-  echo "$cs[info]yay:$cs[reset]"
+  echo "$c[info]yay:$c[reset]"
   if is not existing "$HOME/projects/yay-bin"; then
     git clone https://aur.archlinux.org/yay-bin.git "$HOME/projects/yay-bin"
   fi
   $(cd "$HOME/projects/yay-bin" && makepkg -si)
-  echo "$cs[success]Done$cs[reset]"
+  echo "$c[success]Done$c[reset]"
 
 
 
 
-  echo "$cs[success]Finished running all post-install steps$cs[reset]"
+  echo "$c[success]Finished running all post-install steps$c[reset]"
 }
 
 function steamos-install() {

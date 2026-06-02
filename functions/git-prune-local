@@ -1,22 +1,12 @@
 #!/usr/bin/env zsh
 
-_gpl_description="Prunes Local Branches"
-_gpl_positional=""
-_gpl_positional_desc=""
-_gpl_flag_names[1]="--help"
-_gpl_flag_messages[1]="shows help"
-_gpl_flag_names[2]="--list"
-_gpl_flag_messages[2]="lists branches to delete"
-_gpl_flag_names[3]="--prune"
-_gpl_flag_messages[3]="runs the prune"
-
 function git-prune-local_prune() {
-  echo "$cs[info]The following branches will be deleted$c[reset]"
+  echo "$c[info]The following branches will be deleted$c[reset]"
 
   git-prune-local_list
 
   if confirm; then
-    echo "$cs[success]Deleting stale branches$c[reset]"
+    echo "$c[success]Deleting stale branches$c[reset]"
     git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
   fi
 }
@@ -39,24 +29,22 @@ function git-prune-local() {
   fi
 
   if is empty "$1" || has-flag '--help' $@; then
-    print-help \
-      "$0" \
-      "$_gpl_description" \
-      "_gpl_flag_names" \
-      "_gpl_flag_messages" \
-      "$_gpl_positional" \
-      "$_gpl_positional_desc"
-    return 0
+    echo "$c[h1]git prune local$c[reset]"
+    echo "$c[lead]Deletes local branches that have been deleted from the remote$c[reset]"
+    echo ""
+    echo "$c[h2]Usage:$c[reset]"
+    echo "git-prune-local $c[flag][--help]$c[reset]"
+    echo ""
+    echo "$c[h2]Example:$c[reset]"
   fi
 
-  if has-flag '--list' $@; then
-    git-prune-local_list
-    return $?
-  fi
+  echo "$c[info]The following branches will be deleted:$c[reset]"
 
-  if has-flag '--prune' $@; then
-    git-prune-local_prune
-    return $?
+  git-prune-local_list
+
+  if confirm "$c[warning]Are you sure you want to delete these branches?$c[reset]"; then
+    echo "$c[success]Deleting stale branches$c[reset]"
+    git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
   fi
 }
 

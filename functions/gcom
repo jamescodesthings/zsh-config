@@ -1,9 +1,8 @@
 #!/usr/bin/env zsh
 
-# gcom: Checks out master (git flow configured)
+# gcom: Checks out main
 function gcom () {
   local DEPS=(
-    is
     git
   )
 
@@ -11,15 +10,18 @@ function gcom () {
     return
   fi
 
-  MASTER_BRANCH=$(git config gitflow.branch.master)
-  if is empty "$MASTER_BRANCH"; then
-    MASTER_BRANCH=main
-    # echo "$cs[error]Could not get master branch$c[reset]"
-    # echo "$cs[sub]Make sure you are in a git repo and then run:$c[reset] git flow init"
-    # return 1
+  MAIN_BRANCH=$(git config gitflow.branch.main)
+  if is empty "$MAIN_BRANCH"; then
+    MAIN_BRANCH=main
   fi
 
-  git checkout $MASTER_BRANCH
+  git checkout $MAIN_BRANCH
+  if is not equal "$?" "0"; then
+    echo "$c[error]Could not checkout main branch ($MAIN_BRANCH)\n$c[reset]"
+    echo "$c[sub]to set the main branch for this repo:$c[reset]"
+    echo "git config gitflow.branch.main $c[flag]main$c[reset]"
+    return 1
+  fi
 }
 
 gcom "$@"

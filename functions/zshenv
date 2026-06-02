@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+function zshenv() {
+  if is available micro; then
+    micro "$CUSTOM_DIR/env.$(get-hostname).zsh"
+    return 0
+  fi
+  echo "No editor found. Run $CUSTOM_DIR/install-micro to install micro."
+}
