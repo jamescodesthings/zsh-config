@@ -1,41 +1,34 @@
 #!/usr/bin/env zsh
 
-#SOME_VAR="${SOME_VAR:-"default-value"}"
-
-_hist_purge_description="Purges the given phrase from zsh history, useful for removing secrets from zsh history."
-_hist_purge_positional="needle"
-_hist_purge_positional_desc="History items containing this phrase will be purged"
-
 function history-purge() {
-  local DEPS=(
-    is
-  )
-
+  local DEPS=(is)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if is empty "$1" || has-flag '--help' $@; then
-    print-help \
-      "$0" \
-      "$_hist_purge_description" \
-      "_hist_purge_flag_names" \
-      "_hist_purge_flag_messages" \
-      "$_hist_purge_positional" \
-      "$_hist_purge_positional_desc"
+  if is equal "$1" "--help" || is empty "$1"; then
+    echo "$c[h1]history-purge$c[reset]"
+    echo ""
+    echo "$c[lead]removes all history entries containing the given phrase. useful for removing accidentally typed secrets.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  history-purge $c[param]<needle>$c[reset]"
+    echo ""
+    echo "$c[h2]examples$c[reset]"
+    echo "  history-purge $c[param]'my-secret-token'$c[reset]"
+    echo "  history-purge $c[param]'export AWS_SECRET'$c[reset]"
     return 0
   fi
 
-  local POSITIONAL="$@[-1]"
+  local NEEDLE="$1"
 
-  if is not empty "$POSITIONAL"; then
-    echo "Will remove history items containing $c[param]$POSITIONAL$c[reset]"
-    if confirm; then
-      LC_ALL=C sed -i "/$POSITIONAL/d" $HISTFILE
-    fi
-    echo "$c[success]Done$c[reset]"
+  echo "will remove all history entries containing $c[em]$NEEDLE$c[reset]"
+  if confirm; then
+    LC_ALL=C sed -i "/$NEEDLE/d" $HISTFILE
+    echo "$c[success]success:$c[reset] history purged"
+  else
+    echo "$c[warn]warning:$c[reset] cancelled"
   fi
 }
 
 history-purge "$@"
-
