@@ -16,7 +16,8 @@ if is osx; then
     echo "$c[error]failed:$c[reset] homebrew returned non-zero exit code while installing httpie"
     echo ""
     echo "$c[info]install instructions:$c[reset] https://httpie.io/docs#installation"
-  exit 0
+  	exit 0
+  fi
 fi
 
 if is linux; then
@@ -28,5 +29,6 @@ if is linux; then
     echo "$c[error]failed:$c[reset] pip returned non-zero exit code while installing httpie"
     echo ""
     echo "$c[info]install instructions:$c[reset] https://httpie.io/docs#installation"
-  exit 0
+  	exit 0
+  fi
 fi

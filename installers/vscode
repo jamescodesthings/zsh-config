@@ -29,5 +29,13 @@ if [ "$DEST_DIR" = "" ]; then
 fi
 
 install-link "$CONFIG_DIR/snippets" "$DEST_DIR/snippets"
-install-link "$CONFIG_DIR/settings.$SETTINGS_SUFFIX.json" "$DEST_DIR/settings.json"
-install-link "$CONFIG_DIR/keybindings.$SETTINGS_SUFFIX.json" "$DEST_DIR/keybindings.json"
+if is file "$CONFIG_DIR/settings.$SETTINGS_SUFFIX.json"; then
+  install-link "$CONFIG_DIR/settings.$SETTINGS_SUFFIX.json" "$DEST_DIR/settings.json"
+else
+  echo "$c[warn]warning:$c[reset] no $SETTINGS_SUFFIX settings.json exists"
+fi
+if is file "$CONFIG_DIR/keybindings.$SETTINGS_SUFFIX.json"; then
+  install-link "$CONFIG_DIR/keybindings.$SETTINGS_SUFFIX.json" "$DEST_DIR/keybindings.json"
+else
+  echo "$c[warn]warning:$c[reset] no $SETTINGS_SUFFIX keybindings.json exists"
+fi

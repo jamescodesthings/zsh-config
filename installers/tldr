@@ -4,6 +4,7 @@ source "${0:a:h}/_stub"
 
 if is available tldr; then
   echo "$c[info]skipping:$c[reset] tldr is already installed"
+  exit 0
 fi
 
 echo "$c[info]installing:$c[reset] tldr (https://github.com/tldr-pages/tlrc)"

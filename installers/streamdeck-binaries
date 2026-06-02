@@ -7,7 +7,7 @@ check-or-load install-link
 if is tty; then
   echo "$c[info]skipping:$c[reset] streamdeck-binaries cannot be installed from a terminal session"
   exit 0
-end
+fi
 
 if is not equal "$(get-hostname)" "ubuntu"; then
   echo "$c[warn]skipping: $c[reset]streamdeck-binaries is only for linux"

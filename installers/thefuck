@@ -21,6 +21,8 @@ if is available brew; then
 fi
 
 if is available pip; then
+  pip install setuptools --user
+  pip install zombie-imp --user
   pip install thefuck --user
     if is equal "$?" "0"; then
     echo "thefuck installed"
