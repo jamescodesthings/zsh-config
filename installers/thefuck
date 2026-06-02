@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-source "${0:a:h}/_stub".
+source "${0:a:h}/_stub"
 
 if is available fuck; then
   echo "'fuck' already installed"
