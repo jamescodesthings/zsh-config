@@ -1,40 +1,28 @@
 #!/usr/bin/env zsh
 
-_confirm_description="Confirms with an optional message"
-_confirm_positional="message"
-_confirm_positional_desc="The message to show, default used if omitted."
-_confirm_flag_names[1]="--help"
-_confirm_flag_messages[1]="shows help"
-_confirm_example=$(cat <<-END
-$c[sub]if $c[reset]confirm $c[param]'are you sure?'$c[reset]$c[sub]; then
-  $c[reset]$c[success]echo 'confirmed'$c[reset]
-$c[sub]fi$c[reset]
-
-$c[sub]if $c[reset]confirm$c[reset]$c[sub]; then
-  $c[reset]$c[success]echo 'confirmed'$c[reset]
-$c[sub]fi$c[reset]
-END
-)
-
 function confirm() {
-  if has-flag '--help' $@; then
-    print-help \
-      "$0" \
-      "$_confirm_description" \
-      "_confirm_flag_names" \
-      "_confirm_flag_messages" \
-      "$_confirm_positional" \
-      "$_confirm_positional_desc"
-
-    echo "$c[h2]\nExample:$c[reset]"
-    echo "$_confirm_example"
+  if is equal "$1" "--help"; then
+    echo "$c[h1]confirm$c[reset]"
+    echo ""
+    echo "$c[lead]prompts for yes/no confirmation. returns 0 if confirmed, 1 if denied.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  confirm $c[param][message]$c[reset]"
+    echo ""
+    echo "$c[h2]examples$c[reset]"
+    echo "  confirm"
+    echo "  confirm $c[param]'are you sure you want to delete this?'$c[reset]"
+    echo ""
+    echo "$c[h2]in a script$c[reset]"
+    echo "  $c[sub]if$c[reset] confirm $c[param]'are you sure?'$c[reset]$c[sub]; then$c[reset]"
+    echo "    $c[em]# do the thing$c[reset]"
+    echo "  $c[sub]fi$c[reset]"
     return 0
   fi
 
-  MESSAGE=${1:="$c[warn]Are you sure?$c[reset]"}
+  local MESSAGE=${1:="$c[warn]are you sure?$c[reset]"}
   read "confirmed?$MESSAGE $c[sub][y/n]$c[reset] "
-  if [[ "$confirmed" =~ ^[Yy]$ ]]
-  then
+  if [[ "$confirmed" =~ ^[Yy]$ ]]; then
     return 0
   else
     return 1
