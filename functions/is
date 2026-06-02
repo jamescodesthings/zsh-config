@@ -36,6 +36,7 @@ Conditions:
   is osx - Is this an osx system?
   is m1 - Is this an m1 chip?
   is iterm - Is the terminal emulator iTerm?
+  is tty - Is this a terminal?
 
 Negation:
   is not equal VALUE_A VALUE_B
@@ -144,6 +145,8 @@ EOF
             echo $(uname) | grep "MINGW"; return $?;;
         ubuntu)
             echo $(uname -a) | grep "Ubuntu"; return $?;;
+        tty)
+            [[ "$(uname)" == "Linux" && -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" ]]; return $?;;
 
     esac > /dev/null
 
