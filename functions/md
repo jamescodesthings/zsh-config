@@ -1,59 +1,55 @@
 #!/usr/bin/env zsh
 
-#SOME_VAR="${SOME_VAR:-"default-value"}"
-
-_md_description="Makes a directory and cds into it at once"
-_md_positional="path"
-_md_positional_desc="the directory name or path to create"
-_md_flag_names[1]="--help"
-_md_flag_messages[1]="shows help"
-_md_flag_names[2]="--no-follow"
-_md_flag_messages[2]='Just `mkdir -p`s'
-
-function _md_subfn() {
-  if is empty "$1"; then
-    echo "$c[warn]Nothing passed to subfn$c[reset]"
-    return 1
-  fi
-
-  echo "$c[success]subfn$c[reset] $1"
-}
-
 function md() {
-  local DEPS=(
-    is
-  )
-
+  local DEPS=(is)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if is empty "$1" || has-flag '--help' $@; then
-    print-help \
-      "$0" \
-      "$_md_description" \
-      "_md_flag_names" \
-      "_md_flag_messages" \
-      "$_md_positional" \
-      "$_md_positional_desc"
+  if is equal "$1" "--help" || is empty "$1"; then
+    echo "$c[h1]md$c[reset]"
+    echo ""
+    echo "$c[lead]makes a directory and immediately cds into it.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  md $c[flag][--no-follow]$c[reset] $c[param]<path>$c[reset]"
+    echo ""
+    echo "$c[h2]flags$c[reset]"
+    echo "  $c[flag]--no-follow$c[reset]    create the directory without changing into it"
+    echo ""
+    echo "$c[h2]examples$c[reset]"
+    echo "  md $c[param]new-project$c[reset]"
+    echo "  md $c[flag]--no-follow$c[reset] $c[param]src/components$c[reset]"
     return 0
   fi
 
-  local POSITIONAL="$@[-1]"
+  local NO_FOLLOW=0
+  local DIRPATH
 
-  $(has-flag '--no-follow' $@)
-  NO_FOLLOW=$?
-  DIRPATH="$POSITIONAL"
-
-  mkdir -p "$DIRPATH"
-  if is not equal $NO_FOLLOW 0; then
-    cd "$DIRPATH"
-    echo "$c[success]Created $DIRPATH and followed$c[reset]"
+  if is equal "$1" "--no-follow"; then
+    NO_FOLLOW=1
+    DIRPATH="$2"
   else
-    echo "$c[success]Created $DIRPATH$c[reset]"
+    DIRPATH="$1"
   fi
 
+  if is empty "$DIRPATH"; then
+    echo "$c[error]error:$c[reset] no path provided"
+    return 1
+  fi
 
+  mkdir -p "$DIRPATH"
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] could not create $DIRPATH"
+    return 1
+  fi
+
+  if is equal $NO_FOLLOW 0; then
+    cd "$DIRPATH"
+    echo "$c[success]success:$c[reset] created $DIRPATH"
+  else
+    echo "$c[success]success:$c[reset] created $DIRPATH (no follow)"
+  fi
 }
 
 md "$@"
