@@ -1,25 +1,20 @@
 #!/usr/bin/env zsh
 
-# gcom: Checks out main
-function gcom () {
-  local DEPS=(
-    git
-  )
-
+function gcom() {
+  local DEPS=(git)
   if ! deps $DEPS; then
-    return
+    return 1
   fi
 
-  MAIN_BRANCH=$(git config gitflow.branch.main)
+  local MAIN_BRANCH=$(git config gitflow.branch.main)
   if is empty "$MAIN_BRANCH"; then
     MAIN_BRANCH=main
   fi
 
-  git checkout $MAIN_BRANCH
+  git checkout "$MAIN_BRANCH"
   if is not equal "$?" "0"; then
-    echo "$c[error]Could not checkout main branch ($MAIN_BRANCH)\n$c[reset]"
-    echo "$c[sub]to set the main branch for this repo:$c[reset]"
-    echo "git config gitflow.branch.main $c[flag]main$c[reset]"
+    echo "$c[error]error:$c[reset] could not checkout $MAIN_BRANCH"
+    echo "set it with: git config gitflow.branch.main $c[em]main$c[reset]"
     return 1
   fi
 }

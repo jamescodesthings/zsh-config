@@ -2,8 +2,15 @@
 
 function zshconfig() {
   if is equal "$1" "--help"; then
-    echo "Usage: zshconfig --[cd|jump] [--help]"
-    echo "Edit the zsh configuration file"
+    echo "$c[h1]zshconfig$c[reset]"
+    echo ""
+    echo "$c[lead]opens the zsh config directory in your editor, or cds into it.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  zshconfig $c[flag][--cd]$c[reset]"
+    echo ""
+    echo "$c[h2]flags$c[reset]"
+    echo "  $c[flag]--cd$c[reset]    cd into the config directory instead of opening an editor"
     return 0
   fi
 
@@ -12,22 +19,22 @@ function zshconfig() {
       cd "$(realpath $CUSTOM_DIR)"
       return 0
     fi
-
-    cd $CUSTOM_DIR
+    cd "$CUSTOM_DIR"
     return 0
   fi
 
   if is available code; then
-    code $CUSTOM_DIR
+    code "$CUSTOM_DIR"
     return 0
   fi
 
   if is available micro; then
-    micro $CUSTOM_DIR/.zshrc
+    micro "$CUSTOM_DIR/.zshrc"
     return 0
   fi
 
-  echo "No editor found. Run $CUSTOM_DIR/install-micro to install micro."
+  echo "$c[warn]warning:$c[reset] no editor found"
+  echo "run $c[em]$CUSTOM_DIR/installers/micro-install$c[reset] to install micro"
 }
 
 zshconfig "$@"

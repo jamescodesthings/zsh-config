@@ -1,45 +1,45 @@
 #!/usr/bin/env zsh
 
 function git-cleanup-branch() {
-  local DEPS=(
-    git
-  )
-
+  local DEPS=(git)
   if ! deps $DEPS; then
-    return
+    return 1
   fi
 
   if is empty "$1" || is equal "$1" "--help"; then
-    echo "$c[h1]git cleanup branch$c[reset]"
-    echo "$c[lead]Deletes the passed in branch locally and pushes a delete to origin$c[reset]"
+    echo "$c[h1]git-cleanup-branch$c[reset]"
     echo ""
-    echo "$c[h2]Usage:$c[reset]"
-    echo "git-cleanup-branch $c[flag]<branch-name>$c[reset]"
+    echo "$c[lead]deletes a branch locally and pushes the deletion to origin.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  git-cleanup-branch $c[param]<branch-name>$c[reset]"
     echo ""
     return 1
   fi
 
   if is equal "$1" "main" || is equal "$1" "master"; then
-    echo "$c[error]Error: $c[reset] cannot delete main branches"
+    echo "$c[error]error:$c[reset] cannot delete main branches"
     return 1
   fi
 
   if is equal "$1" "$(git-branch)"; then
-    echo "$c[error]Error: $c[reset] cannot delete the current branch"
+    echo "$c[error]error:$c[reset] cannot delete the current branch"
     return 1
   fi
 
-  git branch -D $1
+  git branch -D "$1"
   if is not equal "$?" "0"; then
-    echo "$c[error]Error: $c[reset] could not delete branch $1 locally"
+    echo "$c[error]error:$c[reset] could not delete branch $1 locally"
     return 1
   fi
 
-  git push origin --delete $1
+  git push origin --delete "$1"
   if is not equal "$?" "0"; then
-    echo "$c[error]Error: $c[reset] could not delete branch $1 from origin"
+    echo "$c[error]error:$c[reset] could not delete branch $1 from origin"
     return 1
   fi
+
+  echo "$c[success]success:$c[reset] deleted $1 locally and from origin"
 }
 
 git-cleanup-branch "$@"

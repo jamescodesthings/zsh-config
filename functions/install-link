@@ -1,37 +1,41 @@
 #!/usr/bin/env zsh
 
 function install-link() {
-  # if length of arguments is not 2, print usage and exit
-  if is not equal "$#" "2" or is equal "$1" "--help"; then
-    echo "Usage: install-link <from> <to>"
-    echo "From: the source file to link from"
-    echo "To: the target file to link to"
-    echo "Example: install-link ./configs/asdf/.asdfrc ~/.asdfrc"
+  if is not equal "$#" "2" || is equal "$1" "--help"; then
+    echo "$c[h1]install-link$c[reset]"
+    echo ""
+    echo "$c[lead]creates a symlink from a source path to a target path, backing up any existing file.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  install-link $c[param]<from>$c[reset] $c[param]<to>$c[reset]"
+    echo ""
+    echo "$c[h2]examples$c[reset]"
+    echo "  install-link $c[param]./configs/asdf/.asdfrc$c[reset] $c[param]~/.asdfrc$c[reset]"
     return 1
   fi
 
-  FROM="$1"
-  TO="$2"
+  local FROM="$1"
+  local TO="$2"
 
   if is link "$TO"; then
-    echo "Removing Existing Link: $TO"
+    echo "$c[info]removing:$c[reset] existing link $TO"
     rm "$TO"
   fi
 
   if is file "$TO"; then
-    echo "Backing up Existing File: $TO"
+    echo "$c[info]backing up:$c[reset] $TO → $TO.bak"
     mv "$TO" "$TO.bak"
   fi
 
   if is dir "$TO"; then
-    echo "Backing up Existing Directory: $TO"
-    mv "$TO" "$TO_bak"
+    echo "$c[info]backing up:$c[reset] $TO → ${TO}_bak"
+    mv "$TO" "${TO}_bak"
   fi
 
-  echo "link: $FROM > $TO"
+  echo "$c[info]linking:$c[reset] $FROM → $TO"
   sudo ln -s "$FROM" "$TO"
   if is not equal "$?" "0"; then
-    echo "Failed to create link from $FROM to $TO"
+    echo "$c[error]error:$c[reset] could not create link $FROM → $TO"
     return 1
   fi
 }

@@ -1,25 +1,21 @@
 #!/usr/bin/env zsh
 
-# gcod: Checks out development (git flow configured)
-function gcod () {
-  local DEPS=(
-    git
-  )
-
+function gcod() {
+  local DEPS=(git)
   if ! deps $DEPS; then
-    return
-  fi
-
-  DEV_BRANCH=$(git config gitflow.branch.develop)
-  if is empty "$DEV_BRANCH"; then
     return 1
   fi
 
-  git checkout $DEV_BRANCH
-    if is not equal "$?" "0"; then
-    echo "$c[error]Could not checkout development branch ($DEV_BRANCH)\n$c[reset]"
-    echo "$c[sub]to set the development branch for this repo:$c[reset]"
-    echo "git config gitflow.branch.develop $c[flag]develop$c[reset]"
+  local DEV_BRANCH=$(git config gitflow.branch.develop)
+  if is empty "$DEV_BRANCH"; then
+    echo "$c[error]error:$c[reset] no gitflow develop branch configured"
+    echo "set it with: git config gitflow.branch.develop $c[em]develop$c[reset]"
+    return 1
+  fi
+
+  git checkout "$DEV_BRANCH"
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] could not checkout $DEV_BRANCH"
     return 1
   fi
 }

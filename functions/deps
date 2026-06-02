@@ -1,24 +1,17 @@
 #!/usr/bin/env zsh
 
-# Usage:
-# To check for availability of dependencies in a function:
-# local DEPS=(asdf)
-# if ! deps $DEPS; then
-#   return
-# fi
-
 declare -A steps
 
 steps[asdf]="run zshconfig/install to install asdf"
 steps[eza]="$CUSTOM_DIR/installers/eza"
-steps[gh]="Install Github CLI: https://cli.github.com/"
+steps[gh]="install github cli: https://cli.github.com/"
 steps[http]="run zshconfig/install to install httpie"
 steps[python]="asdf plugin add python && asdf install python latest && asdf set -u python latest"
 
 function deps-command() {
   local inst="${steps[$1]}"
-  if is not empty $inst; then
-    echo "$c[h3]Install:$c[reset] $inst"
+  if is not empty "$inst"; then
+    echo "$c[info]install:$c[reset] $inst"
   fi
 }
 
@@ -27,7 +20,7 @@ function deps() {
 
   for dependency in "$@"; do
     if is not available "$dependency"; then
-      echo "$c[error]Missing dependency:$c[reset] $dependency"
+      echo "$c[error]missing dependency:$c[reset] $dependency"
       deps-command "${dependency}"
       missing=1
     fi
