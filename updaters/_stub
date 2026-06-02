@@ -1,0 +1,4 @@
+#!/usr/bin/env zsh
+UPDATER_DIR=${0:a:h}
+REPO_DIR=${UPDATER_DIR:h}
+source "$REPO_DIR/installers/_stub"

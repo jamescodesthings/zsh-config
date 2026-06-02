@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is osx; then
+  echo "$c[info]skipping:$c[reset] debian updater is linux only"
+  exit 0
+fi
+
+if is not available apt; then
+  echo "$c[info]skipping:$c[reset] apt not available"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] apt packages"
+sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] apt update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] apt packages updated"

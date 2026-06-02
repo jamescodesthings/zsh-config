@@ -1,0 +1,36 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is not available asdf; then
+  echo "$c[info]skipping:$c[reset] asdf not installed (required for node updates)"
+  exit 0
+fi
+
+echo "$c[info]installing:$c[reset] latest nodejs via asdf"
+asdf install nodejs latest
+if is not equal "$?" "0"; then
+  echo "$c[warn]warning:$c[reset] could not install latest nodejs, falling back to latest installed"
+  LATEST_NODE=$(asdf list nodejs | grep -v 'lts' | tr -d ' ' | sort -V -r | head -n 1)
+  if is not empty "$LATEST_NODE"; then
+    asdf set -u nodejs "$LATEST_NODE"
+    echo "$c[warn]warning:$c[reset] set node to latest installed: $LATEST_NODE"
+  else
+    echo "$c[error]error:$c[reset] no versions of nodejs installed"
+    exit 1
+  fi
+else
+  asdf set -u nodejs latest
+fi
+
+echo "$c[info]updating:$c[reset] npm"
+npm install -g npm
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] npm self-update failed"
+  exit 1
+fi
+
+if is available asdf-reshim; then
+  asdf-reshim
+fi
+
+echo "$c[success]success:$c[reset] node and npm updated"

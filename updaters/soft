@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is not osx; then
+  echo "$c[info]skipping:$c[reset] software update is macos only"
+  exit 0
+fi
+
+if is not available softwareupdate; then
+  echo "$c[info]skipping:$c[reset] softwareupdate not available"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] macos software"
+softwareupdate --all --install --force
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] software update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] software updates installed"

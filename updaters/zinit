@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is not available zinit; then
+  echo "$c[info]skipping:$c[reset] zinit not installed"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] zinit"
+zinit self-update
+
+echo "$c[info]updating:$c[reset] zinit plugins"
+zinit update --parallel
+
+echo "$c[success]success:$c[reset] zinit updated"

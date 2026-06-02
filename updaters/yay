@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is not available yay; then
+  echo "$c[info]skipping:$c[reset] yay not installed"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] yay packages"
+yay -Syu
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] yay update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] yay packages updated"

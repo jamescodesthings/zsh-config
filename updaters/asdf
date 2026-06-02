@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is not available asdf; then
+  echo "$c[info]skipping:$c[reset] asdf not installed"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] asdf plugins"
+asdf plugin update --all
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] asdf plugin update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] asdf plugins updated"

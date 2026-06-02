@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is not available snap; then
+  echo "$c[info]skipping:$c[reset] snap not installed"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] snap packages"
+sudo snap refresh
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] snap refresh failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] snap packages updated"

@@ -1,0 +1,14 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+echo "$c[info]updating:$c[reset] zsh-config"
+OUTPUT=$(cd "$REPO_DIR" && git pull)
+RESULT=$?
+
+if is not equal "$RESULT" "0"; then
+  echo "$c[error]error:$c[reset] git pull failed"
+  echo "$OUTPUT"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] zsh-config updated"

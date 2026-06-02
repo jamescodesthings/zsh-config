@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+source "${0:a:h}/_stub"
+
+if is not osx; then
+  echo "$c[info]skipping:$c[reset] homebrew is macos only"
+  exit 0
+fi
+
+if is not available brew; then
+  echo "$c[info]skipping:$c[reset] homebrew not installed"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] homebrew"
+brew update && brew upgrade
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] homebrew update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] homebrew updated"
