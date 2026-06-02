@@ -12,6 +12,11 @@ LINUX_DIR="$HOME/.config/Code/User"
 DEST_DIR=""
 SETTINGS_SUFFIX=""
 
+if is tty; then
+  echo "$c[info]skipping:$c[reset] vscode isn't available on a tty"
+  exit 0
+fi
+
 # Install VSCode Snippets
 if is osx; then
   DEST_DIR="$OSX_DIR"
