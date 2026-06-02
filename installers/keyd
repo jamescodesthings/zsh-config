@@ -6,7 +6,7 @@ check-or-load install-link
 
 DEST_DEFAULT_CONFIG=/etc/keyd/default.conf
 
-if is not linux || is not equal "$(get-hostname)" "ubuntu"; then
+if is not equal "$(get-hostname)" "ubuntu"; then
   echo "$c[info]Skipping:$c[reset] keyd is only for linux"
   exit 0
 fi

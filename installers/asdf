@@ -35,59 +35,10 @@ if is available brew; then
   exit 0
 fi
 
-if is available apt; then
-  echo "$c[info]installing:$c[reset] asdf dependencies via apt"
-  sudo apt install -y git bash
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] failed to install dependencies (git, bash)"
-    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
-    exit 1
-  fi
-
-  echo "$c[info]downloading:$c[reset] latest asdf release from github"
-  download-latest-release asdf-vm/asdf
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] download failed"
-    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
-    exit 1
-  fi
-
-  INSTALLER_CANDIDATES=("$CUSTOM_DIR/.installers"/asdf-*.tar.gz(N))
-  ASDF_INSTALLER="$INSTALLER_CANDIDATES[1]"
-  if is empty "$ASDF_INSTALLER"; then
-    echo "$c[error]error:$c[reset] installer file not found after download"
-    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
-    exit 1
-  fi
-
-  EXTRACT_DIR="$CUSTOM_DIR/.installers/asdf-extract"
-  rm -rf "$EXTRACT_DIR"
-  mkdir -p "$EXTRACT_DIR"
-
-  echo "$c[info]extracting:$c[reset] $ASDF_INSTALLER"
-  tar -xzf "$ASDF_INSTALLER" -C "$EXTRACT_DIR"
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] extraction failed"
-    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
-    exit 1
-  fi
-
-  ASDF_EXECUTABLE=$(find "$EXTRACT_DIR" -type f -name "asdf" 2>/dev/null | head -n 1)
-  if is empty "$ASDF_EXECUTABLE"; then
-    echo "$c[error]error:$c[reset] asdf executable not found in extracted archive"
-    exit 1
-  fi
-
-  echo "$c[info]installing:$c[reset] asdf to /usr/local/bin"
-  sudo install -m 0755 "$ASDF_EXECUTABLE" "/usr/local/bin/asdf"
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not install to /usr/local/bin"
-    echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
-    exit 1
-  fi
-
-  echo "$c[success]success:$c[reset] asdf installed"
-  exit 0
+if is linux; then
+  echo "$c[error]error:$c[reset] asdf is not available via package manager on linux"
+  echo "$c[info]install instructions:$c[reset] https://asdf-vm.com/guide/getting-started.html"
+  exit 1
 fi
 
 echo "$c[error]error:$c[reset] no supported package manager found (brew or apt)"
