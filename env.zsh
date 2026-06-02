@@ -19,6 +19,8 @@ fi
 
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 
+export MICRO_TRUECOLOR=1
+
 # Set the editor to sublime
 if is available vim; then
   export EDITOR='vim'
