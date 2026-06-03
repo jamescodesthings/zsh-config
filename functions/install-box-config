@@ -1,0 +1,70 @@
+#!/usr/bin/env zsh
+
+function install-box-config() {
+  if is empty "$@"; then
+    echo "$c[h1]Install Box Config$c[reset]"
+    echo "$c[lead]Installs a box specific config file to a config location$c[reset]"
+    echo "$c[p]Tries to install the config file with .hostname.ext (e.g. settings.ubuntu.json)$c[reset]"
+    echo "$c[p]If the config file with .hostname.ext doesn't exist, it will try to install the config with .os.json (e.g. settings.linux.json)$c[reset]"
+    echo "$c[p]If that fails it will try to install the default config file$c[reset]"
+    echo "$c[p]Errors if none of those exist$c[reset]"
+    echo ""
+    echo "$c[h2]Usage:$c[reset]"
+    echo "install-box-config $c[param]config-source config-destination$c[reset]"
+    echo ""
+    echo "$c[h3]Example:$c[reset]"
+    echo "install-box-config $c[param]$CUSTOM_DIR/configs/vscode/settings.json $c[param]$HOME/.config/Code/User/settings.json$c[reset]"
+    echo "$c[param]config-source$c[reset] - The source config files"
+    echo "$c[param]config-destination$c[reset] - The destination path where the config file should be installed"
+    echo ""
+    return 1
+  fi
+
+  local config_source="$1"
+  local config_destination="$2"
+  local config_dir="$(dirname "$config_source")"
+  local config_filename="$(basename "$config_source")"
+  local config_name="${config_filename%.*}"
+  local config_extension="${config_filename##*.}"
+
+  local hostname="$(get-hostname)"
+  if is empty "$hostname"; then
+    echo "$c[error]Could not determine hostname$c[reset]"
+    return 1
+  fi
+
+  local host_overridden_config="$config_dir/$config_name.$hostname.$config_extension"
+  if is file "$host_overridden_config"; then
+    echo "Installing host specific config: $host_overridden_config"
+    install-link "$host_overridden_config" "$config_destination"
+    return 0
+  fi
+
+  local os=""
+  if is osx; then
+    os="osx"
+  elif is linux; then
+    os="linux"
+  else
+    echo "$c[error]Unsupported OS$c[reset]"
+    return 1
+  fi
+
+  local os_overridden_config="$config_dir/$config_name.$os.$config_extension"
+  if is file "$os_overridden_config"; then
+    echo "Installing OS specific config: $os_overridden_config"
+    install-link "$os_overridden_config" "$config_destination"
+    return 0
+  fi
+
+  if is file "$config_source"; then
+    echo "Installing default config: $config_source"
+    install-link "$config_source" "$config_destination"
+    return 0
+  fi
+
+  echo "$c[error]No config file found for $config_destination$c[reset]"
+  return 1
+}
+
+install-box-config "$@"

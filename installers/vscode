@@ -3,6 +3,7 @@
 source "${0:a:h}/_stub"
 
 check-or-load install-link
+check-or-load install-link
 
 CONFIG_DIR="$REPO_DIR/configs/vscode"
 
@@ -17,15 +18,12 @@ if is tty; then
   exit 0
 fi
 
-# Install VSCode Snippets
 if is osx; then
   DEST_DIR="$OSX_DIR"
-  SETTINGS_SUFFIX="osx"
 fi
 
 if is linux; then
   DEST_DIR="$LINUX_DIR"
-  SETTINGS_SUFFIX="linux"
 fi
 
 if [ "$DEST_DIR" = "" ]; then
@@ -34,13 +32,5 @@ if [ "$DEST_DIR" = "" ]; then
 fi
 
 install-link "$CONFIG_DIR/snippets" "$DEST_DIR/snippets"
-if is file "$CONFIG_DIR/settings.$SETTINGS_SUFFIX.json"; then
-  install-link "$CONFIG_DIR/settings.$SETTINGS_SUFFIX.json" "$DEST_DIR/settings.json"
-else
-  echo "$c[warn]warning:$c[reset] no $SETTINGS_SUFFIX settings.json exists"
-fi
-if is file "$CONFIG_DIR/keybindings.$SETTINGS_SUFFIX.json"; then
-  install-link "$CONFIG_DIR/keybindings.$SETTINGS_SUFFIX.json" "$DEST_DIR/keybindings.json"
-else
-  echo "$c[warn]warning:$c[reset] no $SETTINGS_SUFFIX keybindings.json exists"
-fi
+install-box-config "$CONFIG_DIR/settings.json" "$DEST_DIR/settings.json"
+install-box-config "$CONFIG_DIR/keybindings.json" "$DEST_DIR/keybindings.json"
