@@ -14,14 +14,14 @@ if is not equal "$(get-hostname)" "ubuntu"; then
   exit 0
 fi
 
-echo "$cs[info]installing streamdeck bin scripts from $REPO_DIR/bin to $DEST_DIR"
-
+DEST_DIR=/usr/local/bin
+echo "$c[info]installing:$c[reset] streamdeck bin scripts from $REPO_DIR/bin to $DEST_DIR"
 for script in $REPO_DIR/bin/*; do
   name=$(basename $script)
   dest=$DEST_DIR/$name
 
-  install-link "$script" "$dest"
-  sudo chmod +x "$script"
+  install-link "$script" "$dest" || exit 1
+  sudo chmod +x "$dest"
 done
 
-echo "$c[success]streamdeck bin scripts install complete$c[reset]"
+echo "$c[success]success: $c[reset]streamdeck bin scripts install complete"

@@ -19,17 +19,29 @@ function install-link() {
 
   if is link "$TO"; then
     echo "$c[info]removing:$c[reset] existing link $TO"
-    rm "$TO"
+    sudo rm "$TO"
+    if is not equal "$?" "0"; then
+      echo "$c[error]error:$c[reset] could not remove existing link $TO"
+      return 1
+    fi
   fi
 
   if is file "$TO"; then
     echo "$c[info]backing up:$c[reset] $TO → $TO.bak"
-    mv "$TO" "$TO.bak"
+    sudo mv "$TO" "$TO.bak"
+    if is not equal "$?" "0"; then
+      echo "$c[error]error:$c[reset] could not back up existing file $TO"
+      return 1
+    fi
   fi
 
   if is dir "$TO"; then
     echo "$c[info]backing up:$c[reset] $TO → ${TO}_bak"
-    mv "$TO" "${TO}_bak"
+    sudo mv "$TO" "${TO}_bak"
+    if is not equal "$?" "0"; then
+      echo "$c[error]error:$c[reset] could not back up existing directory $TO"
+      return 1
+    fi
   fi
 
   echo "$c[info]linking:$c[reset] $FROM → $TO"
