@@ -4,6 +4,17 @@
 
 NAME="${1:?Usage: focus-window-by-name <name>}"
 
+_extension_focus() {
+    command -v gdbus &>/dev/null || return 1
+    local result
+    result=$(gdbus call --session \
+        --dest com.personal.WindowList \
+        --object-path /com/personal/WindowList \
+        --method com.personal.WindowList.FocusByName \
+        "$1" 2>/dev/null) || return 1
+    [[ "$result" == "(true,)" ]]
+}
+
 _gdbus_focus() {
     local name="${1,,}"
     local js="let w=global.get_window_actors().map(a=>a.meta_window).find(w=>w.get_title()&&w.get_title().toLowerCase().includes('$name')&&!w.minimized); w?(Main.activateWindow(w),true):false;"
@@ -21,6 +32,7 @@ _wmctrl_focus() {
 }
 
 if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _extension_focus "$NAME" && exit 0
     _gdbus_focus "$NAME" && exit 0
 fi
 
