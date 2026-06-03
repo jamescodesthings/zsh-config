@@ -2,6 +2,35 @@
 # List all windows with class, title, and minimized state. Useful for debugging focus scripts.
 # Usage: list-windows
 
+_extension_list() {
+    command -v gdbus &>/dev/null || return 1
+    local result
+    result=$(gdbus call --session \
+        --dest com.personal.WindowList \
+        --object-path /com/personal/WindowList \
+        --method com.personal.WindowList.GetWindows 2>/dev/null) || return 1
+    local json
+    json=$(printf '%s' "$result" | sed "s/^('//;s/',)\$//")
+    [[ -z "$json" ]] && return 1
+    if command -v jq &>/dev/null; then
+        printf '%s' "$json" | jq -r '
+            ["CLASS","TITLE","MINIMIZED"],
+            ["-----","-----","---------"],
+            (.[] | [.class, (.title // ""), (if .minimized then "yes" else "no" end)])
+            | @tsv' | column -t -s $'\t'
+    else
+        python3 -c "
+import sys, json
+windows = json.loads(sys.argv[1])
+fmt = '{:<30} {:<50} {}'
+print(fmt.format('CLASS', 'TITLE', 'MINIMIZED'))
+print(fmt.format('-----', '-----', '---------'))
+for w in windows:
+    print(fmt.format(w['class'] or '', (w['title'] or '')[:49], 'yes' if w['minimized'] else 'no'))
+" "$json"
+    fi
+}
+
 _gdbus_list() {
     local js="global.get_window_actors().map(a=>a.meta_window).map(w=>({class:w.get_wm_class(),title:w.get_title(),minimized:w.minimized}))"
     local result
@@ -33,15 +62,16 @@ for w in windows:
 }
 
 _wmctrl_list() {
-    # wmctrl -l -x: WINID DESKTOP WMCLASS HOSTNAME TITLE...
     printf '%-30s %-50s %s\n' "CLASS" "TITLE" "MINIMIZED"
     printf '%-30s %-50s %s\n' "-----" "-----" "---------"
+    echo "(XWayland windows only — install window-list@personal extension for full list)"
     wmctrl -l -x 2>/dev/null | while read -r _wid _desk wclass _host title; do
         printf '%-30s %-50s %s\n' "$wclass" "$title" "unknown"
     done
 }
 
 if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _extension_list && exit 0
     _gdbus_list && exit 0
 fi
 
@@ -49,5 +79,5 @@ if command -v wmctrl &>/dev/null; then
     _wmctrl_list && exit 0
 fi
 
-echo "No method available (need gdbus on Wayland or wmctrl on X11)" >&2
+echo "No method available (need window-list@personal extension, gdbus on Wayland, or wmctrl on X11)" >&2
 exit 1
