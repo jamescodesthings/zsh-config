@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 # Focus visible window whose title matches PATTERN (regex). Returns 0 if focused, 1 if not found.
 # Usage: focus-window-by-name-regex <pattern>
-# Note: patterns containing single quotes are not supported.
+# Note: patterns containing single quotes are not supported via Eval fallback.
 
 PATTERN="${1:?Usage: focus-window-by-name-regex <pattern>}"
+
+_extension_focus() {
+    command -v gdbus &>/dev/null || return 1
+    local result
+    result=$(gdbus call --session \
+        --dest com.personal.WindowList \
+        --object-path /com/personal/WindowList \
+        --method com.personal.WindowList.FocusByNameRegex \
+        "$1" 2>/dev/null) || return 1
+    [[ "$result" == "(true,)" ]]
+}
 
 _gdbus_focus() {
     local pattern="$1"
@@ -25,6 +36,7 @@ _wmctrl_focus() {
 }
 
 if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _extension_focus "$PATTERN" && exit 0
     _gdbus_focus "$PATTERN" && exit 0
 fi
 
