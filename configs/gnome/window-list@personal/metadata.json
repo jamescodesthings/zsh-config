@@ -1,0 +1,7 @@
+{
+    "name": "Window List D-Bus",
+    "description": "Exposes window listing and focus via D-Bus for CLI scripts. No unsafe_mode required.",
+    "uuid": "window-list@personal",
+    "shell-version": ["45", "46", "47", "48", "49", "50"],
+    "version": 1
+}
