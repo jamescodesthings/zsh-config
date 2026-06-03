@@ -1,4 +1,3 @@
-import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
@@ -42,7 +41,7 @@ export default class WindowListExtension {
         this._nameId = 0;
     }
 
-    GetWindows(_params, invocation) {
+    GetWindows() {
         const windows = global.get_window_actors()
             .map(a => a.meta_window)
             .map(w => ({
@@ -50,44 +49,40 @@ export default class WindowListExtension {
                 title: w.get_title() ?? '',
                 minimized: w.minimized,
             }));
-        invocation.return_value(new GLib.Variant('(s)', [JSON.stringify(windows)]));
+        return JSON.stringify(windows);
     }
 
-    FocusByClass(params, invocation) {
-        const [wmClass] = params.deepUnpack();
+    FocusByClass(wmClass) {
         const win = global.get_window_actors()
             .map(a => a.meta_window)
             .find(w => (w.get_wm_class() ?? '').toLowerCase() === wmClass.toLowerCase() && !w.minimized);
         if (win)
             Main.activateWindow(win);
-        invocation.return_value(new GLib.Variant('(b)', [win !== undefined]));
+        return win !== undefined;
     }
 
-    FocusByName(params, invocation) {
-        const [substr] = params.deepUnpack();
+    FocusByName(substr) {
         const lower = substr.toLowerCase();
         const win = global.get_window_actors()
             .map(a => a.meta_window)
             .find(w => (w.get_title() ?? '').toLowerCase().includes(lower) && !w.minimized);
         if (win)
             Main.activateWindow(win);
-        invocation.return_value(new GLib.Variant('(b)', [win !== undefined]));
+        return win !== undefined;
     }
 
-    FocusByNameRegex(params, invocation) {
-        const [pattern] = params.deepUnpack();
+    FocusByNameRegex(pattern) {
         let re;
         try {
             re = new RegExp(pattern);
         } catch {
-            invocation.return_value(new GLib.Variant('(b)', [false]));
-            return;
+            return false;
         }
         const win = global.get_window_actors()
             .map(a => a.meta_window)
             .find(w => re.test(w.get_title() ?? '') && !w.minimized);
         if (win)
             Main.activateWindow(win);
-        invocation.return_value(new GLib.Variant('(b)', [win !== undefined]));
+        return win !== undefined;
     }
 }
