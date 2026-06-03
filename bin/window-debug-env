@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Diagnose window management environment: checks display, tools, and gdbus Eval status.
+# Diagnose window management environment. Checks extension, fallbacks, and tools.
+# Prints a fix command if the extension is not working.
 # Usage: window-debug-env
 
 ok()   { printf "  [ok]   %s\n" "$*"; }
 warn() { printf "  [warn] %s\n" "$*"; }
 fail() { printf "  [fail] %s\n" "$*"; }
+
+EXT_UUID="window-list@personal"
+EXT_PATH="$HOME/.local/share/gnome-shell/extensions/$EXT_UUID"
 
 echo "=== Display ==="
 [[ -n "${WAYLAND_DISPLAY:-}" ]] && ok "Wayland: $WAYLAND_DISPLAY" || warn "WAYLAND_DISPLAY not set"
@@ -12,12 +16,42 @@ echo "=== Display ==="
 
 echo ""
 echo "=== Tools ==="
-for tool in gdbus wmctrl xdotool xprop; do
+for tool in gdbus wmctrl xdotool xprop gnome-extensions; do
     command -v "$tool" &>/dev/null && ok "$tool: $(command -v $tool)" || fail "$tool: not found"
 done
 
 echo ""
-echo "=== gdbus Eval (org.gnome.Shell.Eval) ==="
+echo "=== Extension: $EXT_UUID ==="
+_ext_ok=false
+if [[ -e "$EXT_PATH" ]]; then
+    ok "installed: $EXT_PATH"
+else
+    fail "not installed: $EXT_PATH"
+fi
+
+if command -v gnome-extensions &>/dev/null; then
+    if gnome-extensions list --enabled 2>/dev/null | grep -q "^$EXT_UUID$"; then
+        ok "enabled"
+    else
+        fail "not enabled — run: gnome-extensions enable $EXT_UUID"
+    fi
+fi
+
+if command -v gdbus &>/dev/null; then
+    result=$(gdbus call --session \
+        --dest com.personal.WindowList \
+        --object-path /com/personal/WindowList \
+        --method com.personal.WindowList.GetWindows 2>&1)
+    if [[ "$result" == "('"* ]]; then
+        ok "D-Bus endpoint responds — extension is working"
+        _ext_ok=true
+    else
+        fail "D-Bus endpoint not responding: $result"
+    fi
+fi
+
+echo ""
+echo "=== Fallback: gdbus Eval (org.gnome.Shell.Eval) ==="
 if command -v gdbus &>/dev/null && [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
     result=$(gdbus call --session \
         --dest org.gnome.Shell \
@@ -25,10 +59,9 @@ if command -v gdbus &>/dev/null && [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
         --method org.gnome.Shell.Eval \
         "1+1" 2>&1)
     if [[ "$result" == "(true,"* ]]; then
-        ok "Eval works — focus-window-by-* scripts will function"
+        ok "Eval works (unsafe_mode enabled)"
     elif [[ "$result" == "(false,"* ]]; then
-        fail "Eval disabled (returns false) — focus scripts will not work"
-        warn "Enable via Looking Glass: Alt+F2 → 'lg' → type: global.context.unsafe_mode = true"
+        warn "Eval disabled — unsafe_mode not set (expected on GNOME 42+)"
     else
         fail "Eval error: $result"
     fi
@@ -37,14 +70,14 @@ else
 fi
 
 echo ""
-echo "=== gdbus Introspect (org.gnome.Shell.Introspect.GetWindows) ==="
+echo "=== Fallback: org.gnome.Shell.Introspect.GetWindows ==="
 if command -v gdbus &>/dev/null; then
     result=$(gdbus call --session \
         --dest org.gnome.Shell \
         --object-path /org/gnome/Shell/Introspect \
         --method org.gnome.Shell.Introspect.GetWindows 2>&1)
     if [[ "$result" == *"AccessDenied"* ]]; then
-        fail "GetWindows: AccessDenied"
+        warn "GetWindows: AccessDenied (blocked by GNOME 42+ policy — expected)"
     elif [[ "$result" == *"Error"* ]]; then
         fail "GetWindows: $result"
     else
@@ -53,7 +86,7 @@ if command -v gdbus &>/dev/null; then
 fi
 
 echo ""
-echo "=== XWayland windows (xdotool+xprop) ==="
+echo "=== Fallback: XWayland windows (xdotool+xprop) ==="
 if command -v xdotool &>/dev/null && command -v xprop &>/dev/null; then
     count=0
     while IFS= read -r wid; do
@@ -66,4 +99,24 @@ if command -v xdotool &>/dev/null && command -v xprop &>/dev/null; then
     [[ $count -eq 0 ]] && warn "No XWayland windows with WM_CLASS found"
 else
     warn "xdotool or xprop not available"
+fi
+
+echo ""
+echo "=== Summary ==="
+if $_ext_ok; then
+    ok "Extension working — window scripts will function correctly on Wayland"
+else
+    fail "Extension not working — window scripts will fall back to XWayland-only (wmctrl)"
+    echo ""
+    echo "  Fix:"
+    if [[ ! -e "$EXT_PATH" ]]; then
+        echo "    Run the installer (from your zsh-config repo):"
+        echo "      ./installers/gnome-extension-window-list"
+        echo "    Then log out and back in."
+    else
+        echo "    Extension is installed but not responding."
+        echo "    1. Enable it:    gnome-extensions enable $EXT_UUID"
+        echo "    2. Log out and back in (Wayland — no in-place shell restart)."
+        echo "    3. Re-run:       window-debug-env"
+    fi
 fi
