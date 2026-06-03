@@ -30,14 +30,16 @@ export default class WindowListExtension {
         this._nameId = Gio.DBus.session.own_name(
             'com.personal.WindowList',
             Gio.BusNameOwnerFlags.NONE,
-            null, null,
+            null,
+            () => { this.disable(); },
         );
     }
 
     disable() {
-        Gio.DBus.session.unown_name(this._nameId);
         this._dbusImpl.unexport();
         this._dbusImpl = null;
+        Gio.DBus.session.unown_name(this._nameId);
+        this._nameId = 0;
     }
 
     GetWindows(_params, invocation) {
