@@ -1,0 +1,108 @@
+#!/usr/bin/env zsh
+
+function npm-update-latest() {
+  if is equal "$1" "--help"; then
+    echo "$c[h1]npm-update-latest$c[reset]"
+    echo ""
+    echo "$c[lead]checks for outdated npm packages and updates each one to @latest with confirmation.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  npm-update-latest $c[flag][--help]$c[reset]"
+    echo ""
+    echo "$c[h2]notes$c[reset]"
+    echo "  runs $c[param]npm outdated --json$c[reset] to detect outdated packages"
+    echo "  prompts $c[sub][y/n]$c[reset] before each $c[param]npm install <pkg>@latest --save$c[reset]"
+    return 0
+  fi
+
+  local DEPS=(npm)
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  echo "$c[h1]npm update latest$c[reset]"
+  echo ""
+
+  local outdated_json
+  outdated_json=$(npm outdated --json 2>/dev/null)
+
+  if is empty "$outdated_json" || is equal "$outdated_json" "{}"; then
+    echo "$c[success]all packages are up to date$c[reset]"
+    return 0
+  fi
+
+  local packages
+  packages=($(echo "$outdated_json" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for pkg in data:
+    print(pkg)
+" 2>/dev/null))
+
+  if is empty "$packages"; then
+    echo "$c[success]all packages are up to date$c[reset]"
+    return 0
+  fi
+
+  local total=${#packages[@]}
+  echo "$c[warn]found $total outdated package(s):$c[reset]"
+  echo ""
+
+  echo "$outdated_json" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for pkg, info in data.items():
+    current  = info.get('current',  'none')
+    wanted   = info.get('wanted',   '?')
+    latest   = info.get('latest',   '?')
+    pkg_type = info.get('type',     '')
+    label    = f'  ({pkg_type})' if pkg_type else ''
+    print(f'  {pkg}{label}')
+    print(f'    current: {current}  ->  wanted: {wanted}  ->  latest: {latest}')
+" 2>/dev/null
+
+  echo ""
+
+  local updated=0
+  local skipped=0
+
+  for pkg in $packages; do
+    local current latest pkg_type
+    current=$(echo "$outdated_json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('$pkg',{}).get('current','none'))" 2>/dev/null)
+    latest=$(echo  "$outdated_json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('$pkg',{}).get('latest','?'))"   2>/dev/null)
+    pkg_type=$(echo "$outdated_json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('$pkg',{}).get('type',''))"    2>/dev/null)
+
+    local type_flag=""
+    if is equal "$pkg_type" "devDependencies"; then
+      type_flag="--save-dev"
+    else
+      type_flag="--save"
+    fi
+
+    echo "$c[h2]$pkg$c[reset]  $c[info-small]$current -> $latest$c[reset]"
+
+    if confirm "  update $c[param]${pkg}@latest$c[reset] $c[info-small]($type_flag)$c[reset]?"; then
+      echo "  $c[info]running:$c[reset] npm install ${pkg}@latest $type_flag"
+      local npm_output npm_exit
+      npm_output=$(npm install "${pkg}@latest" $type_flag 2>&1)
+      npm_exit=$?
+      if (( npm_exit == 0 )); then
+        echo "  $c[success]updated$c[reset] $pkg to latest"
+        (( updated++ ))
+      else
+        echo "$npm_output"
+        echo "  $c[error]error:$c[reset] failed to update $pkg — try manually: npm install ${pkg}@latest $type_flag"
+      fi
+    else
+      echo "  $c[info]skipped$c[reset]"
+      (( skipped++ ))
+    fi
+
+    echo ""
+  done
+
+  echo "$c[h2]done$c[reset]"
+  echo "  $c[success]updated: $updated$c[reset]  $c[warn]skipped: $skipped$c[reset]"
+}
+
+npm-update-latest "$@"
