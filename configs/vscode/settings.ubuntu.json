@@ -21,5 +21,6 @@
     "security.workspace.trust.banner": "never",
     "security.workspace.trust.enabled": false,
     "makefile.configureOnOpen": false,
-    "explorer.confirmDelete": false
+    "explorer.confirmDelete": false,
+    "claudeCode.preferredLocation": "panel"
 }

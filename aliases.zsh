@@ -181,7 +181,7 @@ if is available zev; then
 fi
 
 if is available claude; then
-  alias cld="claude --dangerously-skip-permissions"
+  alias cld="claude --dangerously-skip-permissions --remote-control"
   alias cldr="cld --resume"
   alias cldm="claude-monitor"
 fi
