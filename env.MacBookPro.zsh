@@ -102,6 +102,3 @@ if is not existing ~/.hushlogin; then
 fi
 
 export CHEATSHEET_DIR="/Users/jamesmacmillan/projects/personal/cheatsheets"
-
-export EDITOR="micro"
-export VISUAL="micro"

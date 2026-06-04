@@ -21,11 +21,10 @@ export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 
 export MICRO_TRUECOLOR=1
 
-# Set the editor to sublime
-if is available vim; then
-  export EDITOR='vim'
-elif is available subl; then
-  export EDITOR='subl -w'
+# Set the editor to micro if it's available
+if is available micro; then
+  export EDITOR="micro"
+  export VISUAL="micro"
 fi
 
 if is existing $HOME/.cargo/env; then
