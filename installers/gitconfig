@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+install-link "$REPO_DIR/configs/git/.gitconfig" "$HOME/.gitconfig"
+
+echo "$c[success]gitconfig install complete$c[reset]"
