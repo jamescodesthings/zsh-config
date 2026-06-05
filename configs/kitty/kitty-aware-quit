@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+
+PROG_NAME=$($HOME/.config/kitty/kitty-current-window)
+
+if [[ "$PROG_NAME" == "micro" ]]; then
+    # Send keystrokes directly to micro
+    if [[ "$ACTION" == "close_window" ]]; then
+        # Send Ctrl+W (\x17) to close the buffer/split in micro
+        kitty @ send-text --match=string:active "\x17"
+    else
+        # Send Ctrl+Q (\x11) to quit micro entirely
+        kitty @ send-text --match=string:active "\x11"
+    fi
+else
+    # Micro is closed; perform native kitty actions instead
+    if [[ "$ACTION" == "close_window" ]]; then
+        kitty @ close-window
+    else
+        kitty @ quit
+    fi
+fi

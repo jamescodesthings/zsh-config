@@ -61,3 +61,5 @@ fi
 
 install-link "$CONFIG_SOURCE/kitty.conf" "$CONFIG_DEST/kitty.conf"
 install-link "$CONFIG_SOURCE/current-theme.conf" "$CONFIG_DEST/current-theme.conf"
+install-link "$CONFIG_SOURCE/kitty-aware-quit" "$CONFIG_DEST/kitty-aware-quit"
+install-link "$CONFIG_SOURCE/kitty-current-window" "$CONFIG_DEST/kitty-current-window"

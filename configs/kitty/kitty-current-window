@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+# Get foreground process of focused window in focused tab
+# Requires: allow_remote_control yes + listen_on configured in kitty.conf
+
+SOCKET="${KITTY_LISTEN_ON:-unix:/tmp/kitty}"
+
+kitty @ --to "$SOCKET" ls 2>/dev/null \
+  | jq -r '.[] | select(.is_focused) | .tabs[] | select(.is_focused) | .windows[] | select(.is_focused) | .foreground_processes[-1].cmdline[0]'
