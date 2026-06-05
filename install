@@ -14,6 +14,29 @@ if is equal "$1" "--help"; then
   exit 0
 fi
 
+LEGACY_DIR="$REPO_DIR/legacy-uninstallers"
+LEGACY_SCRIPTS=$(ls -1 $LEGACY_DIR | grep -v '.DS_Store' | grep -v '^_' 2> /dev/null)
+
+for script in ${(f)LEGACY_SCRIPTS}; do
+  [[ -z "$script" ]] && continue
+  echo "$c[info]running legacy cleanup$c[reset] $script"
+  if is not executable "$LEGACY_DIR/$script"; then
+    echo "$c[warn]warning:$c[reset] $script is not executable, making it executable"
+    chmod +x "$LEGACY_DIR/$script"
+  fi
+
+  "$LEGACY_DIR/$script"
+
+  if is equal "$?" "0"; then
+    echo "$c[success]succesfully ran$c[reset] $script"
+  else
+    echo "$c[error]failed$c[reset] $script"
+    exit 1
+  fi
+  echo ""
+  echo ""
+done
+
 SCRIPTS=$(ls -1 $INSTALLER_DIR | grep -v '.DS_Store' | grep -v '^_' 2> /dev/null)
 
 for script in ${(f)SCRIPTS}; do
