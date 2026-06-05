@@ -12,6 +12,8 @@ alias l1a='ls -1a'
 alias la1='l1a'
 alias l='k -h'
 
+alias s="kitten ssh"
+
 if is alias md; then
   unalias md
 fi
