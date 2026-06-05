@@ -1,0 +1,42 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+FOUND=0
+
+if is osx; then
+  APP="/Applications/Sublime Text.app"
+  SUBL_BINS=("$HOME/bin/subl" "/usr/local/bin/subl" "/usr/bin/subl")
+
+  if is existing "$APP"; then
+    echo "$c[info]removing:$c[reset] $APP"
+    rm -rf "$APP"
+    FOUND=1
+  fi
+
+  for bin in "${SUBL_BINS[@]}"; do
+    if is existing "$bin"; then
+      echo "$c[info]removing:$c[reset] $bin"
+      rm -f "$bin"
+      FOUND=1
+    fi
+  done
+fi
+
+if is linux; then
+  if snap list sublime-text &>/dev/null 2>&1; then
+    echo "$c[info]removing:$c[reset] sublime-text (snap)"
+    sudo snap remove sublime-text
+    FOUND=1
+  elif dpkg -l sublime-text &>/dev/null 2>&1; then
+    echo "$c[info]removing:$c[reset] sublime-text (apt)"
+    sudo apt-get remove --purge -y sublime-text
+    FOUND=1
+  fi
+fi
+
+if is equal "$FOUND" "0"; then
+  echo "$c[info]skipping:$c[reset] sublime text not found, nothing to remove"
+fi
+
+echo "$c[success]legacy cleanup complete:$c[reset] sublime-text"
