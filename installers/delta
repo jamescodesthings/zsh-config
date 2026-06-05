@@ -1,0 +1,66 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+if is not available curl; then
+  echo "$c[error]failed:$c[reset] curl is required to install delta, please install it and try again"
+  exit 1
+fi
+
+if is osx; then
+  if is available delta; then
+    echo "$c[info]skipping:$c[reset] delta is already installed"
+  else
+    echo "$c[info]installing:$c[reset] delta via brew"
+    brew install git-delta
+    echo "$c[success]success:$c[reset] delta installed"
+  fi
+fi
+
+if is linux; then
+  if is available delta; then
+    echo "$c[info]skipping:$c[reset] delta is already installed"
+  else
+    ARCH=$(uname -m)
+    case "$ARCH" in
+      x86_64)  DELTA_ARCH="x86_64-unknown-linux-gnu" ;;
+      aarch64) DELTA_ARCH="aarch64-unknown-linux-gnu" ;;
+      *)
+        echo "$c[error]failed:$c[reset] unsupported architecture $ARCH. Install manually: https://github.com/dandavison/delta/releases"
+        exit 1
+        ;;
+    esac
+
+    DELTA_VERSION=$(curl -fsSL https://api.github.com/repos/dandavison/delta/releases/latest \
+      | grep '"tag_name"' \
+      | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')
+
+    if is empty "$DELTA_VERSION"; then
+      echo "$c[error]failed:$c[reset] could not determine latest delta version. Install manually: https://github.com/dandavison/delta/releases"
+      exit 1
+    fi
+
+    DELTA_URL="https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/delta-${DELTA_VERSION}-${DELTA_ARCH}.tar.gz"
+    DELTA_TMP=$(mktemp -d)
+
+    echo "$c[info]installing:$c[reset] delta ${DELTA_VERSION} (${ARCH})"
+
+    if ! curl -fsSL "$DELTA_URL" -o "$DELTA_TMP/delta.tar.gz"; then
+      rm -rf "$DELTA_TMP"
+      echo "$c[error]failed:$c[reset] could not download delta. Install manually: https://github.com/dandavison/delta/releases"
+      exit 1
+    fi
+
+    if ! tar -xzf "$DELTA_TMP/delta.tar.gz" -C "$DELTA_TMP"; then
+      rm -rf "$DELTA_TMP"
+      echo "$c[error]failed:$c[reset] could not extract delta. Install manually: https://github.com/dandavison/delta/releases"
+      exit 1
+    fi
+
+    sudo mv "$DELTA_TMP/delta-${DELTA_VERSION}-${DELTA_ARCH}/delta" /usr/local/bin/delta
+    sudo chmod +x /usr/local/bin/delta
+    rm -rf "$DELTA_TMP"
+
+    echo "$c[success]success:$c[reset] delta ${DELTA_VERSION} installed to /usr/local/bin/delta"
+  fi
+fi
