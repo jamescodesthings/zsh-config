@@ -21,6 +21,9 @@ export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 
 export MICRO_TRUECOLOR=1
 
+# Disable pager for commands that use it by default, I like to use the terminal's scrollback instead
+export PAGER=
+
 # Set the editor to micro if it's available
 if is available micro; then
   export EDITOR="micro"

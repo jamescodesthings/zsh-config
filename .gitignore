@@ -1,6 +1,8 @@
 .installers/
 private.zsh
 
+docs/
+
 # General
 .DS_Store
 .AppleDouble
