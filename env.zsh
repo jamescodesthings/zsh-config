@@ -30,6 +30,8 @@ if is available micro; then
   export VISUAL="micro"
 fi
 
+export BAT_THEME="Solarized (dark)"
+
 if is existing $HOME/.cargo/env; then
   source $HOME/.cargo/env
 fi
