@@ -14,7 +14,7 @@ function zshconfig() {
     return 0
   fi
 
-  if is equal "$1" "--cd" || is equal "$1" "--jump"; then
+  if is equal "$1" "--cd" || is equal "$1" "--jump" || is equal "$1" "-j"; then
     if is available realpath; then
       cd "$(realpath $CUSTOM_DIR)"
       return 0
