@@ -55,3 +55,4 @@ fi
 
 install-link "$CONFIG_SOURCE/kitty.conf" "$CONFIG_DEST/kitty.conf"
 install-link "$CONFIG_SOURCE/current-theme.conf" "$CONFIG_DEST/current-theme.conf"
+install-box-config "$CONFIG_SOURCE/overrides.conf" "$CONFIG_DEST/overrides.conf"
