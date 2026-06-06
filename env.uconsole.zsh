@@ -2,7 +2,6 @@
 
 alias wifi="nmcli dev wifi list"
 alias battery="upower -d"
-alias bat=battery
 
 export DOCKER_HOST=unix:///run/user/1000/docker.sock
 export PATH="$HOME/.local/bin:$PATH"
