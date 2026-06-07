@@ -37,6 +37,9 @@ Conditions:
   is m1 - Is this an m1 chip?
   is iterm - Is the terminal emulator iTerm?
   is tty - Is this a terminal?
+  is gnome - Is this a GNOME session?
+  is wayland - Is this a Wayland session?
+  is x11 - Is this an X11/Xorg session?
 
 Negation:
   is not equal VALUE_A VALUE_B
@@ -147,6 +150,12 @@ EOF
             echo $(uname -a) | grep "Ubuntu"; return $?;;
         tty)
             [[ "$(uname)" == "Linux" && -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" ]]; return $?;;
+        gnome)
+            [[ "${XDG_CURRENT_DESKTOP}" == *"GNOME"* ]]; return $?;;
+        wayland)
+            [[ "${XDG_SESSION_TYPE}" == "wayland" ]]; return $?;;
+        x11)
+            [[ "${XDG_SESSION_TYPE}" == "x11" ]]; return $?;;
 
     esac > /dev/null
 

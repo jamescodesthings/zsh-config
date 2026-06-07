@@ -29,6 +29,9 @@ _is() {
     'arch:test if running on Arch Linux'
     'iterm:test if terminal is iTerm'
     'tty:test if running in a TTY'
+    'gnome:test if running in a GNOME session'
+    'wayland:test if running in a Wayland session'
+    'x11:test if running in an X11/Xorg session'
     'older:test if first path is older than second'
     'newer:test if first path is newer than second'
   )
