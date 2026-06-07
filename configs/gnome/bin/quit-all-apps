@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Gracefully close all open application windows.
+# Sends WM_DELETE_WINDOW to each window — apps may show save dialogs before closing.
+# Usage: quit-all-apps
+
+_extension_close_all() {
+    command -v gdbus &>/dev/null || return 1
+    local result
+    result=$(gdbus call --session \
+        --dest com.personal.WindowList \
+        --object-path /com/personal/WindowList \
+        --method com.personal.WindowList.CloseAll 2>/dev/null) || return 1
+    # result format: "(uint32 N,)"
+    printf '%s' "$result" | grep -oE '[0-9]+'
+}
+
+_wmctrl_close_all() {
+    command -v wmctrl &>/dev/null || return 1
+    local count=0
+    while IFS= read -r line; do
+        local wid
+        wid=$(printf '%s' "$line" | awk '{print $1}')
+        wmctrl -i -c "$wid" 2>/dev/null && (( count++ )) || true
+    done < <(wmctrl -l 2>/dev/null)
+    printf '%s' "$count"
+}
+
+count=0
+
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    count=$(_extension_close_all) || {
+        echo "quit-all-apps: extension not responding — run window-debug-env to diagnose" >&2
+        exit 1
+    }
+elif command -v wmctrl &>/dev/null; then
+    count=$(_wmctrl_close_all)
+else
+    echo "quit-all-apps: no method available (need window-list@personal extension on Wayland, or wmctrl on X11)" >&2
+    exit 1
+fi
+
+if command -v notify-send &>/dev/null; then
+    notify-send "Quit All Apps" "Closed ${count:-0} applications" --icon=application-exit 2>/dev/null || true
+fi

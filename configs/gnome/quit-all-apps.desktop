@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Quit All Apps
+Comment=Gracefully close all open applications
+Exec=quit-all-apps
+Icon=application-exit
+Terminal=false
+Categories=System;
+Keywords=quit;close;exit;apps;all;
+StartupNotify=false
