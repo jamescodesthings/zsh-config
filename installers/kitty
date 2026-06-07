@@ -3,6 +3,8 @@
 source "${0:a:h}/_stub"
 
 check-or-load install-link
+check-or-load install-box-config
+check-or-load confirm
 
 if is tty; then
   echo "$c[info]skipping:$c[reset] kitty is a terminal emulator and cannot be installed from a terminal session"
@@ -24,13 +26,17 @@ if is not available curl; then
 fi
 
 if is available kitty || is existing "$OSX_INSTALL_LOCATION" || is dir "$LINUX_INSTALL_LOCATION"; then
-  echo "$c[info]updating:$c[reset] kitty is already installed, updating"
+  echo "$c[info]info:$c[reset] kitty is already installed"
+  if confirm "kitty is already installed, do you want to check for updates?"; then
+    curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
+    echo "$c[success]success:$c[reset] kitty installed"
+  fi
 else
   echo "$c[info]installing:$c[reset] kitty from $INSTALL_SCRIPT_SOURCE"
+  curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
+  echo "$c[success]success:$c[reset] kitty installed"
 fi
 
-curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
-echo "$c[success]success:$c[reset] kitty installed"
 
 if is linux && is dir "$LINUX_INSTALL_LOCATION"; then
   ln -sf ~/.local/kitty.app/bin/kitty ~/.local/kitty.app/bin/kitten ~/.local/bin/
