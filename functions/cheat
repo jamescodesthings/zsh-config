@@ -26,8 +26,13 @@ function cheat() {
 
 
   local cheatsheet_command="cat"
-  if is available bat; then
-    cheatsheet_command="bat --style=plain --color=always"
+  local cheatsheet_command_args=()
+  if is available batcat; then
+    cheatsheet_command="batcat"
+    cheatsheet_command_args=(
+      "-p"
+      "--color=always"
+    )
   fi
 
   if is empty "$1" || is equal "$1" "--list"; then
@@ -52,12 +57,12 @@ function cheat() {
   local -a other_args
   other_args=("${(@)argv[2,-1]}")
   if is equal "${#other_args}" "0"; then
-    bat "$CHEATSHEET_DIR/$sheet_name.md"
+    $cheatsheet_command $cheatsheet_command_args "$CHEATSHEET_DIR/$sheet_name.md"
     return $?
   fi
 
   if is equal "$other_args[1]" "--edit"; then
-    micro "$CHEATSHEET_DIR/$sheet_name.md"
+    $EDITOR "$CHEATSHEET_DIR/$sheet_name.md"
     return $?
   fi
 }

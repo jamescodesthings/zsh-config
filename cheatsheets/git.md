@@ -1,28 +1,28 @@
-### git
+# git
 
-Undo last commit:
+## Undo last commit
 `git-i-fucked-up`
 
-Hard reset to origin:
+## Hard reset to origin
 `git-i-really-fucked-up`
 
-Prune Local:
+## Prune Local
 `git-prune-local`
 
-Commit with message:
+## Commit with message
 `gcm "msg"`
 
-Stage hunks interactively:
+## Stage hunks interactively
 `gap`
 
-Interactive rebase:
+## Interactive rebase
 `grbi HEAD~<n>`
 
-Checkout main/master branch:
+## Checkout main/master branch
 `gcom`
 
-Checkout develop branch:
+## Checkout develop branch
 `gcod`
 
-CD to git root of current repo:
+## CD to git root of current repo
 `root`
