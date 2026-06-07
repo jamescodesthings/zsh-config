@@ -1,69 +1,255 @@
 #!/usr/bin/env zsh
 
 function cheat() {
-  if is equal "$1" "--help" ; then
-    echo "$c[h1]Personal Cheatsheets$c[reset]"
-    echo ""
-    echo "$c[h2]Usage:$c[reset]"
-    echo "cheat $c[flag][--help]$c[reset] show this help message"
-    echo ""
-    echo "$c[h3]List all personal cheatsheets$c[reset]"
-    echo "cheat $c[flag]--list$c[reset]"
-    echo ""
-    echo "$c[h3]show specific personal cheatsheet$c[reset]"
-    echo "cheat $c[param]sheet-name$c[reset] $c[flag]$c[reset]"
-    echo ""
-    echo "$c[h3]edit specific personal cheatsheet$c[reset]"
-    echo "cheat $c[param]sheet-name$c[reset] $c[flag]--edit$c[reset]"
-    echo ""
-    return 0
-  fi
-
   if is empty "$CHEATSHEET_DIR"; then
-    echo "CHEATSHEET_DIR not set, run zsh-config/install to install it"
+    echo "${c[error]}error:${c[reset]} CHEATSHEET_DIR not set, run zsh-config/install to install it"
     return 1
   fi
 
-
-  local cheatsheet_command="cat"
-  local cheatsheet_command_args=()
-  if is available batcat; then
-    cheatsheet_command="batcat"
-    cheatsheet_command_args=(
-      "-p"
-      "--color=always"
-    )
-  fi
-
-  if is empty "$1" || is equal "$1" "--list"; then
-    echo "$c[h1]Available Cheatsheets:$c[reset]"
-    ls -1 "$CHEATSHEET_DIR" | grep -v '.DS_Store' | sed 's/\.md$//'
-    return $?
-  fi
-
-  local sheet_name
-  sheet_name="${1%.md}"
-
-  if is not file "$CHEATSHEET_DIR/$sheet_name.md"; then
-    if is available tldr; then
-      tldr "$sheet_name"
-      return $?
+  # Expand combined short flags: -ls → -l -s
+  local -a _argv
+  for arg in "$@"; do
+    if [[ "$arg" =~ ^-[a-zA-Z]{2,}$ ]]; then
+      local chars="${arg#-}"
+      for (( i = 1; i <= ${#chars}; i++ )); do
+        _argv+=("-${chars[$i]}")
+      done
     else
-      echo "Cheatsheet '$sheet_name' not found and tldr is not available"
-      return 1
+      _argv+=("$arg")
+    fi
+  done
+  set -- "${_argv[@]}"
+
+  # Parse flags
+  local flag_list=false flag_edit=false flag_update=false flag_raw=false flag_help=false
+  local flag_search="" flag_new=""
+  local -a pos_args
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h|--help)   flag_help=true;     shift ;;
+      -l|--list)   flag_list=true;     shift ;;
+      -s|--search) flag_search="$2";   shift 2 ;;
+      -e|--edit)   flag_edit=true;     shift ;;
+      -n|--new)    flag_new="$2";      shift 2 ;;
+      -u|--update) flag_update=true;   shift ;;
+      -r|--raw)    flag_raw=true;      shift ;;
+      --)          shift; pos_args+=("$@"); break ;;
+      -*) echo "${c[error]}error:${c[reset]} unknown flag: $1"; return 1 ;;
+      *)  pos_args+=("$1"); shift ;;
+    esac
+  done
+
+  # Renderer: glow → bat → cat
+  local render_cmd render_args=()
+  if is available glow; then
+    render_cmd="glow"; render_args=("-w" "120")
+  elif is available bat; then
+    render_cmd="bat"; render_args=("-p" "--color=always")
+  else
+    render_cmd="cat"
+  fi
+
+  # Auto-update tldr cache (silent, background, every 7 days)
+  if is available tldr; then
+    local _stamp="$CHEATSHEET_DIR/.tldr-last-update"
+    local _now; _now=$(date +%s)
+    local _last=0
+    [[ -f "$_stamp" ]] && _last=$(cat "$_stamp" 2>/dev/null || echo 0)
+    if (( _now - _last > 604800 )); then
+      tldr --update &!
+      echo "$_now" >| "$_stamp"
     fi
   fi
 
-  local -a other_args
-  other_args=("${(@)argv[2,-1]}")
-  if is equal "${#other_args}" "0"; then
-    $cheatsheet_command $cheatsheet_command_args "$CHEATSHEET_DIR/$sheet_name.md"
+  # Build sheet name from positional args (join with hyphens)
+  local sheet_name=""
+  if [[ ${#pos_args[@]} -gt 0 ]]; then
+    sheet_name="${(j:-:)pos_args}"
+    sheet_name="${sheet_name%.md}"
+  fi
+
+  # No meaningful args → show help
+  if [[ -z "$sheet_name" ]] \
+    && [[ $flag_list == false ]] \
+    && [[ -z "$flag_search" ]] \
+    && [[ -z "$flag_new" ]] \
+    && [[ $flag_edit == false ]] \
+    && [[ $flag_raw == false ]] \
+    && [[ $flag_update == false ]]; then
+    flag_help=true
+  fi
+
+  # --help
+  if $flag_help; then
+    echo "${c[h1]}cheat${c[reset]}"
+    echo ""
+    echo "${c[lead]}Personal cheatsheet viewer with tldr fallback.${c[reset]}"
+    echo ""
+    echo "${c[h2]}Usage:${c[reset]}"
+    echo "  cheat ${c[param]}<name>${c[reset]}"
+    echo "  cheat ${c[param]}<word> <word> ...${c[reset]}       multi-word: 'cheat git commit' → git-commit.md"
+    echo ""
+    echo "${c[h2]}Flags:${c[reset]}"
+    echo "  ${c[flag]}-h, --help${c[reset]}             show this help"
+    echo "  ${c[flag]}-l, --list${c[reset]}             list local cheatsheets"
+    echo "  ${c[flag]}-s, --search${c[reset]} ${c[param]}<query>${c[reset]}  search local + tldr by name"
+    echo "  ${c[flag]}-e, --edit${c[reset]} ${c[param]}<name>${c[reset]}    open in \$EDITOR"
+    echo "  ${c[flag]}-n, --new${c[reset]} ${c[param]}<name>${c[reset]}     create new cheatsheet"
+    echo "  ${c[flag]}-u, --update${c[reset]}           update tldr page cache"
+    echo "  ${c[flag]}-r, --raw${c[reset]} ${c[param]}<name>${c[reset]}     print raw markdown"
+    echo ""
+    echo "${c[h2]}Cheatsheet format (glow-rendered Markdown):${c[reset]}"
+    echo "  Supported: # headings, **bold**, *italic*, \`code\`, - lists"
+    echo ""
+    echo "  Convention — related commands section:"
+    echo "    ${c[sub]}## Related commands${c[reset]}"
+    echo "    ${c[sub]}- Brief description of related tool${c[reset]}"
+    echo "    ${c[sub]}\`cheat related-name\`${c[reset]}"
+    return 0
+  fi
+
+  # --update
+  if $flag_update; then
+    if ! is available tldr; then
+      echo "${c[warn]}warn:${c[reset]} tldr not available"
+      return 1
+    fi
+    tldr --update
+    local _now; _now=$(date +%s)
+    echo "$_now" >| "$CHEATSHEET_DIR/.tldr-last-update"
     return $?
   fi
 
-  if is equal "$other_args[1]" "--edit"; then
-    $EDITOR "$CHEATSHEET_DIR/$sheet_name.md"
+  # --list
+  if $flag_list; then
+    echo "${c[h1]}Local Cheatsheets:${c[reset]}"
+    for f in "$CHEATSHEET_DIR"/*.md(N); do
+      echo "  $(basename "$f" .md)"
+    done | sort
+    return 0
+  fi
+
+  # --search
+  if [[ -n "$flag_search" ]]; then
+    local query="$flag_search"
+    local -a local_results=() tldr_only=()
+
+    for f in "$CHEATSHEET_DIR"/*.md(N); do
+      local name; name=$(basename "$f" .md)
+      [[ "$name" == *"$query"* ]] && local_results+=("$name")
+    done
+
+    if is available tldr; then
+      while IFS= read -r page; do
+        [[ -z "$page" ]] && continue
+        local is_local=false
+        for r in "${local_results[@]}"; do
+          [[ "$r" == "$page" ]] && is_local=true && break
+        done
+        $is_local || tldr_only+=("$page")
+      done < <(tldr --list-all 2>/dev/null | grep -i "$query" | sort)
+    fi
+
+    if [[ ${#local_results[@]} -gt 0 || ${#tldr_only[@]} -gt 0 ]]; then
+      for r in "${local_results[@]}"; do
+        printf "  %-30s %s\n" "$r" "${c[success]}[cheatsheet]${c[reset]}"
+      done
+      for r in "${tldr_only[@]}"; do
+        printf "  %-30s %s\n" "$r" "${c[info]}[tldr]${c[reset]}"
+      done
+    else
+      echo "${c[warn]}nothing found for \"$query\"${c[reset]}"
+    fi
+    return 0
+  fi
+
+  # --new
+  if [[ -n "$flag_new" ]]; then
+    local new_name="${flag_new%.md}"
+    local new_file="$CHEATSHEET_DIR/$new_name.md"
+
+    if [[ -f "$new_file" ]]; then
+      echo "${c[error]}error:${c[reset]} '$new_name' already exists — use ${c[flag]}-e${c[reset]} to edit"
+      return 1
+    fi
+
+    local wrote_file=false
+    if is available tldr; then
+      local tldr_raw
+      tldr_raw=$(tldr --raw "$new_name" 2>/dev/null)
+      if [[ $? -eq 0 && -n "$tldr_raw" ]]; then
+        if confirm "${c[info]}A tldr page exists for '$new_name'. Seed from it?${c[reset]}"; then
+          echo "$tldr_raw" >| "$new_file"
+          wrote_file=true
+        fi
+      fi
+    fi
+
+    if [[ $wrote_file == false ]]; then
+      cat >| "$new_file" <<TEMPLATE
+# $new_name
+
+Short description.
+
+## Usage
+
+- Example description:
+
+\`command --flag arg\`
+
+## Related commands
+
+- Related tool name
+\`cheat related-name\`
+TEMPLATE
+    fi
+
+    ${EDITOR:-micro} "$new_file"
     return $?
+  fi
+
+  # --edit
+  if $flag_edit; then
+    if [[ -z "$sheet_name" ]]; then
+      echo "${c[error]}error:${c[reset]} --edit requires a sheet name"
+      return 1
+    fi
+    local edit_file="$CHEATSHEET_DIR/$sheet_name.md"
+    if [[ ! -f "$edit_file" ]]; then
+      echo "${c[error]}error:${c[reset]} '$sheet_name' not found — use ${c[flag]}-n${c[reset]} to create"
+      return 1
+    fi
+    ${EDITOR:-micro} "$edit_file"
+    return $?
+  fi
+
+  # --raw
+  if $flag_raw; then
+    if [[ -z "$sheet_name" ]]; then
+      echo "${c[error]}error:${c[reset]} --raw requires a sheet name"
+      return 1
+    fi
+    if [[ -f "$CHEATSHEET_DIR/$sheet_name.md" ]]; then
+      cat "$CHEATSHEET_DIR/$sheet_name.md"
+    elif is available tldr; then
+      tldr --raw "$sheet_name"
+    else
+      echo "${c[error]}error:${c[reset]} '$sheet_name' not found"
+      return 1
+    fi
+    return $?
+  fi
+
+  # Default: show cheatsheet
+  local sheet_file="$CHEATSHEET_DIR/$sheet_name.md"
+  if [[ -f "$sheet_file" ]]; then
+    $render_cmd "${render_args[@]}" "$sheet_file"
+  elif is available tldr; then
+    tldr "$sheet_name"
+  else
+    echo "${c[error]}error:${c[reset]} '$sheet_name' not found and tldr is not available"
+    return 1
   fi
 }
 
