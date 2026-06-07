@@ -29,9 +29,19 @@ function cheat() {
     case "$1" in
       -h|--help)   flag_help=true;     shift ;;
       -l|--list)   flag_list=true;     shift ;;
-      -s|--search) flag_search="$2";   shift 2 ;;
+      -s|--search)
+        if is empty "$2"; then
+          echo "${c[error]}error:${c[reset]} --search requires a query"
+          return 1
+        fi
+        flag_search="$2"; shift 2 ;;
       -e|--edit)   flag_edit=true;     shift ;;
-      -n|--new)    flag_new="$2";      shift 2 ;;
+      -n|--new)
+        if is empty "$2"; then
+          echo "${c[error]}error:${c[reset]} --new requires a name"
+          return 1
+        fi
+        flag_new="$2"; shift 2 ;;
       -u|--update) flag_update=true;   shift ;;
       -r|--raw)    flag_raw=true;      shift ;;
       --)          shift; pos_args+=("$@"); break ;;
@@ -137,7 +147,7 @@ function cheat() {
     local -a local_results=() tldr_only=()
 
     for f in "$CHEATSHEET_DIR"/*.md(N); do
-      local name; name=$(basename "$f" .md)
+      local name=$(basename "$f" .md)
       [[ "$name" == *"$query"* ]] && local_results+=("$name")
     done
 
