@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+if is available glow; then
+  echo "$c[info]skipping:$c[reset] glow already installed"
+  exit 0
+fi
+
+if is osx; then
+  echo "$c[info]installing:$c[reset] glow via homebrew"
+  brew install glow
+  if is equal "$?" "0"; then
+    echo "$c[success]success:$c[reset] glow installed"
+  else
+    echo "$c[error]error:$c[reset] homebrew install failed"
+    echo "$c[info]install instructions:$c[reset] https://github.com/charmbracelet/glow"
+    exit 1
+  fi
+  exit 0
+fi
+
+if is linux; then
+  if is available brew; then
+    echo "$c[info]installing:$c[reset] glow via homebrew"
+    brew install glow
+    if is equal "$?" "0"; then
+      echo "$c[success]success:$c[reset] glow installed"
+      exit 0
+    fi
+  fi
+  echo "$c[error]no automatic linux install route:$c[reset]"
+  echo "$c[info]install instructions:$c[reset] https://github.com/charmbracelet/glow#installation"
+  exit 1
+fi
+
+echo "$c[error]error:$c[reset] unsupported os"
+echo "$c[info]install instructions:$c[reset] https://github.com/charmbracelet/glow"
+exit 1

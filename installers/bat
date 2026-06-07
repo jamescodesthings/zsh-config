@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+if is available bat; then
+  echo "$c[info]skipping:$c[reset] bat already installed"
+  exit 0
+fi
+
+if is osx; then
+  echo "$c[info]installing:$c[reset] bat via homebrew"
+  brew install bat
+  if is equal "$?" "0"; then
+    echo "$c[success]success:$c[reset] bat installed"
+  else
+    echo "$c[error]error:$c[reset] homebrew install failed"
+    echo "$c[info]install instructions:$c[reset] https://github.com/sharkdp/bat"
+    exit 1
+  fi
+  exit 0
+fi
+
+if is linux; then
+  echo "$c[info]installing:$c[reset] bat via apt"
+  sudo apt install -y bat
+  if is equal "$?" "0"; then
+    # Ubuntu/Debian installs as batcat — create local symlink
+    if ! is available bat && is available batcat; then
+      mkdir -p "$HOME/.local/bin"
+      ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
+      echo "$c[info]note:$c[reset] created symlink bat → batcat in ~/.local/bin"
+      echo "$c[info]ensure:$c[reset] ~/.local/bin is in your PATH"
+    fi
+    echo "$c[success]success:$c[reset] bat installed"
+  else
+    echo "$c[error]error:$c[reset] apt install failed"
+    echo "$c[info]install instructions:$c[reset] https://github.com/sharkdp/bat"
+    exit 1
+  fi
+  exit 0
+fi
+
+echo "$c[error]error:$c[reset] unsupported os"
+echo "$c[info]install instructions:$c[reset] https://github.com/sharkdp/bat"
+exit 1
