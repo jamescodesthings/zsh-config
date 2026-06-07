@@ -1,8 +1,8 @@
 # git
 
-Custom git aliases and helpers for this zsh config.
+> Custom git aliases and helpers for this zsh config.
 
-## Aliases
+# Aliases
 
 - Commit with message:
 
@@ -28,7 +28,7 @@ Custom git aliases and helpers for this zsh config.
 
 `root`
 
-## Related commands
+# Related commands
 
 - Hard reset to origin/current-branch (destructive)
 `cheat git-i-really-fucked-up`

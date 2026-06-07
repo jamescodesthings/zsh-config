@@ -40,9 +40,11 @@ function cheat() {
     esac
   done
 
-  # Renderer: glow → bat → cat
+  # Renderer: tldr → glow → bat → cat
   local render_cmd render_args=()
-  if is available glow; then
+  if is available tldr; then
+    render_cmd="tldr"; render_args=("--render")
+  elif is available glow; then
     render_cmd="glow"; render_args=("-w" "120")
   elif is available bat; then
     render_cmd="bat"; render_args=("-p" "--color=always")
