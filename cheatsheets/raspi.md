@@ -81,3 +81,11 @@ Raspberry Pi / PicoCalc commands and filesystem reference.
 | `/etc/modules` | Modules loaded at boot |
 | `/etc/udev/rules.d/` | Udev device rules |
 | `/etc/fstab` | Filesystem mount table |
+
+## Related commands
+
+- Package management
+`tldr apt`
+
+- Service management
+`tldr systemctl`
