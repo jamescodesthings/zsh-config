@@ -1,0 +1,49 @@
+#compdef is
+
+_is() {
+  local -a predicates
+  predicates=(
+    'equal:test if two values are equal'
+    'not:negate the following predicate'
+    'empty:test if value is empty/unset'
+    'file:test if path is a regular file'
+    'dir:test if path is a directory'
+    'link:test if path is a symlink'
+    'existing:test if path exists'
+    'readable:test if path is readable'
+    'writeable:test if path is writeable'
+    'executable:test if path is executable'
+    'available:test if command is in PATH'
+    'number:test if value is numeric'
+    'gt:greater than (numeric)'
+    'lt:less than (numeric)'
+    'ge:greater than or equal (numeric)'
+    'le:less than or equal (numeric)'
+    'matching:test if value matches regex'
+    'substring:test if value contains substring'
+    'true:test if value is true or 0'
+    'false:test if value is false or non-0'
+    'osx:test if running on macOS'
+    'linux:test if running on Linux'
+    'm1:test if running on Apple Silicon'
+    'arch:test if running on Arch Linux'
+    'iterm:test if terminal is iTerm'
+    'tty:test if running in a TTY'
+    'older:test if first path is older than second'
+    'newer:test if first path is newer than second'
+  )
+
+  if (( CURRENT == 2 )); then
+    _describe 'predicate' predicates
+    return
+  fi
+
+  if [[ "${words[2]}" == "not" ]] && (( CURRENT == 3 )); then
+    _describe 'predicate' predicates
+    return
+  fi
+
+  _files
+}
+
+_is

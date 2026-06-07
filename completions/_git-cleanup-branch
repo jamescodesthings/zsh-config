@@ -1,0 +1,15 @@
+#compdef git-cleanup-branch
+
+_git-cleanup-branch() {
+  local -a branches
+  branches=("${(@f)$(git branch --format='%(refname:short)' 2>/dev/null \
+    | grep -vE '^(main|master)$')}")
+
+  if (( ${#branches} > 0 )); then
+    _describe 'branch' branches
+  else
+    _message 'no deletable branches found'
+  fi
+}
+
+_git-cleanup-branch

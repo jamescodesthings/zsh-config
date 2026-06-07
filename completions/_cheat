@@ -2,19 +2,31 @@
 
 _cheat() {
   local -a cheatsheets
-
   if [[ -n "$CHEATSHEET_DIR" && -d "$CHEATSHEET_DIR" ]]; then
-    cheatsheets=("${(@f)$(print -rl -- "$CHEATSHEET_DIR"/*.md(N:t:r))}")
+    cheatsheets=("${(@f)$(print -rl -- "$CHEATSHEET_DIR"/*.md(N:t:r) 2>/dev/null)}")
   fi
 
-  if (( CURRENT == 2 )); then
-    if (( ${#cheatsheets} > 0 )); then
-      compadd -- "${cheatsheets[@]}"
-    else
-      _message 'no cheatsheets found in $CHEATSHEET_DIR'
-    fi
-    return
-  fi
+  local curcontext="$curcontext" state
 
-  _files
+  _arguments -C -s \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '(-l --list)'{-l,--list}'[list local cheatsheets]' \
+    '(-u --update)'{-u,--update}'[update tldr cache]' \
+    '(-s --search)'{-s,--search}'[search local + tldr by name]:query:' \
+    '(-e --edit)'{-e,--edit}'[open in $EDITOR]' \
+    '(-n --new)'{-n,--new}'[create new cheatsheet]:name:' \
+    '(-r --raw)'{-r,--raw}'[print raw markdown]' \
+    '*:cheatsheet:->sheet'
+
+  case "$state" in
+    sheet)
+      if (( ${#cheatsheets} > 0 )); then
+        compadd -- "${cheatsheets[@]}"
+      else
+        _message 'no cheatsheets found in $CHEATSHEET_DIR'
+      fi
+      ;;
+  esac
 }
+
+_cheat

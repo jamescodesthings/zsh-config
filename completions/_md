@@ -1,0 +1,9 @@
+#compdef md
+
+_md() {
+  _arguments \
+    '(--no-follow)--no-follow[create directory without cd-ing into it]' \
+    ':directory:_files -/'
+}
+
+_md
