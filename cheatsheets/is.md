@@ -73,6 +73,10 @@
 
 `is iterm` / `is tty`
 
+- Running in GNOME / Wayland / X11:
+
+`is gnome` / `is wayland` / `is x11`
+
 # File age predicates
 
 - First path older than second:
