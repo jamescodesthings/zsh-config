@@ -3,18 +3,18 @@
 function zshconfig() {
   if is equal "$1" "--help"; then
     echo "$c[h1]zshconfig$c[reset]"
-    echo ""
-    echo "$c[lead]opens the zsh config directory in your editor, or cds into it.$c[reset]"
+    echo "$c[lead]jumps to zsh config, and allows you to edit it.$c[reset]"
+    echo "$c[it]$c[info]note:$c[reset]$c[it] Use zshenv to edit this box's env file$c[reset]"
     echo ""
     echo "$c[h2]usage$c[reset]"
-    echo "  zshconfig $c[flag][--cd]$c[reset]"
+    echo "  zshconfig $c[flag][-e|--edit]$c[reset]"
     echo ""
     echo "$c[h2]flags$c[reset]"
-    echo "  $c[flag]--cd$c[reset]    cd into the config directory instead of opening an editor"
+    echo "  $c[flag]-e, --edit$c[reset]  opens the zsh config in an editor"
     return 0
   fi
 
-  if is equal "$1" "--cd" || is equal "$1" "--jump" || is equal "$1" "-j"; then
+  if is empty "$1"; then
     if is available realpath; then
       cd "$(realpath $CUSTOM_DIR)"
       return 0
@@ -23,18 +23,21 @@ function zshconfig() {
     return 0
   fi
 
-  if is available code; then
-    code "$CUSTOM_DIR"
-    return 0
-  fi
+  if is equal "$1" "-e" || is equal "$1" "--edit"; then
+    if is available code; then
+      code "$CUSTOM_DIR"
+      return 0
+    fi
 
-  if is available micro; then
-    micro "$CUSTOM_DIR/.zshrc"
-    return 0
-  fi
+    if is available micro; then
+      micro "$CUSTOM_DIR/.zshrc"
+      return 0
+    fi
 
-  echo "$c[warn]warning:$c[reset] no editor found"
-  echo "run $c[em]$CUSTOM_DIR/installers/micro-install$c[reset] to install micro"
+    echo "$c[warn]warning:$c[reset] no editor found"
+    echo "run $c[em]$CUSTOM_DIR/installers/micro-install$c[reset] to install micro"
+    return 1
+  fi
 }
 
 zshconfig "$@"

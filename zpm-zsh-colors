@@ -75,6 +75,7 @@ if [[ -z "$NO_COLOR" && "$CLICOLOR" != 0 ]]; then
     h3 '[33m'
     lead '[3m'
     p '[3m'
+    it '[3m'
     flag '[36m'
     param '[35m'
     sub '[2m'
