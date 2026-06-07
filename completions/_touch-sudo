@@ -1,7 +1,7 @@
 #compdef touch-sudo
 
 _touch-sudo() {
-  _files
+  _arguments '(-h --help)'{-h,--help}'[show help]'
 }
 
 _touch-sudo
