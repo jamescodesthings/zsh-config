@@ -41,8 +41,8 @@ _gdbus_list() {
         python3 -c "
 import sys, json
 for w in json.loads(sys.argv[1]):
-    prefix = '[minimized] ' if w['minimized'] else ''
-    print(prefix + (w['title'] or ''))
+    prefix = '[minimized] ' if w.get('minimized') else ''
+    print(prefix + (w.get('title') or ''))
 " "$json"
     fi
 }
