@@ -100,5 +100,3 @@ export NODE_BUILD_HTTP_CLIENT="curl"
 if is not existing ~/.hushlogin; then
   touch ~/.hushlogin
 fi
-
-export CHEATSHEET_DIR="/Users/jamesmacmillan/projects/personal/cheatsheets"

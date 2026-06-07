@@ -2,8 +2,6 @@
 
 export PATH="$HOME/.local/bin:$PATH"
 
-export CHEATSHEET_DIR="/home/james/projects/personal/cheatsheets"
-
 # eww
 # pnpm
 export PNPM_HOME="/home/james/.local/share/pnpm"

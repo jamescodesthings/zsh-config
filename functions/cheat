@@ -1,23 +1,19 @@
 #!/usr/bin/env zsh
 
 function cheat() {
-  if is equal "$1" "--help"; then
-    echo "$c[h1]Cheatsheets by glow$c[reset]"
+  if is equal "$1" "--help" ; then
+    echo "$c[h1]Personal Cheatsheets$c[reset]"
     echo ""
     echo "$c[h2]Usage:$c[reset]"
     echo "cheat $c[flag][--help]$c[reset] show this help message"
     echo ""
-    echo "$c[h3]List all cheatsheets$c[reset]"
+    echo "$c[h3]List all personal cheatsheets$c[reset]"
     echo "cheat $c[flag]--list$c[reset]"
     echo ""
-    echo "$c[h3]show all cheatsheets$c[reset]"
-    echo "cheat"
-    echo "cheat $c[flag][glow-args]$c[reset]"
+    echo "$c[h3]show specific personal cheatsheet$c[reset]"
+    echo "cheat $c[param]sheet-name$c[reset] $c[flag]$c[reset]"
     echo ""
-    echo "$c[h3]show specific cheatsheet$c[reset]"
-    echo "cheat $c[param]sheet-name$c[reset] $c[flag][glow-args]$c[reset]"
-    echo ""
-    echo "$c[h3]edit specific cheatsheet$c[reset]"
+    echo "$c[h3]edit specific personal cheatsheet$c[reset]"
     echo "cheat $c[param]sheet-name$c[reset] $c[flag]--edit$c[reset]"
     echo ""
     return 0
@@ -28,17 +24,13 @@ function cheat() {
     return 1
   fi
 
-  if is not available glow; then
-    echo "glow could not be found, run zsh-config/install to install it"
-    return 1
+
+  local cheatsheet_command="cat"
+  if is available bat; then
+    cheatsheet_command="bat --style=plain --color=always"
   fi
 
-  if is empty "$1"; then
-    glow "$CHEATSHEET_DIR"
-    return $?
-  fi
-
-  if is equal "$1" "--list"; then
+  if is empty "$1" || is equal "$1" "--list"; then
     echo "$c[h1]Available Cheatsheets:$c[reset]"
     ls -1 "$CHEATSHEET_DIR" | grep -v '.DS_Store' | sed 's/\.md$//'
     return $?
@@ -48,14 +40,19 @@ function cheat() {
   sheet_name="${1%.md}"
 
   if is not file "$CHEATSHEET_DIR/$sheet_name.md"; then
-    glow "$CHEATSHEET_DIR" "$@"
-    return $?
+    if is available tldr; then
+      tldr "$sheet_name"
+      return $?
+    else
+      echo "Cheatsheet '$sheet_name' not found and tldr is not available"
+      return 1
+    fi
   fi
 
   local -a other_args
   other_args=("${(@)argv[2,-1]}")
   if is equal "${#other_args}" "0"; then
-    glow "$CHEATSHEET_DIR/$sheet_name.md"
+    bat "$CHEATSHEET_DIR/$sheet_name.md"
     return $?
   fi
 
@@ -63,9 +60,6 @@ function cheat() {
     micro "$CHEATSHEET_DIR/$sheet_name.md"
     return $?
   fi
-
-  glow "$CHEATSHEET_DIR/$sheet_name.md" "${other_args[@]}"
-  return $?
 }
 
 cheat "$@"

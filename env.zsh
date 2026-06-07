@@ -33,6 +33,13 @@ fi
 
 export BAT_THEME="Solarized (dark)"
 
+export CHEATSHEET_DIR="$CUSTOM_DIR/cheatsheets"
+
+
+
+
+# Legacy
+
 if is existing $HOME/.cargo/env; then
   source $HOME/.cargo/env
 fi
