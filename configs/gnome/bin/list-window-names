@@ -2,6 +2,28 @@
 # List all window titles, one per line. Minimized windows marked with [minimized].
 # Usage: list-window-names
 
+_extension_list() {
+    command -v gdbus &>/dev/null || return 1
+    local result
+    result=$(gdbus call --session \
+        --dest com.personal.WindowList \
+        --object-path /com/personal/WindowList \
+        --method com.personal.WindowList.GetWindows 2>/dev/null) || return 1
+    local json
+    json=$(printf '%s' "$result" | sed "s/^('//;s/',)\$//")
+    [[ -z "$json" ]] && return 1
+    if command -v jq &>/dev/null; then
+        printf '%s' "$json" | jq -r '.[] | if .minimized then "[minimized] \(.title)" else .title end'
+    else
+        python3 -c "
+import sys, json
+for w in json.loads(sys.argv[1]):
+    prefix = '[minimized] ' if w.get('minimized') else ''
+    print(prefix + (w.get('title') or ''))
+" "$json"
+    fi
+}
+
 _gdbus_list() {
     local js="global.get_window_actors().map(a=>a.meta_window).map(w=>({title:w.get_title(),minimized:w.minimized}))"
     local result
@@ -31,6 +53,7 @@ _wmctrl_list() {
 }
 
 if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
+    _extension_list && exit 0
     _gdbus_list && exit 0
 fi
 
@@ -38,5 +61,5 @@ if command -v wmctrl &>/dev/null; then
     _wmctrl_list && exit 0
 fi
 
-echo "No method available (need gdbus on Wayland or wmctrl on X11)" >&2
+echo "No method available (need window-list@personal extension, gdbus on Wayland, or wmctrl on X11)" >&2
 exit 1
