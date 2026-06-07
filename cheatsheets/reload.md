@@ -1,8 +1,8 @@
 # reload
 
-Reload a zsh autoloaded function without restarting the shell.
+> Reload a zsh autoloaded function without restarting the shell.
 
-## Usage
+# Usage
 
 - Reload a specific function:
 
@@ -12,7 +12,7 @@ Reload a zsh autoloaded function without restarting the shell.
 
 `reload all`
 
-## Examples
+# Examples
 
 - After editing the cheat function:
 

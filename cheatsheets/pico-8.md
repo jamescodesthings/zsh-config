@@ -1,8 +1,8 @@
 # pico-8
 
-PICO-8 API reference.
+> PICO-8 API reference.
 
-## Callbacks
+# Callbacks
 
 - Run once on cart start:
 
@@ -20,7 +20,7 @@ PICO-8 API reference.
 
 `_draw()`
 
-## Graphics
+# Graphics
 
 - Clear screen to colour c:
 
@@ -86,7 +86,7 @@ PICO-8 API reference.
 
 `fillp([pat])`
 
-## Sprites
+# Sprites
 
 - Draw sprite n at (x,y); w,h in tiles; fx,fy flip:
 
@@ -96,7 +96,7 @@ PICO-8 API reference.
 
 `sspr(sx,sy,sw,sh,dx,dy,[dw,dh,fx,fy])`
 
-## Map
+# Map
 
 - Draw map region to screen:
 
@@ -110,7 +110,7 @@ PICO-8 API reference.
 
 `mset(x,y,v)`
 
-## Input
+# Input
 
 - True while button i held; p=player (0/1):
 
@@ -124,7 +124,7 @@ PICO-8 API reference.
 
 `0=← 1=→ 2=up 3=dn 4=O 5=X`
 
-## Audio
+# Audio
 
 - Play SFX n; n=-1 stop all:
 
@@ -134,9 +134,9 @@ PICO-8 API reference.
 
 `music([n,[fade,[mask]]])`
 
-## Math
+# Math
 
-- Floor (round toward -∞):
+- Floor (round toward -inf):
 
 `flr(x)`
 
@@ -172,7 +172,7 @@ PICO-8 API reference.
 
 `atan2(dx,dy)`
 
-## Tables
+# Tables
 
 - Append v to table t (or insert at i):
 
@@ -198,7 +198,7 @@ PICO-8 API reference.
 
 `pairs(t)`
 
-## Strings
+# Strings
 
 - Number to character:
 
@@ -220,7 +220,7 @@ PICO-8 API reference.
 
 `sub(str,i,[j])`
 
-## Memory
+# Memory
 
 - Byte read / write:
 
@@ -242,7 +242,7 @@ PICO-8 API reference.
 
 `stat(n)`
 
-## System
+# System
 
 - Add item to pause menu (i=1..5):
 
@@ -264,7 +264,7 @@ PICO-8 API reference.
 
 `stat(34)`
 
-## Related commands
+# Related commands
 
 - PICO-8 keyboard shortcuts
 `cheat pico-8-shortcuts`

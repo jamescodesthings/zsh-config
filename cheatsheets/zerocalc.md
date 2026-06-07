@@ -1,8 +1,8 @@
 # zerocalc
 
-ZeroCalc keyboard shortcuts (PicoCalc device).
+> ZeroCalc keyboard shortcuts (PicoCalc device).
 
-## Mouse Mode
+# Mouse Mode
 
 - Toggle mouse mode:
 
@@ -20,7 +20,7 @@ ZeroCalc keyboard shortcuts (PicoCalc device).
 
 `]`
 
-## Navigation
+# Navigation
 
 - Home / End:
 
@@ -42,7 +42,7 @@ ZeroCalc keyboard shortcuts (PicoCalc device).
 
 `Alt + F / B`
 
-## Selection
+# Selection
 
 - Select character:
 
@@ -56,18 +56,48 @@ ZeroCalc keyboard shortcuts (PicoCalc device).
 
 `LSHIFT + RSHIFT + [ / ]`
 
-## Right Shift Shortcuts
+# Right Shift Shortcuts
 
-| Keys | Action |
-| --- | --- |
-| `RSHIFT + A` | Line start |
-| `RSHIFT + E` | Line end |
-| `RSHIFT + U` | Delete to line start |
-| `RSHIFT + K` | Delete to line end |
-| `RSHIFT + W` | Delete word back |
-| `RSHIFT + L` | Clear screen |
-| `RSHIFT + C` | Interrupt |
-| `RSHIFT + D` | EOF |
-| `RSHIFT + Z` | Suspend |
-| `RSHIFT + key` | Ctrl+key |
-| `LSHIFT + RSHIFT + key` | Ctrl+Shift+key |
+- Line start:
+
+`RSHIFT + A`
+
+- Line end:
+
+`RSHIFT + E`
+
+- Delete to line start:
+
+`RSHIFT + U`
+
+- Delete to line end:
+
+`RSHIFT + K`
+
+- Delete word back:
+
+`RSHIFT + W`
+
+- Clear screen:
+
+`RSHIFT + L`
+
+- Interrupt:
+
+`RSHIFT + C`
+
+- EOF:
+
+`RSHIFT + D`
+
+- Suspend:
+
+`RSHIFT + Z`
+
+- Send Ctrl+key:
+
+`RSHIFT + key`
+
+- Send Ctrl+Shift+key:
+
+`LSHIFT + RSHIFT + key`

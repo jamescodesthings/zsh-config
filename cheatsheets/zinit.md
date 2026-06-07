@@ -1,8 +1,8 @@
 # zinit
 
-Zsh plugin manager. Plugins are declared in `plugins.zsh` in this config.
+> Zsh plugin manager. Plugins are declared in plugins.zsh in this config.
 
-## Plugin management
+# Plugin management
 
 - Update all plugins:
 
@@ -20,7 +20,7 @@ Zsh plugin manager. Plugins are declared in `plugins.zsh` in this config.
 
 `zinit report <plugin>`
 
-## Loading modes (used in plugins.zsh)
+# Loading modes (used in plugins.zsh)
 
 - Load a plugin immediately:
 
@@ -34,7 +34,7 @@ Zsh plugin manager. Plugins are declared in `plugins.zsh` in this config.
 
 `zinit snippet <url-or-path>`
 
-## Debugging
+# Debugging
 
 - Show what zinit loaded at startup:
 
@@ -44,7 +44,7 @@ Zsh plugin manager. Plugins are declared in `plugins.zsh` in this config.
 
 `zinit times | sort -n`
 
-## Related commands
+# Related commands
 
 - Edit plugin declarations
 `cheat zshconfig`

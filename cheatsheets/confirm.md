@@ -1,8 +1,8 @@
 # confirm
 
-Interactive yes/no prompt. Returns 0 if confirmed, 1 if denied.
+> Interactive yes/no prompt. Returns 0 if confirmed, 1 if denied.
 
-## Usage
+# Usage
 
 - Prompt with default message:
 
@@ -12,7 +12,7 @@ Interactive yes/no prompt. Returns 0 if confirmed, 1 if denied.
 
 `confirm "Are you sure you want to delete this?"`
 
-## In scripts
+# In scripts
 
 - Use as a guard:
 

@@ -1,8 +1,8 @@
 # glow
 
-Markdown renderer for the terminal. Used by `cheat` to display cheatsheets.
+> Markdown renderer for the terminal. Used by cheat to display cheatsheets.
 
-## Usage
+# Usage
 
 - Render a markdown file:
 
@@ -24,7 +24,7 @@ Markdown renderer for the terminal. Used by `cheat` to display cheatsheets.
 
 `glow -t <directory>`
 
-## Styles
+# Styles
 
 - Auto-detect dark/light (default):
 
@@ -34,7 +34,7 @@ Markdown renderer for the terminal. Used by `cheat` to display cheatsheets.
 
 `glow -s dark <file.md>`
 
-## Related commands
+# Related commands
 
 - bat for syntax-highlighted file viewing
 `cheat bat`

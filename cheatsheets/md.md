@@ -1,8 +1,8 @@
 # md
 
-Create a directory and immediately cd into it.
+> Create a directory and immediately cd into it.
 
-## Usage
+# Usage
 
 - Create directory and cd into it:
 
@@ -12,7 +12,7 @@ Create a directory and immediately cd into it.
 
 `md --no-follow <path>`
 
-## Examples
+# Examples
 
 - New project directory:
 

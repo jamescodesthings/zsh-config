@@ -1,10 +1,10 @@
 # eza
 
-Modern replacement for `ls` with colour, icons, and git status. Used as `ls` alias in this config.
+> Modern replacement for ls with colour, icons, and git status. Used as ls alias in this config.
 
-## Basic listing
+# Basic listing
 
-- List files (aliased as `ls`):
+- List files (aliased as ls):
 
 `eza`
 
@@ -20,7 +20,7 @@ Modern replacement for `ls` with colour, icons, and git status. Used as `ls` ali
 
 `eza -la`
 
-## Display options
+# Display options
 
 - Show file sizes in human-readable format:
 
@@ -42,7 +42,7 @@ Modern replacement for `ls` with colour, icons, and git status. Used as `ls` ali
 
 `eza -l --sort=size`
 
-## Tree view
+# Tree view
 
 - Tree view of current directory:
 
@@ -56,7 +56,7 @@ Modern replacement for `ls` with colour, icons, and git status. Used as `ls` ali
 
 `eza --tree -l`
 
-## Related commands
+# Related commands
 
 - Full eza reference
 `tldr eza`

@@ -1,9 +1,9 @@
 # bat
 
-`cat` with syntax highlighting and git integration.
-Used as a fallback renderer in `cheat` when `glow` is unavailable.
+> cat with syntax highlighting and git integration.
+> Used as a fallback renderer in cheat when glow is unavailable.
 
-## Usage
+# Usage
 
 - Print file with syntax highlighting:
 
@@ -29,7 +29,7 @@ Used as a fallback renderer in `cheat` when `glow` is unavailable.
 
 `bat --highlight-line 42 <file>`
 
-## Related commands
+# Related commands
 
 - cat reference
 `tldr cat`

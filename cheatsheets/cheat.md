@@ -1,26 +1,44 @@
 # cheat
 
-Personal cheatsheet viewer with tldr fallback. Cheatsheets live in `~/.custom/cheatsheets/`.
+> Personal cheatsheet viewer with tldr fallback. Cheatsheets live in ~/.custom/cheatsheets/.
 
-## Flags
+# Flags
 
-| Flag | Short | Description |
-| --- | --- | --- |
-| `--help` | `-h` | Show help and format guide |
-| `--list` | `-l` | List local cheatsheets |
-| `--search <query>` | `-s` | Search local + tldr by name |
-| `--edit <name>` | `-e` | Open in $EDITOR |
-| `--new <name>` | `-n` | Create new, optionally seeded from tldr |
-| `--update` | `-u` | Update tldr page cache |
-| `--raw <name>` | `-r` | Print raw markdown |
+- Show help and format guide (`-h`):
 
-## Usage
+`cheat --help`
+
+- List local cheatsheets (`-l`):
+
+`cheat --list`
+
+- Search local + tldr by name (`-s`):
+
+`cheat --search <query>`
+
+- Open in $EDITOR (`-e`):
+
+`cheat --edit <name>`
+
+- Create new, optionally seeded from tldr (`-n`):
+
+`cheat --new <name>`
+
+- Update tldr page cache (`-u`):
+
+`cheat --update`
+
+- Print raw markdown (`-r`):
+
+`cheat --raw <name>`
+
+# Usage
 
 - Show a cheatsheet:
 
 `cheat git`
 
-- Multi-word command — maps to `git-commit.md`:
+- Multi-word command — maps to git-commit.md:
 
 `cheat git commit`
 
@@ -40,22 +58,16 @@ Personal cheatsheet viewer with tldr fallback. Cheatsheets live in `~/.custom/ch
 
 `cheat -r git`
 
-## Cheatsheet format
+# Cheatsheet format
 
-Standard Markdown, rendered with glow at 120 chars width.
+> Standard markdown rendered with glow at 120 chars width.
+> Every non-empty line must start with: # (heading), > (description), - (example label), or backtick (code).
 
-**Supported:** `# headings`, `**bold**`, `*italic*`, `` `code` ``, `- lists`, tables
+- Example: description label followed by code:
 
-**Related commands convention:**
-
-```
-## Related commands
-
-- Brief description of related tool
 `cheat related-name`
-```
 
-## Related commands
+# Related commands
 
 - Community cheatsheets for thousands of commands
 `tldr <command>`

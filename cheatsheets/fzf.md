@@ -1,8 +1,8 @@
 # fzf
 
-Fuzzy finder for the terminal. Integrated into this shell for history search and file selection.
+> Fuzzy finder for the terminal. Integrated into this shell for history search and file selection.
 
-## Shell key bindings (loaded by load-fzf.zsh)
+# Shell key bindings (loaded by load-fzf.zsh)
 
 - Fuzzy search command history:
 
@@ -16,7 +16,7 @@ Fuzzy finder for the terminal. Integrated into this shell for history search and
 
 `Alt+C`
 
-## Piped usage
+# Piped usage
 
 - Fuzzy select from a list:
 
@@ -30,7 +30,7 @@ Fuzzy finder for the terminal. Integrated into this shell for history search and
 
 `fzf --preview 'bat --color=always {}'`
 
-## In scripts
+# In scripts
 
 - Select a git branch:
 
@@ -40,7 +40,7 @@ Fuzzy finder for the terminal. Integrated into this shell for history search and
 
 `ps aux | fzf | awk '{print $2}' | xargs kill`
 
-## Related commands
+# Related commands
 
 - Full fzf reference
 `tldr fzf`

@@ -1,8 +1,8 @@
 # raspi
 
-Raspberry Pi / PicoCalc commands and filesystem reference.
+> Raspberry Pi / PicoCalc commands and filesystem reference.
 
-## System Commands
+# System Commands
 
 - Battery level:
 
@@ -28,7 +28,7 @@ Raspberry Pi / PicoCalc commands and filesystem reference.
 
 `vcgencmd get_throttled`
 
-## Kernel & Modules
+# Kernel & Modules
 
 - Watch kernel messages live:
 
@@ -42,7 +42,7 @@ Raspberry Pi / PicoCalc commands and filesystem reference.
 
 `sudo modprobe <name>`
 
-## Input
+# Input
 
 - Test input events:
 
@@ -56,7 +56,7 @@ Raspberry Pi / PicoCalc commands and filesystem reference.
 
 `evtest /dev/input/event<n>`
 
-## Config Files
+# Config Files
 
 - Hardware overlays:
 
@@ -66,23 +66,53 @@ Raspberry Pi / PicoCalc commands and filesystem reference.
 
 `sudo nano /boot/firmware/cmdline.txt`
 
-## Key Directories
+# Key Directories
 
-| Path | Contents |
-| --- | --- |
-| `~/projects/` | Your projects |
-| `/usr/local/bin/` | Custom scripts (battery, reset, btoff, bton) |
-| `/boot/firmware/` | Boot config (config.txt, cmdline.txt, overlays/) |
-| `/boot/firmware/overlays/` | Compiled .dtbo device tree overlays |
-| `/sys/firmware/picocalc/` | PicoCalc sysfs (battery_percent, keyboard_backlight) |
-| `~/.config/` | User app config files |
-| `/etc/systemd/system/` | Custom systemd unit files |
-| `/etc/modprobe.d/` | Module options and blacklists |
-| `/etc/modules` | Modules loaded at boot |
-| `/etc/udev/rules.d/` | Udev device rules |
-| `/etc/fstab` | Filesystem mount table |
+- Your projects:
 
-## Related commands
+`~/projects/`
+
+- Custom scripts (battery, reset, btoff, bton):
+
+`/usr/local/bin/`
+
+- Boot config (config.txt, cmdline.txt, overlays/):
+
+`/boot/firmware/`
+
+- Compiled .dtbo device tree overlays:
+
+`/boot/firmware/overlays/`
+
+- PicoCalc sysfs (battery_percent, keyboard_backlight):
+
+`/sys/firmware/picocalc/`
+
+- User app config files:
+
+`~/.config/`
+
+- Custom systemd unit files:
+
+`/etc/systemd/system/`
+
+- Module options and blacklists:
+
+`/etc/modprobe.d/`
+
+- Modules loaded at boot:
+
+`/etc/modules`
+
+- Udev device rules:
+
+`/etc/udev/rules.d/`
+
+- Filesystem mount table:
+
+`/etc/fstab`
+
+# Related commands
 
 - Package management
 `tldr apt`

@@ -1,8 +1,8 @@
 # http
 
-HTTPie — curl replacement with a human-friendly syntax.
+> HTTPie — curl replacement with a human-friendly syntax.
 
-## Requests
+# Requests
 
 - GET request:
 
@@ -16,7 +16,7 @@ HTTPie — curl replacement with a human-friendly syntax.
 
 `http <url> Header:value`
 
-## Auth
+# Auth
 
 - Basic auth:
 
@@ -26,7 +26,7 @@ HTTPie — curl replacement with a human-friendly syntax.
 
 `http -A bearer -a <token> <url>`
 
-## POST
+# POST
 
 - String JSON field:
 
@@ -36,7 +36,7 @@ HTTPie — curl replacement with a human-friendly syntax.
 
 `http POST <url> key:=value`
 
-## Related commands
+# Related commands
 
 - Full httpie reference
 `tldr httpie`

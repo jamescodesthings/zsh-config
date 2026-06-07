@@ -1,9 +1,9 @@
 # is
 
-Predicate utility for shell conditionals. Returns 0 (true) or 1 (false).
-Supports `is not <predicate>` for negation.
+> Predicate utility for shell conditionals. Returns 0 (true) or 1 (false).
+> Supports is not <predicate> for negation.
 
-## Path predicates
+# Path predicates
 
 - Test if path is a regular file:
 
@@ -25,13 +25,13 @@ Supports `is not <predicate>` for negation.
 
 `is readable <path>`
 
-## Command predicates
+# Command predicates
 
 - Test if command is in PATH:
 
 `is available <command>`
 
-## String predicates
+# String predicates
 
 - Test if variable is empty/unset:
 
@@ -49,7 +49,7 @@ Supports `is not <predicate>` for negation.
 
 `is substring "foo" "$val"`
 
-## Numeric predicates
+# Numeric predicates
 
 - Test if value is a number:
 
@@ -63,7 +63,7 @@ Supports `is not <predicate>` for negation.
 
 `is ge "$a" "$b"`
 
-## Platform predicates
+# Platform predicates
 
 - macOS / Linux / Apple Silicon / Arch:
 
@@ -73,7 +73,7 @@ Supports `is not <predicate>` for negation.
 
 `is iterm` / `is tty`
 
-## File age predicates
+# File age predicates
 
 - First path older than second:
 
@@ -83,9 +83,9 @@ Supports `is not <predicate>` for negation.
 
 `is newer <path-a> <path-b>`
 
-## Negation
+# Negation
 
-- Negate any predicate with `not`:
+- Negate any predicate with not:
 
 `is not empty "$var"`
 

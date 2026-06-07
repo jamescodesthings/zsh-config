@@ -1,8 +1,8 @@
 # zshconfig
 
-Jump to or edit the zsh config directory (`~/.custom` symlink to this repo).
+> Jump to or edit the zsh config directory (~/.custom symlink to this repo).
 
-## Usage
+# Usage
 
 - CD into the zsh config directory:
 
@@ -16,12 +16,12 @@ Jump to or edit the zsh config directory (`~/.custom` symlink to this repo).
 
 `zshconfig --edit`
 
-## Notes
+# Notes
 
-Use `zshenv` to edit this machine's env file (`env.<hostname>.zsh`).
-After editing, run `reload <function>` or `reload all` to apply changes.
+> Use zshenv to edit this machine's env file (env.<hostname>.zsh).
+> After editing, run reload <function> or reload all to apply changes.
 
-## Related commands
+# Related commands
 
 - Reload a function without restarting shell
 `cheat reload`

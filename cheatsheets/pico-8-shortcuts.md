@@ -1,8 +1,8 @@
 # pico-8-shortcuts
 
-PICO-8 keyboard shortcuts for the editor and runtime.
+> PICO-8 keyboard shortcuts for the editor and runtime.
 
-## Global
+# Global
 
 - Toggle between editor and console:
 
@@ -24,7 +24,7 @@ PICO-8 keyboard shortcuts for the editor and runtime.
 
 `Ctrl+6 / 7 / 8 / 9`
 
-## Code Editor
+# Code Editor
 
 - Undo / redo:
 
@@ -74,7 +74,7 @@ PICO-8 keyboard shortcuts for the editor and runtime.
 
 `Alt+up / dn`
 
-## Runtime
+# Runtime
 
 - Move (P1) / O+X buttons:
 
@@ -84,7 +84,7 @@ PICO-8 keyboard shortcuts for the editor and runtime.
 
 `Enter / P`
 
-## Related commands
+# Related commands
 
 - PICO-8 API reference
 `cheat pico-8`

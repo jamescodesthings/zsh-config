@@ -1,8 +1,8 @@
 # asdf
 
-Multiple runtime version manager. Manages Node, Python, Java, and more via plugins.
+> Multiple runtime version manager. Manages Node, Python, Java, and more via plugins.
 
-## Plugins
+# Plugins
 
 - Add a plugin:
 
@@ -32,7 +32,7 @@ Multiple runtime version manager. Manages Node, Python, Java, and more via plugi
 
 `asdf plugin remove <name>`
 
-## Installing versions
+# Installing versions
 
 - Install version from `.tool-versions` in current directory:
 
@@ -50,7 +50,7 @@ Multiple runtime version manager. Manages Node, Python, Java, and more via plugi
 
 `asdf install <name> latest:3`
 
-## Setting versions
+# Setting versions
 
 - Set version in current directory's `.tool-versions`:
 
@@ -64,7 +64,7 @@ Multiple runtime version manager. Manages Node, Python, Java, and more via plugi
 
 `asdf set -p <name> <version>`
 
-## Listing versions
+# Listing versions
 
 - Show current version for all tools:
 
@@ -90,7 +90,7 @@ Multiple runtime version manager. Manages Node, Python, Java, and more via plugi
 
 `asdf latest --all`
 
-## Maintenance
+# Maintenance
 
 - Uninstall a specific version:
 
@@ -108,7 +108,7 @@ Multiple runtime version manager. Manages Node, Python, Java, and more via plugi
 
 `asdf info`
 
-## Related commands
+# Related commands
 
 - Full asdf reference
 `tldr asdf`
