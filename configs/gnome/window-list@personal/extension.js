@@ -1,4 +1,5 @@
 import Gio from 'gi://Gio';
+import Meta from 'gi://Meta';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 const IFACE_XML = `
@@ -18,6 +19,9 @@ const IFACE_XML = `
     <method name="FocusByNameRegex">
       <arg type="s" direction="in" name="pattern"/>
       <arg type="b" direction="out" name="focused"/>
+    </method>
+    <method name="CloseAll">
+      <arg type="u" direction="out" name="count"/>
     </method>
   </interface>
 </node>`;
@@ -84,5 +88,13 @@ export default class WindowListExtension {
         if (win)
             Main.activateWindow(win);
         return win !== undefined;
+    }
+
+    CloseAll() {
+        const wins = global.get_window_actors()
+            .map(a => a.meta_window)
+            .filter(w => w.get_window_type() === Meta.WindowType.NORMAL);
+        wins.forEach(w => w.delete(global.get_current_time()));
+        return wins.length;
     }
 }
