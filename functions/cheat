@@ -145,9 +145,10 @@ function cheat() {
   if is not empty "$flag_search"; then
     local query="$flag_search"
     local -a local_results=() tldr_only=()
+    local name
 
     for f in "$CHEATSHEET_DIR"/*.md(N); do
-      local name=$(basename "$f" .md)
+      name=$(basename "$f" .md)
       [[ "$name" == *"$query"* ]] && local_results+=("$name")
     done
 
