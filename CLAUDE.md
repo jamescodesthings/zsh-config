@@ -79,6 +79,14 @@ New installers should start with:
 source "${0:a:h}/_stub"
 ```
 
+### `configs/gnome/` directory
+
+GNOME-specific config and tools. Only installed on machines running GNOME on Wayland (`is gnome && is wayland`).
+
+- `window-list@personal/` — GNOME Shell extension that exposes a D-Bus interface (`com.personal.WindowList`) for window listing, focusing, and closing without requiring `unsafe_mode`. Installed to `~/.local/share/gnome-shell/extensions/`.
+- `bin/` — Window management scripts. Symlinked to `~/.local/bin/` by `installers/gnome`. Use `cheat gnome-bin` for reference.
+- `quit-all-apps.desktop` — Desktop entry that surfaces `quit-all-apps` in the GNOME Activities/app search.
+
 ### Color system (`zpm-zsh-colors`)
 
 `$c[...]` associative array provides semantic colors: `h1`, `h2`, `h3`, `lead`, `info`, `info-small`, `success`, `warn`, `error`, `flag`, `param`, `reset`. Use these for all user-facing output — never raw ANSI codes.
