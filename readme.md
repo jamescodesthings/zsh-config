@@ -7,6 +7,7 @@ My personal ZSH configuration. I use it on all my machines, and it is designed t
 - Has a `functions` directory with lazy loaded functions
 - Uses a decent async prompt.
 - Is quick and easy to modify.
+- `cheat <name>` — personal cheatsheet viewer with glow rendering and tldr fallback (`cheat -h` for usage)
 
 # Installation
 1. Clone it somewhere

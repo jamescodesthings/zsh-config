@@ -10,7 +10,8 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 - **Plugin manager**: [zinit](https://github.com/zdharma-continuum/zinit) (loaded via `load_zinit.zsh`)
 - **Prompt**: Powerlevel10k
 - **Version manager**: asdf (for Node, Python, Java, etc.)
-- **Key tools**: eza, fzf, direnv, micro, tmux, thefuck
+- **Key tools**: eza, fzf, direnv, micro, tmux, thefuck, glow, bat
+- **Cheatsheet viewer**: `cheat` command — renders local markdown from `cheatsheets/` with glow, falls back to tldr
 
 ## Installation
 
@@ -58,6 +59,15 @@ is linux             # uname == Linux
 is existing $path    # -e test
 is not empty "$var"  # -z test (negated)
 ```
+
+### `cheatsheets/` directory
+
+Markdown files rendered by the `cheat` function using `glow -w 120` (falls back to `bat`, then `cat`). When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
+
+Standard format:
+- `# Name` — title
+- `## Usage` — examples with backtick code blocks
+- `## Related commands` — links to related sheets via `` `cheat related-name` ``
 
 ### `installers/` directory
 
