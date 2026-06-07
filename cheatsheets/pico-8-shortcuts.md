@@ -1,76 +1,90 @@
-# PICO-8
+# pico-8-shortcuts
 
-## Keyboard Shortcuts
+PICO-8 keyboard shortcuts for the editor and runtime.
 
-Toggle editor / console:
+## Global
+
+- Toggle between editor and console:
+
 `ESC`
 
-Run / reload cart:
+- Run / reload cart:
+
 `Ctrl+R`
 
-Quick save:
+- Quick save:
+
 `Ctrl+S`
 
-Mute / unmute:
+- Mute / unmute:
+
 `Ctrl+M`
 
-Previous / next editor tab:
-`Alt + <- / ->`
+- Screenshot / label / GIF start / GIF save:
 
-Next tab:
-`Ctrl+Tab`
+`Ctrl+6 / 7 / 8 / 9`
 
-Screenshot / label / GIF start / GIF save:
-`Ctrl+6/7/8/9`
+## Code Editor
 
-## Editor Shortcuts
+- Undo / redo:
 
-Undo / redo:
 `Ctrl+Z / Y`
 
-Cut / copy / paste:
+- Cut / copy / paste:
+
 `Ctrl+X / C / V`
 
-Search / find next:
+- Search / find next:
+
 `Ctrl+F / G`
 
-Comment / uncomment block:
+- Comment / uncomment block:
+
 `Ctrl+B`
 
-Duplicate line:
+- Duplicate line:
+
 `Ctrl+D`
 
-Help on keyword:
+- Help on keyword under cursor:
+
 `Ctrl+U`
 
-Jump to line:
+- Jump to line number:
+
 `Ctrl+L`
 
-Line start / end:
+- Line start / end:
+
 `Ctrl+W / E`
 
-File start / end:
+- File start / end:
+
 `Ctrl+up / dn`
 
-Jump by word:
-`Ctrl+<- / ->`
+- Jump by word:
 
-Indent / unindent:
+`Ctrl+← / →`
+
+- Indent / unindent:
+
 `Tab / Shift+Tab`
 
-Jump to prev / next function:
+- Jump to prev / next function:
+
 `Alt+up / dn`
 
-## Runtime Shortcuts
+## Runtime
 
-Move (P1) / O+X buttons:
+- Move (P1) / O+X buttons:
+
 `D-pad / ZXCV`
 
-O button (P1):
-`Z, C, N`
+- Pause menu:
 
-X button (P1):
-`X, V, M`
-
-Pause menu:
 `Enter / P`
+
+## Related commands
+
+- PICO-8 API reference
+`cheat pico-8`

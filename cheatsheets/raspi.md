@@ -1,89 +1,83 @@
 # raspi
 
-## commands
+Raspberry Pi / PicoCalc commands and filesystem reference.
 
-Battery level:
+## System Commands
+
+- Battery level:
+
 `battery`
 
-Plugged In:
+- Check if plugged in:
+
 `battery-supply`
 
-Update all packages:
+- Update all packages:
+
 `aptu`
 
-System config TUI:
+- System config TUI:
+
 `sudo raspi-config`
 
-Hardware overlays:
-`sudo nano /boot/firmware/config.txt`
+- CPU temperature:
 
-Kernel boot args:
-`sudo nano /boot/firmware/cmdline.txt`
-
-CPU temperature:
 `vcgencmd measure_temp`
 
-Throttling / Undervoltage Status Bitmask:
+- Throttling / undervoltage status bitmask:
+
 `vcgencmd get_throttled`
 
-Watch kernel messages live:
+## Kernel & Modules
+
+- Watch kernel messages live:
+
 `dmesg -wH | grep <name>`
 
-Check if kernel module is loaded:
+- Check if kernel module loaded:
+
 `lsmod | grep <name>`
 
-Load kernel module:
+- Load kernel module:
+
 `sudo modprobe <name>`
 
-Test input events:
+## Input
+
+- Test input events:
+
 `evtest`
 
-Find keyboard device number:
+- Find keyboard device number:
+
 `grep -A4 picocalc /proc/bus/input/devices`
 
-Watch raw key events:
+- Watch raw key events:
+
 `evtest /dev/input/event<n>`
 
-## directories
+## Config Files
 
-Your projects directory:
-`~/projects/`
+- Hardware overlays:
 
-Custom scripts: battery, reset, btoff, bton, supply:
-`/usr/local/bin/`
+`sudo nano /boot/firmware/config.txt`
 
-Boot config: config.txt, cmdline.txt, overlays/:
-`/boot/firmware/`
+- Kernel boot args:
 
-Compiled .dtbo device tree overlays:
-`/boot/firmware/overlays/`
+`sudo nano /boot/firmware/cmdline.txt`
 
-Picocalc sysfs: battery_percent, keyboard_backlight, screen_backlight:
-`/sys/firmware/picocalc/`
+## Key Directories
 
-User app config files:
-`~/.config/`
-
-Custom systemd unit files (.service):
-`/etc/systemd/system/`
-
-Module options and blacklists:
-`/etc/modprobe.d/`
-
-Modules loaded at boot:
-`/etc/modules`
-
-Udev device rules:
-`/etc/udev/rules.d/`
-
-Machine hostname:
-`/etc/hostname`
-
-Static hostname / IP mappings:
-`/etc/hosts`
-
-Package source lists:
-`/etc/apt/sources.list.d/`
-
-Filesystem mount table:
-`/etc/fstab`
+| Path | Contents |
+| --- | --- |
+| `~/projects/` | Your projects |
+| `/usr/local/bin/` | Custom scripts (battery, reset, btoff, bton) |
+| `/boot/firmware/` | Boot config (config.txt, cmdline.txt, overlays/) |
+| `/boot/firmware/overlays/` | Compiled .dtbo device tree overlays |
+| `/sys/firmware/picocalc/` | PicoCalc sysfs (battery_percent, keyboard_backlight) |
+| `~/.config/` | User app config files |
+| `/etc/systemd/system/` | Custom systemd unit files |
+| `/etc/modprobe.d/` | Module options and blacklists |
+| `/etc/modules` | Modules loaded at boot |
+| `/etc/udev/rules.d/` | Udev device rules |
+| `/etc/fstab` | Filesystem mount table |

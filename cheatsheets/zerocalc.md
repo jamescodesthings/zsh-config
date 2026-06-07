@@ -1,64 +1,73 @@
-# ZeroCalc
+# zerocalc
 
-## mouse mode
+ZeroCalc keyboard shortcuts (PicoCalc device).
 
-Toggle Mouse Mode:
+## Mouse Mode
+
+- Toggle mouse mode:
+
 `F5`
-Move Cursor:
+
+- Move cursor:
+
 `D-pad`
-Left Click:
+
+- Left click:
+
 `[`
-Right Click:
+
+- Right click:
+
 `]`
 
-## keyboard shortcuts
+## Navigation
 
-Home:
-`RSHIFT + <-`
-End:
-`RSHIFT + ->`
-Page Up:
-`RSHIFT + up`
-Page Down:
-`RSHIFT + dn`
-Ctrl+Home (file start):
-`RSHIFT + [`
-Ctrl+End (file end):
-`RSHIFT + ]`
-Word jump:
-`Ctrl + <- / ->`
-Word jump fwd/back (readline):
+- Home / End:
+
+`RSHIFT + ← / →`
+
+- Page Up / Down:
+
+`RSHIFT + up / dn`
+
+- File start / end:
+
+`RSHIFT + [ / ]`
+
+- Jump by word:
+
+`Ctrl + ← / →`
+
+- Word jump (readline):
+
 `Alt + F / B`
-Select character:
+
+## Selection
+
+- Select character:
+
 `LSHIFT + arrow`
-Word select:
-`LSHIFT + RSHIFT + <- / ->` (Ctrl+Shift+arrow)
-Select to line start:
-`LSHIFT + RSHIFT + [`
-Select to line end:
-`LSHIFT + RSHIFT + ]`
 
-## Right Shift shortcuts
+- Select word:
 
-Line Start:
-`RSHIFT + A`
-Line End:
-`RSHIFT + E`
-Delete to line start:
-`RSHIFT + U`
-Delete to line end:
-`RSHIFT + K`
-Delete word back:
-`RSHIFT + W`
-Clear screen:
-`RSHIFT + L`
-Interrupt:
-`RSHIFT + C`
-EOF:
-`RSHIFT + D`
-Suspend:
-`RSHIFT + Z`
-Ctrl+Key:
-`RSHIFT + key`
-Ctrl+Shift+Key:
-`LSHIFT + RSHIFT + key`
+`LSHIFT + RSHIFT + ← / →`
+
+- Select to line start / end:
+
+`LSHIFT + RSHIFT + [ / ]`
+
+## Right Shift Shortcuts
+
+| Keys | Action |
+| --- | --- |
+| `RSHIFT + A` | Line start |
+| `RSHIFT + E` | Line end |
+| `RSHIFT + U` | Delete to line start |
+| `RSHIFT + K` | Delete to line end |
+| `RSHIFT + W` | Delete word back |
+| `RSHIFT + L` | Clear screen |
+| `RSHIFT + C` | Interrupt |
+| `RSHIFT + D` | EOF |
+| `RSHIFT + Z` | Suspend |
+| `RSHIFT + key` | Ctrl+key |
+| `LSHIFT + RSHIFT + key` | Ctrl+Shift+key |

@@ -1,28 +1,43 @@
 # git
 
-## Undo last commit
-`git-i-fucked-up`
+Custom git aliases and helpers for this zsh config.
 
-## Hard reset to origin
-`git-i-really-fucked-up`
+## Aliases
 
-## Prune Local
-`git-prune-local`
+- Commit with message:
 
-## Commit with message
-`gcm "msg"`
+`gcm "message"`
 
-## Stage hunks interactively
+- Stage hunks interactively:
+
 `gap`
 
-## Interactive rebase
+- Interactive rebase on last N commits:
+
 `grbi HEAD~<n>`
 
-## Checkout main/master branch
+- Checkout main/master branch:
+
 `gcom`
 
-## Checkout develop branch
+- Checkout develop branch:
+
 `gcod`
 
-## CD to git root of current repo
+- CD to git root of current repo:
+
 `root`
+
+## Related commands
+
+- Hard reset to origin/current-branch (destructive)
+`cheat git-i-really-fucked-up`
+
+- Delete local branches gone from remote
+`cheat git-prune-local`
+
+- Delete a branch locally and on origin
+`cheat git-cleanup-branch`
+
+- Standard git subcommands
+`tldr git`

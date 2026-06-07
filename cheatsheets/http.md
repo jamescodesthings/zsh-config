@@ -1,22 +1,45 @@
-# httpie
+# http
 
-GET request:
+HTTPie — curl replacement with a human-friendly syntax.
+
+## Requests
+
+- GET request:
+
 `http <url>`
 
-Download file to disk:
+- Download file to disk:
+
 `http --download <url>`
 
-Add custom request header:
+- Add custom request header:
+
 `http <url> Header:value`
 
-Basic auth:
+## Auth
+
+- Basic auth:
+
 `http -a user:pass <url>`
 
-Bearer token auth:
+- Bearer token auth:
+
 `http -A bearer -a <token> <url>`
 
-POST - string JSON field:
-`http POST <url> key=val`
+## POST
 
-POST - non-string field (number / bool / array):
-`http POST <url> key:=val`
+- String JSON field:
+
+`http POST <url> key=value`
+
+- Non-string field (number, bool, array):
+
+`http POST <url> key:=value`
+
+## Related commands
+
+- Full httpie reference
+`tldr httpie`
+
+- curl reference
+`tldr curl`
