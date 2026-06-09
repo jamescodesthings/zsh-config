@@ -134,7 +134,7 @@ fi
 
 if is not empty "$PICO8"; then
   EXTRA_PARAMS=""
-  BACKGROUND=1
+  BACKGROUND=0
 
   if is equal "$(get-hostname)" "zerocalc"; then
     BACKGROUND=0
