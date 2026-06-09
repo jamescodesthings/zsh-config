@@ -11,3 +11,5 @@
 	syntax-theme = Solarized (dark)
 [merge]
 	conflictStyle = zdiff3
+[pull]
+	rebase = true
