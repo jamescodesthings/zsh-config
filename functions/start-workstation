@@ -61,7 +61,7 @@ function start-workstation() {
     return 0
   fi
   local DEPS=(is gh)
-  if ! deps $DEPS; then
+  if ! deps "${DEPS[@]}"; then
     return 1
   fi
 

@@ -2,7 +2,7 @@
 
 function git-branch() {
   local DEPS=(git)
-  if ! deps $DEPS; then
+  if ! deps "${DEPS[@]}"; then
     return 1
   fi
   if is equal "$1" "--help" || is equal "$1" "-h"; then

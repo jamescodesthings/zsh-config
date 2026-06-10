@@ -66,6 +66,13 @@ function _hist_print_raw() {
   fi
 }
 
+# List all per-directory history files, sorted.
+function _hist_files() {
+  local base="${PER_DIRECTORY_HISTORY_BASE:-$HOME/.zsh_history_dirs}"
+  local hist_file="${PER_DIRECTORY_HISTORY_FILE:-zsh-per-directory-history}"
+  find "$base" -name "$hist_file" 2>/dev/null | sort
+}
+
 # Print section header for a history file.
 # Args: <file> [global_flag — non-empty to render as "(global)"]
 function _hist_header() {
@@ -104,7 +111,7 @@ function hist() {
         [[ "$f" == "$global_file" ]] && continue
         [[ -z "$quiet" ]] && { echo ""; _hist_header "$f"; }
         _hist_print_deduped "$f" "" "$quiet"
-      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      done < <(_hist_files)
       ;;
 
     search)
@@ -133,7 +140,7 @@ function hist() {
         grep -qE -- "$query" "$f" 2>/dev/null || continue
         [[ -z "$quiet" ]] && { echo ""; _hist_header "$f"; }
         _hist_print_deduped "$f" "$query" "$quiet"
-      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      done < <(_hist_files)
       ;;
 
     delete)
@@ -141,10 +148,10 @@ function hist() {
       if [[ -z "$query" ]]; then
         echo "${c[error]}error:${c[reset]} hist delete requires a query"
         return 1
+      fi
       if ! printf '' | grep -qE -- "$query" 2>/dev/null; then
         echo "${c[error]}error:${c[reset]} invalid regex: $query"
         return 1
-      fi
       fi
       echo "${c[h2]}Matches for '${query}':${c[reset]}"
       local -a affected=()
@@ -165,7 +172,7 @@ function hist() {
         n=$(grep -cE -- "$query" "$f" 2>/dev/null || echo 0)
         (( total += n ))
         affected+=("$f")
-      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      done < <(_hist_files)
       if (( total == 0 )); then
         echo "${c[info]}no matches found${c[reset]}"
         return 0
@@ -198,7 +205,7 @@ function hist() {
         local dir
         dir=$(_hist_file_to_dir "$f")
         is not existing "$dir" && stale+=("$f")
-      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      done < <(_hist_files)
       if (( ${#stale[@]} == 0 )); then
         echo "${c[success]}no stale history files${c[reset]}"
         return 0
@@ -229,7 +236,7 @@ function hist() {
         local count; count=$(wc -l < "$f" 2>/dev/null | tr -d ' ' || echo 0)
         local dir; dir=$(_hist_file_to_dir "$f")
         rows+=("${count} ${dir}")
-      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      done < <(_hist_files)
       printf '%s\n' "${rows[@]}" | sort -rn | while IFS=" " read -r count rest; do
         printf '  %s%6d%s  %s\n' "${c[info]}" "$count" "${c[reset]}" "$rest"
       done

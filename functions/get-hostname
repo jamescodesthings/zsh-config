@@ -16,7 +16,7 @@ function get-hostname {
   RAW_HOSTNAME=$(uname -n)
   CUT_HOSTNAME=${RAW_HOSTNAME%%.*}
 
-  echo $CUT_HOSTNAME
+  echo "$CUT_HOSTNAME"
 }
 
 get-hostname "$@"

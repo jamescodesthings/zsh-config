@@ -2,7 +2,7 @@
 
 function gcod() {
   local DEPS=(git)
-  if ! deps $DEPS; then
+  if ! deps "${DEPS[@]}"; then
     return 1
   fi
 
