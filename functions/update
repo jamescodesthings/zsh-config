@@ -1,6 +1,18 @@
 #!/usr/bin/env zsh
 
 function update() {
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}update${c[reset]}"
+    echo ""
+    echo "${c[lead]}updates the zsh-config by running the update script in the repo.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  update"
+    echo ""
+    echo "${c[h2]}environment${c[reset]}"
+    echo "  ${c[param]}CUSTOM_DIR${c[reset]}  path to the zsh-config repo (set by install)"
+    return 0
+  fi
   REPO_DIR=$CUSTOM_DIR/
 
   if is not dir "$REPO_DIR"; then

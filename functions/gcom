@@ -6,6 +6,19 @@ function gcom() {
     return 1
   fi
 
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}gcom${c[reset]}"
+    echo ""
+    echo "${c[lead]}checks out the gitflow main branch.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  gcom"
+    echo ""
+    echo "${c[h2]}notes${c[reset]}"
+    echo "  reads branch name from ${c[param]}git config gitflow.branch.main${c[reset]}"
+    echo "  defaults to ${c[param]}main${c[reset]} if not configured"
+    return 0
+  fi
   local MAIN_BRANCH=$(git config gitflow.branch.main)
   if is empty "$MAIN_BRANCH"; then
     MAIN_BRANCH=main

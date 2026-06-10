@@ -44,6 +44,22 @@ function _start_workstation_run_action() {
 }
 
 function start-workstation() {
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}start-workstation${c[reset]}"
+    echo ""
+    echo "${c[lead]}triggers a GitHub Actions workflow to start the cloud workstation.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  start-workstation"
+    echo ""
+    echo "${c[h2]}environment${c[reset]}"
+    echo "  ${c[param]}ORG${c[reset]}          GitHub org            ${c[sub]}(default: 7digital)${c[reset]}"
+    echo "  ${c[param]}PROJECT_DIR${c[reset]}  local clone directory ${c[sub]}(default: ~/projects/\$ORG)${c[reset]}"
+    echo "  ${c[param]}USER_NAME${c[reset]}    workstation name      ${c[sub]}(default: jamesm)${c[reset]}"
+    echo "  ${c[param]}GH_REPO${c[reset]}      repository name       ${c[sub]}(default: developer-cloud-workstation)${c[reset]}"
+    echo "  ${c[param]}WORKFLOW_ID${c[reset]}  workflow name         ${c[sub]}(default: Start Workstation)${c[reset]}"
+    return 0
+  fi
   local DEPS=(is gh)
   if ! deps $DEPS; then
     return 1

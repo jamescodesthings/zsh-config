@@ -6,6 +6,19 @@ function gcod() {
     return 1
   fi
 
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}gcod${c[reset]}"
+    echo ""
+    echo "${c[lead]}checks out the gitflow develop branch.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  gcod"
+    echo ""
+    echo "${c[h2]}notes${c[reset]}"
+    echo "  reads branch name from ${c[param]}git config gitflow.branch.develop${c[reset]}"
+    echo "  set with: git config gitflow.branch.develop ${c[param]}<branch>${c[reset]}"
+    return 0
+  fi
   local DEV_BRANCH=$(git config gitflow.branch.develop)
   if is empty "$DEV_BRANCH"; then
     echo "$c[error]error:$c[reset] no gitflow develop branch configured"

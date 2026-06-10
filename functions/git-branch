@@ -5,6 +5,15 @@ function git-branch() {
   if ! deps $DEPS; then
     return 1
   fi
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}git-branch${c[reset]}"
+    echo ""
+    echo "${c[lead]}prints the name of the current git branch.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  git-branch"
+    return 0
+  fi
   git rev-parse --abbrev-ref HEAD
 }
 

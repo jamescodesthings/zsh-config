@@ -1,6 +1,18 @@
 #!/usr/bin/env zsh
 
 function get-hostname {
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}get-hostname${c[reset]}"
+    echo ""
+    echo "${c[lead]}prints the machine short hostname, stripping any domain suffix.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  get-hostname"
+    echo ""
+    echo "${c[h2]}notes${c[reset]}"
+    echo "  runs ${c[param]}uname -n${c[reset]} and strips everything after the first ${c[param]}.${c[reset]}"
+    return 0
+  fi
   RAW_HOSTNAME=$(uname -n)
   CUT_HOSTNAME=${RAW_HOSTNAME%%.*}
 
