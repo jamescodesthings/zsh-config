@@ -1,0 +1,257 @@
+#!/usr/bin/env zsh
+
+# Convert a per-dir history file path back to the directory it was recorded in.
+# Strips $PER_DIRECTORY_HISTORY_BASE prefix and /$PER_DIRECTORY_HISTORY_FILE suffix.
+function _hist_file_to_dir() {
+  local base="${PER_DIRECTORY_HISTORY_BASE:-$HOME/.zsh_history_dirs}"
+  local hist_file="${PER_DIRECTORY_HISTORY_FILE:-zsh-per-directory-history}"
+  local file="$1"
+  local dir="${file#$base}"
+  dir="${dir%/$hist_file}"
+  [[ -z "$dir" ]] && dir="/"
+  echo "$dir"
+}
+
+# Print deduplicated history lines from a file.
+# Strips ': timestamp:elapsed;' prefix. Groups dupes, appends ' (N)' count in info colour.
+# Args: <file> [query] [quiet]
+function _hist_print_deduped() {
+  local file="$1" query="$2" quiet="$3"
+  local indent="  "
+  [[ -n "$quiet" ]] && indent=""
+  [[ ! -f "$file" ]] && return
+
+  local -A counts=()
+  local -a order=()
+
+  while IFS= read -r cmd; do
+    [[ -z "$cmd" ]] && continue
+    if [[ -n "$query" ]] && ! printf '%s\n' "$cmd" | grep -qE -- "$query" 2>/dev/null; then
+      continue
+    fi
+    if [[ -z "${counts[$cmd]+_}" ]]; then
+      order+=("$cmd")
+      counts[$cmd]=1
+    else
+      (( counts[$cmd]++ ))
+    fi
+  done < <(sed 's/^: [0-9]*:[0-9]*;//' "$file")
+
+  for cmd in "${order[@]}"; do
+    local n=${counts[$cmd]}
+    local display
+    if [[ -n "$query" ]]; then
+      display=$(printf '%s\n' "$cmd" | grep --color=always -E -- "$query" 2>/dev/null || printf '%s\n' "$cmd")
+    else
+      display="$cmd"
+    fi
+    if (( n > 1 )); then
+      printf '%s%s %s(%d)%s\n' "$indent" "$display" "${c[info]}" "$n" "${c[reset]}"
+    else
+      printf '%s%s\n' "$indent" "$display"
+    fi
+  done
+}
+
+# Print raw (no dedup) history lines from a file, stripping timestamps.
+# Args: <file> [query]
+function _hist_print_raw() {
+  local file="$1" query="$2"
+  [[ ! -f "$file" ]] && return
+  if [[ -n "$query" ]]; then
+    sed 's/^: [0-9]*:[0-9]*;//' "$file" | grep --color=always -E -- "$query" 2>/dev/null
+  else
+    sed 's/^: [0-9]*:[0-9]*;//' "$file"
+  fi
+}
+
+# Print section header for a history file.
+# Args: <file> [global_flag — non-empty to render as "(global)"]
+function _hist_header() {
+  local file="$1" is_global="$2"
+  if [[ -n "$is_global" ]]; then
+    local display="${file/#$HOME/~}"
+    echo "${c[h2]}${display} (global):${c[reset]}"
+  else
+    local dir
+    dir=$(_hist_file_to_dir "$file")
+    echo "${c[h2]}${dir}:${c[reset]}"
+  fi
+}
+
+function hist() {
+  local DEPS=(grep sed confirm)
+  if ! deps $DEPS; then
+    return 1
+  fi
+
+  local base="${PER_DIRECTORY_HISTORY_BASE:-$HOME/.zsh_history_dirs}"
+  local hist_file="${PER_DIRECTORY_HISTORY_FILE:-zsh-per-directory-history}"
+  local global_file="${_per_directory_history_main_histfile:-$HOME/.zsh_history}"
+
+  local subcmd="${1:-list}"
+  [[ $# -gt 0 ]] && shift
+
+  case "$subcmd" in
+
+    list)
+      local quiet=""
+      [[ "$1" == "-q" || "$1" == "--quiet" ]] && quiet=1
+      [[ -z "$quiet" ]] && _hist_header "$global_file" global
+      _hist_print_deduped "$global_file" "" "$quiet"
+      while IFS= read -r f; do
+        [[ "$f" == "$global_file" ]] && continue
+        [[ -z "$quiet" ]] && { echo ""; _hist_header "$f"; }
+        _hist_print_deduped "$f" "" "$quiet"
+      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      ;;
+
+    search)
+      local quiet="" query=""
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          -q|--quiet) quiet=1 ;;
+          *) query="$1" ;;
+        esac
+        shift
+      done
+      if [[ -z "$query" ]]; then
+        echo "${c[error]}error:${c[reset]} hist search requires a query"
+        return 1
+      fi
+      if grep -qE -- "$query" "$global_file" 2>/dev/null; then
+        [[ -z "$quiet" ]] && _hist_header "$global_file" global
+        _hist_print_deduped "$global_file" "$query" "$quiet"
+      fi
+      while IFS= read -r f; do
+        [[ "$f" == "$global_file" ]] && continue
+        grep -qE -- "$query" "$f" 2>/dev/null || continue
+        [[ -z "$quiet" ]] && { echo ""; _hist_header "$f"; }
+        _hist_print_deduped "$f" "$query" "$quiet"
+      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      ;;
+
+    delete)
+      local query="$1"
+      if [[ -z "$query" ]]; then
+        echo "${c[error]}error:${c[reset]} hist delete requires a query"
+        return 1
+      fi
+      echo "${c[h2]}Matches for '${query}':${c[reset]}"
+      local -a affected=()
+      local total=0
+      if grep -qE -- "$query" "$global_file" 2>/dev/null; then
+        echo ""; _hist_header "$global_file" global
+        _hist_print_raw "$global_file" "$query"
+        local n; n=$(grep -cE -- "$query" "$global_file" 2>/dev/null || echo 0)
+        (( total += n ))
+        affected+=("$global_file")
+      fi
+      while IFS= read -r f; do
+        [[ "$f" == "$global_file" ]] && continue
+        grep -qE -- "$query" "$f" 2>/dev/null || continue
+        echo ""; _hist_header "$f"
+        _hist_print_raw "$f" "$query"
+        local n; n=$(grep -cE -- "$query" "$f" 2>/dev/null || echo 0)
+        (( total += n ))
+        affected+=("$f")
+      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      if (( total == 0 )); then
+        echo "${c[info]}no matches found${c[reset]}"
+        return 0
+      fi
+      echo ""
+      if confirm "${c[warn]}Delete ${total} line(s) across ${#affected[@]} file(s)?${c[reset]}"; then
+        for f in "${affected[@]}"; do
+          LC_ALL=C sed -i -E "/$query/d" "$f"
+        done
+        echo "${c[success]}deleted ${total} lines${c[reset]}"
+      else
+        echo "${c[warn]}cancelled${c[reset]}"
+      fi
+      ;;
+
+    open)
+      if is available xdg-open; then
+        xdg-open "$base"
+      elif is available open; then
+        open "$base"
+      else
+        echo "$base"
+      fi
+      ;;
+
+    clean)
+      local -a stale=()
+      while IFS= read -r f; do
+        local dir
+        dir=$(_hist_file_to_dir "$f")
+        is not existing "$dir" && stale+=("$f")
+      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      if (( ${#stale[@]} == 0 )); then
+        echo "${c[success]}no stale history files${c[reset]}"
+        return 0
+      fi
+      echo "${c[h2]}Stale files (directory no longer exists):${c[reset]}"
+      for f in "${stale[@]}"; do
+        local dir; dir=$(_hist_file_to_dir "$f")
+        echo "  ${c[warn]}${dir}${c[reset]}"
+      done
+      echo ""
+      if confirm "Delete ${#stale[@]} stale file(s)?"; then
+        for f in "${stale[@]}"; do rm "$f"; done
+        echo "${c[success]}cleaned ${#stale[@]} files${c[reset]}"
+      else
+        echo "${c[warn]}cancelled${c[reset]}"
+      fi
+      ;;
+
+    stats)
+      echo "${c[h1]}History stats:${c[reset]}"
+      local -a rows=()
+      local global_count
+      global_count=$(wc -l < "$global_file" 2>/dev/null | tr -d ' ' || echo 0)
+      local global_display="${global_file/#$HOME/~} (global)"
+      rows+=("${global_count} ${global_display}")
+      while IFS= read -r f; do
+        [[ "$f" == "$global_file" ]] && continue
+        local count; count=$(wc -l < "$f" 2>/dev/null | tr -d ' ' || echo 0)
+        local dir; dir=$(_hist_file_to_dir "$f")
+        rows+=("${count} ${dir}")
+      done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
+      printf '%s\n' "${rows[@]}" | sort -rn | while IFS=" " read -r count rest; do
+        printf '  %s%6d%s  %s\n' "${c[info]}" "$count" "${c[reset]}" "$rest"
+      done
+      ;;
+
+    -h|--help|help)
+      echo "${c[h1]}hist${c[reset]}"
+      echo ""
+      echo "${c[lead]}History helper for per-directory-history. Manages history across global and per-directory files.${c[reset]}"
+      echo ""
+      echo "${c[h2]}Subcommands:${c[reset]}"
+      echo "  hist ${c[flag]}search${c[reset]} ${c[param]}<query>${c[reset]} ${c[flag]}[-q]${c[reset]}  grep all history files for a pattern"
+      echo "  hist ${c[flag]}list${c[reset]} ${c[flag]}[-q]${c[reset]}               list all history (global first)"
+      echo "  hist ${c[flag]}delete${c[reset]} ${c[param]}<query>${c[reset]}         find matches, confirm, delete from all files"
+      echo "  hist ${c[flag]}open${c[reset]}                       open history base directory"
+      echo "  hist ${c[flag]}clean${c[reset]}                      remove files for directories that no longer exist"
+      echo "  hist ${c[flag]}stats${c[reset]}                      show entry count per directory"
+      echo ""
+      echo "${c[h2]}Flags:${c[reset]}"
+      echo "  ${c[flag]}-q, --quiet${c[reset]}  suppress file headers (search + list)"
+      echo ""
+      echo "${c[h2]}Environment:${c[reset]}"
+      echo "  ${c[param]}PER_DIRECTORY_HISTORY_BASE${c[reset]}           ${c[sub]}${base}${c[reset]}"
+      echo "  ${c[param]}PER_DIRECTORY_HISTORY_FILE${c[reset]}           ${c[sub]}${hist_file}${c[reset]}"
+      echo "  ${c[param]}_per_directory_history_main_histfile${c[reset]} ${c[sub]}${global_file}${c[reset]}"
+      ;;
+
+    *)
+      echo "${c[error]}error:${c[reset]} unknown subcommand: $subcmd"
+      echo "run ${c[flag]}hist --help${c[reset]} for usage"
+      return 1
+      ;;
+  esac
+}
+
+hist "$@"
