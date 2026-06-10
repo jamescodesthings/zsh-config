@@ -1,5 +1,38 @@
 #!/usr/bin/env zsh
 
+function _cheat_expand_vars() {
+  local file="$1"
+  awk '
+    function expand_vars(s,    result, rest, tok, name, val) {
+      result = ""
+      rest = s
+      while (match(rest, /\$\{?[A-Za-z_][A-Za-z0-9_]*\}?/)) {
+        result = result substr(rest, 1, RSTART-1)
+        tok  = substr(rest, RSTART, RLENGTH)
+        rest = substr(rest, RSTART+RLENGTH)
+        name = tok; gsub(/[${}]/, "", name)
+        val  = ENVIRON[name]
+        result = result (val != "" ? val : tok)
+      }
+      return result rest
+    }
+    /^```/ { fence = !fence; print; next }
+    fence  { print; next }
+    {
+      line = $0; out = ""
+      n = split(line, parts, "`")
+      for (i = 1; i <= n; i++) {
+        if (i % 2 == 1 || (i == n && n % 2 == 0)) {
+          out = out expand_vars(parts[i])
+        } else {
+          out = out "`" parts[i] "`"
+        }
+      }
+      print out
+    }
+  ' "$file"
+}
+
 function cheat() {
   if is empty "$CHEATSHEET_DIR"; then
     echo "${c[error]}error:${c[reset]} CHEATSHEET_DIR not set, run zsh-config/install to install it"
@@ -193,7 +226,10 @@ TEMPLATE
         fi
       else
         if is file "$CHEATSHEET_DIR/$sheet_name.md"; then
-          $render_cmd "${render_args[@]}" "$CHEATSHEET_DIR/$sheet_name.md"
+          local _cheat_tmp; _cheat_tmp=$(mktemp)
+          _cheat_expand_vars "$CHEATSHEET_DIR/$sheet_name.md" > "$_cheat_tmp"
+          $render_cmd "${render_args[@]}" "$_cheat_tmp"
+          rm -f "$_cheat_tmp"
         elif is available tldr; then
           tldr "$sheet_name"
         else
