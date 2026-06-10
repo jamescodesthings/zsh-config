@@ -33,7 +33,7 @@ else
 fi
 
 BIN_SRC="$REPO_DIR/configs/gnome/bin"
-BIN_DEST="$HOME/.local/bin"
+BIN_DEST="/usr/local/bin"
 mkdir -p "$BIN_DEST"
 echo "$c[info]installing:$c[reset] gnome bin scripts → $BIN_DEST"
 chmod +x "$BIN_SRC"/*
