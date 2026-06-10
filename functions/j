@@ -18,8 +18,8 @@ function _j_read_entries() {
 }
 
 function _j_print_entries() {
-  while IFS='|' read -r path rank _; do
-    printf '  %s %s%s%s\n' "$path" "${c[info]}" "$rank" "${c[reset]}"
+  while IFS='|' read -r _jp rank _; do
+    printf '  %s %s%s%s\n' "$_jp" "${c[info]}" "$rank" "${c[reset]}"
   done
 }
 
@@ -40,8 +40,8 @@ function _j_validate_regex() {
 
 function _j_match_paths() {
   local query="$1" data_file="$2"
-  while IFS='|' read -r path _ _; do
-    printf '%s\n' "$path" | grep -qE -- "$query" 2>/dev/null && printf '%s\n' "$path"
+  while IFS='|' read -r _jp _ _; do
+    printf '%s\n' "$_jp" | grep -qE -- "$query" 2>/dev/null && printf '%s\n' "$_jp"
   done < "$data_file"
 }
 
@@ -100,9 +100,9 @@ function j() {
       local query="$1"
       _j_validate_regex "$query" || return 1
       local found=0
-      while IFS='|' read -r path rank _; do
-        if printf '%s\n' "$path" | grep -qE -- "$query" 2>/dev/null; then
-          printf '  %s %s%s%s\n' "$path" "${c[info]}" "$rank" "${c[reset]}"
+      while IFS='|' read -r _jp rank _; do
+        if printf '%s\n' "$_jp" | grep -qE -- "$query" 2>/dev/null; then
+          printf '  %s %s%s%s\n' "$_jp" "${c[info]}" "$rank" "${c[reset]}"
           (( found++ ))
         fi
       done < <(_j_read_entries)
@@ -176,9 +176,9 @@ function j() {
       local data_file; data_file=$(_j_data_file) || return 1
       local -a top_paths=() top_ranks=()
       local i=0
-      while IFS='|' read -r path rank _; do
+      while IFS='|' read -r _jp rank _; do
         if (( i >= count )); then break; fi
-        top_paths+=("$path"); top_ranks+=("$rank")
+        top_paths+=("$_jp"); top_ranks+=("$rank")
         i=$(( i + 1 ))
       done < <(_j_read_entries)
       if (( ${#top_paths[@]} == 0 )); then
@@ -203,11 +203,11 @@ function j() {
         new_rank_map["${valid_paths[$i]}"]="${sorted_ranks[$i]:-1}"
       done
       local tmp2; tmp2=$(mktemp)
-      while IFS='|' read -r path rank ts; do
-        if is not empty "${new_rank_map[$path]}"; then
-          printf '%s|%s|%s\n' "$path" "${new_rank_map[$path]}" "$ts"
+      while IFS='|' read -r _jp rank ts; do
+        if is not empty "${new_rank_map[$_jp]}"; then
+          printf '%s|%s|%s\n' "$_jp" "${new_rank_map[$_jp]}" "$ts"
         else
-          printf '%s|%s|%s\n' "$path" "$rank" "$ts"
+          printf '%s|%s|%s\n' "$_jp" "$rank" "$ts"
         fi
       done < "$data_file" > "$tmp2"
       mv "$tmp2" "$data_file"
@@ -217,8 +217,8 @@ function j() {
     clean)
       local data_file; data_file=$(_j_data_file) || return 1
       local -a stale=()
-      while IFS='|' read -r path _ _; do
-        is not existing "$path" && stale+=("$path")
+      while IFS='|' read -r _jp _ _; do
+        is not existing "$_jp" && stale+=("$_jp")
       done < "$data_file"
       if (( ${#stale[@]} == 0 )); then
         echo "${c[success]}no stale entries${c[reset]}"; return 0
@@ -228,8 +228,8 @@ function j() {
       echo ""
       if confirm "Delete ${#stale[@]} stale entries?"; then
         local tmp; tmp=$(mktemp)
-        while IFS='|' read -r path rank ts; do
-          is existing "$path" && printf '%s|%s|%s\n' "$path" "$rank" "$ts"
+        while IFS='|' read -r _jp rank ts; do
+          is existing "$_jp" && printf '%s|%s|%s\n' "$_jp" "$rank" "$ts"
         done < "$data_file" > "$tmp"
         mv "$tmp" "$data_file"
         echo "${c[success]}cleaned ${#stale[@]} entries${c[reset]}"
@@ -248,15 +248,15 @@ function j() {
       _j_read_entries | head -5 | _j_print_entries
       echo ""
       echo "${c[h2]}Oldest entry:${c[reset]}"
-      sort -t'|' -k3 -n "$data_file" | head -1 | while IFS='|' read -r path rank ts; do
+      sort -t'|' -k3 -n "$data_file" | head -1 | while IFS='|' read -r _jp rank ts; do
         local d; d=$(date -d "@$ts" 2>/dev/null || date -r "$ts" 2>/dev/null || echo "ts:$ts")
-        printf '  %s %s%s%s (%s)\n' "$path" "${c[info]}" "$rank" "${c[reset]}" "$d"
+        printf '  %s %s%s%s (%s)\n' "$_jp" "${c[info]}" "$rank" "${c[reset]}" "$d"
       done
       echo ""
       echo "${c[h2]}Newest entry:${c[reset]}"
-      sort -t'|' -k3 -rn "$data_file" | head -1 | while IFS='|' read -r path rank ts; do
+      sort -t'|' -k3 -rn "$data_file" | head -1 | while IFS='|' read -r _jp rank ts; do
         local d; d=$(date -d "@$ts" 2>/dev/null || date -r "$ts" 2>/dev/null || echo "ts:$ts")
-        printf '  %s %s%s%s (%s)\n' "$path" "${c[info]}" "$rank" "${c[reset]}" "$d"
+        printf '  %s %s%s%s (%s)\n' "$_jp" "${c[info]}" "$rank" "${c[reset]}" "$d"
       done
       ;;
 
