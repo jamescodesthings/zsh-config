@@ -1,5 +1,11 @@
 #!/usr/bin/env zsh
 
+# Remove alias created by rupa/z (_Z_CMD=j creates `alias j='_z 2>&1'`);
+# our functions/j autoloaded wrapper must take precedence.
+if is alias j; then
+  unalias j
+fi
+
 alias asch='alias | grep'
 alias cl='clear'
 alias oh='open .'
