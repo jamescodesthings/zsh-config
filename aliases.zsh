@@ -107,9 +107,13 @@ if is available docker; then
       echo "No dangling volumes to remove"
     fi
   }
+  if is alias dcup; then
+    unalias dcdn
+  fi
   if is alias dcdn; then
     unalias dcdn
   fi
+  alias dcup='docker compose up -d'
   alias dcdn='docker compose down -v'
 fi
 
