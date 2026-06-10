@@ -108,6 +108,12 @@
 
 `asdf info`
 
+# Custom helpers
+
+- Remove all non-current versions of every installed plugin:
+
+`asdf-cleanup`
+
 # Related commands
 
 - Full asdf reference
