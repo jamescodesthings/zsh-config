@@ -20,11 +20,11 @@
 
 - Search entries by regex:
 
-`j grep <regex>`
+`j search <regex>`
 
-- Grep with no argument — navigates to best z match:
+- Search with no argument — navigates to best z match:
 
-`j grep`
+`j search`
 
 - Add a path to history (increments rank if already present):
 

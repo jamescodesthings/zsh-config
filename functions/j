@@ -76,7 +76,7 @@ function j() {
       echo ""
       echo "${c[h2]}Subcommands:${c[reset]}"
       echo "  ${c[flag]}list${c[reset]}                   list all entries sorted by rank"
-      echo "  ${c[flag]}grep${c[reset]} ${c[param]}[query]${c[reset]}         filter entries by regex (no query → navigate)"
+      echo "  ${c[flag]}search${c[reset]} ${c[param]}[query]${c[reset]}       filter entries by regex (no query → navigate)"
       echo "  ${c[flag]}add${c[reset]} ${c[param]}[path]${c[reset]}           add or increment a path (no path → navigate)"
       echo "  ${c[flag]}delete${c[reset]} ${c[param]}[query]${c[reset]}       show matches, confirm, remove (no query → navigate)"
       echo "  ${c[flag]}bump${c[reset]} ${c[param]}[query]${c[reset]}         set matching entry to max rank + 1"
@@ -95,8 +95,8 @@ function j() {
       _j_read_entries | _j_print_entries
       ;;
 
-    grep)
-      if is empty "$1"; then _z; return $?; fi
+    search)
+      if is empty "$1"; then _z "$subcmd"; return $?; fi
       local query="$1"
       _j_validate_regex "$query" || return 1
       local found=0
