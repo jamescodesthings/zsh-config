@@ -28,6 +28,23 @@
 
 `root`
 
+
+## Gitflow
+
+- Check out the main branch (reads `git config gitflow.branch.main`, defaults to `main`):
+
+`gcom`
+
+- Check out the develop branch (reads `git config gitflow.branch.develop`):
+
+`gcod`
+
+## Utilities
+
+- Print the current branch name:
+
+`git-branch`
+
 # Related commands
 
 - Hard reset to origin/current-branch (destructive)
