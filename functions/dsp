@@ -1,0 +1,37 @@
+#!/usr/bin/env zsh
+
+function dsp() {
+  local DEPS=(docker)
+  if ! deps "${DEPS[@]}"; then
+    return 1
+  fi
+
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}dsp${c[reset]}"
+    echo ""
+    echo "${c[lead]}stops all running Docker containers, prunes the system, and removes dangling volumes.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  dsp"
+    echo ""
+    echo "${c[h2]}notes${c[reset]}"
+    echo "  ${c[warn]}destructive:${c[reset]} removes stopped containers, unused images, networks, build cache"
+    echo "  extra args passed to ${c[param]}docker system prune${c[reset]}"
+    return 0
+  fi
+
+  echo "${c[info]}stopping all containers${c[reset]}"
+  docker stop $(docker ps -q) 2>/dev/null
+  echo "${c[info]}pruning system${c[reset]}"
+  docker system prune -f "$@"
+  local volumes
+  volumes=$(docker volume ls -qf dangling=true)
+  if is not empty "$volumes"; then
+    echo "${c[info]}removing dangling volumes${c[reset]}"
+    docker volume rm $volumes
+  else
+    echo "${c[sub]}no dangling volumes${c[reset]}"
+  fi
+}
+
+dsp "$@"

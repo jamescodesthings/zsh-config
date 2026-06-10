@@ -91,22 +91,6 @@ fi
 if is available docker; then
   alias docker-stop-all='docker stop $(docker ps -q)'
   alias dsa="docker-stop-all"
-  if is alias dsp; then
-    unalias dsp
-  fi
-  function dsp() {
-    echo "Stopping all containers"
-    docker-stop-all
-    echo "Pruning system"
-    docker system prune -f "$@"
-    VOLUMES=$(docker volume ls -qf dangling=true)
-    if [ -n "$VOLUMES" ]; then
-      echo "Removing dangling volumes"
-      docker volume rm $VOLUMES
-    else
-      echo "No dangling volumes to remove"
-    fi
-  }
   if is alias dcup; then
     unalias dcdn
   fi
@@ -121,13 +105,6 @@ if is available apt; then
   alias apts='apt search -n'
   alias apti='sudo apt install -y'
   alias aptu='sudo apt update && sudo apt upgrade -y'
-  function aptr() {
-    if [ -z "$1" ]; then
-      echo "Usage: aptr <package-name>"
-      return 1
-    fi
-    sudo apt remove -y "$1" && sudo apt autoremove -y
-  }
 fi
 
 if is available snap; then
@@ -154,9 +131,6 @@ if is not empty "$PICO8"; then
   alias pico-8="pico"
   alias pico8="pico"
 
-  function picoh() {
-    pico -root_path "$(pwd)" &
-  }
 fi
 
 if is osx; then

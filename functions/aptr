@@ -1,0 +1,31 @@
+#!/usr/bin/env zsh
+
+function aptr() {
+  local DEPS=(apt)
+  if ! deps "${DEPS[@]}"; then
+    return 1
+  fi
+
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}aptr${c[reset]}"
+    echo ""
+    echo "${c[lead]}removes an apt package and runs autoremove to clean up orphaned dependencies.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  aptr ${c[param]}<package-name>${c[reset]}"
+    echo ""
+    echo "${c[h2]}examples${c[reset]}"
+    echo "  aptr ${c[param]}vim${c[reset]}"
+    return 0
+  fi
+
+  if is empty "$1"; then
+    echo "${c[error]}error:${c[reset]} package name required"
+    echo "usage: aptr ${c[param]}<package-name>${c[reset]}"
+    return 1
+  fi
+
+  sudo apt remove -y "$1" && sudo apt autoremove -y
+}
+
+aptr "$@"

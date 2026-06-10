@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+
+function picoh() {
+  if is equal "$1" "--help" || is equal "$1" "-h"; then
+    echo "${c[h1]}picoh${c[reset]}"
+    echo ""
+    echo "${c[lead]}launches PICO-8 in the background with the current directory as the cart root path.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  picoh"
+    echo ""
+    echo "${c[h2]}environment${c[reset]}"
+    echo "  ${c[param]}PICO8${c[reset]}  path to PICO-8 binary (required)"
+    return 0
+  fi
+
+  if is empty "$PICO8"; then
+    echo "${c[error]}error:${c[reset]} PICO8 not set — set it to the path of your PICO-8 binary"
+    return 1
+  fi
+
+  local extra_params=""
+  if is not equal "$(get-hostname)" "zerocalc"; then
+    extra_params="-width 512 -height 512 -window_x 0 -window_y 0"
+  fi
+
+  $PICO8 $extra_params -root_path "$(pwd)" &
+}
+
+picoh "$@"
