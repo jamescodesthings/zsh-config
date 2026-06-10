@@ -19,7 +19,8 @@
 
 ## Notes
 
-> On machines other than `zerocalc`, `picoh` passes `-width 512 -height 512 -window_x 0 -window_y 0`.
+> `pico` runs in the foreground. `picoh` runs in the background (`&`) with the current directory as cart root.
+> On machines other than `zerocalc`, both `pico` and `picoh` pass `-width 512 -height 512 -window_x 0 -window_y 0`.
 > `pico`, `pico-8`, and `pico8` are aliases — all launch the same binary.
 
 ## Related commands

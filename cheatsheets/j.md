@@ -22,6 +22,10 @@
 
 `j search <regex>`
 
+- Search with no argument — navigates to best z match:
+
+`j search`
+
 - Add a path to history (increments rank if already present):
 
 `j add <path>`
@@ -65,9 +69,6 @@
 - `EDITOR` — editor for `reorder` and `edit` (default: `micro`)
 
 ## Related commands
-
-- Show all tracked directories:
-`j list`
 
 - Full z reference (upstream):
 `tldr z`

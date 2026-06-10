@@ -80,12 +80,16 @@
 
 `npm-update-latest`
 
+- Interactively check and update packages (uses `npx npm-check`):
+
+`npm-check-update`
+
 `ncu`
 
 ## Notes
 
 > `npm-update-latest` runs `npm outdated --json`, prompts `[y/n]` for each outdated package,
-> then runs `npm install <pkg>@latest --save` for confirmed updates.
+> then runs `npm install <pkg>@latest --save` (or `--save-dev` for dev dependencies) for confirmed updates.
 > All aliases only defined when `npm` is available.
 
 ## Related commands

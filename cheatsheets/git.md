@@ -16,30 +16,22 @@
 
 `grbi HEAD~<n>`
 
-- Checkout main/master branch:
-
-`gcom`
-
-- Checkout develop branch:
-
-`gcod`
-
 - CD to git root of current repo:
 
 `root`
 
 
-## Gitflow
+# Gitflow
 
 - Check out the main branch (reads `git config gitflow.branch.main`, defaults to `main`):
 
 `gcom`
 
-- Check out the develop branch (reads `git config gitflow.branch.develop`):
+- Check out the develop branch (reads `git config gitflow.branch.develop`, required — no default):
 
 `gcod`
 
-## Utilities
+# Utilities
 
 - Print the current branch name:
 
