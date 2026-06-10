@@ -1,73 +1,61 @@
 # cheat
 
-> Personal cheatsheet viewer with tldr fallback. Cheatsheets live in ~/.custom/cheatsheets/.
+> Personal cheatsheet viewer with tldr fallback. Cheatsheets live in `~/.custom/cheatsheets/`.
 
-# Flags
+## Usage
 
-- Show help and format guide (`-h`):
+- List all local cheatsheets (default when no args):
 
-`cheat --help`
-
-- List local cheatsheets (`-l`):
-
-`cheat --list`
-
-- Search local + tldr by name (`-s`):
-
-`cheat --search <query>`
-
-- Open in $EDITOR (`-e`):
-
-`cheat --edit <name>`
-
-- Create new, optionally seeded from tldr (`-n`):
-
-`cheat --new <name>`
-
-- Update tldr page cache (`-u`):
-
-`cheat --update`
-
-- Print raw markdown (`-r`):
-
-`cheat --raw <name>`
-
-# Usage
+`cheat`
 
 - Show a cheatsheet:
 
 `cheat git`
 
-- Multi-word command — maps to git-commit.md:
+- Multi-word command — maps to `git-commit.md`:
 
 `cheat git commit`
 
-- Search for pages matching a name:
+- Print raw markdown instead of rendering:
 
-`cheat -s docker`
+`cheat git --raw`
 
-- Create new cheatsheet (prompts to seed from tldr if page exists):
+## Subcommands
 
-`cheat -n my-tool`
+- List local cheatsheets:
 
-- Edit existing cheatsheet:
+`cheat list`
 
-`cheat -e git`
+- Search local cheatsheets and tldr by name:
+
+`cheat search <query>`
+
+- Create a new cheatsheet from template:
+
+`cheat new <name>`
+
+- Open an existing cheatsheet in `$EDITOR`:
+
+`cheat edit <name>`
 
 - Print raw markdown of a local or tldr sheet:
 
-`cheat -r git`
+`cheat raw <name>`
 
-# Cheatsheet format
+- Update the tldr page cache:
 
-> Standard markdown rendered with glow at 120 chars width.
-> Every non-empty line must start with: # (heading), > (description), - (example label), or backtick (code).
+`cheat update`
 
-- Example: description label followed by code:
+- Show help:
 
-`cheat related-name`
+`cheat help`
 
-# Related commands
+## Notes
+
+- `cheat new <name>` creates the file but does not open it — run `cheat edit <name>` to fill it in
+- Subcommand names (`list`, `search`, `edit`, `new`, `update`, `raw`, `help`) are reserved and cannot be used as sheet names
+
+## Related commands
 
 - Community cheatsheets for thousands of commands
 `tldr <command>`
