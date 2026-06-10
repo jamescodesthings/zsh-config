@@ -29,17 +29,18 @@ function _hist_print_deduped() {
     if [[ -n "$query" ]] && ! printf '%s\n' "$cmd" | grep -qE -- "$query" 2>/dev/null; then
       continue
     fi
-    if [[ -z "${counts[$cmd]+_}" ]]; then
+    if (( ! ${+counts[(e)$cmd]} )); then
       order+=("$cmd")
-      counts[$cmd]=1
+      counts[(e)$cmd]=1
     else
-      (( counts[$cmd]++ ))
+      (( counts[(e)$cmd]++ ))
     fi
   done < <(sed 's/^: [0-9]*:[0-9]*;//' "$file")
 
+  local n display
   for cmd in "${order[@]}"; do
-    local n=${counts[$cmd]}
-    local display
+    n=${counts[(e)$cmd]}
+    display=""
     if [[ -n "$query" ]]; then
       display=$(printf '%s\n' "$cmd" | grep --color=always -E -- "$query" 2>/dev/null || printf '%s\n' "$cmd")
     else
@@ -81,7 +82,7 @@ function _hist_header() {
 
 function hist() {
   local DEPS=(grep sed confirm)
-  if ! deps $DEPS; then
+  if ! deps "${DEPS[@]}"; then
     return 1
   fi
 
@@ -119,6 +120,10 @@ function hist() {
         echo "${c[error]}error:${c[reset]} hist search requires a query"
         return 1
       fi
+      if ! printf '' | grep -qE -- "$query" 2>/dev/null; then
+        echo "${c[error]}error:${c[reset]} invalid regex: $query"
+        return 1
+      fi
       if grep -qE -- "$query" "$global_file" 2>/dev/null; then
         [[ -z "$quiet" ]] && _hist_header "$global_file" global
         _hist_print_deduped "$global_file" "$query" "$quiet"
@@ -136,14 +141,19 @@ function hist() {
       if [[ -z "$query" ]]; then
         echo "${c[error]}error:${c[reset]} hist delete requires a query"
         return 1
+      if ! printf '' | grep -qE -- "$query" 2>/dev/null; then
+        echo "${c[error]}error:${c[reset]} invalid regex: $query"
+        return 1
+      fi
       fi
       echo "${c[h2]}Matches for '${query}':${c[reset]}"
       local -a affected=()
       local total=0
+      local n
       if grep -qE -- "$query" "$global_file" 2>/dev/null; then
         echo ""; _hist_header "$global_file" global
         _hist_print_raw "$global_file" "$query"
-        local n; n=$(grep -cE -- "$query" "$global_file" 2>/dev/null || echo 0)
+        n=$(grep -cE -- "$query" "$global_file" 2>/dev/null || echo 0)
         (( total += n ))
         affected+=("$global_file")
       fi
@@ -152,7 +162,7 @@ function hist() {
         grep -qE -- "$query" "$f" 2>/dev/null || continue
         echo ""; _hist_header "$f"
         _hist_print_raw "$f" "$query"
-        local n; n=$(grep -cE -- "$query" "$f" 2>/dev/null || echo 0)
+        n=$(grep -cE -- "$query" "$f" 2>/dev/null || echo 0)
         (( total += n ))
         affected+=("$f")
       done < <(find "$base" -name "$hist_file" 2>/dev/null | sort)
@@ -162,8 +172,9 @@ function hist() {
       fi
       echo ""
       if confirm "${c[warn]}Delete ${total} line(s) across ${#affected[@]} file(s)?${c[reset]}"; then
+        local query_escaped="${query//\//\\/}"
         for f in "${affected[@]}"; do
-          LC_ALL=C sed -i -E "/$query/d" "$f"
+          LC_ALL=C sed -i -E "/$query_escaped/d" "$f"
         done
         echo "${c[success]}deleted ${total} lines${c[reset]}"
       else
