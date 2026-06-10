@@ -127,7 +127,8 @@ function hist() {
         echo "${c[error]}error:${c[reset]} hist search requires a query"
         return 1
       fi
-      if ! printf '' | grep -qE -- "$query" 2>/dev/null; then
+      printf '' | grep -qE -- "$query" 2>/dev/null
+      if (( $? == 2 )); then
         echo "${c[error]}error:${c[reset]} invalid regex: $query"
         return 1
       fi
@@ -149,7 +150,8 @@ function hist() {
         echo "${c[error]}error:${c[reset]} hist delete requires a query"
         return 1
       fi
-      if ! printf '' | grep -qE -- "$query" 2>/dev/null; then
+      printf '' | grep -qE -- "$query" 2>/dev/null
+      if (( $? == 2 )); then
         echo "${c[error]}error:${c[reset]} invalid regex: $query"
         return 1
       fi
