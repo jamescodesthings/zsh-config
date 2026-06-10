@@ -2,7 +2,7 @@
 
 > npm aliases and helpers.
 
-## Running
+# Running
 
 - Start the project:
 
@@ -12,7 +12,7 @@
 
 `npmr <script>`
 
-## Installing
+# Installing
 
 - Install a dependency (save to dependencies):
 
@@ -50,7 +50,7 @@
 
 `npmiy`
 
-## Uninstalling
+# Uninstalling
 
 - Uninstall a package:
 
@@ -64,7 +64,7 @@
 
 `npmUG <pkg>`
 
-## Listing
+# Listing
 
 - List installed packages (local):
 
@@ -74,7 +74,7 @@
 
 `npmL0g`
 
-## Updating
+# Updating
 
 - Interactively update outdated packages to latest, one at a time:
 
@@ -86,13 +86,13 @@
 
 `ncu`
 
-## Notes
+# Notes
 
 > `npm-update-latest` runs `npm outdated --json`, prompts `[y/n]` for each outdated package,
-> then runs `npm install <pkg>@latest --save` (or `--save-dev` for dev dependencies) for confirmed updates.
+> then runs `npm install <pkg>@latest --save` (or `--save-dev` for dev deps) for confirmed updates.
 > All aliases only defined when `npm` is available.
 
-## Related commands
+# Related commands
 
 - Full npm reference:
 `tldr npm`

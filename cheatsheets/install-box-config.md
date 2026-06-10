@@ -2,32 +2,30 @@
 
 > Install a per-machine config file by trying hostname-specific, OS-specific, then default variants.
 
-## Usage
+# Usage
 
 - Install a config file to a destination, choosing the best variant for this machine:
 
 `install-box-config <config-source> <config-destination>`
 
-## Resolution order
+# Resolution order
 
-Given `config-source` = `/path/to/settings.json` on hostname `ubuntu`:
+> Tries: source.HOSTNAME.ext, source.OS.ext, source.ext — errors if none exist.
+> OS is detected via `uname -s` lowercased (e.g. `linux`, `darwin`).
 
-1. `/path/to/settings.ubuntu.json` — hostname-specific
-2. `/path/to/settings.linux.json` — OS-specific (`uname -s` lowercased)
-3. `/path/to/settings.json` — default fallback
-4. Error if none exist
+# Examples
 
-## Examples
+- Install VSCode settings, picking the best variant for this machine:
 
 `install-box-config $CUSTOM_DIR/configs/vscode/settings.json ~/.config/Code/User/settings.json`
 
-## Notes
+# Notes
 
-- Creates a symlink via `install-link` (backs up existing files to `.bak`)
-- Uses `get-hostname` for hostname detection
-- Used by the `installers/` scripts
+> Creates a symlink via `install-link` (backs up existing files to `.bak`).
+> Uses `get-hostname` for hostname detection.
+> Used by the `installers/` scripts.
 
-## Related commands
+# Related commands
 
 - Create a symlink with backup:
 `cheat install-link`

@@ -2,7 +2,7 @@
 
 > Personal cheatsheet viewer with tldr fallback. Cheatsheets live in `~/.custom/cheatsheets/`.
 
-## Usage
+# Usage
 
 - List all local cheatsheets (default when no args):
 
@@ -20,7 +20,7 @@
 
 `cheat git --raw`
 
-## Subcommands
+# Subcommands
 
 - List local cheatsheets:
 
@@ -34,7 +34,7 @@
 
 `cheat new <name>`
 
-- Open an existing cheatsheet in `$EDITOR`:
+- Open an existing cheatsheet in $EDITOR:
 
 `cheat edit <name>`
 
@@ -50,12 +50,12 @@
 
 `cheat help`
 
-## Notes
+# Notes
 
-- `cheat new <name>` creates the file but does not open it — run `cheat edit <name>` to fill it in
-- Subcommand names (`list`, `search`, `edit`, `new`, `update`, `raw`, `help`) are reserved and cannot be used as sheet names
+> `cheat new <name>` creates the file but does not open it — run `cheat edit <name>` to fill it in.
+> Subcommand names (list, search, edit, new, update, raw, help) are reserved sheet names.
 
-## Related commands
+# Related commands
 
-- Community cheatsheets for thousands of commands
+- Community cheatsheets for thousands of commands:
 `tldr <command>`

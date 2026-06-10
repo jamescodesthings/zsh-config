@@ -2,7 +2,7 @@
 
 > apt package management aliases.
 
-## Aliases
+# Aliases
 
 - Install a package:
 
@@ -20,13 +20,13 @@
 
 `aptr <package-name>`
 
-## Notes
+# Notes
 
 > `aptr` runs `sudo apt remove -y <name>` then `sudo apt autoremove -y`.
 > `aptu` runs `sudo apt update && sudo apt upgrade -y`.
 > All aliases are only defined when `apt` is available.
 
-## Related commands
+# Related commands
 
 - Full apt reference:
 `tldr apt`

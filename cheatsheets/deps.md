@@ -1,32 +1,21 @@
 # deps
 
-> Dependency checker used internally by zsh functions. Verifies required commands are available before a function runs.
+> Dependency checker used by zsh functions. Verifies required commands are available before running.
+> Prints an error for each missing command and install hints. Returns 1 if any are missing.
+> Not intended to be called directly by users.
 
-## Usage (inside a function)
+# Usage
 
-```zsh
-function myfn() {
-  local DEPS=(git gh jq)
-  if ! deps "${DEPS[@]}"; then
-    return 1
-  fi
-  # ... rest of function
-}
-```
+- Check that git, gh, and jq are available (returns 1 if any missing):
 
-## Notes
+`deps git gh jq`
 
-- Checks each item in the array with `is available <cmd>`
-- Prints a `$c[error]` message for each missing dependency
-- If any are missing, prints install hints from the hint lookup table and returns 1
-- Hint lookup table lives in `functions/deps` — add entries for common tools there
-- Not intended to be called by users directly
+# Notes
 
-## Hint table (in `functions/deps`)
+> Checks each argument with `is available <cmd>`.
+> Install hints are defined in `functions/deps` for: asdf, eza, gh, http, python.
 
-Currently has install hints for: `asdf`, `eza`, `gh`, `http`, `python`
-
-## Related commands
+# Related commands
 
 - Check if a command is available:
 `cheat is`

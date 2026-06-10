@@ -2,7 +2,7 @@
 
 > History helper for per-directory-history. Manages shell history stored across global and per-directory files.
 
-## Subcommands
+# Subcommands
 
 - Search all history for a pattern (global first, then per-directory):
 
@@ -20,11 +20,11 @@
 
 `hist list -q`
 
-- Find all matching lines, confirm, then delete them from every history file (use for accidentally typed secrets):
+- Find all matching lines, confirm, then delete them from every history file:
 
 `hist delete <query>`
 
-- Open the history base directory (`$PER_DIRECTORY_HISTORY_BASE`):
+- Open the history base directory in $EDITOR:
 
 `hist open`
 
@@ -36,19 +36,19 @@
 
 `hist stats`
 
-## Output format
+# Output format
 
-- Duplicate commands are grouped: `git status (4)` means 4 occurrences
-- `search` highlights the matching pattern in each result
-- In delete output, duplicates appear as separate lines
+> Duplicate commands are grouped: `git status (4)` means 4 occurrences.
+> `search` highlights the matching pattern in each result.
+> In delete output, duplicates appear as separate lines.
 
-## Environment
+# Environment
 
-- `PER_DIRECTORY_HISTORY_BASE` — root dir for history files (default: `~/.zsh_history_dirs`)
-- `PER_DIRECTORY_HISTORY_FILE` — per-dir history filename (default: `zsh-per-directory-history`)
-- `_per_directory_history_main_histfile` — global history file (default: `~/.zsh_history`)
+> `PER_DIRECTORY_HISTORY_BASE` — root dir for history files (default: `~/.zsh_history_dirs`)
+> `PER_DIRECTORY_HISTORY_FILE` — per-dir history filename (default: `zsh-per-directory-history`)
+> `_per_directory_history_main_histfile` — global history file (default: `~/.zsh_history`)
 
-## Related commands
+# Related commands
 
 - Toggle between global and per-directory history mode (Ctrl+G):
-`zinit`
+`cheat zinit`

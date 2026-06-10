@@ -2,56 +2,46 @@
 
 > Test and reference functions for the terminal color system used across zsh-config.
 
-## Test functions
+# Test functions
 
 - Test 24-bit (truecolor) support with a color gradient:
 
 `test-color-24bit`
 
-- Show all named colors from the `$c[...]` system with their names:
+- Show all named colors from the $c[...] system with their names:
 
 `test-color-names`
 
-- Show color codes from the `zpm-zsh-colors` palette:
+- Show color codes from the zpm-zsh-colors palette:
 
 `test-color-codes`
 
-## Color system (`$c[...]`)
+# Color system
 
-Colors are loaded by `zpm-zsh-colors` into the `$c` associative array.
+> Colors loaded by `zpm-zsh-colors` into the `$c` associative array.
+> Semantic keys: `h1`, `h2`, `h3` (headings), `lead` (description), `info`, `success`, `warn`, `error`.
+> More keys: `flag` (CLI flags), `param` (argument names), `sub` (secondary text), `em`, `reset`.
 
-**Semantic colors used in zsh-config output:**
+# Usage
 
-| Name | Use |
-|---|---|
-| `$c[h1]` | Primary heading |
-| `$c[h2]` | Section heading |
-| `$c[h3]` | Sub-heading |
-| `$c[lead]` | Lead/description text |
-| `$c[info]` | Informational highlight |
-| `$c[success]` | Success message |
-| `$c[warn]` | Warning |
-| `$c[error]` | Error |
-| `$c[flag]` | CLI flag names |
-| `$c[param]` | Parameter/argument names |
-| `$c[sub]` | Secondary/muted text |
-| `$c[em]` | Emphasis |
-| `$c[reset]` | Reset to default |
+- Show a primary heading in a function:
 
-## Usage in functions
+`echo "${c[h1]}my-function${c[reset]}"`
 
-```zsh
-echo "${c[h1]}my-function${c[reset]}"
-echo "${c[error]}error:${c[reset]} something went wrong"
-echo "${c[success]}success:${c[reset]} done"
-```
+- Show an error message:
 
-## Notes
+`echo "${c[error]}error:${c[reset]} something went wrong"`
 
-- Raw ANSI codes should never be used — always use `$c[...]` for consistency
-- Colors are loaded before functions in `.zshrc` (step 4 in load order)
+- Show a success message:
 
-## Related commands
+`echo "${c[success]}success:${c[reset]} done"`
+
+# Notes
+
+> Always use `$c[...]` for output — never raw ANSI codes.
+> Colors are loaded before functions in `.zshrc` (step 4 in load order).
+
+# Related commands
 
 - Dependency checker for functions:
 `cheat deps`

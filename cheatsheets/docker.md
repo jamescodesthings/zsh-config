@@ -2,7 +2,7 @@
 
 > Docker aliases and helpers.
 
-## Container management
+# Container management
 
 - Stop all running containers and prune system + dangling volumes:
 
@@ -14,7 +14,7 @@
 
 `dsa`
 
-## Compose
+# Compose
 
 - Start services in detached mode:
 
@@ -24,14 +24,14 @@
 
 `dcdn`
 
-## Notes
+# Notes
 
 > `dsp` is destructive: removes stopped containers, unused images, networks, and build cache.
 > `dcup` = `docker compose up -d`
 > `dcdn` = `docker compose down -v`
 > All aliases only defined when `docker` is available.
 
-## Related commands
+# Related commands
 
 - Full docker reference:
 `tldr docker`

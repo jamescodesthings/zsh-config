@@ -2,7 +2,7 @@
 
 > Wrapper around rupa/z (directory frecency). Subcommands manage z history; unrecognised args navigate.
 
-## Navigation
+# Navigation
 
 - Jump to highest-ranked directory matching query:
 
@@ -12,7 +12,7 @@
 
 `j projects zsh`
 
-## Subcommands
+# Subcommands
 
 - List all tracked directories sorted by rank:
 
@@ -58,17 +58,17 @@
 
 `j edit`
 
-## How frecency works
+# How frecency works
 
 > z tracks directories you visit and scores them by frequency + recency.
 > Higher score = higher priority when jumping. `j bump` promotes an entry above all others.
 
-## Environment
+# Environment
 
-- `_Z_DATA` — path to z data file (default: `~/.z`)
-- `EDITOR` — editor for `reorder` and `edit` (default: `micro`)
+> `_Z_DATA` — path to z data file (default: `~/.z`)
+> `EDITOR` — editor for `reorder` and `edit` (default: `micro`)
 
-## Related commands
+# Related commands
 
 - Full z reference (upstream):
 `tldr z`
