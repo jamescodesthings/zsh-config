@@ -2,7 +2,7 @@
 
 function _j_data_file() {
   local f="${_Z_DATA:-$HOME/.z}"
-  if [[ ! -f "$f" ]]; then
+  if is not file "$f"; then
     touch "$f" 2>/dev/null || {
       echo "${c[error]}error:${c[reset]} cannot create z data file: $f" >&2
       return 1
@@ -33,9 +33,16 @@ function _j_validate_regex() {
   local query="$1"
   printf '' | grep -qE -- "$query" 2>/dev/null
   if (( $? == 2 )); then
-    echo "${c[error]}error:${c[reset]} invalid regex: $query"
+    echo "${c[error]}error:${c[reset]} invalid regex: $query" >&2
     return 1
   fi
+}
+
+function _j_match_paths() {
+  local query="$1" data_file="$2"
+  while IFS='|' read -r path _ _; do
+    printf '%s\n' "$path" | grep -qE -- "$query" 2>/dev/null && printf '%s\n' "$path"
+  done < "$data_file"
 }
 
 function j() {
@@ -89,7 +96,7 @@ function j() {
       ;;
 
     search)
-      if [[ -z "$1" ]]; then _z; return $?; fi
+      if is empty "$1"; then _z; return $?; fi
       local query="$1"
       _j_validate_regex "$query" || return 1
       local found=0
@@ -103,7 +110,7 @@ function j() {
       ;;
 
     add)
-      if [[ -z "$1" ]]; then _z; return $?; fi
+      if is empty "$1"; then _z; return $?; fi
       local data_file; data_file=$(_j_data_file) || return 1
       local abs_path="${1:A}"
       local now; now=$(date +%s)
@@ -118,14 +125,12 @@ function j() {
       ;;
 
     delete)
-      if [[ -z "$1" ]]; then _z; return $?; fi
+      if is empty "$1"; then _z; return $?; fi
       local query="$1"
       _j_validate_regex "$query" || return 1
       local data_file; data_file=$(_j_data_file) || return 1
-      local -a matches=()
-      while IFS='|' read -r path _ _; do
-        printf '%s\n' "$path" | grep -qE -- "$query" 2>/dev/null && matches+=("$path")
-      done < "$data_file"
+      local -a matches=("${(@f)$(_j_match_paths "$query" "$data_file")}")
+      matches=("${matches[@]:#}")
       if (( ${#matches[@]} == 0 )); then
         echo "${c[info]}no matches found${c[reset]}"; return 0
       fi
@@ -142,14 +147,12 @@ function j() {
       ;;
 
     bump)
-      if [[ -z "$1" ]]; then _z; return $?; fi
+      if is empty "$1"; then _z; return $?; fi
       local query="$1"
       _j_validate_regex "$query" || return 1
       local data_file; data_file=$(_j_data_file) || return 1
-      local -a matches=()
-      while IFS='|' read -r path _ _; do
-        printf '%s\n' "$path" | grep -qE -- "$query" 2>/dev/null && matches+=("$path")
-      done < "$data_file"
+      local -a matches=("${(@f)$(_j_match_paths "$query" "$data_file")}")
+      matches=("${matches[@]:#}")
       if (( ${#matches[@]} == 0 )); then
         echo "${c[warn]}no matches for \"$query\"${c[reset]}"; return 1
       fi
@@ -169,7 +172,7 @@ function j() {
 
     reorder)
       local count=10
-      [[ "$1" == "--count" && -n "$2" ]] && count="$2"
+      if is equal "$1" "--count" && is not empty "$2"; then count="$2"; fi
       local data_file; data_file=$(_j_data_file) || return 1
       local -a top_paths=() top_ranks=()
       local i=0
@@ -185,7 +188,7 @@ function j() {
       printf '%s\n' "${top_paths[@]}" > "$tmp"
       ${EDITOR:-micro} "$tmp"
       local -a new_paths=()
-      while IFS= read -r p; do [[ -n "$p" ]] && new_paths+=("$p"); done < "$tmp"
+      while IFS= read -r p; do is not empty "$p" && new_paths+=("$p"); done < "$tmp"
       rm -f "$tmp"
       local -a valid_paths=()
       for p in "${new_paths[@]}"; do
@@ -201,7 +204,7 @@ function j() {
       done
       local tmp2; tmp2=$(mktemp)
       while IFS='|' read -r path rank ts; do
-        if [[ -n "${new_rank_map[$path]}" ]]; then
+        if is not empty "${new_rank_map[$path]}"; then
           printf '%s|%s|%s\n' "$path" "${new_rank_map[$path]}" "$ts"
         else
           printf '%s|%s|%s\n' "$path" "$rank" "$ts"
