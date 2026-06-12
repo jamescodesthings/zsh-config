@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+SSH_DIR="$HOME/.ssh"
+if ! is existing "$SSH_DIR"; then
+  mkdir -p "$SSH_DIR"
+  chmod 700 "$SSH_DIR"
+fi
+
+install-link "$REPO_DIR/configs/ssh-config/config" "$SSH_DIR/config"
+
+echo "$c[success]ssh-config install complete$c[reset]"
