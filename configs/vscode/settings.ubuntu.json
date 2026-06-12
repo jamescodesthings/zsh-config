@@ -22,5 +22,6 @@
     "security.workspace.trust.enabled": false,
     "makefile.configureOnOpen": false,
     "explorer.confirmDelete": false,
-    "claudeCode.preferredLocation": "panel"
+    "claudeCode.preferredLocation": "panel",
+    "terminal.integrated.defaultLocation": "editor"
 }
