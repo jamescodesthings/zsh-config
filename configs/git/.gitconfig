@@ -13,3 +13,5 @@
 	conflictStyle = zdiff3
 [pull]
 	rebase = true
+[init]
+	defaultBranch = main
