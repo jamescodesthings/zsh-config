@@ -1,0 +1,11 @@
+function rsync() {
+  command rsync "$@" &
+  local pid=$!
+  trap "kill $pid 2>/dev/null; trap - INT" INT
+  progress -mp $pid
+  wait $pid
+  local exit_code=$?
+  trap - INT
+  return $exit_code
+}
+rsync "$@"
