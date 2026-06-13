@@ -24,6 +24,7 @@ source $CUSTOM_DIR/p10k.zsh
 source $CUSTOM_DIR/plugins.zsh
 source $CUSTOM_DIR/completions.zsh
 source $CUSTOM_DIR/aliases.zsh
+source $CUSTOM_DIR/wrap-progress.zsh
 
 source $CUSTOM_DIR/load-direnv.zsh
 source $CUSTOM_DIR/load-fzf.zsh
