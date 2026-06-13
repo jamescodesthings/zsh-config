@@ -22,24 +22,11 @@ fi
 
 if is linux; then
   echo "$c[info]installing:$c[reset] progress via apt"
-  sudo apt-get install -y progress
+  sudo apt install -y progress
   if is equal "$?" "0"; then
     echo "$c[success]success:$c[reset] progress installed"
     exit 0
   fi
-
-  if is available brew; then
-    echo "$c[info]installing:$c[reset] progress via homebrew"
-    brew install progress
-    if is equal "$?" "0"; then
-      echo "$c[success]success:$c[reset] progress installed"
-      exit 0
-    fi
-  fi
-
-  echo "$c[error]no automatic linux install route:$c[reset]"
-  echo "$c[info]install instructions:$c[reset] https://github.com/Xfennec/progress"
-  exit 1
 fi
 
 echo "$c[error]error:$c[reset] unsupported os"
