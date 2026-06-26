@@ -20,6 +20,8 @@ alias l='k -h'
 
 alias s="kitten ssh"
 
+alias cht="cheat"
+
 if is alias md; then
   unalias md
 fi
