@@ -58,7 +58,7 @@ function cheat() {
     local _last=0
     is file "$_stamp" && _last=$(cat "$_stamp" 2>/dev/null || echo 0)
     if (( _now - _last > 604800 )); then
-      tldr --update &!
+      tldr --update &>/dev/null &!
       echo "$_now" >| "$_stamp"
     fi
   fi
