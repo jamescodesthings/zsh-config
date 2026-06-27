@@ -79,6 +79,10 @@ if is available npm; then
   alias ncu='npm-check-update'
 fi
 
+if is available npx; then
+  alias licensed='npx licensed'
+fi
+
 if is available python; then
   alias pip='python -m pip'
 fi
