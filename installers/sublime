@@ -4,6 +4,35 @@ source "${0:a:h}/_stub"
 
 check-or-load install-link
 
+if is not available subl; then
+  if is osx; then
+    echo "$c[info]installing:$c[reset] sublime text via homebrew"
+    brew install --cask sublime-text
+    if is not equal "$?" "0"; then
+      echo "$c[error]error:$c[reset] homebrew install failed"
+      echo "$c[info]install instructions:$c[reset] https://www.sublimetext.com/docs/linux_repositories.html"
+      exit 1
+    fi
+  elif is linux; then
+    echo "$c[info]installing:$c[reset] sublime text via apt"
+    wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo tee /etc/apt/keyrings/sublimehq-pub.asc > /dev/null
+    echo -e 'Types: deb\nURIs: https://download.sublimetext.com/\nSuites: apt/stable/\nSigned-By: /etc/apt/keyrings/sublimehq-pub.asc' | sudo tee /etc/apt/sources.list.d/sublime-text.sources > /dev/null
+    sudo apt-get update
+    sudo apt-get install -y sublime-text
+    if is not equal "$?" "0"; then
+      echo "$c[error]error:$c[reset] apt install failed"
+      echo "$c[info]install instructions:$c[reset] https://www.sublimetext.com/docs/linux_repositories.html"
+      exit 1
+    fi
+  else
+    echo "$c[error]error:$c[reset] unsupported os"
+    echo "$c[info]install instructions:$c[reset] https://www.sublimetext.com/docs/linux_repositories.html"
+    exit 1
+  fi
+else
+  echo "$c[info]skipping:$c[reset] sublime text already installed"
+fi
+
 CONFIG_DIR="$REPO_DIR/configs/sublime"
 
 OSX_DIR="$HOME/Library/Application Support/Sublime Text/Packages/User"
