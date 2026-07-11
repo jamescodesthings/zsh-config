@@ -1,0 +1,6 @@
+---
+tabTrigger: logds
+scope: source.c++, meta.function.c++, meta.block.c++, meta.block.c++, meta.assumed-macro.c
+description: Boost Log Debug without boost::format
+---
+BOOST_LOG_TRIVIAL(debug) << "${1:message}";$0

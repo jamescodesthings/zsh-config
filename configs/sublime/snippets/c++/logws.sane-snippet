@@ -1,0 +1,6 @@
+---
+tabTrigger: logws
+scope: source.c++, meta.function.c++, meta.block.c++, meta.block.c++, meta.assumed-macro.c
+description: Boost Log Warn without boost::format
+---
+BOOST_LOG_TRIVIAL(warning) << "${1:message}";$0

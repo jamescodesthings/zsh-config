@@ -1,0 +1,7 @@
+---
+tabTrigger: ustd
+scope: source.c++
+description: Using Namespace STD
+---
+using namespace std;
+$0

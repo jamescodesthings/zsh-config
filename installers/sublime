@@ -1,0 +1,33 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-link
+
+CONFIG_DIR="$REPO_DIR/configs/sublime"
+
+OSX_DIR="$HOME/Library/Application Support/Sublime Text/Packages/User"
+LINUX_DIR="$HOME/.config/sublime-text/Packages/User"
+
+DEST_DIR=""
+
+if is osx; then
+  DEST_DIR="$OSX_DIR"
+elif is linux; then
+  DEST_DIR="$LINUX_DIR"
+else
+  echo "Could not identify system, update ./installers/sublime"
+  exit 1
+fi
+
+mkdir -p "$DEST_DIR"
+
+install-link "$CONFIG_DIR/Preferences.sublime-settings" "$DEST_DIR/Preferences.sublime-settings"
+install-link "$CONFIG_DIR/Default.sublime-mousemap"     "$DEST_DIR/Default.sublime-mousemap"
+install-link "$CONFIG_DIR/Default.sublime-keymap"       "$DEST_DIR/Default.sublime-keymap"
+
+if is linux; then
+  install-link "$CONFIG_DIR/Default (Linux).sublime-keymap" "$DEST_DIR/Default (Linux).sublime-keymap"
+fi
+
+install-link "$CONFIG_DIR/snippets" "$DEST_DIR/snippets"

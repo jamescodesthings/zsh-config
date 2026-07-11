@@ -1,0 +1,7 @@
+---
+tabTrigger: incl
+scope: source.c++
+description: Shorthand Include
+---
+#include <${1:include}>
+$0

@@ -1,0 +1,6 @@
+---
+tabTrigger: logt
+scope: source.c++, meta.function.c++, meta.block.c++, meta.block.c++, meta.assumed-macro.c
+description: Boost Log Trace
+---
+BOOST_LOG_TRIVIAL(trace) << boost::format("${1:message}") % ${2:params};$0
