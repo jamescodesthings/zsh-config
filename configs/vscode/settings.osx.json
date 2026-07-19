@@ -106,8 +106,8 @@
   "github.copilot.enable": {
     "*": true,
     "plaintext": false,
-    "markdown": true,
-    "scminput": false,
+    "markdown": false,
+    "scminput": false
   },
   "explorer.confirmPasteNative": false,
   "geminicodeassist.project": "",
@@ -160,4 +160,13 @@
   "workbench.secondarySideBar.defaultVisibility": "hidden",
   "editor.inlineSuggest.enabled": true,
   "markdown.marp.html": "all",
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml"
+  ],
+  "explorer.autoReveal": false,
 }
