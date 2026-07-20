@@ -1,0 +1,26 @@
+#!/usr/bin/env zsh
+
+compress-jpg-all() {
+    # Find all .jpg and .jpeg files (case-insensitive, ignores already compressed)
+    local jpegs=( *.(jpg|jpeg|JPG|JPEG)(N) )
+    local target_jpegs=()
+
+    for f in $jpegs; do
+        if [[ ! -f "compressed/$f" ]]; then
+            target_jpegs+=("$f")
+        fi
+    done
+
+    # Check if any uncompressed JPEGs exist
+    if (( ${#target_jpegs} == 0 )); then
+        echo "No uncompressed JPEG files found in this folder."
+        return 0
+    fi
+
+    # Loop and call the single compression function
+    for input in "${target_jpegs[@]}"; do
+        compress-jpg "$input"
+    done
+}
+
+compress-jpg-all "$@"

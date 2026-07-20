@@ -1,0 +1,26 @@
+#!/usr/bin/env zsh
+
+compress-jpg() {
+    # Check if a file was provided
+    if [ -z "$1" ]; then
+      echo "Error: Please provide a JPEG file name."
+      echo "Usage: compress-jpg image.jpg"
+      return 1
+    fi
+
+    # Extract the base name and extension
+    local base_name="${${1:t}%.*}"
+    local ext="${1##*.}"
+
+    # Create output directory
+    mkdir -p compressed
+
+    # Compress using native macOS sips tool
+    # -Z 1200 downsizes the largest side to 1200px while locking the aspect ratio
+    # formatOptions 80 drops quality to 80% to shave off MBs
+    sips -Z 1200 -s formatOptions 80 "$1" --out "compressed/${base_name}.${ext}" &> /dev/null
+
+    echo "Done! Created: compressed/${base_name}.${ext}"
+}
+
+compress-jpg "$@"

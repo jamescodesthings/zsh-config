@@ -1,0 +1,29 @@
+#!/usr/bin/env zsh
+
+compress-pdf-all() {
+  # Find all PDFs using the (N) flag to prevent errors if empty
+  local pdfs=( *.pdf(N) )
+
+  # Filter out files that are already compressed
+  local target_pdfs=()
+  for f in "${pdfs[@]}"; do
+    if [[ ! -f "compressed/$f" ]]; then
+      target_pdfs+=("$f")
+    fi
+  done
+
+  # Check if there are any files to process
+  if [ ${#target_pdfs[@]} -eq 0 ]; then
+    echo "No uncompressed PDFs found in this folder."
+    return 0
+  fi
+
+  # Loop through and hand off each file to compress-pdf
+  for file in "${target_pdfs[@]}"; do
+    compress-pdf "$file"
+  done
+
+  echo "Success! All PDFs have been processed."
+}
+
+compress-pdf-all "$@"
