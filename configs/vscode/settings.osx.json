@@ -169,4 +169,7 @@
     "**/.forgejo/workflows/*.yaml"
   ],
   "explorer.autoReveal": false,
+  "git.postCommitCommand": "sync",
+  "git.rebaseWhenSync": true,
+  "git.confirmSync": false
 }
