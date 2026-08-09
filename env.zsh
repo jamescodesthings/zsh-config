@@ -66,5 +66,8 @@ export DEFAULT_MODEL=gpt-4o-mini
 
 export GOOGLE_CLOUD_PROJECT=467061286120
 
+# Claude custom statusline
+export CLAUDE_STATUSLINE_NERDFONT=1
+
 # Source env specific to this environment
 source $CUSTOM_DIR/load_box_env.zsh
