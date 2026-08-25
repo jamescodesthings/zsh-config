@@ -34,3 +34,7 @@ source $CUSTOM_DIR/configs/ls_colors/ls-colors.sh
 if is existing $CUSTOM_DIR/private.zsh; then
   source $CUSTOM_DIR/private.zsh
 fi
+
+
+export AI_CONFIG_DIR="/Users/jamesmacmillan/projects/personal/agent-forge"
+[[ -f "$AI_CONFIG_DIR/zsh/aliases.zsh" ]] && source "$AI_CONFIG_DIR/zsh/aliases.zsh"

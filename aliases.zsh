@@ -172,23 +172,7 @@ if is available zev; then
   alias gpt="zev"
 fi
 
-if is available claude; then
-  alias cld="claude --dangerously-skip-permissions --remote-control"
-  alias cldr="cld --resume"
-  alias cldm="claude-monitor"
-fi
-
-if is available agy; then
-  alias aggy="agy --dangerously-skip-permissions"
-  alias aggyr="aggy --cmd '/resume'"
-fi
-
-if is available codex; then
-  alias chat="codex --dangerously-bypass-approvals-and-sandbox"
-  alias chatr="codex resume  --dangerously-bypass-approvals-and-sandbox"
-fi
-
-if is available gh; then
-  alias copilot="gh copilot --yolo"
-  alias copilot="copilot --resume"
+if is osx; then
+  alias av="sudo clamscan -r --bell -i -l ~/projects/av/clamav_scan.log"
+  alias av-all="sudo clamscan -r --bell -i -l ~/projects/av/clamav_scan.log /"
 fi

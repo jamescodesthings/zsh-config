@@ -95,7 +95,15 @@ export GPT_HAS_NO_INTERACTION=1
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+export PATH="/Users/jamesmacmillan/.kimi-code/bin:$PATH"
+
+
 export NODE_BUILD_HTTP_CLIENT="curl"
+
+export AGENT_FORGE_DIR="$HOME/projects/personal/agent-forge"
+
+export AI_CONFIG_DIR="$HOME/projects/personal/agent-forge"
+[[ -f "$AI_CONFIG_DIR/zsh/aliases.zsh" ]] && source "$AI_CONFIG_DIR/zsh/aliases.zsh"
 
 if is not existing ~/.hushlogin; then
   touch ~/.hushlogin

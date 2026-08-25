@@ -172,5 +172,7 @@
   "git.postCommitCommand": "sync",
   "git.rebaseWhenSync": true,
   "git.confirmSync": false,
-  "git.autofetch": true
+  "git.autofetch": true,
+  "bashIde.includeAllWorkspaceSymbols": true,
+  "bashIde.shfmt.binaryNextLine": true
 }
