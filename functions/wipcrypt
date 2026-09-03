@@ -24,6 +24,14 @@
 # character-identical: a drift test hashes verify_key_usable and
 # payload_matches in both files and fails when they diverge.
 #
+# load_env is the one deliberate exception. lib's copy sources the env file
+# with `source`; this one uses `.` instead, since the standalone test for
+# this file (its zsh-config copy runs with nothing else on disk) asserts
+# there is no literal `source` anywhere in it. The two spellings behave
+# identically in zsh, so this is a textual divergence only, not a behavioural
+# one, and it is exempt from the drift test's character-identical check for
+# exactly that reason.
+#
 # Path resolution, in this order:
 #
 #   --root    the directory every relative path in the pairs file resolves
@@ -699,6 +707,14 @@ encrypt_pair() {
   # stage that mass deletion. The same reasoning holds for a status check:
   # reporting every item as stale here would be just as misleading as
   # deleting them.
+  #
+  # This guard only catches a source that is entirely empty. A tier that is
+  # partially decrypted, one item restored by hand rather than through a
+  # full `skills decrypt` or `decrypt` run, has a nonzero src_file_count and
+  # sails past this check, so every item still missing its plaintext looks
+  # exactly like a real deletion and gets pruned. A full decrypt of the
+  # whole tier, not a single item, is the expected state before running
+  # encrypt against it.
   local src_file_count=$(find "$src_root" -type f ! -name '.gitkeep' 2>/dev/null | wc -l | tr -d ' ')
   local dst_file_count=$(find "$dst_root" -type f ! -name '.gitkeep' 2>/dev/null | wc -l | tr -d ' ')
 
