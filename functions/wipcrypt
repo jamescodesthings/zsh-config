@@ -1,0 +1,1344 @@
+#!/usr/bin/env zsh
+# wipcrypt: the encryption core behind the WIP tiers. Encrypts a plaintext
+# wip root into its paired encrypted root, decrypts it back, reports drift
+# between the two, and rotates the key across every registered pair.
+#
+#   wipcrypt <encrypt|decrypt|status|cycle-key>
+#            [--root DIR] [--pairs FILE] [--env FILE] [--dry-run] [SRC DST]
+#
+#   encrypt     mirror each wip root into its encrypted root
+#   decrypt     restore each encrypted root into its wip root
+#   status      encrypt --dry-run: report drift, write nothing
+#   cycle-key   re-key every registered pair atomically
+#
+# With SRC and DST, encrypt and decrypt act on that one pair instead of every
+# registered one; status does the same. An unknown subcommand or option
+# prints this usage on stderr and exits 2.
+#
+# This file is the canonical copy. zsh-config carries a duplicate at
+# functions/wipcrypt, and `make sync-wipcrypt` pushes this one to it. That is
+# also why it sources nothing: lib does not exist where the
+# zsh-config copy runs, so the painters and the crypto helpers below are
+# copies of lib's rather than calls into it. lib keeps its own copies for its
+# other callers (key-sync, doctor), and the two sets must stay
+# character-identical: a drift test hashes verify_key_usable and
+# payload_matches in both files and fails when they diverge.
+#
+# Path resolution, in this order:
+#
+#   --root    the directory every relative path in the pairs file resolves
+#             against. Defaults to the pairs file's directory's parent's
+#             parent when --pairs was given (so both shared/tools/wip-pairs
+#             and .claude/wip-pairs land on the repo root that contains
+#             them), and to $PWD when it was not.
+#   --pairs   defaults to <root>/shared/tools/wip-pairs when that exists,
+#             else <root>/.claude/wip-pairs. When neither exists and a pairs
+#             file is actually needed, both candidates are named in the
+#             error.
+#   --env     defaults to $AGENT_FORGE_ENV_FILE, else $AI_CONFIG_DIR/.env
+#             when that variable is set and the file exists, else
+#             <root>/.env. One key is shared across every tier, so a project
+#             root normally reads agent-forge's .env rather than one of its
+#             own.
+#
+# That one shared key is why cycle-key is stricter than the rest. It refuses
+# an env file that does not sit directly in the root being rotated, since
+# rotating a key you do not own re-keys every tree it protects while
+# re-encrypting only one of them, and it consults a key-users registry so it
+# can re-encrypt the others:
+#
+#   ${AGENT_FORGE_KEY_USERS:-<env file's directory>/.cache/key-users}
+#
+# One absolute project root per line, blank lines and # comments allowed. Each
+# listed root contributes its own .claude/wip-pairs (or shared/tools/wip-pairs)
+# to the stale-key check, the decrypt pass and the re-encrypt. A listed root
+# that is missing, or whose pairs file cannot be read, aborts the rotation
+# before create-key runs and before any ciphertext is touched: rotating past it
+# would leave that root holding ciphertext for a key that no longer exists. A
+# project is expected to add itself to this registry when its tiers are first
+# created. The default location sits under .cache/, which this repo already
+# gitignores, and that is deliberate: the registry is a list of absolute paths
+# on one machine, and this repo is public.
+#
+# shared/tools/encrypt, decrypt and cycle-key are thin wrappers that call
+# this with --root/--pairs/--env already resolved the way they always
+# resolved them, so every existing caller, test and hook keeps working.
+emulate -L zsh
+unsetopt MONITOR
+
+# Copies of lib's painters, printing exactly the same text. The colour prefix
+# goes through print -P, the message never does. Paths reach these functions,
+# and under prompt_subst `print -P` performs command substitution, so a file
+# named `$(...)` inside a directory being cleaned would otherwise execute.
+info()    { print -Pn "%F{blue}[info]%f:  "; print -r -- "$1" }
+success() { print -Pn "%F{green}[ok]%f:    "; print -r -- "$1" }
+warn()    { print -Pn "%F{yellow}[warn]%f:  "; print -r -- "$1" }
+error()   { print -Pn "%F{red}[error]%f "; print -r -- "$1"; exit 1 }
+
+usage() {
+  print -r -- "usage: wipcrypt <encrypt|decrypt|status|cycle-key> [--root DIR] [--pairs FILE] [--env FILE] [--dry-run] [SRC DST]"
+}
+
+# Exit 2, not 1: an argument mistake is a different failure from a refusal to
+# operate, and a caller that wants to tell the two apart can. Both lines go to
+# stderr here; --help prints the same usage on stdout and exits 0.
+usage_error() {
+  print -r -- "wipcrypt: $1" >&2
+  usage >&2
+  exit 2
+}
+
+# ---------------------------------------------------------------------------
+# Moved from lib, verbatim
+# ---------------------------------------------------------------------------
+# These are copies, not adaptations. lib still holds the originals for its own
+# callers, and the two must not drift, so nothing here is reworded or
+# reformatted even where the wording refers to lib itself. ROOT_DIR and
+# CONTENT_ROOT are set by the argument parser at the bottom of this file
+# before any of them runs, which is what makes their defaults resolve against
+# --root the way lib's resolve against the repo.
+
+# Fetches an unused two-word fuzzed slug under $1 (a wip root). $2 is the
+# collision-check suffix appended to the candidate before testing for
+# existence: "" for a directory-shaped item (skills), ".md" for a
+# single-file item (memory). Retries up to 5 times against the word-source
+# API. Prints the slug to stdout and returns 0, or prints nothing and
+# returns 1 on failure.
+#
+# Callers invoke this via command substitution ($(fetch_wip_slug ...)), which
+# runs in a subshell: so this must never call `error` (its `exit` would only
+# kill the subshell, silently swallowed by the caller) and any diagnostic
+# output must go to stderr, never stdout, or it corrupts the returned slug.
+fetch_wip_slug() {
+  local wip_root="$1" collision_suffix="$2"
+  local resp candidate
+  local -a words
+
+  for _ in 1 2 3 4 5; do
+    resp=$(curl -sf "https://random-word-api.herokuapp.com/word?number=2") || return 1
+    words=("${(@f)$(print -r -- "$resp" | tr -d '[]"' | tr ',' '\n')}")
+    [[ ${#words[@]} -eq 2 ]] || return 1
+    candidate="${words[1]}-${words[2]}"
+    if [[ ! -e "$wip_root/$candidate$collision_suffix" ]]; then
+      print -r -- "$candidate"
+      return 0
+    fi
+    warn "Slug $candidate already exists, retrying" >&2
+  done
+  return 1
+}
+
+load_env() {
+  local env_file="${1:-${AGENT_FORGE_ENV_FILE:-$ROOT_DIR/.env}}"
+  [[ -f "$env_file" ]] || error "missing $env_file: run key-sync (1Password) or shared/tools/create-key first"
+  set -a
+  . "$env_file"
+  set +a
+  [[ -n "$SKILLS_ENCRYPTION_KEY" ]] && export SKILLS_ENCRYPTION_KEY
+}
+
+# Emits "<abs-wip-root> <abs-encrypted-root>" per line, one per registered
+# content-type, resolved against CONTENT_ROOT. Add a pair to
+# shared/tools/wip-pairs to onboard a new one, or point AGENT_FORGE_WIP_PAIRS
+# at a project's own pairs file.
+wip_pairs() {
+  local pairs_file="${1:-${AGENT_FORGE_WIP_PAIRS:-$ROOT_DIR/shared/tools/wip-pairs}}"
+  [[ -f "$pairs_file" ]] || error "missing $pairs_file"
+  local line wip enc
+  while IFS=':' read -r wip enc || [[ -n "$wip" ]]; do
+    [[ -z "$wip" || "$wip" == "#"* ]] && continue
+    print -r -- "$CONTENT_ROOT/$wip $CONTENT_ROOT/$enc"
+  done < "$pairs_file"
+}
+
+# True when the ciphertext at $1 decrypts to exactly the plaintext at $2.
+# The wip-path header occupies the first line of every payload and is not
+# part of the file's content, so it is dropped before comparing. Both
+# shared/tools/encrypt and the Makefile's wip-status target call this: the
+# comparison existed in two places once, they drifted the moment a header
+# was added, and wip-status silently reported everything as changed.
+payload_matches() {
+  local cipher="$1" plain="$2"
+  [[ -f "$cipher" && -f "$plain" ]] || return 1
+  openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+    -in "$cipher" < /dev/null 2>/dev/null | tail -n +2 | cmp -s - "$plain"
+}
+
+# True when the current key belongs to the encrypted tree at $1, or when there
+# is nothing there to protect.
+#
+# encrypt decrypts every entry in this root anyway, to read the wip-path header
+# that tells it which item each ciphertext holds. Under a key that does not
+# belong to this tree every one of those decrypts fails, the map comes out
+# empty, and encrypt concludes that every plaintext file is a brand new item:
+# it mints fresh slugs, re-encrypts under the stale key, and prunes every entry
+# it could not read. That is silent, total, and it destroys the only backup.
+# This asks the question encrypt was already in a position to answer.
+#
+# Success requires openssl to exit 0, NOT that a wip-path header was found. A
+# payload written before the header existed decrypts perfectly and simply has
+# no header; treating that as a failure would refuse to operate on a legacy
+# tree under the correct key.
+#
+# openssl exiting 0 is necessary but not sufficient on its own. AES-256-CBC
+# carries no MAC, so the only integrity check openssl performs on decrypt is
+# PKCS#7 padding, and random bytes satisfy valid padding by chance roughly 1
+# time in 256. Measured against a real payload, 2000 wrong keys passed the
+# padding check alone about 9 times (0.45%), and every one of those 9
+# decrypted to binary noise rather than text. Because the loop below returns
+# on the first payload that passes, that per-payload rate compounds across a
+# tree: with 9 payloads it was measured at roughly 3.5%, about one attempt in
+# 29, which is the gap this second check closes.
+#
+# The second check: the leading prefix_bytes (200) bytes of the
+# decrypted output must be non-empty and free of the C0 control range (bytes
+# 0x00-0x1F and 0x7F), except tab, newline and carriage return, which
+# ordinary text legitimately contains. This is not an ASCII check: bytes
+# 0x80-0xFF are left alone, so real UTF-8 content (accented letters, curly
+# quotes, emoji) still passes. Under a wrong key the decrypted stream is
+# effectively random no matter whether that one block's padding happened to
+# validate, so a run of consecutive bytes overwhelmingly fails this check by
+# chance; a genuine plaintext prefix essentially never does. Judging a fixed
+# prefix rather than the whole payload keeps the cost flat on a large item.
+#
+# This is still a probabilistic check, not proof: it is strong evidence that
+# the key is right, not a guarantee. The only way to get a guarantee here
+# would be an authenticated cipher such as AES-GCM, which would let openssl
+# itself detect a wrong key by a failed authentication tag instead of by
+# these two indirect signals. Changing cipher is a separate decision with a
+# migration cost of its own (every existing payload would need re-encrypting)
+# and is not something this guard silently assumes.
+#
+# The prefix is read through a SEPARATE, deliberately truncated pipe rather
+# than folded into the openssl invocation used for the pass/fail check above.
+# `head -c N` closes its end of the pipe once it has read N bytes; on a
+# payload bigger than the kernel's pipe buffer, openssl is still writing when
+# that happens, and the SIGPIPE it takes on the next write turns its own exit
+# status into a false failure even though decryption and padding were both
+# fine. Measured directly: a 2MB payload decrypted correctly but reported
+# openssl exit 1 once piped through `head -c 50`. Keeping the two checks on
+# separate invocations means only the untruncated one's exit status is ever
+# trusted, and the truncated one is read for its bytes, never its exit code.
+#
+# A tree part-way through a rotation, with entries under two keys, passes as
+# long as one entry decrypts. This is a floor, not a consistency proof;
+# cycle-key's atomic swap is what prevents a half-rotated tree.
+#
+# A root holding only .gitkeep returns success through the plain emptiness
+# check below, not through any filtering: the glob feeding payloads,
+# ${enc_root}/**/*(N.), does not match dotfiles at all under zsh's default
+# options (no GLOB_DOTS, no D qualifier on this glob), so .gitkeep never
+# reaches this array in the first place. A root containing only .gitkeep is
+# therefore indistinguishable from a genuinely empty one by the time
+# payloads is built, and both take the same nothing-to-protect path. This
+# depends on that glob keeping its current, dotfile-excluding shape: adding
+# a D qualifier here would start matching .gitkeep and silently change what
+# this function considers empty.
+verify_key_usable() {
+  local enc_root="$1" f prefix_len forbidden_len
+  [[ -d "$enc_root" ]] || return 0
+  local -a payloads
+  payloads=(${enc_root}/**/*(N.))
+  (( ${#payloads[@]} )) || return 0
+  # Octal escapes, the form BSD tr (no GNU extensions, what zsh's default
+  # `tr` resolves to on this platform) accepts: 0x00-0x08, 0x0B-0x0C,
+  # 0x0E-0x1F and 0x7F. Tab (0x09), newline (0x0A) and carriage return (0x0D)
+  # are deliberately absent: those are C0 control bytes too, but ordinary
+  # text is full of them.
+  local forbidden='\000-\010\013-\014\016-\037\177'
+  local -i prefix_bytes=200
+  for f in $payloads; do
+    openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+      -in "$f" -out /dev/null < /dev/null 2>/dev/null || continue
+    prefix_len=$(openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+      -in "$f" < /dev/null 2>/dev/null | head -c "$prefix_bytes" | wc -c)
+    forbidden_len=$(openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+      -in "$f" < /dev/null 2>/dev/null | head -c "$prefix_bytes" \
+      | LC_ALL=C tr -cd "$forbidden" | wc -c)
+    (( prefix_len > 0 && forbidden_len == 0 )) && return 0
+  done
+  return 1
+}
+
+# Finds the ciphertext entry that holds a given real (plaintext-side) path,
+# by asking every payload under $1 what it holds and comparing. A ciphertext
+# path is meaningless by design, a fuzzed slug unrelated to the item it
+# contains, so it can never be reconstructed from the real name the way it
+# could before real names existed: the only way to find the entry that
+# belongs to a given real path is to decrypt each payload's wip-path header
+# and check. This is the one place that lookup lives; wip-decrypt, wip-remove
+# and wip-graduate all call it rather than each reconstructing
+# "$enc_root/$name" itself, which stopped being a valid assumption the
+# moment plaintext could carry a real name different from its ciphertext
+# slug. Requires SKILLS_ENCRYPTION_KEY to already be exported (load_env).
+#
+# $1: encrypted root to search. $2: the real path to find, exactly as it
+# appears in a wip-path header (e.g. "example-mode/SKILL.md" for a skill,
+# "example_memory_note.md" for a memory).
+#
+# Prints the matching ciphertext path relative to $1 and returns 0, or
+# prints nothing and returns 1 when no payload's header names $2.
+cipher_path_for() {
+  local enc_root="$1" real_rel="$2"
+  local enc_file header
+  # No .gitkeep filter here: the glob above already excludes it. See the
+  # comment on verify_key_usable's own emptiness check for why, above.
+  for enc_file in ${enc_root}/**/*(N.); do
+    header=$(openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+      -in "$enc_file" < /dev/null 2>/dev/null | head -1)
+    # $real_rel reaches this unvalidated from wip-decrypt/wip-remove's bare
+    # argv1: neither validates it before calling this. The right side of ==
+    # inside [[ ]] is a glob pattern by default, so this comparison would be
+    # exploitable by an argument like '*' if $real_rel's expansion here
+    # counted as unquoted. It does not: the whole "wip-path: $real_rel"
+    # token is written quoted, and zsh compares a quoted pattern literally
+    # regardless of what characters the expansion contains, confirmed
+    # against this exact expression under default options, GLOB_SUBST and
+    # KSH_GLOB alike. Keep it exactly this quoted; do not lift the quotes
+    # to interpolate $real_rel unquoted for any reason.
+    [[ "$header" == "wip-path: ${real_rel}" ]] || continue
+    print -r -- "${enc_file#$enc_root/}"
+    return 0
+  done
+  return 1
+}
+
+# Refuses a wip-path header value that is unsafe to append to a destination
+# root. This value comes out of decrypted ciphertext content, not off a glob
+# the way every other path in this file does, so it is treated the same as
+# any other untrusted input: never trusted to build a write path without a
+# check first, the same posture validate_purge_root and validate_log_root
+# take with paths from the environment. A leading "./" is harmless but
+# pointless, so it is stripped rather than rejected. Prints the normalised
+# value and returns 0, or explains the refusal on stderr and returns 1.
+#
+# The refusal messages below name $cipher_file, a meaningless slug and safe
+# to print, but deliberately never print $rel itself. $rel is the real skill
+# or memory name this entire mechanism exists to keep out of anything sitting
+# next to the ciphertext, installer logs under .cache/logs/ included: writing
+# it into a refusal message would defeat the point on the way to enforcing
+# it. Describe the class of problem, not the value. Do not add it back.
+validate_wip_rel() {
+  local cipher_file="$1" rel="$2"
+  if [[ -z "$rel" ]]; then
+    warn "$cipher_file: wip-path header is empty, refusing" >&2
+    return 1
+  fi
+  if [[ "$rel" == /* ]]; then
+    warn "$cipher_file: wip-path header is an absolute path, refusing" >&2
+    return 1
+  fi
+  rel="${rel#./}"
+  if [[ "$rel" == ".." || "$rel" == ../* || "$rel" == */.. || "$rel" == */../* ]]; then
+    warn "$cipher_file: wip-path header contains a parent-directory segment, refusing" >&2
+    return 1
+  fi
+  print -r -- "$rel"
+}
+
+# Refuses an encrypted-root delete target that does not resolve strictly
+# inside that root, or that resolves to the root itself. `encrypt` always
+# nests a dir-shaped item one level under its ciphertext slug, so today the
+# ":h" a caller takes to go from "slug/SKILL.md" to the item's own directory
+# lands on the slug directory, never on enc_root. But that assumption is not
+# enforced anywhere: a payload whose header names "item/SKILL.md" while its
+# ciphertext sits at the TOP LEVEL of enc_root, reachable through a
+# hand-crafted payload, a partially completed cycle-key, or a bad merge,
+# makes that same ":h" resolve to enc_root itself, and an unguarded
+# `rm -rf` on that deletes every item's only backup. This is the same class
+# of check validate_purge_root and validate_log_root already give the other
+# unguarded deletes in this repo; wip-remove and wip-graduate call this one
+# before either of theirs.
+#
+# Symlinks are resolved (:A) before comparing, the same reasoning decrypt's
+# resolved-root check already uses: a string-only comparison could be
+# defeated by a symlink sitting under enc_root that points elsewhere.
+#
+# $1: the encrypted root. $2: the candidate delete target, expected to be
+# somewhere under it. Prints the resolved target and returns 0 when it is
+# safely and strictly inside the root, or explains the refusal on stderr
+# and returns 1. The refusal message names only $2, a ciphertext path or
+# the encrypted root path, both safe to print: never a real item name.
+validate_enc_item() {
+  local enc_root="$1" enc_item="$2"
+  local resolved_root resolved_item
+  resolved_root="${enc_root:A}"
+  resolved_item="${enc_item:A}"
+  if [[ -z "$resolved_root" || -z "$resolved_item" ]]; then
+    warn "Could not resolve $enc_item against $enc_root: refusing to delete" >&2
+    return 1
+  fi
+  if [[ "$resolved_item" == "$resolved_root" ]]; then
+    warn "Delete target resolves to the encrypted root itself ($resolved_root): refusing to delete it. This usually means a payload's header names a path whose ciphertext sits at the top level of the encrypted root instead of nested under a slug directory." >&2
+    return 1
+  fi
+  if [[ "$resolved_item" != "$resolved_root"/* ]]; then
+    warn "Delete target $enc_item resolves outside the encrypted root ($resolved_root): refusing to delete it" >&2
+    return 1
+  fi
+  print -r -- "$resolved_item"
+}
+
+# ---------------------------------------------------------------------------
+# Moved from shared/tools/encrypt, verbatim
+# ---------------------------------------------------------------------------
+# Encrypts every file in a wip root into its matching path under the paired
+# encrypted root. The destination is kept as an exact mirror of the source:
+#   - a file whose plaintext is unchanged since it was last encrypted is left
+#     alone (re-encrypting re-salts it and churns the whole git tree)
+#   - a destination file with no corresponding source file is pruned
+
+encrypt_pair() {
+  local src_root="$1" dst_root="$2" dry_run="${3:-0}"
+  local count=0 unchanged=0 pruned=0
+  # These three exist only for --dry-run's report; the real run never touches
+  # them, and they stay 0 and unused on that path. wip-status is what reads
+  # them: the label and wording below match what it already prints, so a
+  # caller sees no change, only where the numbers now come from.
+  local changed=0 missing=0 orphan=0
+
+  # Runs on the dry-run path too, not only the real write path: the reverse
+  # map built below is exactly what a wrong key breaks, so a status check
+  # that skipped this would report "in sync" against a tree it cannot
+  # actually read, which is no more true than a real run silently pruning
+  # it. Dry-run writes nothing either way, so the only cost here is an
+  # accurate refusal instead of a comforting lie.
+  verify_key_usable "$dst_root" \
+    || error "The encryption key does not match the encrypted tree at ${dst_root}. Nothing was changed. Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."
+
+  # Map real path -> ciphertext path, read from each payload's own header. This
+  # is what lets a plaintext item be renamed without its ciphertext path
+  # changing, which keeps each item's git history on one path. Reading the
+  # header costs nothing extra: the skip-unchanged check below decrypts every
+  # destination anyway.
+  #
+  # A path-keyed map alone cannot find a renamed item: the header still names
+  # the OLD real path, and the plaintext file now sits at a path that was
+  # never in the map. cipher_by_hash is the fallback for that case: it keys
+  # the same ciphertext entries by a hash of their decrypted body, which a
+  # plain rename leaves untouched. header_for records what header each
+  # ciphertext entry currently carries, so the skip-unchanged check below can
+  # tell a true no-op (body AND header both already correct) from a rename
+  # (body matches, header is stale and must be rewritten). A rename that also
+  # edits the body has no invariant left to match on and is treated as a new
+  # item; two distinct items that happen to share byte-identical content
+  # collide in cipher_by_hash and the later one wins, which only misroutes a
+  # simultaneous rename, never a plain unchanged file.
+  typeset -A cipher_for
+  typeset -A cipher_by_hash
+  typeset -A header_for
+  typeset -A claimed
+  typeset -A new_slug_for
+  local enc_file enc_rel enc_header enc_real enc_hash
+  for enc_file in ${dst_root}/**/*(N.); do
+    [[ "${enc_file:t}" == ".gitkeep" ]] && continue
+    enc_rel="${enc_file#$dst_root/}"
+    enc_header=$(openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+      -in "$enc_file" < /dev/null 2>/dev/null | head -1)
+    if [[ "$enc_header" == "wip-path: "* ]]; then
+      enc_real="${enc_header#wip-path: }"
+      cipher_for[$enc_real]="$enc_rel"
+      header_for[$enc_rel]="$enc_header"
+      enc_hash=$(openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+        -in "$enc_file" < /dev/null 2>/dev/null | tail -n +2 \
+        | openssl dgst -sha256 -r 2>/dev/null | awk '{print $1}')
+      [[ -n "$enc_hash" ]] && cipher_by_hash[$enc_hash]="$enc_rel"
+    else
+      # Legacy payload with no header: it owns the path it sits at.
+      cipher_for[$enc_rel]="$enc_rel"
+    fi
+  done
+
+  # The glob below, and the reverse-map glob above, are both `**/*(N.)`
+  # with no `D` qualifier: neither matches a hidden name. `.gitkeep` is the
+  # one dotfile that belongs under a wip root, kept there deliberately empty
+  # so git tracks an otherwise-empty directory, and it is meant to stay
+  # invisible to encryption. Nothing else is: a dotfile-named item (a
+  # hidden top-level directory, or a hidden file) is invisible to that same
+  # glob for the same reason, so it is silently never encrypted and
+  # therefore never backed up, with no signal anywhere that this happened.
+  # `find` is used here rather than a second zsh glob because it descends
+  # into hidden directories unconditionally, which is exactly what needs
+  # checking: a zsh glob built to detect the gap would have to get every
+  # qualifier right to actually see into it, the same trap that created the
+  # gap in the first place.
+  #
+  # The count is reported, and the wip root's own name, but never any
+  # specific path found: a dotfile under a wip root is exactly as real an
+  # item's identity as any other file there, and naming one in a tool
+  # message is the leak this whole mechanism exists to prevent. Look for it
+  # locally instead: `find <wip root> -name '.*' ! -name .gitkeep`.
+  #
+  # .DS_Store is excluded alongside .gitkeep for the same reason .gitkeep
+  # is: macOS drops one into practically every directory it has opened in
+  # Finder, it is already gitignored (see .gitignore), and it carries no
+  # item identity of its own. Without this exclusion it would trip this
+  # warning on every encrypt and every pre-commit run on a Mac, forever,
+  # which is exactly how a warning gets trained away as noise. Every other
+  # dotfile still warns: a genuinely item-named dotfile silently getting no
+  # backup, with no signal anywhere, is the case this warning exists for.
+  local dotfile_count
+  dotfile_count=$(find "$src_root" -name '.*' ! -name '.gitkeep' ! -name '.DS_Store' 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$dotfile_count" -gt 0 ]]; then
+    warn "${dotfile_count} dotfile(s) found under ${src_root:t} besides .gitkeep: encrypt's glob does not match hidden names, so these will never be encrypted or backed up. Find them locally: find ${src_root:t} -name '.*' ! -name .gitkeep"
+  fi
+
+  for file in ${src_root}/**/*(N.); do
+    [[ "${file:t}" == ".gitkeep" ]] && continue
+    local rel="${file#$src_root/}"
+    # Given an initial value rather than left bare: zsh's local/typeset
+    # builtin echoes "name=value" to stdout when a bare `local name` (no
+    # assignment) re-declares a name that is already local from a previous
+    # pass through this loop body. Left bare, that would print dest_rel on
+    # every file after the first, and dest_rel can equal a real item's path
+    # for a legacy payload with no header yet, which the no-item-names rule
+    # above forbids.
+    local dest_rel=""
+    if [[ -n "${cipher_for[$rel]}" ]]; then
+      # This item already owns a ciphertext path. Keep it, whatever the
+      # plaintext is called now.
+      dest_rel="${cipher_for[$rel]}"
+    else
+      # No ciphertext currently carries this exact real path. Before minting a
+      # fresh slug, check whether an unclaimed ciphertext entry decrypts to
+      # this file's exact bytes: that is what a plain rename looks like, since
+      # the body travels with the file but the recorded header still names
+      # the old path. Reusing that entry's path here is what keeps the item's
+      # git history on one path across the rename.
+      local filehash=""
+      filehash=$(openssl dgst -sha256 -r "$file" 2>/dev/null | awk '{print $1}')
+      local candidate="" candidate_old=""
+      if [[ -n "$filehash" && -n "${cipher_by_hash[$filehash]}" ]]; then
+        candidate="${cipher_by_hash[$filehash]}"
+        candidate_old="${header_for[$candidate]#wip-path: }"
+        # Byte-identical content is not proof of a rename by itself: a
+        # different, still-live item can happen to share the same body, and
+        # its ciphertext still belongs to it. Only take the candidate when
+        # the plaintext path its header names is actually gone, which is
+        # what a rename, and only a rename, leaves behind. If the guard
+        # rejects it, fall through to minting a fresh slug below rather than
+        # stealing a still-owned ciphertext: a changed path is always
+        # recoverable, an overwritten item is not.
+        if [[ -n "$candidate_old" && ! -e "$src_root/$candidate_old" ]]; then
+          dest_rel="$candidate"
+          unset "cipher_by_hash[$filehash]"
+        fi
+      fi
+    fi
+
+    if [[ -z "$dest_rel" ]]; then
+      # Genuinely new item: no ciphertext, found by path or by content,
+      # carries it yet.
+      #
+      # $candidate non-empty here means the hash match above DID find an
+      # existing entry with this exact body, but the liveness guard rejected
+      # reusing it because the path its own header names is still present
+      # under $src_root. That is exactly the shape a rename made on a
+      # DIFFERENT machine takes once it reaches this one: `make decrypt`
+      # honours SKILLS_DECRYPT_SKIP_EXISTING and writes the new path, but
+      # nothing ever prunes plaintext, so the old path is still sitting here
+      # locally, still hash-matching, still "live" by this guard's own
+      # definition. The result is a second, distinct ciphertext slug about
+      # to be minted for what is really the same item. Content is never at
+      # risk either way, only the encrypted tree quietly grows a duplicate:
+      # warned about below, once the new slug is known, but never blocked.
+      # $rel is deliberately never named in that warning, only the two
+      # ciphertext paths: naming a real item alongside a slug is exactly the
+      # leak this whole mechanism exists to prevent, and this is a
+      # diagnostic, one of the places a real name leaks by accident.
+      local dup_of="$candidate"
+      if (( dry_run )); then
+        # A status check has no reason to mint: minting talks to a network
+        # API and exists only to pick where a real write would land. Report
+        # it as not yet encrypted and move on without writing anything.
+        missing=$((missing + 1))
+        continue
+      fi
+      # Mint a meaningless slug for its ciphertext directory, so the
+      # committed path never describes what the item is. The item name is
+      # the first path segment; everything below it is preserved.
+      local item="${rel%%/*}"
+      local remainder="${rel#*/}"
+      # Work out the collision suffix from the same shape decision the
+      # write below makes, before minting, so fetch_wip_slug checks
+      # existence at the exact path that is about to be written rather
+      # than a different one that happens not to collide. A directory
+      # shape never gets a suffix. A single-file shape gets one only when
+      # the real filename genuinely has an extension: an extensionless
+      # name like README has no dot for ${rel##*.} to strip, so it would
+      # return the whole filename, and appending that would both check
+      # the wrong path here and put the real filename into the committed
+      # ciphertext path below, the exact leak this project exists to stop.
+      local collision_suffix=""
+      if [[ "$remainder" == "$rel" && "$rel" == *.* ]]; then
+        collision_suffix=".${rel##*.}"
+      fi
+      local slug=""
+      if [[ -n "${new_slug_for[$item]}" ]]; then
+        slug="${new_slug_for[$item]}"
+      else
+        slug=$(fetch_wip_slug "$dst_root" "$collision_suffix") \
+          || error "Could not mint a ciphertext slug for a new item under ${dst_root:t}"
+        new_slug_for[$item]="$slug"
+      fi
+      if [[ "$remainder" == "$rel" ]]; then
+        # A single-file item, for example a memory entry: no directory
+        # segment. Append the extension only when collision_suffix above
+        # found one; an extensionless item's ciphertext path is the slug
+        # alone, never the real filename.
+        dest_rel="$slug$collision_suffix"
+      else
+        dest_rel="$slug/$remainder"
+      fi
+      [[ -n "$dup_of" ]] && warn "New entry ${dest_rel} has the same content as the existing entry ${dup_of}, whose own header names a real path still present locally: this usually means an item was renamed elsewhere and the old plaintext was never cleaned up here. Minting ${dest_rel} anyway rather than reusing ${dup_of}; not blocking."
+    fi
+    local dest="$dst_root/$dest_rel"
+    claimed[$dest_rel]=1
+
+    # Up to date means the existing ciphertext already decrypts to this
+    # exact plaintext AND its recorded header already names this exact real
+    # path. Computed once and shared by both modes below rather than
+    # restated for dry-run, so the two cannot drift the way this branch's
+    # last three defects did: a rename matched via cipher_by_hash above has
+    # a matching body but a stale header (still naming the old real path),
+    # so this is NOT up to date until a real encrypt run rewrites that
+    # header, which is exactly what a migration's safety gate needs to
+    # catch. Body content alone cannot see a wrong header, so a body-only
+    # check here would let a migration that renamed everything but wrote
+    # garbage headers sail through undetected. A legacy payload written
+    # before the wip-path header existed has no header to drop, so
+    # header_for has no entry for it and this is always false for it once,
+    # until it is re-encrypted with a header.
+    local up_to_date=0
+    # Quoted the same way, and for the same reason, as the equivalent
+    # comparison in cipher_path_for (lib): the right side of ==
+    # inside [[ ]] is a glob pattern by default, but the whole
+    # "wip-path: $rel" token here is written quoted, so it is compared
+    # literally however $rel expands, even though $rel could in principle
+    # contain a glob metacharacter if a real plaintext filename did. Keep it
+    # quoted; do not interpolate $rel unquoted here.
+    if payload_matches "$dest" "$file" && [[ "${header_for[$dest_rel]}" == "wip-path: ${rel}" ]]; then
+      up_to_date=1
+    fi
+
+    if (( dry_run )); then
+      # Status check only: never touch disk. Report drift using the exact
+      # same up_to_date verdict a real run would act on, so dry-run's count
+      # is a true prediction of what a real encrypt would write, not a
+      # looser approximation of it.
+      (( up_to_date )) || changed=$((changed + 1))
+      continue
+    fi
+
+    if (( up_to_date )); then
+      unchanged=$((unchanged + 1))
+      continue
+    fi
+
+    mkdir -p "${dest:h}"
+    # The real path travels inside the payload, never in the ciphertext path.
+    # decrypt reads this line, strips it, and writes the body where it says.
+    # Same reasoning on failure below: name the destination ciphertext path,
+    # never $rel. $rel is the source path under the wip root, which a later
+    # task in this plan lets carry the item's real name; $dest never will.
+    # cat's own diagnostic on a read failure would print $file, the plaintext
+    # path, straight to stderr: braced with its own 2>/dev/null, the same
+    # fix decrypt already needed for its write side, to suppress that.
+    #
+    # This zsh has no PIPE_FAIL, so a trailing "|| error ..." on the pipe
+    # only ever sees openssl's exit status, the last stage. If cat fails
+    # partway (permission changed mid-run, the file is deleted out from
+    # under the glob that just listed it), openssl still receives whatever
+    # partial input arrived and still exits 0: the failure would be
+    # silently swallowed and reported as a success. pipestatus holds both
+    # stages' exit codes regardless of PIPE_FAIL; check both.
+    #
+    # openssl writes with -out "$tmp" rather than -out "$dest" directly, the
+    # same temp-file-then-place pattern decrypt already uses. -out truncates
+    # its target the moment it opens it, before a single byte of input has
+    # been read: writing straight to $dest would mean a transient read
+    # failure here overwrites a previously-good, already-committed
+    # ciphertext with a truncated one before this check ever runs, which is
+    # exactly the kind of unrecoverable loss this whole mechanism exists to
+    # prevent. $dest is only touched by the mv below, once both stages of
+    # the pipe are known to have actually succeeded.
+    #
+    # Given an initial value rather than left bare, same reasoning as
+    # dest_rel above: a bare `local tmp` here would echo the previous
+    # write's temp path on every file after the first one actually written.
+    local tmp=""
+    tmp=$(mktemp) || error "Failed to create a temp file"
+    { print -r -- "wip-path: $rel"; cat "$file"; } 2>/dev/null \
+      | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:SKILLS_ENCRYPTION_KEY -out "$tmp"
+    if (( pipestatus[1] != 0 || pipestatus[2] != 0 )); then
+      rm -f "$tmp"
+      error "Failed to encrypt to $dest"
+    fi
+    mv "$tmp" "$dest" 2>/dev/null || { rm -f "$tmp"; error "Failed to move the new ciphertext into place at $dest" }
+    count=$((count + 1))
+  done
+
+  # Prune ciphertext whose plaintext no longer exists: but only when we can
+  # trust the wip root to be a complete view of every WIP item.
+  #
+  # Guard 1: linked git worktrees. wip roots are gitignored, so a linked
+  # worktree only ever contains whatever plaintext was manually copied into it
+  #: never the full set across all branches. The encrypted root by contrast
+  # is committed and therefore complete. Comparing the two from a worktree
+  # makes every item that wasn't hand-copied look like a deleted orphan, and
+  # pruning silently deletes another branch's committed ciphertext.
+  # Prune only from the main checkout. This guard applies the same way to a
+  # dry-run status check: a worktree's incomplete plaintext would make every
+  # item that was not hand-copied look like stale ciphertext, which is just
+  # as wrong to report as it would be to delete.
+  #
+  # Guard 2: empty source. If the wip root has no files at all while the
+  # destination does, it hasn't been decrypted yet (fresh clone, key present
+  # but decrypt not yet run): not that items were actually deleted. Pruning
+  # would wipe all real ciphertext, and the pre-commit hook would happily
+  # stage that mass deletion. The same reasoning holds for a status check:
+  # reporting every item as stale here would be just as misleading as
+  # deleting them.
+  local src_file_count=$(find "$src_root" -type f ! -name '.gitkeep' 2>/dev/null | wc -l | tr -d ' ')
+  local dst_file_count=$(find "$dst_root" -type f ! -name '.gitkeep' 2>/dev/null | wc -l | tr -d ' ')
+
+  local git_dir=$(git -C "$ROOT_DIR" rev-parse --absolute-git-dir 2>/dev/null)
+  local git_common_dir=$(cd "$ROOT_DIR" && cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd)
+
+  if [[ -n "$git_dir" && -n "$git_common_dir" && "$git_dir" != "$git_common_dir" ]]; then
+    warn "Linked git worktree detected: skipping the prune pass for ${dst_root:t}. Encryption still ran normally. Prune from the main checkout instead."
+  elif [[ "$src_file_count" -eq 0 && "$dst_file_count" -gt 0 ]]; then
+    warn "${src_root:t} has no files but ${dst_root:t} has $dst_file_count: refusing to prune. Run shared/tools/decrypt first if this is a fresh clone."
+  else
+    for file in ${dst_root}/**/*(N.); do
+      [[ "${file:t}" == ".gitkeep" ]] && continue
+      local rel="${file#$dst_root/}"
+      # Claimed during the encrypt pass above means some plaintext file maps
+      # here, whatever that file is now called. Anything unclaimed is an
+      # orphan whose plaintext is gone.
+      [[ -n "${claimed[$rel]}" ]] && continue
+      if (( dry_run )); then
+        orphan=$((orphan + 1))
+        continue
+      fi
+      rm -f "$file" || error "Failed to prune stale ciphertext"
+      pruned=$((pruned + 1))
+    done
+
+    if (( ! dry_run )); then
+      # Drop directories left empty by pruning (nested dirs empty out in
+      # stages). Never runs in dry-run mode: rmdir is a write, same as the
+      # rm -f above it depends on.
+      while [[ -n $(find "$dst_root" -mindepth 1 -type d -empty -print -quit 2>/dev/null) ]]; do
+        find "$dst_root" -mindepth 1 -type d -empty -exec rmdir {} + 2>/dev/null || break
+      done
+    fi
+  fi
+
+  if (( dry_run )); then
+    # Same label and wording wip-status has always printed: ${src_root:t},
+    # not ${dst_root:t} the real run's own summary below uses, since a
+    # caller of this mode is asking about the wip root, not the encrypted
+    # one, and the two basenames differ (skills-wip vs skills-encrypted).
+    if (( changed + missing + orphan == 0 )); then
+      print -r -- "${src_root:t}: in sync"
+    else
+      print -r -- "${src_root:t}: $changed changed, $missing not yet encrypted, $orphan stale ciphertext"
+    fi
+  else
+    success "Encrypted ${dst_root:t}: $count file(s), $unchanged unchanged, $pruned pruned"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Moved from shared/tools/decrypt, verbatim
+# ---------------------------------------------------------------------------
+# Decrypts every file in an encrypted root into its matching path under the
+# paired wip root.
+#
+# Set SKILLS_DECRYPT_SKIP_EXISTING=1 to leave any destination file that
+# already exists untouched. Routine callers (install, cycle-key) use this so a
+# sync run can never overwrite uncommitted plaintext edits: wip roots are
+# gitignored, so a clobber there is unrecoverable.
+
+decrypt_pair() {
+  local src_root="$1" dst_root="$2"
+  local count=0 kept=0
+  # Declared once, up here, rather than inside the loop, the same fix
+  # lib's apply_manifest already uses for this exact trap. A
+  # bare `local name` for a name already declared in this scope behaves like
+  # `typeset name` and echoes "name=value" to stdout: on the second and
+  # later files that would print the previous file's header line (the
+  # plaintext body's own first line, for a legacy headerless payload) and
+  # its real path straight into the decrypt run's output. Do not move these
+  # back inside the loop.
+  local rel dest tmp header real_rel resolved_root resolved_parent
+
+  verify_key_usable "$src_root" \
+    || error "The encryption key does not match the encrypted tree at ${src_root}. Nothing was changed. Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."
+
+  # No .gitkeep filter here: the glob above already excludes it. See the
+  # comment on verify_key_usable's own emptiness check, in lib,
+  # for why.
+  for file in ${src_root}/**/*(N.); do
+    rel="${file#$src_root/}"
+    dest="$dst_root/$rel"
+
+    # Decrypt to a temp file first so the header can be read before deciding
+    # where the body belongs. The header names the real path; the ciphertext
+    # path is meaningless by design and must not be used as the destination.
+    tmp=$(mktemp) || error "Failed to create a temp file"
+    if ! openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY \
+           -in "$file" -out "$tmp" < /dev/null 2>/dev/null; then
+      rm -f "$tmp"
+      error "Failed to decrypt $rel"
+    fi
+
+    header=$(head -1 "$tmp")
+    if [[ "$header" == "wip-path: "* ]]; then
+      # The header is untrusted: it comes out of decrypted content, not off a
+      # glob, so a crafted or corrupted payload could name a path outside
+      # dst_root. Validate before it is ever used to build a write path.
+      if ! real_rel=$(validate_wip_rel "$file" "${header#wip-path: }"); then
+        rm -f "$tmp"
+        error "Refusing to decrypt $file: header names an unsafe path"
+      fi
+      dest="$dst_root/$real_rel"
+      if [[ "$SKILLS_DECRYPT_SKIP_EXISTING" == "1" && -e "$dest" ]]; then
+        rm -f "$tmp"
+        kept=$((kept + 1))
+        continue
+      fi
+      # mkdir's own diagnostic on failure (permission denied, ENOTDIR, a full
+      # disk) would print $dest, the real destination directory: suppressed
+      # and handled explicitly, same reasoning as the write below.
+      mkdir -p "${dest:h}" 2>/dev/null || { rm -f "$tmp"; error "Failed to create the destination directory for $file" }
+      # validate_wip_rel is a pure string check: it rejects ".." and a
+      # leading "/" but never resolves anything, so a symlink already
+      # sitting under dst_root could still carry a clean-looking path
+      # outside the root. :A resolves symlinks; confirm the real, resolved
+      # parent directory is still inside the real, resolved root before
+      # writing. mkdir -p above can already have created an empty directory
+      # outside the root if a symlink caused that: that is a stray empty
+      # directory, not data loss, and this check is what stops the actual
+      # content from being written there.
+      resolved_root="${dst_root:A}"
+      resolved_parent="${dest:h:A}"
+      if [[ "$resolved_parent" != "$resolved_root" && "$resolved_parent" != "$resolved_root"/* ]]; then
+        rm -f "$tmp"
+        error "Refusing to decrypt $file: resolved destination escapes the destination root"
+      fi
+      # Same reasoning as the refusal messages above: on failure, name the
+      # ciphertext file, never $real_rel, the item's real path. Braced with
+      # its own 2>/dev/null rather than a trailing one on the bare command:
+      # ">" here is a shell redirection, and when opening $dest fails, zsh
+      # reports "permission denied: $dest" using whichever stderr redirect
+      # is already active for the command at that point in its argument
+      # order. Bracing guarantees stderr is redirected for the whole thing
+      # before the "> $dest" is attempted, so that diagnostic (which would
+      # put the real path right back in the log this guard exists to keep
+      # it out of) never reaches the terminal or a log file either way.
+      { tail -n +2 "$tmp" > "$dest"; } 2>/dev/null || { rm -f "$tmp"; error "Failed to write the decrypted body of $file" }
+    else
+      # Legacy payload with no header: fall back to path identity, which is
+      # exactly what this tool did before the header existed. Honours
+      # SKILLS_DECRYPT_SKIP_EXISTING the same as the header branch above: a
+      # routine resync must never clobber uncommitted plaintext here either.
+      if [[ "$SKILLS_DECRYPT_SKIP_EXISTING" == "1" && -e "$dest" ]]; then
+        rm -f "$tmp"
+        kept=$((kept + 1))
+        continue
+      fi
+      # Same reasoning as the header branch above: mkdir's own diagnostic on
+      # failure would print $dest, the real destination directory here too.
+      mkdir -p "${dest:h}" 2>/dev/null || { rm -f "$tmp"; error "Failed to create the destination directory for $file" }
+      # Same reasoning as above: for a legacy payload dest mirrors $rel
+      # exactly, so $rel is the item's real path here too. Name the
+      # ciphertext file on failure instead. 2>/dev/null on cp itself: a
+      # failed cp prints its own "$dest: Permission denied" diagnostic to
+      # stderr before this error ever runs, leaking the same real path.
+      cp "$tmp" "$dest" 2>/dev/null || { rm -f "$tmp"; error "Failed to write the decrypted body of $file" }
+    fi
+    rm -f "$tmp"
+    count=$((count + 1))
+  done
+
+  [[ $kept -gt 0 ]] && warn "Kept $kept existing plaintext file(s) in ${dst_root:t}: not overwritten"
+  success "Decrypted ${dst_root:t}: $count file(s)"
+}
+
+# ---------------------------------------------------------------------------
+# Moved from shared/tools/cycle-key
+# ---------------------------------------------------------------------------
+
+# Rotates the encryption key atomically across every registered wip/encrypted
+# pair: decrypt each with the current key, generate a new key, re-encrypt each
+# into a temp dir, swap all in only on full success.
+#
+# The body below is cycle-key's, moved here whole. Two things changed with the
+# move. The decrypt and re-encrypt steps were separate child processes and are
+# now subshells around decrypt_pair/encrypt_pair: a subshell keeps error()'s
+# exit inside the step, exactly as a child process did, so each step's own
+# `|| error "..."` still reports the rotation-level failure. And create-key is
+# resolved next to the env file this run was given rather than next to this
+# script, because create-key rewrites the .env beside its OWN location: taking
+# it from here would rotate a different .env from the one being used, which
+# for a fixture or a project root is the wrong file entirely.
+#
+# The EXIT trap is set inside a function now, which in zsh makes it fire when
+# the function returns rather than when the shell exits. That changes nothing:
+# error() exits from inside the function, so the trap still runs first, and
+# the success path still removes the trap before it reaches the end.
+#
+# Two guards were added that cycle-key never needed while it could only ever
+# be run from the repo that owned the key. It can now be pointed anywhere, so
+# it first refuses an env file that does not belong to the root being rotated,
+# and then rotates every tree the key protects rather than only the root's
+# own: see the key-users registry in this file's header.
+
+# Emits every "<wip root> <encrypted root>" pair a rotation covers: the
+# rotating root's own, plus one per key-users registry entry, each resolved
+# against the root that owns it rather than against this run's CONTENT_ROOT.
+#
+# The two arrays it reads are globals on purpose. Every loop in run_cycle_key
+# consumes this through `< <(rotation_pairs)`, which forks, and a function
+# reaching a caller's locals across that fork is not a property worth
+# depending on.
+rotation_pairs() {
+  local -i i
+  local saved="$CONTENT_ROOT"
+  for (( i = 1; i <= ${#ROTATION_ROOTS[@]}; i++ )); do
+    CONTENT_ROOT="${ROTATION_ROOTS[i]}"
+    wip_pairs "${ROTATION_PAIRS_FILES[i]}"
+  done
+  CONTENT_ROOT="$saved"
+}
+
+# The temp trees a rotation has created so far, and the EXIT trap that removes
+# them. WIPCRYPT_TMP_ROOTS is deliberately NOT local to run_cycle_key: zsh runs
+# a function's EXIT trap after that function's locals have already been
+# discarded, so a local here would reach the trap empty and every temp tree
+# would survive an aborted rotation. Measured, not assumed: with it local,
+# test-cycle-key's two-pair reseed failure left the first pair's temp dir
+# behind.
+#
+# Named for its caller rather than `cleanup` because a function defined inside
+# a function is global in zsh, so a plain `cleanup` would be visible to, and
+# collide with, anything else this file grows later.
+typeset -ga WIPCRYPT_TMP_ROOTS
+WIPCRYPT_TMP_ROOTS=()
+wipcrypt_cycle_cleanup() {
+  local t
+  for t in $WIPCRYPT_TMP_ROOTS; do rm -rf "$t"; done
+}
+
+run_cycle_key() {
+  local git_dir="" git_common_dir="" create_key="" key_users_file=""
+  local wip_root="" enc_root="" old_key="" create_key_output="" backup_path=""
+  local key_hint="" tmp_root="" enc_file="" enc_rel="" seed_tmp=""
+  local entry="" entry_pairs=""
+  local -i create_key_rc=0
+  local -A tmp_for_enc
+  WIPCRYPT_TMP_ROOTS=()
+
+  # Refuse to run from a linked git worktree. Rotation replaces each encrypted
+  # root wholesale with a re-encrypt of its wip root, and wip roots are
+  # gitignored: a worktree's copy only holds whatever plaintext was hand-copied
+  # into it, never every WIP item across all branches. Rotating here would drop
+  # every item not present locally. (encrypt_pair skips its prune pass in a
+  # worktree for the same reason, but that is not enough here: the rm -rf
+  # below is unconditional.)
+  git_dir=$(git -C "$ROOT_DIR" rev-parse --absolute-git-dir 2>/dev/null)
+  git_common_dir=$(cd "$ROOT_DIR" && cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd)
+  if [[ -n "$git_dir" && -n "$git_common_dir" && "$git_dir" != "$git_common_dir" ]]; then
+    error "Linked git worktree detected: refusing to rotate the key here. Rotation rebuilds each encrypted root from its wip root, which is gitignored and therefore incomplete in a worktree; every item not copied here would be lost. Run shared/tools/cycle-key from the main checkout."
+  fi
+
+  require_pairs_file
+
+  # The env file must belong to the root being rotated. Without this, a bare
+  # `wipcrypt cycle-key` run from any directory that happens to hold a pairs
+  # file resolves the key from $AI_CONFIG_DIR/.env, mints a new one there, and
+  # re-encrypts only that directory's trees: every other tree the key protects
+  # is left as ciphertext nobody holds a key for. Rotation is the one
+  # subcommand where reading a key you do not own is destructive rather than
+  # merely surprising, which is why only this one checks.
+  [[ "${ENV_FILE:h}" == "$ROOT_DIR" ]] \
+    || error "Refusing to rotate: $ENV_FILE belongs to ${ENV_FILE:h}, not to $ROOT_DIR. Rotation rewrites the key for every tree that env file protects, and only $ROOT_DIR's pairs would be re-encrypted. Run cycle-key from the root that owns the key."
+
+  # Checked before anything is decrypted, for the same reason the stale-key
+  # guard below is: a rotation that got as far as minting a new key and then
+  # found it had no way to write it would leave the operator holding a
+  # half-rotated tree and no record of which key opens it.
+  create_key="${ENV_FILE:h}/shared/tools/create-key"
+  [[ -x "$create_key" ]] \
+    || error "No create-key found at $create_key: rotation writes the new key into $ENV_FILE, so it needs the create-key that owns that file."
+
+  # One key protects more than one tree. The rotating root's own pairs are the
+  # first of them; the key-users registry names the rest, one absolute project
+  # root per line, blank lines and # comments allowed. A project joins the
+  # registry when its tiers are first created, so rotation re-encrypts it
+  # along with everything else rather than orphaning it.
+  #
+  # A listed root that is gone, or whose pairs file cannot be read, aborts the
+  # whole rotation here, before create-key has run and before a single
+  # ciphertext file is touched. Skipping it with a warning would be the worse
+  # failure by far: the rotation would report success and that root's
+  # ciphertext would be unreadable for good.
+  typeset -ga ROTATION_ROOTS ROTATION_PAIRS_FILES
+  ROTATION_ROOTS=("$ROOT_DIR")
+  ROTATION_PAIRS_FILES=("$PAIRS_FILE")
+
+  key_users_file="${AGENT_FORGE_KEY_USERS:-${ENV_FILE:h}/.cache/key-users}"
+  if [[ -e "$key_users_file" ]]; then
+    [[ -r "$key_users_file" ]] \
+      || error "Refusing to rotate: the key-users registry at $key_users_file exists but cannot be read, so there is no way to tell which other trees this key protects. Nothing was changed."
+    while IFS= read -r entry || [[ -n "$entry" ]]; do
+      [[ -z "$entry" || "$entry" == "#"* ]] && continue
+      [[ "$entry" == /* ]] \
+        || error "Refusing to rotate: the key-users registry at $key_users_file lists '$entry', which is not an absolute path. Entries are absolute project roots, one per line. Nothing was changed."
+      # The rotating root is already first in the list; a registry that names
+      # it too must not make every loop below run over it twice.
+      [[ "$entry" == "$ROOT_DIR" ]] && continue
+      [[ -d "$entry" ]] \
+        || error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which is not a directory. Rotation has to re-encrypt every tree this key protects, so a listed root that has moved or gone must be fixed or removed from the registry first. Nothing was changed."
+      entry_pairs=""
+      if [[ -f "$entry/.claude/wip-pairs" ]]; then
+        entry_pairs="$entry/.claude/wip-pairs"
+      elif [[ -f "$entry/shared/tools/wip-pairs" ]]; then
+        entry_pairs="$entry/shared/tools/wip-pairs"
+      else
+        error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which has neither .claude/wip-pairs nor shared/tools/wip-pairs. Nothing was changed."
+      fi
+      [[ -r "$entry_pairs" ]] \
+        || error "Refusing to rotate: $entry_pairs exists but cannot be read, so the trees it registers cannot be re-encrypted. Nothing was changed."
+      ROTATION_ROOTS+=("$entry")
+      ROTATION_PAIRS_FILES+=("$entry_pairs")
+    done < "$key_users_file"
+  fi
+
+  trap wipcrypt_cycle_cleanup EXIT
+
+  load_env "$ENV_FILE"
+
+  # Checked for every registered pair before anything else runs, including
+  # before create-key below: a rotation that started decrypting one pair, then
+  # discovered a later pair's key was stale, would have already touched the
+  # first pair's plaintext. This message must never mention restoring a
+  # backup, unlike the aborts further down: create-key has not run yet at this
+  # point, so .env still holds whatever key the operator started with.
+  while read -r wip_root enc_root; do
+    verify_key_usable "$enc_root" \
+      || error "The encryption key does not match the encrypted tree at ${enc_root}. Nothing was changed. Check that .env holds the current key before rotating."
+  done < <(rotation_pairs)
+
+  info "Decrypting all pairs with current key..."
+  while read -r wip_root enc_root; do
+    # Skip anything already decrypted: never clobber uncommitted plaintext edits.
+    ( SKILLS_DECRYPT_SKIP_EXISTING=1 decrypt_pair "$enc_root" "$wip_root" ) \
+      || error "Decrypt with current key failed for ${enc_root:t}, aborting rotation"
+  done < <(rotation_pairs)
+
+  old_key="$SKILLS_ENCRYPTION_KEY"
+  # Exported under its own name, never passed on an openssl command line, for
+  # the same reason SKILLS_ENCRYPTION_KEY itself is always read via
+  # `-pass env:`: a key on argv is visible to anything that can list this
+  # process's arguments. load_env below only ever touches
+  # SKILLS_ENCRYPTION_KEY, so this survives the reload untouched.
+  export SKILLS_ENCRYPTION_KEY_OLD="$old_key"
+
+  info "Generating new key..."
+  # Captured rather than left to stream straight to the terminal, so the
+  # BACKUP_PATH line create-key prints (see shared/tools/create-key) can be
+  # pulled out below. Printed back out immediately after, minus that line, so
+  # the operator still sees exactly what create-key reported, just delayed
+  # until it finishes instead of arriving live.
+  create_key_output=$("$create_key")
+  create_key_rc=$?
+  print -r -- "$create_key_output" | grep -v '^BACKUP_PATH='
+
+  backup_path=$(print -r -- "$create_key_output" | grep '^BACKUP_PATH=' | tail -1 | cut -d= -f2-)
+
+  # From here on, create-key has run: it backs up the old .env, then
+  # overwrites it, before this script ever looks at .env again, so by this
+  # point .env very likely already holds the NEW key even though nothing
+  # below has touched a single encrypted file yet. Every abort from here on
+  # must say so and name the exact backup create-key just wrote: "originals
+  # untouched" on its own reads as "you are fine", when the key needed to
+  # open those originals may already be gone from .env. Aborts BEFORE this
+  # point (the decrypt loop above) never need this note: .env still holds
+  # whatever key was working when cycle-key started. Left empty, rather than
+  # guessed at, when create-key never got far enough to print a backup path
+  # (its own backup step itself failed): a wrong path is worse than no note.
+  key_hint=""
+  [[ -n "$backup_path" ]] \
+    && key_hint=" .env may now hold the NEW key: to get back to the OLD key, run: cp $backup_path .env"
+
+  (( create_key_rc == 0 )) \
+    || error "Key generation failed, aborting rotation.${key_hint}"
+
+  load_env "$ENV_FILE"
+
+  [[ "$SKILLS_ENCRYPTION_KEY" != "$old_key" ]] \
+    || error "create-key did not produce a new key, aborting rotation.${key_hint}"
+
+  # Re-encrypting into an empty temp dir would leave the reverse map
+  # encrypt_pair builds from existing ciphertext headers empty too, so every
+  # item would be treated as brand new: minted a fresh, unrelated slug, which
+  # turns a key rotation into a delete-plus-add for every single item and
+  # throws away the git history this whole scheme exists to keep on one path
+  # per item. It also means rotation would need a network call per item to
+  # mint those slugs, breaking offline rotation where it used to work.
+  #
+  # The fix: reseed each temp dir with the CURRENT ciphertext layout first,
+  # re-keyed from the old key to the new one but left at the exact same
+  # relative path, header included. encrypt_pair below then decrypts that seed
+  # with the new key, reads back the same headers it would have read from the
+  # original encrypted root, and matches every item by path: nothing new to
+  # mint. Only a genuinely new item (plaintext with no ciphertext counterpart
+  # yet) still costs a slug-minting API call, which is unavoidable and correct.
+  info "Re-encrypting all pairs with new key into temp dirs..."
+  while read -r wip_root enc_root; do
+    tmp_root=$(mktemp -d "${enc_root}.tmp.XXXXXX") \
+      || error "Failed to create a temp directory while reseeding ${enc_root:t}: nothing swapped, originals untouched.${key_hint}"
+    WIPCRYPT_TMP_ROOTS+=("$tmp_root")
+    tmp_for_enc[$enc_root]="$tmp_root"
+
+    for enc_file in ${enc_root}/**/*(N.); do
+      [[ "${enc_file:t}" == ".gitkeep" ]] && continue
+      enc_rel="${enc_file#$enc_root/}"
+      seed_tmp=$(mktemp) \
+        || error "Failed to create a temp file while reseeding ${enc_root:t}: nothing swapped, originals untouched.${key_hint}"
+      if ! openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SKILLS_ENCRYPTION_KEY_OLD \
+             -in "$enc_file" -out "$seed_tmp" < /dev/null 2>/dev/null; then
+        rm -f "$seed_tmp"
+        error "Failed to decrypt an existing entry with the old key while reseeding ${enc_root:t}: nothing swapped, originals untouched.${key_hint}"
+      fi
+      mkdir -p "${tmp_root}/${enc_rel:h}" \
+        || { rm -f "$seed_tmp"; error "Failed to create a directory while reseeding ${enc_root:t}: nothing swapped, originals untouched.${key_hint}" }
+      if ! openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:SKILLS_ENCRYPTION_KEY \
+             -in "$seed_tmp" -out "$tmp_root/$enc_rel" < /dev/null 2>/dev/null; then
+        rm -f "$seed_tmp"
+        error "Failed to re-encrypt an existing entry with the new key while reseeding ${enc_root:t}: nothing swapped, originals untouched.${key_hint}"
+      fi
+      rm -f "$seed_tmp"
+    done
+
+    ( encrypt_pair "$wip_root" "$tmp_root" 0 ) \
+      || error "Re-encrypt with new key failed for ${enc_root:t}: nothing swapped, originals untouched.${key_hint}"
+  done < <(rotation_pairs)
+
+  info "Swapping in re-encrypted trees..."
+  while read -r wip_root enc_root; do
+    tmp_root="${tmp_for_enc[$enc_root]}"
+    rm -rf "$enc_root" || error "Failed to clear $enc_root: rotation aborted partway; some pairs may already be swapped.${key_hint}"
+    if ! mv "$tmp_root" "$enc_root"; then
+      trap - EXIT
+      error "Failed to move the re-encrypted tree into place for ${enc_root:t}. Your only copy is at $tmp_root: move it to $enc_root manually before doing anything else.${key_hint}"
+    fi
+  done < <(rotation_pairs)
+
+  trap - EXIT
+
+  success "Key rotation complete"
+  info "push the new key to 1Password with: key-sync --push"
+}
+
+# ---------------------------------------------------------------------------
+# Arguments
+# ---------------------------------------------------------------------------
+# Options and positionals are collected in one pass in any order, so
+# `encrypt --dry-run SRC DST` and `encrypt SRC DST --dry-run` are the same
+# call: the shape shared/tools/encrypt already accepted, and what the wrapper
+# scripts produce when they put their own --root/--pairs/--env in front of a
+# caller's "$@".
+
+SUB=""
+typeset -a POSITIONAL
+POSITIONAL=()
+DRY_RUN=0
+ROOT_DIR=""
+PAIRS_FILE=""
+ENV_FILE=""
+# Whether each path came from the caller or from a default. Only used to
+# decide whether to say out loud what got resolved: a call that named none of
+# the three is a person typing `wipcrypt status` somewhere and trusting the
+# defaults, and the one thing that helps them is knowing which files those
+# defaults picked.
+ROOT_GIVEN=0
+PAIRS_GIVEN=0
+ENV_GIVEN=0
+
+while (( $# )); do
+  case "$1" in
+    --root|--pairs|--env)
+      (( $# >= 2 )) || usage_error "$1 requires a value"
+      case "$1" in
+        --root)  ROOT_DIR="$2";   ROOT_GIVEN=1 ;;
+        --pairs) PAIRS_FILE="$2"; PAIRS_GIVEN=1 ;;
+        --env)   ENV_FILE="$2";   ENV_GIVEN=1 ;;
+      esac
+      shift
+      ;;
+    --dry-run) DRY_RUN=1 ;;
+    -h|--help) usage; exit 0 ;;
+    -*) usage_error "unknown option: $1" ;;
+    *)
+      if [[ -z "$SUB" ]]; then
+        SUB="$1"
+      else
+        POSITIONAL+=("$1")
+      fi
+      ;;
+  esac
+  shift
+done
+
+[[ -n "$SUB" ]] || usage_error "no subcommand given"
+case "$SUB" in
+  encrypt|decrypt|status|cycle-key) ;;
+  *) usage_error "unknown subcommand: $SUB" ;;
+esac
+
+# A pair is exactly two paths. A third positional is not a pair with something
+# extra on the end, it is a typo or a shell glob that expanded further than
+# its author expected, and silently ignoring it would act on the wrong two.
+(( ${#POSITIONAL[@]} <= 2 )) || usage_error "too many arguments"
+
+# --dry-run means "predict what encrypt would write". decrypt has no such mode
+# and cycle-key least of all: accepting the flag and ignoring it would let
+# someone reach for a dry run before a rotation and get a real one.
+case "$SUB" in
+  decrypt|cycle-key)
+    (( DRY_RUN )) && usage_error "--dry-run is not supported for $SUB"
+    ;;
+esac
+
+# The root every relative path in the pairs file resolves against. Derived
+# from the pairs file's own location when only --pairs was given: both
+# <root>/shared/tools/wip-pairs and <root>/.claude/wip-pairs are two
+# directories below the root that owns them, so the same "directory, parent,
+# parent" walk lands on the root either way.
+if [[ -z "$ROOT_DIR" ]]; then
+  if [[ -n "$PAIRS_FILE" ]]; then
+    ROOT_DIR="${PAIRS_FILE:h:h:h}"
+  else
+    ROOT_DIR="$PWD"
+  fi
+fi
+# Left exactly as given when it is already absolute, so a caller's own path
+# string survives into the messages that quote it. A relative one is resolved
+# now, before anything can cd somewhere else.
+if [[ "$ROOT_DIR" != /* ]]; then
+  ROOT_DIR="$(cd "$ROOT_DIR" 2>/dev/null && pwd)"
+  [[ -n "$ROOT_DIR" ]] || usage_error "--root does not name a directory"
+fi
+# A trailing slash would leave the default env file at <root>//.env, whose
+# ${:h} is not <root>, and cycle-key's ownership check compares exactly that.
+# Refusing to rotate because someone typed a trailing slash is not a useful
+# refusal.
+while [[ "$ROOT_DIR" == */ && "$ROOT_DIR" != "/" ]]; do
+  ROOT_DIR="${ROOT_DIR%/}"
+done
+
+# The same split lib draws: ROOT_DIR is where the tools and their config
+# live, CONTENT_ROOT is where the content they act on lives. They differ only
+# when a caller sets AGENT_FORGE_CONTENT_ROOT.
+CONTENT_ROOT="${AGENT_FORGE_CONTENT_ROOT:-$ROOT_DIR}"
+
+# Left empty rather than errored when neither candidate exists: a call that
+# names its pair positionally never reads a pairs file at all, and refusing
+# it here would break every such caller on a root that has no registry.
+if [[ -z "$PAIRS_FILE" ]]; then
+  if [[ -f "$ROOT_DIR/shared/tools/wip-pairs" ]]; then
+    PAIRS_FILE="$ROOT_DIR/shared/tools/wip-pairs"
+  elif [[ -f "$ROOT_DIR/.claude/wip-pairs" ]]; then
+    PAIRS_FILE="$ROOT_DIR/.claude/wip-pairs"
+  fi
+fi
+
+require_pairs_file() {
+  [[ -n "$PAIRS_FILE" ]] \
+    || error "No wip-pairs file found: looked for $ROOT_DIR/shared/tools/wip-pairs and $ROOT_DIR/.claude/wip-pairs"
+}
+
+# One key covers every tier, so a project root normally reads agent-forge's
+# .env rather than one of its own. The wrapper scripts always pass --env
+# explicitly, which is what keeps their behaviour identical to the
+# $ROOT_DIR/.env they have always read.
+if [[ -z "$ENV_FILE" ]]; then
+  if [[ -n "$AGENT_FORGE_ENV_FILE" ]]; then
+    ENV_FILE="$AGENT_FORGE_ENV_FILE"
+  elif [[ -n "$AI_CONFIG_DIR" && -f "$AI_CONFIG_DIR/.env" ]]; then
+    ENV_FILE="$AI_CONFIG_DIR/.env"
+  else
+    ENV_FILE="$ROOT_DIR/.env"
+  fi
+fi
+
+# Said out loud only when the caller named none of the three, which means
+# every path below was guessed. The wrappers always pass all three, so this
+# never appears in front of anything that parses this output (make wip-status,
+# doctor, the pre-commit hook). "no pairs file found" rather than an empty
+# field: a call that names its pair positionally is a legitimate way to run
+# with no registry at all, and this line reports what was resolved, not what
+# is wrong.
+if (( ! ROOT_GIVEN && ! PAIRS_GIVEN && ! ENV_GIVEN )); then
+  info "Resolved root $ROOT_DIR, pairs ${PAIRS_FILE:-(no pairs file found)}, env $ENV_FILE"
+fi
+
+# ---------------------------------------------------------------------------
+# Dispatch
+# ---------------------------------------------------------------------------
+# Each subcommand keeps its original script's startup order. encrypt and
+# decrypt loaded the key first and did nothing else before it; cycle-key
+# checked for a linked worktree first and only then loaded the key, so a
+# rotation attempted from a worktree still reports the worktree rather than
+# a missing key.
+
+run_encrypt() {
+  if [[ -n "${POSITIONAL[1]}" && -n "${POSITIONAL[2]}" ]]; then
+    encrypt_pair "${POSITIONAL[1]}" "${POSITIONAL[2]}" "$DRY_RUN"
+  else
+    require_pairs_file
+    while read -r wip_root enc_root; do
+      encrypt_pair "$wip_root" "$enc_root" "$DRY_RUN"
+    done < <(wip_pairs "$PAIRS_FILE")
+  fi
+}
+
+run_decrypt() {
+  if [[ -n "${POSITIONAL[1]}" && -n "${POSITIONAL[2]}" ]]; then
+    decrypt_pair "${POSITIONAL[1]}" "${POSITIONAL[2]}"
+  else
+    require_pairs_file
+    while read -r wip_root enc_root; do
+      decrypt_pair "$enc_root" "$wip_root"
+    done < <(wip_pairs "$PAIRS_FILE")
+  fi
+}
+
+case "$SUB" in
+  status)
+    # status is encrypt --dry-run under another name, which is what keeps the
+    # "<name>: in sync" line and the drift counts identical to what
+    # make wip-status has always printed.
+    DRY_RUN=1
+    load_env "$ENV_FILE"
+    [[ -n "$SKILLS_ENCRYPTION_KEY" ]] || error "SKILLS_ENCRYPTION_KEY not set"
+    run_encrypt
+    ;;
+  encrypt)
+    load_env "$ENV_FILE"
+    [[ -n "$SKILLS_ENCRYPTION_KEY" ]] || error "SKILLS_ENCRYPTION_KEY not set"
+    run_encrypt
+    ;;
+  decrypt)
+    load_env "$ENV_FILE"
+    [[ -n "$SKILLS_ENCRYPTION_KEY" ]] || error "SKILLS_ENCRYPTION_KEY not set"
+    run_decrypt
+    ;;
+  cycle-key)
+    run_cycle_key
+    ;;
+esac
