@@ -485,11 +485,12 @@ encrypt_pair() {
   # which is exactly how a warning gets trained away as noise. Every other
   # dotfile still warns: a genuinely item-named dotfile silently getting no
   # backup, with no signal anywhere, is the case this warning exists for.
-  # .public-names is excluded for a different reason: it is a checker
-  # allowlist owned by wip-leak-check, deliberately unencrypted and
-  # gitignored, never an item this pipeline needs to back up.
+  # wip-leak-check's own allowlist used to be excluded here too, as a
+  # deliberately unencrypted checker file. It is now public-names.txt, not a
+  # dotfile, so it is encrypted and backed up like anything else and needs no
+  # exclusion.
   local dotfile_count
-  dotfile_count=$(find "$src_root" -name '.*' ! -name '.gitkeep' ! -name '.DS_Store' ! -name '.public-names' 2>/dev/null | wc -l | tr -d ' ')
+  dotfile_count=$(find "$src_root" -name '.*' ! -name '.gitkeep' ! -name '.DS_Store' 2>/dev/null | wc -l | tr -d ' ')
   if [[ "$dotfile_count" -gt 0 ]]; then
     warn "${dotfile_count} dotfile(s) found under ${src_root:t} besides .gitkeep: encrypt's glob does not match hidden names, so these will never be encrypted or backed up. Find them locally: find ${src_root:t} -name '.*' ! -name .gitkeep"
   fi
