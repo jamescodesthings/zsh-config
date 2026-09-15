@@ -38,3 +38,10 @@ fi
 
 export AI_CONFIG_DIR="/Users/jamesmacmillan/projects/personal/agent-forge"
 [[ -f "$AI_CONFIG_DIR/zsh/aliases.zsh" ]] && source "$AI_CONFIG_DIR/zsh/aliases.zsh"
+
+export READERR_DIR="$HOME/projects/readerr"
+if [[ -f "$READERR_DIR/zsh/readerr.zsh" ]]; then
+  source "$READERR_DIR/zsh/readerr.zsh"
+else
+  echo "${c[error]}error:${c[reset]} readerr: $READERR_DIR/zsh/readerr.zsh not found, clone github.com/jamescodesthings/readerr there"
+fi
