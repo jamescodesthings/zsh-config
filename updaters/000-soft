@@ -43,7 +43,7 @@ for line in ${(f)LISTING}; do
 done
 
 for label in $NEEDS_RESTART; do
-  echo "$c[warn]needs a restart, install it from System Settings:$c[reset] $label"
+  echo "$c[warn]warning:$c[reset] $label needs a restart, install it from System Settings"
 done
 
 if is empty "$INSTALLABLE"; then

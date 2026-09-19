@@ -85,6 +85,8 @@ source "${0:a:h}/_stub"
 
 `./update` (also the `update` function) keeps the whole machine current. It pulls this repo through `updaters/_self`, restarts itself so the run uses the scripts it just pulled, authenticates sudo once with a keepalive, then runs every `updaters/NNN-name` script in number order with stdin closed. A failed updater is reported at the end and does not stop the run. `update --list` shows the order, and `update brew tldr` runs only the named ones.
 
+Each run keeps an error log at `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log`: every line an updater starts with `error:` or `warning:`, plus the last 30 lines of output from any updater that failed, each tagged `[NNN-name]` and stored without colour codes. The runner prints the log again, coloured, when the run ends; `update --errors` shows the most recent one. A run with nothing to report deletes its log, and only the newest 20 are kept. An updater gets a message into the log by starting the line with `error:` or `warning:`, which the house `$c[error]error:$c[reset]` and `$c[warn]warning:$c[reset]` tags already do.
+
 Rules for an updater:
 
 - Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities, `130` data, `900` applications that depend on the rest. Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).

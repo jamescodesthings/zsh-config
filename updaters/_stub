@@ -12,3 +12,7 @@ export NONINTERACTIVE=1
 export DEBIAN_FRONTEND=noninteractive
 export GIT_TERMINAL_PROMPT=0
 export HOMEBREW_NO_ENV_HINTS=1
+
+# update pipes every updater through tee to keep a copy of its output, so
+# tools that only colour a terminal need telling to carry on doing it.
+export HOMEBREW_COLOR=1
