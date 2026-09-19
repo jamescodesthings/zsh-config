@@ -118,5 +118,10 @@
     "key": "shift+f3",
     "command": "-editor.action.previousMatchFindAction",
     "when": "editorFocus"
+  },
+  {
+    "key": "ctrl+alt+z",
+    "command": "workbench.action.tasks.runTask",
+    "args": "zsh: syntax check current file"
   }
 ]

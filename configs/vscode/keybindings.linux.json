@@ -143,5 +143,10 @@
     "key": "ctrl+shift+k",
     "command": "-editor.action.deleteLines",
     "when": "textInputFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+alt+z",
+    "command": "workbench.action.tasks.runTask",
+    "args": "zsh: syntax check current file"
   }
 ]

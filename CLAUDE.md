@@ -66,10 +66,10 @@ is not empty "$var"  # -z test (negated)
 
 Markdown files rendered by the `cheat` function using `glow -w 120` (falls back to `bat`, then `cat`). When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
 
-Standard format:
-- `# Name` — title
-- `## Usage` — examples with backtick code blocks
-- `## Related commands` — links to related sheets via `` `cheat related-name` ``
+Standard format, tldr style with every section at heading level one:
+- `# name` — title, followed by a `>` line saying what it does
+- `# Usage` — `- description:` lines, each followed by the command in backticks
+- `# Related commands` — links to related sheets via `` `cheat related-name` ``
 
 ### `installers/` directory
 

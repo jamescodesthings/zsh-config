@@ -23,5 +23,6 @@
     "makefile.configureOnOpen": false,
     "explorer.confirmDelete": false,
     "claudeCode.preferredLocation": "panel",
-    "terminal.integrated.defaultLocation": "editor"
+    "terminal.integrated.defaultLocation": "editor",
+    "bashIde.shellcheckPath": ""
 }
