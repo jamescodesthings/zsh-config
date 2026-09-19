@@ -1,0 +1,2 @@
+# Project-level triggers for the /run skill. Same format as ~/.claude/runners.txt.
+# example-trigger: some-skill, &another-skill

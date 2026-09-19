@@ -91,9 +91,149 @@ GNOME-specific config and tools. Only installed on machines running GNOME on Way
 
 `$c[...]` associative array provides semantic colors: `h1`, `h2`, `h3`, `lead`, `info`, `info-small`, `success`, `warn`, `error`, `flag`, `param`, `reset`. Use these for all user-facing output — never raw ANSI codes.
 
+## Required tooling
+
+- `zsh`, which every script in this repo targets; there is no bash or POSIX sh fallback
+- `git`, for zinit plugin installs and the updaters
+- The `post-implementation-review` skill, which reads the checks section below
+- No build step, package manifest or dependency lockfile exists; tools such as glow, eza and fzf are optional at runtime and guarded by `is available <tool>`
+
+## Testing/Running
+
+There is no automated test suite. Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
+
+```zsh
+# Syntax check without executing (prints nothing on success)
+zsh -n .zshrc
+zsh -n path/to/changed-file
+
+# Load the full config in a new interactive shell and exit
+zsh -i -c exit
+```
+
+A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor` and `gitstatus failed to initialize`; both are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
+
 ## Post-implementation checks
 
-<!-- post-implementation-review skill reads this section and appends its checks to the standard ones -->
-<!-- Add project-specific checks here. Examples: -->
-<!-- - Verify symlink still valid: `ls -la ~/.custom` -->
-<!-- - Source check: `zsh -n .zshrc` (syntax check without executing) -->
+- Syntax-check every changed zsh file: `zsh -n <file>`
+- Confirm the config still loads cleanly: `zsh -i -c exit`
+- Verify the install symlink is still valid: `ls -la ~/.custom`
+- New files in `installers/` and `updaters/` must be executable: `chmod +x <file>`
+
+# Global workflow
+
+Synced from agent-forge (`claude/config/CLAUDE.md`, portable sections only) by following `PROJECT_INIT.md`. Edit these sections upstream and re-sync; do not edit them here.
+
+## Default workflow
+
+Every task that creates, edits, or deletes a file follows this chain; a question answered from existing context does not. Move through each step without pausing for confirmation.
+
+1. `superpowers:brainstorming` skill
+2. `superpowers:writing-plans` skill
+3. `superpowers:using-git-worktrees` if async isolation is needed
+4. `superpowers:subagent-driven-development` skill
+   - Use `superpowers:dispatching-parallel-agents` when 2+ tasks are independent with no shared state
+5. `post-implementation-review` skill after **any work that creates or modifies files**: subagent or orchestrator, code or docs/markdown
+6. `/run after-task` (session state handoff and snapshot pruning)
+7. Done: no PRs, no `finishing-a-development-branch`, no human review gate
+
+## No-confirmation rule
+
+**Never pause between workflow steps.** This overrides any skill's explicit review gate: brainstorming's "user reviews spec", writing-plans' "user approves plan", writing-plans' "which execution approach", or any other checkpoint. Keep moving.
+
+Specific overrides:
+- `writing-plans` execution handoff → always invoke `superpowers:subagent-driven-development` directly. Never present the "subagent-driven vs inline" choice.
+
+Only stop for:
+- A genuine blocker that cannot be resolved autonomously (merge conflict, missing credential, ambiguous requirement that changes scope)
+- A destructive or irreversible action about to be taken
+
+User can interrupt at any time. That is their job, not yours to prompt for.
+
+## Skill priority
+
+Check for applicable skills before **every** action. 1% chance it applies = invoke it. Process skills before implementation skills. Never skip because a task "seems simple."
+
+Key triggers:
+- Any bug or test failure → `superpowers:systematic-debugging` before proposing a fix
+- Review feedback received → `superpowers:receiving-code-review`: verify correctness first, do not blindly implement
+- Picking up a written plan in a new session → `superpowers:executing-plans`
+- 2+ independent tasks with no shared state → `superpowers:dispatching-parallel-agents`
+- Any feature or bugfix in prod/existing-test code → `superpowers:test-driven-development`
+- Before claiming any implementation task complete → `superpowers:verification-before-completion` skill
+- Before committing or staging files with credentials/tokens → `/run before-commit` (which runs `secrets-check`)
+
+## Post-implementation review
+
+After any work that creates or modifies files, subagent or orchestrator, code or docs/markdown, invoke **`post-implementation-review`** skill.
+
+## Git strategy
+
+Trunk-based development. Single chain in `main`. Use branches only when async isolation is required.
+
+**When branching:**
+1. Create short-lived branch from `main`
+2. Do work with task-level commits
+3. `git rebase main` before merging; never use a merge commit
+4. Merge back to `main`
+5. Delete branch, then run `commit-commands:clean_gone`
+
+Escalate only if: rebase conflict that cannot be resolved autonomously.
+
+**Commit style:**
+- Short imperative subject: `add user auth`, `fix token expiry`, `update readme`
+- No conventional commit prefixes (`feat:`, `fix:`, `chore:`, etc.)
+- Add body when change is complex or non-obvious
+- Always flag dependency changes explicitly in commit body
+
+## Model selection
+
+Default to Sonnet. Deviate when task complexity or cost warrants it.
+
+| Task | Model |
+|---|---|
+| Architecture decisions, novel debugging, complex multi-step planning | Opus |
+| Default: implementation, review, most coding work | Sonnet |
+| Routing, triage, file validation, simple extraction/classification | Haiku |
+
+Subagents: specify `model:` in agent frontmatter. Read-only validators and triage agents → Haiku. Implementation agents → Sonnet. Only escalate to Opus explicitly when a task demands it.
+
+## TDD
+
+| Context | TDD required? |
+|---|---|
+| Prod feature / user-facing code | Yes: `superpowers:test-driven-development` before writing implementation |
+| Project with existing tests | Yes |
+| Config, scripts, throwaway / one-off | No |
+| Unclear scope or scale | Ask during `superpowers:brainstorming`, before writing a plan |
+
+## Scope creep guard
+
+Agents must not touch files outside their assigned task scope. If a fix requires out-of-scope changes, surface it to the orchestrator; do not silently expand scope.
+
+Bad: an agent fixing a broken import in `foo.py` also reformats `bar.py` because it noticed inconsistent quotes while it was in the file.
+Good: the agent fixes the import in `foo.py`, notices `bar.py`'s formatting is inconsistent, and reports it to the orchestrator instead of touching it.
+
+## Dependency changes
+
+When a dep is added, removed, or upgraded:
+- Flag explicitly in commit body. Good: "Bumps `openssl` from 3.1 to 3.3 (security fix for CVE-2026-XXXX). No API changes." Bad: a commit that changes `package-lock.json` with no mention of the dependency change at all.
+- Run the project's own dependency audit and licence check (for example `npm audit`, `cargo audit`, `pip-audit`) and report the result; `post-implementation-review` does not run these for you
+
+## Flaky tests
+
+If a test fails: retry once. If it fails again, escalate; do not loop or skip.
+
+## Auto-memory
+
+At the end of each session, save to the project memory directory:
+- Key decisions made
+- Non-obvious constraints discovered
+- Feedback received (corrections and confirmations that weren't obvious)
+- Architecture or convention changes
+
+Use memory types: `project`, `feedback`, `user`, `reference`.
+
+## Project initialization
+
+Initializing a new project (`claude init`, first run in a directory, or on request) requires a specific `CLAUDE.md` structure and a seeded project memory directory. Use the `project-init` skill; it is public, at `shared/skills/project-init/` in the agent-forge repo, and installed as `~/.claude/skills/project-init`. If it doesn't trigger, follow `PROJECT_INIT.md` in the agent-forge repo directly.
