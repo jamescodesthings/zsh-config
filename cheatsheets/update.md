@@ -50,7 +50,7 @@
 
 > A failed updater does not stop the run. Failures are listed at the end and the exit code is 1.
 > Every `error:` and `warning:` line, plus the last 30 lines of output from any updater that failed,
-> goes in `.cache/logs/update/2026-09-21-10-29-19.error.log` (one file per run, named for its start time).
+> goes in `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log` (one file per run, named for its start time).
 > The log is printed again at the end of the run. A clean run leaves no file, and the newest 20 are kept.
 > `updaters/_self` pulls zsh-config, then `update` restarts itself so the run uses the new scripts.
 > macOS updates that need a restart are listed as a warning and left for System Settings. They

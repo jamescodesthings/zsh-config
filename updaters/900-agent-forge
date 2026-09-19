@@ -41,7 +41,9 @@ fi
 
 if is not empty "$WARNINGS"; then
   echo "$c[error]error:$c[reset] make install finished, but parts of it failed:"
-  echo "$WARNINGS"
+  for line in ${(f)WARNINGS}; do
+    echo "$c[warn]warning:$c[reset] $line"
+  done
   echo "$c[info-small]see the run logs with: make -C $FORGE_DIR logs$c[reset]"
   exit 1
 fi

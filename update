@@ -73,6 +73,19 @@ if is empty "$UPDATE_ERROR_LOG"; then
   : > "$UPDATE_ERROR_LOG"
 fi
 
+# Runs however the script ends, ctrl-c included: stops the sudo keepalive and
+# removes the error log if nothing was written to it.
+function cleanup() {
+  if is not empty "$SUDO_KEEPALIVE_PID"; then
+    kill $SUDO_KEEPALIVE_PID 2> /dev/null
+  fi
+  if [[ -f "$UPDATE_ERROR_LOG" && ! -s "$UPDATE_ERROR_LOG" ]]; then
+    rm -f "$UPDATE_ERROR_LOG"
+  fi
+}
+trap cleanup EXIT
+trap 'exit 130' INT TERM
+
 # Runs one updater and records what went wrong. Its output is shown as it
 # happens and kept, with colour codes stripped, so that afterwards:
 # - every line an updater tagged error: or warning: goes in the log
@@ -143,7 +156,6 @@ if is available sudo; then
   # "update | tee file" would wait for the last sleep before it could finish.
   ( while kill -0 $$ 2> /dev/null; do sudo -n true; sleep 50; done ) > /dev/null 2>&1 &!
   SUDO_KEEPALIVE_PID=$!
-  trap 'kill $SUDO_KEEPALIVE_PID 2> /dev/null' EXIT
 fi
 
 FAILED=()
