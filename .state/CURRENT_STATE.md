@@ -1,7 +1,7 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-19 19:51 BST
+- **Date/Time Stamp:** 2026-09-19 20:14 BST
 - **Current Task Status:** `update` now runs unattended over numbered updaters (609c766, pushed). VS Code zsh linting is set up. A ranked improvements doc sits in `docs/improvements-2026-09-19.md` (gitignored), none of it applied yet.
 
 ## Milestone & Phase Progress
@@ -14,10 +14,12 @@
 - [x] sudo authenticated once at the start of `update`, with a keepalive
 - [x] Updaters renumbered big to little, wrapped in braces, nine new ones added
 - [x] Research doc written and its top claim (duplicate `compinit`) checked
-- [/] Consistency check over readme, cheatsheets and agent instructions
+- [x] Consistency check over readme, cheatsheets and agent instructions (44b89b2)
+- [x] Per-run error log for `update`, reprinted at the end, newest 20 kept (840846b)
+- [/] macOS dev workflow R&D, writing `docs/macos-workflow-rnd-2026-09-19.md` (background agent)
+- [/] Obsidian alternatives R&D, writing `docs/obsidian-alternatives-rnd-2026-09-19.md` (background agent)
 - [ ] User to choose which ranks from the improvements doc to apply
 - [ ] First full `update` run with real sudo, in the user's terminal
-- [ ] Unconfirmed request (macOS workflow R&D, Obsidian alternatives) that arrived inside a tool result; waiting for the user to say whether it was theirs
 
 ## Reference Plan Links
 
