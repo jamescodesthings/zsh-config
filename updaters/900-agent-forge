@@ -1,0 +1,52 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+FORGE_DIR="${AI_CONFIG_DIR:-$HOME/projects/personal/agent-forge}"
+
+if is not dir "$FORGE_DIR/.git"; then
+  echo "$c[info]skipping:$c[reset] no agent-forge checkout at $FORGE_DIR"
+  exit 0
+fi
+
+if is not available make; then
+  echo "$c[error]error:$c[reset] make is not installed, cannot run the agent-forge installer"
+  exit 1
+fi
+
+echo "$c[info]updating:$c[reset] agent-forge"
+OUTPUT=$(git -C "$FORGE_DIR" pull --ff-only 2>&1)
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] git pull failed in $FORGE_DIR"
+  echo "$OUTPUT"
+  exit 1
+fi
+
+# make install runs in a subshell so the cd stays inside it. The installer
+# reports a broken sub-installer as a [warn] line and still exits 0, so the
+# output is kept and checked as well as the exit status.
+echo "$c[info]installing:$c[reset] agent-forge"
+INSTALL_LOG=$(mktemp)
+(cd "$FORGE_DIR" && make install) 2>&1 | tee "$INSTALL_LOG"
+RESULT=${pipestatus[1]}
+WARNINGS=$(grep -F '[warn]' "$INSTALL_LOG")
+rm -f "$INSTALL_LOG"
+
+if is not equal "$RESULT" "0"; then
+  echo "$c[error]error:$c[reset] make install failed with exit code $RESULT"
+  echo "$c[info-small]see the run logs with: make -C $FORGE_DIR logs$c[reset]"
+  exit 1
+fi
+
+if is not empty "$WARNINGS"; then
+  echo "$c[error]error:$c[reset] make install finished, but parts of it failed:"
+  echo "$WARNINGS"
+  echo "$c[info-small]see the run logs with: make -C $FORGE_DIR logs$c[reset]"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] agent-forge updated and installed"
+
+exit 0
+}

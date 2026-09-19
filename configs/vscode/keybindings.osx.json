@@ -133,5 +133,10 @@
     "key": "cmd+w",
     "command": "-workbench.action.closeWindow",
     "when": "!editorIsOpen && !multipleEditorGroups"
+  },
+  {
+    "key": "ctrl+alt+z",
+    "command": "workbench.action.tasks.runTask",
+    "args": "zsh: syntax check current file"
   }
 ]

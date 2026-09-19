@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+TPM_UPDATE="$HOME/.tmux/plugins/tpm/bin/update_plugins"
+
+if is not available tmux || is not executable "$TPM_UPDATE"; then
+  echo "$c[info]skipping:$c[reset] tmux plugin manager not installed"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] tmux plugins"
+"$TPM_UPDATE" all
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] tmux plugin update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] tmux plugins updated"
+
+exit 0
+}

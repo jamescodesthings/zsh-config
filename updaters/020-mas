@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+if is not available mas; then
+  echo "$c[info]skipping:$c[reset] mas not installed (brew install mas)"
+  exit 0
+fi
+
+# mas 2 and later refuse to upgrade without root; mas 1 refuses to run with it.
+MAS=(mas)
+if mas upgrade --help 2>&1 | grep -q 'Requires root'; then
+  MAS=(sudo mas)
+fi
+
+echo "$c[info]updating:$c[reset] mac app store apps"
+$MAS upgrade
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] mas upgrade failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] mac app store apps updated"
+
+exit 0
+}

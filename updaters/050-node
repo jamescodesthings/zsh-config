@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
 source "${0:a:h}/_stub"
 
 if is not available asdf; then
@@ -29,8 +31,17 @@ if is not equal "$?" "0"; then
   exit 1
 fi
 
+echo "$c[info]updating:$c[reset] global npm packages"
+npm update -g
+if is not equal "$?" "0"; then
+  echo "$c[warn]warning:$c[reset] could not update global npm packages"
+fi
+
 if is available asdf-reshim; then
   asdf-reshim
 fi
 
 echo "$c[success]success:$c[reset] node and npm updated"
+
+exit 0
+}

@@ -1,0 +1,34 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+# zinit is a shell function, so it only exists once zinit.zsh is sourced; a
+# script does not inherit it from the interactive shell.
+ZINIT_SCRIPT="$HOME/.zinit/zinit.git/zinit.zsh"
+
+if is not file "$ZINIT_SCRIPT"; then
+  echo "$c[info]skipping:$c[reset] zinit not installed"
+  exit 0
+fi
+
+source "$ZINIT_SCRIPT"
+
+echo "$c[info]updating:$c[reset] zinit"
+zinit self-update
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] zinit self-update failed"
+  exit 1
+fi
+
+echo "$c[info]updating:$c[reset] zinit plugins"
+zinit update --all --parallel
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] zinit plugin update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] zinit updated"
+
+exit 0
+}

@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
 source "${0:a:h}/_stub"
 
 if is not available asdf; then
@@ -14,3 +16,6 @@ if is not equal "$?" "0"; then
 fi
 
 echo "$c[success]success:$c[reset] asdf plugins updated"
+
+exit 0
+}

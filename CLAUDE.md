@@ -81,6 +81,21 @@ New installers should start with:
 source "${0:a:h}/_stub"
 ```
 
+### `updaters/` directory
+
+`./update` (also the `update` function) keeps the whole machine current. It pulls this repo through `updaters/_self`, restarts itself so the run uses the scripts it just pulled, authenticates sudo once with a keepalive, then runs every `updaters/NNN-name` script in number order with stdin closed. A failed updater is reported at the end and does not stop the run. `update --list` shows the order, and `update brew tldr` runs only the named ones.
+
+Rules for an updater:
+
+- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities, `130` data, `900` applications that depend on the rest. Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
+- Source `_stub` from the same directory; it loads `is` and the colours, and exports the non-interactive environment (`NONINTERACTIVE`, `DEBIAN_FRONTEND`, `GIT_TERMINAL_PROMPT=0`).
+- Skip with `exit 0` when the tool is missing, `exit 1` on failure.
+- Never prompt. Pass the tool's own `--yes` style flag; sudo drops the environment, so pass variables on the sudo command line.
+- Keep the body inside `{ ... exit 0 }`. zsh reads a script as it runs, so a file saved or pulled mid-run otherwise fails with a bogus parse error such as `unmatched "`. `update` itself is wrapped the same way.
+- Shell functions such as `zinit` do not exist inside a script; source what defines them (see `080-zinit`).
+
+Use `cheat update` for the user-facing reference.
+
 ### `configs/gnome/` directory
 
 GNOME-specific config and tools. Only installed on machines running GNOME on Wayland (`is gnome && is wayland`).
@@ -114,6 +129,8 @@ zsh -i -c exit
 ```
 
 A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. A `readerr: ... not found` line means readerr is not cloned on that machine, not that the change broke anything. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
+
+In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`configs/vscode/tasks.json`), which puts `zsh -n` errors in the Problems panel. ShellCheck does not support zsh, so Bash IDE's ShellCheck integration is switched off in `configs/vscode/settings.osx.json`.
 
 ## Post-implementation checks
 

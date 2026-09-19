@@ -1,28 +1,110 @@
 #!/usr/bin/env zsh
 
+# The whole script sits inside braces so that zsh parses it to the end before
+# running any of it. zsh otherwise reads a script as it goes, and the
+# self-update below can rewrite this file mid-run, which shows up as a parse
+# error on a line that looks fine. Every updater is wrapped the same way.
+{
+
 source "${0:a:h}/installers/_stub"
 
 UPDATER_DIR="$REPO_DIR/updaters"
 
-SCRIPTS=$(ls -1 "$UPDATER_DIR" | grep -v '.DS_Store' | grep -v '^_' 2> /dev/null)
+# Numbered updaters, in the order they run. Files starting with _ are helpers.
+SCRIPTS=("$UPDATER_DIR"/[0-9][0-9][0-9]-*(N:t))
 
-for script in ${(f)SCRIPTS}; do
-  [[ -z "$script" ]] && continue
+if is equal "$1" "--help" || is equal "$1" "-h"; then
+  echo "$c[h1]update$c[reset]"
+  echo ""
+  echo "$c[lead]pulls zsh-config, then runs every script in updaters/ in number order.$c[reset]"
+  echo "$c[lead]asks for sudo once at the start and never prompts after that.$c[reset]"
+  echo ""
+  echo "$c[h2]usage$c[reset]"
+  echo "  update                  run everything"
+  echo "  update $c[param]name...$c[reset]          run only the named updaters, e.g. update brew tldr"
+  echo "  update $c[flag]--list$c[reset]           show the updaters in run order"
+  exit 0
+fi
+
+if is equal "$1" "--list"; then
+  print -l $SCRIPTS
+  exit 0
+fi
+
+# Pull this repo first, then start again from the top so the rest of the run
+# uses the updaters that were just pulled.
+if is empty "$UPDATE_SELF_UPDATED"; then
+  echo "$c[info]running updater:$c[reset] zsh-config"
+  "$UPDATER_DIR/_self" < /dev/null
+  if is not equal "$?" "0"; then
+    echo "$c[warn]warning:$c[reset] could not pull zsh-config, carrying on with the local copy"
+  fi
+  echo ""
+  UPDATE_SELF_UPDATED=1 exec "$REPO_DIR/update" "$@"
+fi
+
+# Named updaters only: "brew" matches 010-brew.
+if is not empty "$1"; then
+  WANTED=()
+  for name in "$@"; do
+    MATCH=(${(M)SCRIPTS:#(<->-|)$name})
+    if is empty "$MATCH"; then
+      echo "$c[error]error:$c[reset] no updater called $name, try update --list"
+      exit 1
+    fi
+    WANTED+=($MATCH)
+  done
+  SCRIPTS=($WANTED)
+fi
+
+# Authenticate once, up front, and keep the timestamp fresh until this script
+# exits. Updaters that need root then go straight through.
+if is available sudo; then
+  echo "$c[info]sudo:$c[reset] authenticating now so that no updater stops to ask later"
+  sudo -v
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] sudo authentication failed"
+    exit 1
+  fi
+  echo "$c[success]success:$c[reset] sudo approved"
+  echo ""
+
+  ( while kill -0 $$ 2> /dev/null; do sudo -n true 2> /dev/null; sleep 50; done ) &!
+  SUDO_KEEPALIVE_PID=$!
+  trap 'kill $SUDO_KEEPALIVE_PID 2> /dev/null' EXIT
+fi
+
+FAILED=()
+
+for script in $SCRIPTS; do
   echo "$c[info]running updater:$c[reset] $script"
   if is not executable "$UPDATER_DIR/$script"; then
     echo "$c[warn]warning:$c[reset] $script is not executable, fixing"
     chmod +x "$UPDATER_DIR/$script"
   fi
 
-  "$UPDATER_DIR/$script"
+  # stdin is closed so that a tool which tries to prompt gets an immediate
+  # end-of-file instead of hanging the run. sudo reads from the terminal
+  # itself, so it is unaffected.
+  "$UPDATER_DIR/$script" < /dev/null
 
   if is equal "$?" "0"; then
     echo "$c[success]success:$c[reset] $script complete"
   else
-    echo "$c[error]error:$c[reset] $script failed"
-    exit 1
+    echo "$c[error]error:$c[reset] $script failed, carrying on"
+    FAILED+=($script)
   fi
 
   echo ""
   echo ""
 done
+
+if is not empty "$FAILED"; then
+  echo "$c[error]failed:$c[reset] $FAILED"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] everything updated"
+exit 0
+
+}

@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
 source "${0:a:h}/_stub"
 
 if is not osx; then
@@ -24,4 +26,12 @@ if is not equal "$?" "0"; then
   exit 1
 fi
 
+brew cleanup
+if is not equal "$?" "0"; then
+  echo "$c[warn]warning:$c[reset] brew cleanup failed"
+fi
+
 echo "$c[success]success:$c[reset] homebrew updated"
+
+exit 0
+}

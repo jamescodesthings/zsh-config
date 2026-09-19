@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+if is not available micro; then
+  echo "$c[info]skipping:$c[reset] micro not installed"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] micro plugins"
+micro -plugin update
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] micro plugin update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] micro plugins updated"
+
+exit 0
+}

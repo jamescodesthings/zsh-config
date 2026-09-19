@@ -34,3 +34,4 @@ fi
 install-link "$CONFIG_DIR/snippets" "$DEST_DIR/snippets"
 install-box-config "$CONFIG_DIR/settings.json" "$DEST_DIR/settings.json"
 install-box-config "$CONFIG_DIR/keybindings.json" "$DEST_DIR/keybindings.json"
+install-link "$CONFIG_DIR/tasks.json" "$DEST_DIR/tasks.json"

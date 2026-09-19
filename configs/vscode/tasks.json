@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "zsh: syntax check current file",
+      "type": "shell",
+      "command": "zsh",
+      "args": ["-n", "${file}"],
+      "presentation": {
+        "reveal": "silent",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "zsh",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.+?):(\\d+): (.+)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        }
+      }
+    }
+  ]
+}

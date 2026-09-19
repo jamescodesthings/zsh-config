@@ -1,0 +1,64 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+if is not osx; then
+  echo "$c[info]skipping:$c[reset] software update is macos only"
+  exit 0
+fi
+
+if is not available softwareupdate; then
+  echo "$c[info]skipping:$c[reset] softwareupdate not available"
+  exit 0
+fi
+
+# Updates that need a restart are listed, not installed. On Apple silicon they
+# stop to ask for the account password, which no flag skips, and the list can
+# include a whole new macOS version that nobody wants installed unattended.
+echo "$c[info]checking:$c[reset] macos software"
+LISTING=$(softwareupdate --list 2>&1)
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] could not list software updates"
+  echo "$LISTING"
+  exit 1
+fi
+
+# Each update is a "* Label: name" line followed by a detail line, which
+# carries "Action: restart" when the update needs one.
+INSTALLABLE=()
+NEEDS_RESTART=()
+LABEL=""
+for line in ${(f)LISTING}; do
+  if [[ "$line" == "* Label: "* ]]; then
+    LABEL="${line#\* Label: }"
+  elif is not empty "$LABEL"; then
+    if [[ "$line" == *"Action: restart"* ]]; then
+      NEEDS_RESTART+=("$LABEL")
+    else
+      INSTALLABLE+=("$LABEL")
+    fi
+    LABEL=""
+  fi
+done
+
+for label in $NEEDS_RESTART; do
+  echo "$c[warn]needs a restart, install it from System Settings:$c[reset] $label"
+done
+
+if is empty "$INSTALLABLE"; then
+  echo "$c[success]success:$c[reset] nothing to install without a restart"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] $INSTALLABLE"
+sudo softwareupdate --install --agree-to-license $INSTALLABLE
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] software update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] software updates installed"
+
+exit 0
+}

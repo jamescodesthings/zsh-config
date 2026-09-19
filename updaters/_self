@@ -1,14 +1,18 @@
 #!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
 source "${0:a:h}/_stub"
 
 echo "$c[info]updating:$c[reset] zsh-config"
-OUTPUT=$(cd "$REPO_DIR" && git pull)
-RESULT=$?
+OUTPUT=$(git -C "$REPO_DIR" pull --ff-only 2>&1)
 
-if is not equal "$RESULT" "0"; then
+if is not equal "$?" "0"; then
   echo "$c[error]error:$c[reset] git pull failed"
   echo "$OUTPUT"
   exit 1
 fi
 
 echo "$c[success]success:$c[reset] zsh-config updated"
+
+exit 0
+}

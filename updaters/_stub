@@ -3,3 +3,12 @@ UPDATER_DIR=${0:a:h}
 REPO_DIR=${UPDATER_DIR:h}
 
 source "$REPO_DIR/installers/_stub"
+
+# Nothing an updater runs may stop to ask a question. These cover the tools
+# that read an environment variable; each updater passes its own --yes style
+# flag as well. sudo drops the environment, so an updater that needs one of
+# these under sudo passes it on the sudo command line.
+export NONINTERACTIVE=1
+export DEBIAN_FRONTEND=noninteractive
+export GIT_TERMINAL_PROMPT=0
+export HOMEBREW_NO_ENV_HINTS=1

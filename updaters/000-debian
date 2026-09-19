@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+if is osx; then
+  echo "$c[info]skipping:$c[reset] debian updater is linux only"
+  exit 0
+fi
+
+if is not available apt-get; then
+  echo "$c[info]skipping:$c[reset] apt not available"
+  exit 0
+fi
+
+# --force-confold keeps the config file already on disk when a package ships
+# a new one, which is the question dpkg would otherwise stop to ask.
+APT=(sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold)
+
+echo "$c[info]updating:$c[reset] apt packages"
+$APT update && $APT upgrade && $APT autoremove
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] apt update failed"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] apt packages updated"
+
+exit 0
+}
