@@ -8,7 +8,7 @@ fi
 
 alias asch='alias | grep'
 alias cl='clear'
-alias oh='open .'
+
 alias cx='chmod +x'
 
 alias lla='ls -la'
@@ -175,4 +175,17 @@ fi
 if is osx; then
   alias av="sudo clamscan -r --bell -i -l ~/projects/av/clamav_scan.log"
   alias av-all="sudo clamscan -r --bell -i -l ~/projects/av/clamav_scan.log /"
+fi
+
+# Opening things:
+# Todo: convert to functions and parse the input to act more dynamically than this.
+if is osx; then
+  if is existing "/Applications/QSpace Pro.app"; then
+    alias qspace="open -a '/Applications/QSpace Pro.app'"
+    # Open qspace "here" i.e. $PWD
+    alias oh="qspace \"$PWD\""
+  fi
+elif is linux; then
+  alias open="xdg-open"
+  alias oh="xdg-open \"$PWD\""
 fi

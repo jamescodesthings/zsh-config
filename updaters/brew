@@ -12,9 +12,15 @@ if is not available brew; then
 fi
 
 echo "$c[info]updating:$c[reset] homebrew"
-brew update && brew upgrade
+brew update
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] homebrew update failed"
+  echo "$c[error]error:$c[reset] brew update failed"
+  exit 1
+fi
+
+brew upgrade --yes
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] brew upgrade failed"
   exit 1
 fi
 

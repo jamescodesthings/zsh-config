@@ -19,7 +19,7 @@
   "typescript.autoClosingTags": false,
   "html.autoClosingTags": false,
   "[xml]": {
-    "editor.defaultFormatter": "DotJoshJohnson.xml",
+    "editor.defaultFormatter": "mikeburgh.xml-format",
   },
   "vs-kubernetes": {
     "vscode-kubernetes.minikube-path.linux": "/home/james/.local/state/vs-kubernetes/tools/minikube/linux-amd64/minikube",
@@ -106,7 +106,7 @@
   "github.copilot.enable": {
     "*": true,
     "plaintext": false,
-    "markdown": false,
+    "markdown": true,
     "scminput": false
   },
   "explorer.confirmPasteNative": false,
@@ -174,5 +174,8 @@
   "git.confirmSync": false,
   "git.autofetch": true,
   "bashIde.includeAllWorkspaceSymbols": true,
-  "bashIde.shfmt.binaryNextLine": true
+  "bashIde.shfmt.binaryNextLine": true,
+  "editor.accessibilitySupport": "on",
+  "git.timeline.showUncommitted": true,
+  "editor.formatOnSave": true
 }
