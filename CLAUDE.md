@@ -31,16 +31,18 @@ The installer symmlinks the repo to `~/.custom`, and `.zshrc`/`.zshenv` to `~` s
 
 1. `zsh_options.zsh` — setopt flags
 2. `custom_functions.zsh` — autoloads all files in `functions/` via `fpath`
-3. `env.zsh` — PATH, EDITOR, ASDF, exports
+3. `env.zsh` — PATH, EDITOR, ASDF, exports; its last line sources `load_box_env.zsh`, which sources `env.<hostname>.zsh` if present
 4. `zpm-zsh-colors` — `$c[...]` color variables used everywhere
 5. `load_zinit.zsh` — installs zinit if missing, then sources it
 6. `p10k.prompt.zsh` / `p10k.zsh` — prompt config
 7. `plugins.zsh` — zinit plugin declarations
 8. `completions.zsh` — completion setup
 9. `aliases.zsh` — conditional aliases (checks `is available <tool>` before defining)
-10. `load-direnv.zsh`, `load-fzf.zsh`, `configs/ls_colors/ls-colors.sh`
-11. `private.zsh` (optional, not committed)
-12. `load_box_env.zsh` → sources `env.<hostname>.zsh` if present
+10. `wrap-progress.zsh` — when `progress` is installed, autoloads the `wrappers/` versions of `cp`, `mv`, `tar` and similar, and aliases the originals as `cpo`, `mvo` and so on
+11. `load-direnv.zsh`, `load-fzf.zsh`, `configs/ls_colors/ls-colors.sh`
+12. `private.zsh` (optional, not committed)
+13. `$AI_CONFIG_DIR/zsh/aliases.zsh` from the agent-forge checkout, if present
+14. `$READERR_DIR/zsh/readerr.zsh`; prints an error on every shell start when readerr is not cloned at `~/projects/readerr`
 
 ### Per-machine env files
 
@@ -111,7 +113,7 @@ zsh -n path/to/changed-file
 zsh -i -c exit
 ```
 
-A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor` and `gitstatus failed to initialize`; both are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
+A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. A `readerr: ... not found` line means readerr is not cloned on that machine, not that the change broke anything. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
 
 ## Post-implementation checks
 
