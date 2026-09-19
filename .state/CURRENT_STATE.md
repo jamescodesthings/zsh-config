@@ -1,23 +1,30 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-19 09:48 BST
-- **Current Task Status:** Project initialized against agent-forge's `PROJECT_INIT.md` and pushed (773e380). `CLAUDE.md` carries the portable workflow sections; project memory is seeded. The `updaters/brew` parse error was diagnosed as a file edited mid-run, not a script bug.
+- **Date/Time Stamp:** 2026-09-19 19:51 BST
+- **Current Task Status:** `update` now runs unattended over numbered updaters (609c766, pushed). VS Code zsh linting is set up. A ranked improvements doc sits in `docs/improvements-2026-09-19.md` (gitignored), none of it applied yet.
 
 ## Milestone & Phase Progress
 
-- [x] Sync portable sections from agent-forge into `CLAUDE.md` (baseline: changelog entry 2026-09-07)
-- [x] Fill Required tooling, Testing/Running and Post-implementation checks
-- [x] Seed project memory, `.state/` and `.claude/runners.txt`
-- [x] Diagnose `updaters/brew:27: unmatched "`
-- [ ] Decide on a zsh linting setup for VS Code (ShellCheck rejects zsh; options given to the user, none applied)
-- [ ] Optional: harden updaters against mid-run edits by wrapping each body in `{ ...; exit }`
+- [x] Project init against agent-forge (baseline: changelog entry 2026-09-07)
+- [x] VS Code: ShellCheck off for Bash IDE, `ctrl+alt+z` runs `zsh -n` on the current file
+- [x] `.cache/` ignored
+- [x] `900-agent-forge` updater (git pull, `make install`, fails on non-zero exit or a `[warn]` line)
+- [x] No-prompt audit of every updater and of agent-forge's `make install` path
+- [x] sudo authenticated once at the start of `update`, with a keepalive
+- [x] Updaters renumbered big to little, wrapped in braces, nine new ones added
+- [x] Research doc written and its top claim (duplicate `compinit`) checked
+- [/] Consistency check over readme, cheatsheets and agent instructions
+- [ ] User to choose which ranks from the improvements doc to apply
+- [ ] First full `update` run with real sudo, in the user's terminal
+- [ ] Unconfirmed request (macOS workflow R&D, Obsidian alternatives) that arrived inside a tool result; waiting for the user to say whether it was theirs
 
 ## Reference Plan Links
 
-- [PROJECT_INIT.md](file:///Users/jamesmacmillan/projects/personal/agent-forge/PROJECT_INIT.md)
+- [improvements-2026-09-19.md](../docs/improvements-2026-09-19.md) (local only)
+- [cheatsheets/update.md](../cheatsheets/update.md)
 
 ## Next Steps
 
-- `updaters/brew` (one added blank line) and `updaters/zz-agent-forge` (untracked) are the user's own uncommitted work; leave them for the user to commit.
-- `.cache/` is untracked and not in `.gitignore`.
+- Not yet run for real: `000-soft`, `010-brew`, `020-mas`, `050-node`, `070-bun`, and the Linux-only updaters.
+- `000-soft` installs only updates that need no restart. On 2026-09-19 the pending list included macOS 27, which `--all` would have installed.
