@@ -23,7 +23,7 @@ fi
 # self update only works for a copy from uv's own installer. A copy from brew
 # is upgraded by 010-brew and refuses, so it is not asked.
 UV_PATH="$(command -v uv)"
-if is available brew && [[ "${UV_PATH:A}" == "$(brew --prefix)"/* ]]; then
+if is osx && is available brew && [[ "${UV_PATH:A}" == "$(brew --prefix)"/* ]]; then
   echo "$c[info]skipping:$c[reset] uv self update, this copy belongs to homebrew"
 else
   echo "$c[info]updating:$c[reset] uv"

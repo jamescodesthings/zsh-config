@@ -40,7 +40,7 @@ fi
 
 # A copy from brew is upgraded by 010-brew; bun upgrade is for the others.
 BUN_PATH="$(command -v bun)"
-if is available brew && [[ "${BUN_PATH:A}" == "$(brew --prefix)"/* ]]; then
+if is osx && is available brew && [[ "${BUN_PATH:A}" == "$(brew --prefix)"/* ]]; then
   echo "$c[info]skipping:$c[reset] bun upgrade, this copy belongs to homebrew"
   exit 0
 fi

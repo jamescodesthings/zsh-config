@@ -83,8 +83,10 @@ function installed-versions() {
   asdf list "$1" 2> /dev/null | tr -d ' *' | grep -E '^[0-9]'
 }
 
-# Versions that a project asks for by name, as "tool@version" keys. A pin such
-# as "lts" or "system" names no version and is ignored.
+# Versions that a project asks for by name, as "tool@version" keys. A pin is
+# often shortened ("22" in an .nvmrc, "3.11" in a .python-version), so it
+# protects every installed version that starts with it. A pin such as "lts" or
+# "system" names no version and so protects nothing.
 typeset -A PINNED
 function collect-pins() {
   local root file tool rest version key
@@ -96,6 +98,10 @@ function collect-pins() {
       case "${file:t}" in
         .tool-versions)
           while read -r tool rest; do
+            if is empty "$tool" || [[ "$tool" == \#* ]]; then
+              continue
+            fi
+            rest="${rest%$'\r'}"
             for version in ${=rest}; do
               key="$tool@$version"
               PINNED[$key]="$file"
@@ -104,11 +110,13 @@ function collect-pins() {
           ;;
         .nvmrc|.node-version)
           version="$(< "$file")"
+          version="${version%$'\r'}"
           key="nodejs@${${version// /}#v}"
           PINNED[$key]="$file"
           ;;
         .python-version)
           version="$(< "$file")"
+          version="${version%$'\r'}"
           key="python@${version// /}"
           PINNED[$key]="$file"
           ;;
@@ -118,10 +126,27 @@ function collect-pins() {
 }
 collect-pins
 
+# Prints the file that pins this version of this tool, if one does.
+function pinned-by() {
+  local wanted="$1@$2" key
+  for key in ${(k)PINNED}; do
+    if is equal "$wanted" "$key" || [[ "$wanted" == "$key".* ]]; then
+      echo "$PINNED[$key]"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# rustup-init, which the rust plugin runs, stops to complain when it finds a
+# rust on PATH already, which the asdf shim always is. This is its own switch
+# for skipping that check.
+export RUSTUP_INIT_SKIP_PATH_CHECK=yes
+
 FAILED=()
 
 function update-tool() {
-  local tool="$1" policy="$2" target version key
+  local tool="$1" policy="$2" target version pin
 
   if ! asdf plugin list 2> /dev/null | grep -qx "$tool"; then
     echo "$c[info]adding:$c[reset] asdf plugin $tool"
@@ -170,9 +195,9 @@ function update-tool() {
     if is equal "$version" "$target"; then
       continue
     fi
-    key="$tool@$version"
-    if is not empty "$PINNED[$key]"; then
-      echo "$c[info]keeping:$c[reset] $tool $version, pinned by $PINNED[$key]"
+    pin="$(pinned-by "$tool" "$version")"
+    if is not empty "$pin"; then
+      echo "$c[info]keeping:$c[reset] $tool $version, pinned by $pin"
       continue
     fi
     echo "$c[info]removing:$c[reset] $tool $version"
