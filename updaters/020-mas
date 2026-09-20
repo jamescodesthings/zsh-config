@@ -18,7 +18,8 @@ fi
 # in the index, which happens to every app after a macOS upgrade and to single
 # apps after they are replaced. Listing costs nothing and names the apps mas
 # cannot see, so those are handed to mdimport, which indexes them on the spot.
-SPOTLIGHT_WARNING='Warning: Found a likely App Store app that is not indexed in Spotlight in '
+SPOTLIGHT_PHRASE='not indexed in Spotlight'
+SPOTLIGHT_WARNING="Warning: Found a likely App Store app that is $SPOTLIGHT_PHRASE in "
 UNINDEXED_APPS=(${(f)"$(mas list 2>&1 | grep -F "$SPOTLIGHT_WARNING")"})
 UNINDEXED_APPS=(${UNINDEXED_APPS#$SPOTLIGHT_WARNING})
 
@@ -31,9 +32,9 @@ fi
 # than once per app.
 echo "$c[info]updating:$c[reset] mac app store apps"
 MAS_OUTPUT=$(mktemp)
-$MAS upgrade 2>&1 | tee "$MAS_OUTPUT" | grep -v 'not indexed in Spotlight'
+$MAS upgrade 2>&1 | tee "$MAS_OUTPUT" | grep -v "$SPOTLIGHT_PHRASE"
 RESULT=${pipestatus[1]}
-UNINDEXED=$(grep -c 'not indexed in Spotlight' "$MAS_OUTPUT")
+UNINDEXED=$(grep -c "$SPOTLIGHT_PHRASE" "$MAS_OUTPUT")
 rm -f "$MAS_OUTPUT"
 
 if is gt "$UNINDEXED" "0"; then

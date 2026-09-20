@@ -61,6 +61,7 @@
 > A cask that needs root fails there instead of asking; upgrade it by hand with `brew upgrade --cask <name>`.
 > `mas` cannot check an app that Spotlight has not indexed, which happens to every app after a macOS upgrade.
 > `020-mas` asks `mas list` which apps those are and indexes them with `mdimport` before upgrading.
+> If some are still unindexed during the upgrade you get one warning with a count; it clears once Spotlight catches up.
 > macOS updates that need a restart are listed as a warning and left for System Settings. They
 > ask for the account password on Apple silicon, and the list can include a whole new macOS version.
 > The vault path can be changed with `OBSIDIAN_VAULT_DIR`, the agent-forge path with `AI_CONFIG_DIR`.

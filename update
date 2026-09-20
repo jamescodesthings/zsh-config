@@ -64,7 +64,9 @@ if is equal "$1" "--errors"; then
 
   if is not equal "$2" "--previous" && is file "$LOG_DIR/last-run"; then
     read -r LAST_STARTED LAST_OUTCOME < "$LOG_DIR/last-run"
-    if is equal "$LAST_OUTCOME" "clean"; then
+    # A run that was interrupted after logging something writes no last-run,
+    # so a log newer than the recorded run wins over a recorded "clean".
+    if is equal "$LAST_OUTCOME" "clean" && [[ ! "${LAST_LOG:t:r:r}" > "$LAST_STARTED" ]]; then
       echo "$c[success]success:$c[reset] the last run ($LAST_STARTED) had no errors or warnings"
       if is not empty "$LAST_LOG"; then
         echo "$c[info]older log:$c[reset] $LAST_LOG $c[flag](update --errors --previous)$c[reset]"
