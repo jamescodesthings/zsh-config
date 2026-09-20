@@ -5,6 +5,8 @@ function asdf-cleanup() {
     echo "$c[h1]asdf-cleanup$c[reset]"
     echo ""
     echo "$c[lead]removes old versions of asdf plugins, keeping only the globally set version.$c[reset]"
+    echo "$c[warn]warning:$c[reset] this also removes versions that a project pins. $c[param]update asdf$c[reset] cleans up"
+    echo "         the tools in configs/asdf/update-policy and keeps pinned versions."
     echo ""
     echo "$c[h2]usage$c[reset]"
     echo "  asdf-cleanup $c[flag][--help]$c[reset]"

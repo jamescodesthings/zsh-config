@@ -110,7 +110,15 @@
 
 # Custom helpers
 
-- Remove all non-current versions of every installed plugin:
+- Update the tools in `configs/asdf/update-policy`, set them globally and remove old versions that no project pins:
+
+`update asdf`
+
+- See what that would do, without doing it:
+
+`UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf`
+
+- Remove all non-current versions of every installed plugin, pinned or not:
 
 `asdf-cleanup`
 
