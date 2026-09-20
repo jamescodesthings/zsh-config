@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-19 20:21 BST
-- **Current Task Status:** `update` runs unattended with a per-run error log (840846b, pushed). Three research docs are written in `docs/` (gitignored) and waiting on the user's choices: shell and kitty improvements, macOS dev workflow, Obsidian alternatives. Nothing from them is applied yet.
+- **Date/Time Stamp:** 2026-09-20 16:19 BST
+- **Current Task Status:** Hardening `update` after its first two real runs (3cb50b4, pushed). The second sudo prompt was Homebrew resetting the sudo session; brew now runs in its own terminal. The user has parked the three research docs until `update` is solid.
 
 ## Milestone & Phase Progress
 
@@ -21,7 +21,9 @@
 - [ ] User to choose a route from the Obsidian doc
 - [ ] User to choose items from the macOS workflow doc
 - [ ] User to choose which ranks from the improvements doc to apply
-- [ ] First full `update` run with real sudo, in the user's terminal
+- [x] First full `update` runs with real sudo (2026-09-20 11:10 and 15:17)
+- [x] Fixes from those runs: brew sudo reset isolated, agent-forge benign warn no longer a failure, mas Spotlight warnings folded, bun's `.zshrc` edit made portable (3cb50b4)
+- [ ] User to confirm the sudo isolation in a real terminal, then rerun `update` and check `update --errors`
 
 ## Reference Plan Links
 
@@ -32,5 +34,6 @@
 
 ## Next Steps
 
-- Not yet run for real: `000-soft`, `010-brew`, `020-mas`, `050-node`, `070-bun`, and the Linux-only updaters.
-- `000-soft` installs only updates that need no restart. On 2026-09-19 the pending list included macOS 27, which `--all` would have installed.
+- Sudo isolation check, in a real terminal: `sudo -v; script -q /dev/null sudo -k; sudo -n true && echo survived || echo lost`. If it prints `lost`, fall back to running `020-mas` before `010-brew`, or a `SUDO_ASKPASS` helper (the user's call, it stores a credential).
+- Research docs are on hold by the user's request: improvements, macOS workflow, Obsidian alternatives.
+- agent-forge backs up and relinks Antigravity's `settings.json` on every install, because Antigravity rewrites it as a real file. That belongs in the agent-forge repo.
