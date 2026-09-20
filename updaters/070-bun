@@ -3,8 +3,45 @@
 {
 source "${0:a:h}/_stub"
 
+# bun is part of the base stack, so a machine without it gets it: from bun's
+# brew tap on macOS, from the release zip elsewhere. bun's own install script
+# is avoided because it appends to ~/.zshrc, which is a file in this repo.
 if is not available bun; then
-  echo "$c[info]skipping:$c[reset] bun not installed"
+  echo "$c[info]installing:$c[reset] bun"
+  if is osx && is available brew; then
+    brew-isolated install oven-sh/bun/bun
+  else
+    case "$(uname -m)" in
+      x86_64)        BUN_ARCH="x64" ;;
+      aarch64|arm64) BUN_ARCH="aarch64" ;;
+      *)             BUN_ARCH="" ;;
+    esac
+    if is empty "$BUN_ARCH" || is not available unzip; then
+      echo "$c[error]error:$c[reset] cannot install bun here: needs unzip and an x86_64 or arm64 machine"
+      exit 1
+    fi
+    BUN_ZIP=$(mktemp)
+    curl -fsSL "https://github.com/oven-sh/bun/releases/latest/download/bun-linux-$BUN_ARCH.zip" -o "$BUN_ZIP" \
+      && mkdir -p "$HOME/.bun/bin" \
+      && unzip -oqj "$BUN_ZIP" -d "$HOME/.bun/bin"
+    rm -f "$BUN_ZIP"
+    chmod +x "$HOME/.bun/bin/bun" 2> /dev/null
+    SHELL_PATH="$PATH"
+    export PATH="$HOME/.bun/bin:$PATH"
+  fi
+  if is not available bun; then
+    echo "$c[error]error:$c[reset] bun could not be installed"
+    exit 1
+  fi
+  if is not empty "$SHELL_PATH" && [[ ":$SHELL_PATH:" != *":$HOME/.bun/bin:"* ]]; then
+    echo "$c[warn]warning:$c[reset] add ~/.bun/bin to PATH in this machine's env.<hostname>.zsh"
+  fi
+fi
+
+# A copy from brew is upgraded by 010-brew; bun upgrade is for the others.
+BUN_PATH="$(command -v bun)"
+if is available brew && [[ "${BUN_PATH:A}" == "$(brew --prefix)"/* ]]; then
+  echo "$c[info]skipping:$c[reset] bun upgrade, this copy belongs to homebrew"
   exit 0
 fi
 

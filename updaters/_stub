@@ -16,3 +16,17 @@ export HOMEBREW_NO_ENV_HINTS=1
 # update pipes every updater through tee to keep a copy of its output, so
 # tools that only colour a terminal need telling to carry on doing it.
 export HOMEBREW_COLOR=1
+
+# Every brew command starts by running "sudo --reset-timestamp" (brew.sh),
+# which throws away the sudo session that update opened, so the next updater
+# that needs root would stop and ask again. sudo keeps one session per
+# terminal, so brew gets a throwaway terminal of its own from script(1) and
+# resets that one instead. The cost: a cask that needs root cannot ask for a
+# password in there, so it fails and lands in the error log. macOS only, which
+# is the only place an updater calls brew.
+#
+# script echoes a "^D" when it sees that stdin is closed; sed takes it back out.
+function brew-isolated() {
+  script -q /dev/null brew "$@" | sed -l $'s/\\^D\x08\x08//g'
+  return ${pipestatus[1]}
+}

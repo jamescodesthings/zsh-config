@@ -3,17 +3,34 @@
 {
 source "${0:a:h}/_stub"
 
+# uv is part of the base stack, so a machine without it gets it: from brew on
+# macOS, from uv's own installer elsewhere. The installer is told not to edit
+# shell profiles, because ~/.zshrc is a file in this repo.
 if is not available uv; then
-  echo "$c[info]skipping:$c[reset] uv not installed"
-  exit 0
+  echo "$c[info]installing:$c[reset] uv"
+  if is osx && is available brew; then
+    brew-isolated install uv
+  else
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 INSTALLER_NO_MODIFY_PATH=1 sh
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  if is not available uv; then
+    echo "$c[error]error:$c[reset] uv could not be installed"
+    exit 1
+  fi
 fi
 
-# self update only works for the standalone installer; a uv that came from a
-# package manager refuses it and is updated by that package manager instead.
-echo "$c[info]updating:$c[reset] uv"
-uv self update
-if is not equal "$?" "0"; then
-  echo "$c[warn]warning:$c[reset] uv self update refused, leaving uv to its package manager"
+# self update only works for a copy from uv's own installer. A copy from brew
+# is upgraded by 010-brew and refuses, so it is not asked.
+UV_PATH="$(command -v uv)"
+if is available brew && [[ "${UV_PATH:A}" == "$(brew --prefix)"/* ]]; then
+  echo "$c[info]skipping:$c[reset] uv self update, this copy belongs to homebrew"
+else
+  echo "$c[info]updating:$c[reset] uv"
+  uv self update
+  if is not equal "$?" "0"; then
+    echo "$c[warn]warning:$c[reset] uv self update failed"
+  fi
 fi
 
 echo "$c[info]updating:$c[reset] uv tools"

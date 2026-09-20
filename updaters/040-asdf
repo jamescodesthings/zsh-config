@@ -3,19 +3,252 @@
 {
 source "${0:a:h}/_stub"
 
+POLICY_FILE="$REPO_DIR/configs/asdf/update-policy"
+TOOL_VERSIONS="$HOME/.tool-versions"
+
+# Where to look for projects that pin a version. Colon separated.
+PIN_ROOTS=(${(s.:.)${ASDF_PIN_ROOTS:-$HOME/projects}})
+
+# UPDATE_ASDF_DRY_RUN=1 prints every command that would change something
+# instead of running it.
+function run() {
+  if is not empty "$UPDATE_ASDF_DRY_RUN"; then
+    echo "$c[flag]would run:$c[reset] $*"
+    return 0
+  fi
+  "$@"
+}
+
 if is not available asdf; then
-  echo "$c[info]skipping:$c[reset] asdf not installed"
+  echo "$c[info]skipping:$c[reset] asdf not installed (configs/brew/Brewfile has it on macos, installers/asdf elsewhere)"
   exit 0
 fi
 
-echo "$c[info]updating:$c[reset] asdf plugins"
-asdf plugin update --all
-if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] asdf plugin update failed"
+if is not file "$POLICY_FILE"; then
+  echo "$c[error]error:$c[reset] no policy file at $POLICY_FILE"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] asdf plugins updated"
+# python and ruby are compiled from source, and node is when no binary exists
+# for a version. On macos what those builds need comes from the Brewfile; on a
+# debian family machine it is installed here. apt skips what is already there.
+if is linux && is available apt-get; then
+  BUILD_DEPS=(
+    build-essential curl git pkg-config unzip
+    libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncurses-dev
+    xz-utils liblzma-dev tk-dev libffi-dev libxml2-dev libxmlsec1-dev
+    autoconf patch libyaml-dev libgmp-dev libgdbm-dev libdb-dev uuid-dev
+    python3 g++ make
+  )
+  echo "$c[info]installing:$c[reset] build dependencies for python, ruby and node"
+  run sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $BUILD_DEPS
+  if is not equal "$?" "0"; then
+    echo "$c[warn]warning:$c[reset] could not install every build dependency, a language build may fail"
+  fi
+fi
+
+echo "$c[info]updating:$c[reset] asdf plugins"
+run asdf plugin update --all
+if is not equal "$?" "0"; then
+  echo "$c[warn]warning:$c[reset] asdf plugin update failed"
+fi
+
+# Plain release versions of a tool, oldest first. This is what keeps out
+# betas, release candidates, named channels such as "nightly", other
+# implementations such as "jruby-..." and python's free-threaded "3.14.7t".
+function released-versions() {
+  asdf list all "$1" 2> /dev/null | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V
+}
+
+function latest-version() {
+  released-versions "$1" | tail -n 1
+}
+
+# The newest release, unless it is the .0 or .1 of a new series, in which case
+# the newest release from before that series.
+function stable-version() {
+  local versions latest series older
+  versions=(${(f)"$(released-versions "$1")"})
+  latest="$versions[-1]"
+  if (( ${latest##*.} >= 2 )); then
+    echo "$latest"
+    return
+  fi
+  series="${latest%.*}"
+  older=(${versions:#$series.*})
+  echo "${older[-1]:-$latest}"
+}
+
+function installed-versions() {
+  asdf list "$1" 2> /dev/null | tr -d ' *' | grep -E '^[0-9]'
+}
+
+# Versions that a project asks for by name, as "tool@version" keys. A pin such
+# as "lts" or "system" names no version and is ignored.
+typeset -A PINNED
+function collect-pins() {
+  local root file tool rest version key
+  for root in $PIN_ROOTS; do
+    if is not dir "$root"; then
+      continue
+    fi
+    for file in ${(f)"$(find "$root" -maxdepth 4 \( -name .tool-versions -o -name .nvmrc -o -name .node-version -o -name .python-version \) -not -path '*/node_modules/*' 2> /dev/null)"}; do
+      case "${file:t}" in
+        .tool-versions)
+          while read -r tool rest; do
+            for version in ${=rest}; do
+              key="$tool@$version"
+              PINNED[$key]="$file"
+            done
+          done < "$file"
+          ;;
+        .nvmrc|.node-version)
+          version="$(< "$file")"
+          key="nodejs@${${version// /}#v}"
+          PINNED[$key]="$file"
+          ;;
+        .python-version)
+          version="$(< "$file")"
+          key="python@${version// /}"
+          PINNED[$key]="$file"
+          ;;
+      esac
+    done
+  done
+}
+collect-pins
+
+FAILED=()
+
+function update-tool() {
+  local tool="$1" policy="$2" target version key
+
+  if ! asdf plugin list 2> /dev/null | grep -qx "$tool"; then
+    echo "$c[info]adding:$c[reset] asdf plugin $tool"
+    run asdf plugin add "$tool"
+    if is not equal "$?" "0"; then
+      echo "$c[error]error:$c[reset] could not add the asdf plugin for $tool"
+      FAILED+=($tool)
+      return
+    fi
+  fi
+
+  if is equal "$policy" "stable"; then
+    target="$(stable-version "$tool")"
+  else
+    target="$(latest-version "$tool")"
+  fi
+
+  if is empty "$target"; then
+    echo "$c[error]error:$c[reset] could not work out the $policy version of $tool"
+    FAILED+=($tool)
+    return
+  fi
+
+  if installed-versions "$tool" | grep -qx "$target"; then
+    echo "$c[info]current:$c[reset] $tool $target"
+  else
+    echo "$c[info]installing:$c[reset] $tool $target"
+    run asdf install "$tool" "$target"
+    if is not equal "$?" "0"; then
+      echo "$c[error]error:$c[reset] could not install $tool $target"
+      FAILED+=($tool)
+      return
+    fi
+  fi
+
+  # Always set, even when nothing was installed: a version can be installed
+  # without being the one in use.
+  run asdf set -u "$tool" "$target"
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] could not make $tool $target the global version"
+    FAILED+=($tool)
+    return
+  fi
+
+  for version in ${(f)"$(installed-versions "$tool")"}; do
+    if is equal "$version" "$target"; then
+      continue
+    fi
+    key="$tool@$version"
+    if is not empty "$PINNED[$key]"; then
+      echo "$c[info]keeping:$c[reset] $tool $version, pinned by $PINNED[$key]"
+      continue
+    fi
+    echo "$c[info]removing:$c[reset] $tool $version"
+    run asdf uninstall "$tool" "$version"
+    if is not equal "$?" "0"; then
+      echo "$c[warn]warning:$c[reset] could not remove $tool $version"
+    fi
+  done
+}
+
+# Takes a tool's line out of ~/.tool-versions.
+function forget-tool() {
+  if is not file "$TOOL_VERSIONS" || ! grep -q "^$1 " "$TOOL_VERSIONS"; then
+    return
+  fi
+  echo "$c[info]removing:$c[reset] the $1 line in ~/.tool-versions"
+  if is not empty "$UPDATE_ASDF_DRY_RUN"; then
+    return
+  fi
+  grep -v "^$1 " "$TOOL_VERSIONS" > "$TOOL_VERSIONS.new"
+  command mv "$TOOL_VERSIONS.new" "$TOOL_VERSIONS"
+}
+
+function remove-tool() {
+  local tool="$1" version
+
+  if asdf plugin list 2> /dev/null | grep -qx "$tool"; then
+    for version in ${(f)"$(installed-versions "$tool")"}; do
+      echo "$c[info]removing:$c[reset] $tool $version"
+      run asdf uninstall "$tool" "$version"
+    done
+    echo "$c[info]removing:$c[reset] asdf plugin $tool"
+    run asdf plugin remove "$tool"
+    if is not equal "$?" "0"; then
+      echo "$c[warn]warning:$c[reset] could not remove the asdf plugin for $tool"
+    fi
+  fi
+
+  forget-tool "$tool"
+}
+
+# The policy file is read on its own file descriptor so that nothing run inside
+# the loop can swallow the rest of it through stdin.
+while read -r -u 3 tool policy; do
+  if is empty "$tool" || [[ "$tool" == \#* ]]; then
+    continue
+  fi
+  case "$policy" in
+    latest|stable) update-tool "$tool" "$policy" ;;
+    remove)        remove-tool "$tool" ;;
+    *)             echo "$c[warn]warning:$c[reset] $tool has the unknown policy \"$policy\" in $POLICY_FILE" ;;
+  esac
+done 3< "$POLICY_FILE"
+
+# A line in ~/.tool-versions naming a tool with no plugin does nothing and
+# only ever gets there by accident, so it goes.
+if is file "$TOOL_VERSIONS"; then
+  PLUGINS=(${(f)"$(asdf plugin list 2> /dev/null)"})
+  for tool in ${(f)"$(cut -d ' ' -f 1 "$TOOL_VERSIONS")"}; do
+    if is empty "$tool" || [[ "$tool" == \#* ]]; then
+      continue
+    fi
+    if (( ! ${PLUGINS[(Ie)$tool]} )); then
+      forget-tool "$tool"
+    fi
+  done
+fi
+
+run asdf reshim
+
+if is not empty "$FAILED"; then
+  echo "$c[error]error:$c[reset] asdf could not update: $FAILED"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] asdf tools updated"
 
 exit 0
 }

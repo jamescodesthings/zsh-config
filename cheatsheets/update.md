@@ -33,11 +33,32 @@
 - `010` package managers: `brew`, `snap`
 - `020` app stores: `mas`, `flatpak`
 - `030` app extensions: `vscode`
-- `040` to `070` languages and their tools: `asdf`, `node`, `uv`, `bun`
+- `035` Xcode: newest release installed and selected, older releases removed
+- `040` to `070` languages and their tools: `asdf` (versions, by policy), `node` (npm), `uv`, `bun`
 - `080` to `090` shell frameworks: `zinit`, `tmux` (tpm plugins)
 - `100` to `120` utilities: `micro`, `gh`, `tldr`
 - `130` data: `obsidian` (git pull of the vault)
 - `900` applications that depend on everything above: `agent-forge`
+
+# Language versions
+
+> `configs/asdf/update-policy` decides what `040-asdf` does: `latest`, `stable` (python) or `remove` per tool.
+> A tool that is not listed is never touched. Old versions go unless a project under `~/projects` pins them.
+
+- See what the asdf updater would do, without doing it:
+
+`UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf`
+
+- Look somewhere else for projects that pin versions:
+
+`ASDF_PIN_ROOTS="$HOME/projects:$HOME/work" update asdf`
+
+# Clean machines
+
+> `010-brew` installs homebrew if it is missing, then everything in `configs/brew/Brewfile`:
+> the tools the updaters drive and the libraries python and ruby are compiled against.
+> `uv` and `bun` are installed by their own updaters when no copy exists.
+> If Xcode needs a download and the Apple ID session has expired, sign in once with `xcodes install --latest`.
 
 # Adding an updater
 

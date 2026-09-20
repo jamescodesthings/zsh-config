@@ -90,14 +90,24 @@ Each run keeps an error log at `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.l
 
 Rules for an updater:
 
-- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities, `130` data, `900` applications that depend on the rest. Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
+- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities, `130` data, `900` applications that depend on the rest. Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
 - Source `_stub` from the same directory; it loads `is` and the colours, and exports the non-interactive environment (`NONINTERACTIVE`, `DEBIAN_FRONTEND`, `GIT_TERMINAL_PROMPT=0`).
 - Skip with `exit 0` when the tool is missing, `exit 1` on failure.
 - Never prompt. Pass the tool's own `--yes` style flag; sudo drops the environment, so pass variables on the sudo command line.
 - Keep the body inside `{ ... exit 0 }`. zsh reads a script as it runs, so a file saved or pulled mid-run otherwise fails with a bogus parse error such as `unmatched "`. `update` itself is wrapped the same way.
 - Shell functions such as `zinit` do not exist inside a script; source what defines them (see `080-zinit`).
-- Never call `brew` directly from an updater that runs before another one needing sudo. Every `brew` command runs `sudo --reset-timestamp`, which ends the sudo session `update` opened and makes the next `sudo` prompt. `010-brew` runs brew inside `script -q /dev/null`, because sudo keeps one session per terminal and the reset then only hits the throwaway one. A cask that needs root fails in there rather than prompting, and shows up in the error log.
+- Never call `brew` directly from an updater; use `brew-isolated` from `updaters/_stub`. Every `brew` command runs `sudo --reset-timestamp`, which ends the sudo session `update` opened and makes the next `sudo` prompt. `brew-isolated` runs brew inside `script -q /dev/null`, because sudo keeps one session per terminal and the reset then only hits the throwaway one. A cask that needs root fails in there rather than prompting, and shows up in the error log.
 - An updater must not leave the repo dirty. `bun upgrade` appends a completions line to `.zshrc` unless it finds one, which is why `.zshrc` carries a portable version of that line.
+
+What a clean machine needs:
+
+- `configs/brew/Brewfile` is the base stack: the tools the updaters drive (`mas`, `xcodes`, `aria2`, `gh`, `asdf`, `tmux`, `tlrc`) and the libraries python-build and ruby-build compile against. `010-brew` installs homebrew through `installers/homebrew` when it is missing, then runs `brew bundle install --no-upgrade` against the Brewfile before upgrading, so everything later in the run finds its tool. It is not an inventory of the machine. On a Debian family machine `040-asdf` installs the equivalent build packages with apt.
+- `060-uv` and `070-bun` install their tool when no copy exists (brew on macOS; uv's installer and bun's release zip elsewhere, neither of which edits shell profiles). A copy that belongs to homebrew is left to `010-brew` to upgrade.
+- Updaters whose tool needs something only a person can supply keep skipping: the Obsidian vault and agent-forge need a clone and keys, `mas` needs an App Store sign-in, and `snap` and `flatpak` are optional.
+
+`035-xcode` drives the `xcodes` command line tool (the Xcodes app has no CLI of its own). It installs the newest release with `--no-superuser`, selects it with `xcode-select`, accepts the licence and runs the first-launch setup with sudo, then uninstalls every other release; betas are left alone. When the newest release is already installed it needs no Apple ID. A real download does, and an expired session wants a 2FA code, which it cannot ask for: the updater fails, and `xcodes install --latest` by hand signs in again.
+
+`040-asdf` is driven by `configs/asdf/update-policy`, one `tool policy` pair per line. `latest` installs the newest plain release; `stable` (python) does the same but holds back from the `.0` and `.1` of a new series; `remove` uninstalls the tool, its plugin and its `~/.tool-versions` line; a tool that is not listed is never touched. Versions are taken from `asdf list all` filtered to plain numbers, because `asdf latest python` returns the free-threaded `3.14.7t`. Every tool gets `asdf set -u` whether or not anything was installed, older versions are then uninstalled unless a project under `~/projects` pins them (`.tool-versions`, `.nvmrc`, `.node-version`, `.python-version`; other roots through `ASDF_PIN_ROOTS`), lines in `~/.tool-versions` for tools with no plugin are dropped, and `asdf reshim` runs last. `UPDATE_ASDF_DRY_RUN=1 updaters/040-asdf` prints what it would do. `050-node` only looks after npm and the global packages.
 
 Use `cheat update` for the user-facing reference.
 

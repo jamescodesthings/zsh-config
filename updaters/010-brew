@@ -8,29 +8,38 @@ if is not osx; then
   exit 0
 fi
 
+# A machine without homebrew gets it from the installer. That has to run in
+# this terminal, because it needs the sudo session, and homebrew ends that
+# session on its way out; expect one more password prompt later in such a run.
 if is not available brew; then
-  echo "$c[info]skipping:$c[reset] homebrew not installed"
-  exit 0
+  echo "$c[info]installing:$c[reset] homebrew"
+  "$REPO_DIR/installers/homebrew"
+  for prefix in /opt/homebrew /usr/local; do
+    if is executable "$prefix/bin/brew"; then
+      eval "$($prefix/bin/brew shellenv)"
+    fi
+  done
+  if is not available brew; then
+    echo "$c[error]error:$c[reset] homebrew is not installed and could not be installed"
+    exit 1
+  fi
 fi
-
-# Every brew command starts by running "sudo --reset-timestamp" (brew.sh),
-# which throws away the sudo session that update opened, so the next updater
-# that needs root would stop and ask again. sudo keeps one session per
-# terminal, so brew gets a throwaway terminal of its own from script(1) and
-# resets that one instead. The cost: a cask that needs root cannot ask for a
-# password in there, so it fails and lands in the error log.
-#
-# script echoes a "^D" when it sees that stdin is closed; sed takes it back out.
-function brew-isolated() {
-  script -q /dev/null brew "$@" | sed -l $'s/\\^D\x08\x08//g'
-  return ${pipestatus[1]}
-}
 
 echo "$c[info]updating:$c[reset] homebrew"
 brew-isolated update
 if is not equal "$?" "0"; then
   echo "$c[error]error:$c[reset] brew update failed"
   exit 1
+fi
+
+# The base stack comes first, so that a tool a later updater needs is there by
+# the time it runs. --no-upgrade leaves upgrading to the step after this one.
+FAILED=0
+echo "$c[info]installing:$c[reset] anything missing from the Brewfile"
+brew-isolated bundle install --no-upgrade --file="$REPO_DIR/configs/brew/Brewfile"
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] brew bundle could not install everything in configs/brew/Brewfile"
+  FAILED=1
 fi
 
 brew-isolated upgrade --yes
@@ -43,6 +52,10 @@ fi
 brew-isolated cleanup
 if is not equal "$?" "0"; then
   echo "$c[warn]warning:$c[reset] brew cleanup failed"
+fi
+
+if is equal "$FAILED" "1"; then
+  exit 1
 fi
 
 echo "$c[success]success:$c[reset] homebrew updated"

@@ -1,0 +1,40 @@
+# The base stack the updaters and the asdf language builds depend on.
+# updaters/010-brew installs whatever is missing from this list before the
+# later updaters run:
+#
+#   brew bundle install --no-upgrade --file=configs/brew/Brewfile
+#
+# It is not an inventory of the machine. uv and bun are not here on purpose:
+# their updaters install them when no copy exists, because both are often
+# installed by their own installers and a second copy from brew would shadow
+# or be shadowed by the first.
+
+# Tools an updater drives
+brew "git"
+brew "gh"
+brew "mas"
+brew "asdf"
+brew "tmux"
+brew "tlrc"
+brew "xcodes"
+brew "aria2"       # xcodes downloads Xcode 3 to 5 times faster through it
+
+# python-build: asdf compiles every python from source
+brew "openssl@3"
+brew "readline"
+brew "sqlite"
+brew "xz"
+brew "zlib"
+brew "zstd"
+brew "libb2"
+brew "tcl-tk"
+brew "pkgconf"
+
+# ruby-build, on top of openssl and readline above
+brew "libyaml"
+brew "gmp"
+brew "autoconf"
+
+# node-build installs prebuilt binaries on macOS and needs nothing from here.
+# A version with no binary is compiled instead, which takes python (above),
+# make and a C++ compiler; Xcode's command line tools provide the last two.

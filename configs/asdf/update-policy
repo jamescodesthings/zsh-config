@@ -1,0 +1,25 @@
+# What updaters/040-asdf does with each asdf tool. One tool per line:
+#
+#   <tool> latest   install the newest release and make it the global version
+#   <tool> stable   as latest, but hold back from a brand new minor series:
+#                   if the newest release is x.y.0 or x.y.1, use the newest
+#                   release of the series before it
+#   <tool> remove   uninstall every version, remove the plugin and its line
+#                   in ~/.tool-versions
+#
+# A tool that is not listed here is never touched. After a tool is updated,
+# its older versions are uninstalled unless a project pins them (a
+# .tool-versions, .nvmrc, .node-version or .python-version under ~/projects).
+
+nodejs latest
+python stable
+direnv latest
+ruby latest
+rust latest
+golang latest
+terraform latest
+dotnet latest
+lua latest
+make latest
+
+deno remove
