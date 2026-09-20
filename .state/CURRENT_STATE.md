@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-20 17:06 BST
-- **Current Task Status:** `update` is solid: the user confirmed the sudo isolation and a clean full run on 2026-09-20. `update --errors` now answers for the last run, and `020-mas` re-indexes apps Spotlight lost (6917761, pushed). Next is the user's pass over the three research docs.
+- **Date/Time Stamp:** 2026-09-20 18:36 BST
+- **Current Task Status:** `update` now covers a clean machine and language versions: Brewfile base stack, `035-xcode`, policy-driven `040-asdf`, install stubs for uv and bun (339ae96, review fixes 0c59c90, pushed). The asdf updater has run for real on the MacBook. `035-xcode` has only run against fakes.
 
 ## Milestone & Phase Progress
 
@@ -26,6 +26,10 @@
 - [x] User confirmed the sudo isolation (`survived`) and a clean full run with one sudo prompt
 - [x] `update --errors` answers for the last run; `020-mas` indexes unindexed apps with `mdimport` (6917761)
 
+- [x] Brewfile base stack, `035-xcode`, policy-driven `040-asdf`, uv and bun stubs (339ae96, 0c59c90)
+- [x] Real `040-asdf` run on the MacBook: python 3.14.7, direnv 2.37.1, ruby 4.0.7, rust 1.98.1, golang 1.27.1, terraform 1.16.3, dotnet 10.0.400, lua 5.5.1; deno and the bogus `node` line removed; dotnet 5.0.408 and lua 5.1 kept as pinned
+- [ ] User: run `update` so `035-xcode` and the Brewfile step run with real sudo (removes Xcode 26.2 and 26.6, selects 27.0, installs `tcl-tk`)
+
 ## Reference Plan Links
 
 - [improvements-2026-09-19.md](../docs/improvements-2026-09-19.md) (local only)
@@ -35,6 +39,7 @@
 
 ## Next Steps
 
-- Reading order given to the user for the research docs: improvements (ranked table, then sections 1 to 6), Obsidian alternatives (Recommendation section only), macOS workflow (ranked table, then ranks 1 to 9).
-- `020-mas`'s `mdimport` step has only been tested with fakes; the next macOS upgrade is its first real test.
+- python 3.14.7 was built before `tcl-tk` was installed, so it has no tkinter. Fix if wanted: `asdf uninstall python 3.14.7`, then `update brew asdf`.
+- Reading order given to the user for the research docs: improvements (ranked table, then sections 1 to 6), Obsidian alternatives (Recommendation only), macOS workflow (ranked table, then ranks 1 to 9). The user has said they will start on improvements.
+- `xcodes uninstall <version>` with a same-numbered beta installed is untested; with stdin closed it should fail with a warning, not hang.
 - agent-forge backs up and relinks Antigravity's `settings.json` on every install. That belongs in the agent-forge repo.
