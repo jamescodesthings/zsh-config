@@ -53,6 +53,8 @@
 > goes in `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log` (one file per run, named for its start time).
 > The log is printed again at the end of the run. A clean run leaves no file, and the newest 20 are kept.
 > `updaters/_self` pulls zsh-config, then `update` restarts itself so the run uses the new scripts.
+> Homebrew ends the sudo session on every command, so `010-brew` runs it in a terminal of its own.
+> A cask that needs root fails there instead of asking; upgrade it by hand with `brew upgrade --cask <name>`.
 > macOS updates that need a restart are listed as a warning and left for System Settings. They
 > ask for the account password on Apple silicon, and the list can include a whole new macOS version.
 > The vault path can be changed with `OBSIDIAN_VAULT_DIR`, the agent-forge path with `AI_CONFIG_DIR`.

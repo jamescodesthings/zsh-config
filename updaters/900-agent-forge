@@ -24,14 +24,21 @@ if is not equal "$?" "0"; then
 fi
 
 # make install runs in a subshell so the cd stays inside it. The installer
-# reports a broken sub-installer as a [warn] line and still exits 0, so the
-# output is kept and checked as well as the exit status.
+# reports a broken sub-installer as a [warn] line saying what failed and still
+# exits 0, so the output is kept and checked as well as the exit status. Other
+# [warn] lines, such as a settings file being backed up before it is linked
+# again, are passed on as warnings and do not count as a failure.
 echo "$c[info]installing:$c[reset] agent-forge"
 INSTALL_LOG=$(mktemp)
 (cd "$FORGE_DIR" && make install) 2>&1 | tee "$INSTALL_LOG"
 RESULT=${pipestatus[1]}
-WARNINGS=$(grep -F '[warn]' "$INSTALL_LOG")
+FAILURES=$(grep -F '[warn]' "$INSTALL_LOG" | grep -i 'fail')
+WARNINGS=$(grep -F '[warn]' "$INSTALL_LOG" | grep -vi 'fail')
 rm -f "$INSTALL_LOG"
+
+for line in ${(f)WARNINGS}; do
+  echo "$c[warn]warning:$c[reset] $line"
+done
 
 if is not equal "$RESULT" "0"; then
   echo "$c[error]error:$c[reset] make install failed with exit code $RESULT"
@@ -39,10 +46,9 @@ if is not equal "$RESULT" "0"; then
   exit 1
 fi
 
-if is not empty "$WARNINGS"; then
-  echo "$c[error]error:$c[reset] make install finished, but parts of it failed:"
-  for line in ${(f)WARNINGS}; do
-    echo "$c[warn]warning:$c[reset] $line"
+if is not empty "$FAILURES"; then
+  for line in ${(f)FAILURES}; do
+    echo "$c[error]error:$c[reset] $line"
   done
   echo "$c[info-small]see the run logs with: make -C $FORGE_DIR logs$c[reset]"
   exit 1

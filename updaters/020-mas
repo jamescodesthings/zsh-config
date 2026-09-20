@@ -14,9 +14,20 @@ if mas upgrade --help 2>&1 | grep -q 'Requires root'; then
   MAS=(sudo mas)
 fi
 
+# mas prints one warning for every app Spotlight has not indexed, which after
+# a macOS upgrade is all of them. They are counted and reported once.
 echo "$c[info]updating:$c[reset] mac app store apps"
-$MAS upgrade
-if is not equal "$?" "0"; then
+MAS_OUTPUT=$(mktemp)
+$MAS upgrade 2>&1 | tee "$MAS_OUTPUT" | grep -v 'not indexed in Spotlight'
+RESULT=${pipestatus[1]}
+UNINDEXED=$(grep -c 'not indexed in Spotlight' "$MAS_OUTPUT")
+rm -f "$MAS_OUTPUT"
+
+if is gt "$UNINDEXED" "0"; then
+  echo "$c[warn]warning:$c[reset] mas could not check $UNINDEXED apps because Spotlight has not indexed them yet; it clears once indexing finishes"
+fi
+
+if is not equal "$RESULT" "0"; then
   echo "$c[error]error:$c[reset] mas upgrade failed"
   exit 1
 fi

@@ -43,6 +43,7 @@ The installer symmlinks the repo to `~/.custom`, and `.zshrc`/`.zshenv` to `~` s
 12. `private.zsh` (optional, not committed)
 13. `$AI_CONFIG_DIR/zsh/aliases.zsh` from the agent-forge checkout, if present
 14. `$READERR_DIR/zsh/readerr.zsh`; prints an error on every shell start when readerr is not cloned at `~/projects/readerr`
+15. `~/.bun/_bun` — bun's completions, if bun is installed
 
 ### Per-machine env files
 
@@ -95,6 +96,8 @@ Rules for an updater:
 - Never prompt. Pass the tool's own `--yes` style flag; sudo drops the environment, so pass variables on the sudo command line.
 - Keep the body inside `{ ... exit 0 }`. zsh reads a script as it runs, so a file saved or pulled mid-run otherwise fails with a bogus parse error such as `unmatched "`. `update` itself is wrapped the same way.
 - Shell functions such as `zinit` do not exist inside a script; source what defines them (see `080-zinit`).
+- Never call `brew` directly from an updater that runs before another one needing sudo. Every `brew` command runs `sudo --reset-timestamp`, which ends the sudo session `update` opened and makes the next `sudo` prompt. `010-brew` runs brew inside `script -q /dev/null`, because sudo keeps one session per terminal and the reset then only hits the throwaway one. A cask that needs root fails in there rather than prompting, and shows up in the error log.
+- An updater must not leave the repo dirty. `bun upgrade` appends a completions line to `.zshrc` unless it finds one, which is why `.zshrc` carries a portable version of that line.
 
 Use `cheat update` for the user-facing reference.
 

@@ -45,3 +45,10 @@ if [[ -f "$READERR_DIR/zsh/readerr.zsh" ]]; then
 else
   echo "${c[error]}error:${c[reset]} readerr: $READERR_DIR/zsh/readerr.zsh not found, clone github.com/jamescodesthings/readerr there"
 fi
+
+# bun completions
+# `bun upgrade` appends its own version of this, with the home directory
+# written out in full, whenever it cannot find one in this file.
+if is existing "$HOME/.bun/_bun"; then
+  source "$HOME/.bun/_bun"
+fi

@@ -13,20 +13,34 @@ if is not available brew; then
   exit 0
 fi
 
+# Every brew command starts by running "sudo --reset-timestamp" (brew.sh),
+# which throws away the sudo session that update opened, so the next updater
+# that needs root would stop and ask again. sudo keeps one session per
+# terminal, so brew gets a throwaway terminal of its own from script(1) and
+# resets that one instead. The cost: a cask that needs root cannot ask for a
+# password in there, so it fails and lands in the error log.
+#
+# script echoes a "^D" when it sees that stdin is closed; sed takes it back out.
+function brew-isolated() {
+  script -q /dev/null brew "$@" | sed -l $'s/\\^D\x08\x08//g'
+  return ${pipestatus[1]}
+}
+
 echo "$c[info]updating:$c[reset] homebrew"
-brew update
+brew-isolated update
 if is not equal "$?" "0"; then
   echo "$c[error]error:$c[reset] brew update failed"
   exit 1
 fi
 
-brew upgrade --yes
+brew-isolated upgrade --yes
 if is not equal "$?" "0"; then
   echo "$c[error]error:$c[reset] brew upgrade failed"
+  echo "$c[warn]warning:$c[reset] if a cask needed root, upgrade it by hand: brew upgrade --cask <name>"
   exit 1
 fi
 
-brew cleanup
+brew-isolated cleanup
 if is not equal "$?" "0"; then
   echo "$c[warn]warning:$c[reset] brew cleanup failed"
 fi

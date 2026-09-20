@@ -100,7 +100,8 @@ function run-updater() {
   "$UPDATER_DIR/$script" < /dev/null 2>&1 | tee "$output"
   result=${pipestatus[1]}
 
-  sed -E $'s/\x1b\\[[0-9;]*[A-Za-z]//g' "$output" > "$output.plain"
+  # Colour codes, carriage returns and the ^D that script(1) echoes all go.
+  sed -E $'s/\x1b\\[[0-9;]*[A-Za-z]//g; s/\r//g; s/\\^D\x08\x08//g' "$output" > "$output.plain"
   grep -iE '^(error|warning):' "$output.plain" | sed "s/^/[$tag] /" >> "$UPDATE_ERROR_LOG"
 
   if is not equal "$result" "0"; then
