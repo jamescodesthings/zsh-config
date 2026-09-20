@@ -14,8 +14,21 @@ if mas upgrade --help 2>&1 | grep -q 'Requires root'; then
   MAS=(sudo mas)
 fi
 
-# mas prints one warning for every app Spotlight has not indexed, which after
-# a macOS upgrade is all of them. They are counted and reported once.
+# mas finds App Store apps through Spotlight and cannot check one that is not
+# in the index, which happens to every app after a macOS upgrade and to single
+# apps after they are replaced. Listing costs nothing and names the apps mas
+# cannot see, so those are handed to mdimport, which indexes them on the spot.
+SPOTLIGHT_WARNING='Warning: Found a likely App Store app that is not indexed in Spotlight in '
+UNINDEXED_APPS=(${(f)"$(mas list 2>&1 | grep -F "$SPOTLIGHT_WARNING")"})
+UNINDEXED_APPS=(${UNINDEXED_APPS#$SPOTLIGHT_WARNING})
+
+if is not empty "$UNINDEXED_APPS" && is available mdimport; then
+  echo "$c[info]indexing:$c[reset] ${#UNINDEXED_APPS} apps that spotlight had lost track of"
+  mdimport $UNINDEXED_APPS
+fi
+
+# Anything still not indexed after that is counted and reported once, rather
+# than once per app.
 echo "$c[info]updating:$c[reset] mac app store apps"
 MAS_OUTPUT=$(mktemp)
 $MAS upgrade 2>&1 | tee "$MAS_OUTPUT" | grep -v 'not indexed in Spotlight'

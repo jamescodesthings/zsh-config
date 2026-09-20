@@ -26,7 +26,8 @@ if is equal "$1" "--help" || is equal "$1" "-h"; then
   echo "  update                  run everything"
   echo "  update $c[param]name...$c[reset]          run only the named updaters, e.g. update brew tldr"
   echo "  update $c[flag]--list$c[reset]           show the updaters in run order"
-  echo "  update $c[flag]--errors$c[reset]         show the error log from the last run that had one"
+  echo "  update $c[flag]--errors$c[reset]         show the errors and warnings from the last run"
+  echo "  update $c[flag]--errors --previous$c[reset]  show the newest error log, whichever run wrote it"
   echo ""
   echo "$c[h2]logs$c[reset]"
   echo "  errors and warnings from each run are kept in $LOG_DIR"
@@ -54,8 +55,24 @@ function print-error-log() {
   done
 }
 
+# A clean run leaves no log, so the newest log file is not always the last
+# run. Each finished run records its start time and outcome in last-run, and
+# --errors answers from that. --errors --previous shows the newest log there
+# is, whichever run wrote it.
 if is equal "$1" "--errors"; then
   LAST_LOG=("$LOG_DIR"/*.error.log(N.On[1]))
+
+  if is not equal "$2" "--previous" && is file "$LOG_DIR/last-run"; then
+    read -r LAST_STARTED LAST_OUTCOME < "$LOG_DIR/last-run"
+    if is equal "$LAST_OUTCOME" "clean"; then
+      echo "$c[success]success:$c[reset] the last run ($LAST_STARTED) had no errors or warnings"
+      if is not empty "$LAST_LOG"; then
+        echo "$c[info]older log:$c[reset] $LAST_LOG $c[flag](update --errors --previous)$c[reset]"
+      fi
+      exit 0
+    fi
+  fi
+
   if is empty "$LAST_LOG"; then
     echo "$c[success]success:$c[reset] no error logs in $LOG_DIR"
     exit 0
@@ -184,12 +201,15 @@ done
 # A run with nothing to report leaves no log behind. Otherwise the log is
 # printed again here, where it cannot scroll past unseen, and only the newest
 # logs are kept.
+RUN_STARTED="${UPDATE_ERROR_LOG:t:r:r}"
 if [[ -s "$UPDATE_ERROR_LOG" ]]; then
+  echo "$RUN_STARTED logged" > "$LOG_DIR/last-run"
   echo "$c[h2]errors and warnings from this run$c[reset]"
   print-error-log "$UPDATE_ERROR_LOG"
   echo ""
   echo "$c[info]error log:$c[reset] $UPDATE_ERROR_LOG"
 else
+  echo "$RUN_STARTED clean" > "$LOG_DIR/last-run"
   rm -f "$UPDATE_ERROR_LOG"
 fi
 

@@ -17,9 +17,13 @@
 
 `update --list`
 
-- Show the error log from the last run that had one:
+- Show the errors and warnings from the last run, or say that it was clean:
 
 `update --errors`
+
+- Show the newest error log, whichever run wrote it:
+
+`update --errors --previous`
 
 # Order
 
@@ -55,6 +59,8 @@
 > `updaters/_self` pulls zsh-config, then `update` restarts itself so the run uses the new scripts.
 > Homebrew ends the sudo session on every command, so `010-brew` runs it in a terminal of its own.
 > A cask that needs root fails there instead of asking; upgrade it by hand with `brew upgrade --cask <name>`.
+> `mas` cannot check an app that Spotlight has not indexed, which happens to every app after a macOS upgrade.
+> `020-mas` asks `mas list` which apps those are and indexes them with `mdimport` before upgrading.
 > macOS updates that need a restart are listed as a warning and left for System Settings. They
 > ask for the account password on Apple silicon, and the list can include a whole new macOS version.
 > The vault path can be changed with `OBSIDIAN_VAULT_DIR`, the agent-forge path with `AI_CONFIG_DIR`.
