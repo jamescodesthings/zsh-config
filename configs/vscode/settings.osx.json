@@ -50,11 +50,7 @@
   "[python]": {
     "editor.formatOnType": true,
   },
-  "python.formatting.autopep8Args": [
-    "--max-line-length",
-    "80",
-    "--experimental",
-  ],
+  "python.formatting.autopep8Args": ["--max-line-length", "80", "--experimental"],
   "editor.autoSurround": "never",
   "editor.autoClosingBrackets": "never",
   "todohighlight.isCaseSensitive": false,
@@ -107,7 +103,7 @@
     "*": true,
     "plaintext": false,
     "markdown": true,
-    "scminput": false
+    "scminput": false,
   },
   "explorer.confirmPasteNative": false,
   "geminicodeassist.project": "",
@@ -166,7 +162,7 @@
     "**/.gitea/workflows/*.yml",
     "**/.gitea/workflows/*.yaml",
     "**/.forgejo/workflows/*.yml",
-    "**/.forgejo/workflows/*.yaml"
+    "**/.forgejo/workflows/*.yaml",
   ],
   "explorer.autoReveal": false,
   "git.postCommitCommand": "sync",
@@ -178,5 +174,6 @@
   "bashIde.shfmt.binaryNextLine": true,
   "editor.accessibilitySupport": "on",
   "git.timeline.showUncommitted": true,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "editor.minimap.enabled": false,
 }
