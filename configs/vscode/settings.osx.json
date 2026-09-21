@@ -173,6 +173,9 @@
   "bashIde.shellcheckPath": "",
   "bashIde.shfmt.binaryNextLine": true,
   "editor.accessibilitySupport": "on",
+  // Screen-reader mode stays on (readerr reads the buffer through it), but
+  // every accessibility signal sound is muted.
+  "accessibility.signalOptions.volume": 0,
   "git.timeline.showUncommitted": true,
   "editor.formatOnSave": true,
   "editor.minimap.enabled": false,
