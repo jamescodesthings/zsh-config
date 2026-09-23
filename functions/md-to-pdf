@@ -1,0 +1,107 @@
+#!/usr/bin/env zsh
+
+# Prints an error or warning block to stderr: what happened, how to fix it,
+# and where this tool lives.
+function _md-to-pdf-report() {
+  local level="$1" colour="$2"
+  print -u2 -r -- "${colour}${level}:${c[reset]} md-to-pdf: $3"
+  if is not empty "$4"; then
+    print -u2 -r -- "${c[info]}try:${c[reset]} $4"
+  fi
+  print -u2 -r -- "${c[info]}source:${c[reset]} ${CUSTOM_DIR:-$HOME/.custom}/functions/md-to-pdf"
+}
+
+function _md-to-pdf-install() {
+  if is osx; then
+    print -r -- "brew install $1"
+  else
+    print -r -- "sudo apt install $2"
+  fi
+}
+
+function md-to-pdf() {
+  if is equal "$1" "-h" || is equal "$1" "--help"; then
+    echo "${c[h1]}md-to-pdf${c[reset]}"
+    echo ""
+    echo "${c[lead]}converts a markdown file to an A4 pdf next to it.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  md-to-pdf ${c[param]}file.md${c[reset]}    writes file.pdf beside it, overwriting"
+    echo ""
+    echo "${c[h2]}how${c[reset]}"
+    echo "  md-to-html renders into a temp dir, weasyprint prints it, exiftool and qpdf"
+    echo "  strip the producer tags. any file.html beside the input is ignored."
+    echo ""
+    echo "${c[h2]}needs${c[reset]}"
+    echo "  pandoc, weasyprint, file; exiftool and qpdf for the metadata scrub"
+    return 0
+  fi
+
+  local input="$1"
+
+  if is empty "$input"; then
+    _md-to-pdf-report error "$c[error]" "no input file given" "md-to-pdf path/to/file.md"
+    return 1
+  fi
+
+  if is not available weasyprint; then
+    _md-to-pdf-report error "$c[error]" "weasyprint is not installed" "$(_md-to-pdf-install weasyprint weasyprint)"
+    return 1
+  fi
+
+  local name="${${input:t}:r}"
+  local output="${input:h}/$name.pdf"
+  local workdir
+  workdir="$(mktemp -d "${${TMPDIR:-/tmp}%/}/md-to-pdf.XXXXXX")"
+  if (( $? != 0 )) || is empty "$workdir"; then
+    _md-to-pdf-report error "$c[error]" "could not create a temp dir under ${TMPDIR:-/tmp}" "check free space and permissions: df -h '${TMPDIR:-/tmp}'"
+    return 1
+  fi
+
+  # The temp dir goes however this ends: success, failure or interrupt.
+  setopt local_options local_traps
+  trap 'rm -rf -- "$workdir"; return 130' INT TERM
+
+  {
+    # md-to-html checks the input and pandoc, and labels its errors as ours.
+    local MD_CALLER=md-to-pdf
+    md-to-html "$input" "$workdir/$name.html" || return 1
+
+    local pdf="$workdir/$name.pdf"
+    local messages
+    messages="$(weasyprint "$workdir/$name.html" "$pdf" 2>&1)"
+    if (( $? != 0 )); then
+      _md-to-pdf-report error "$c[error]" "weasyprint could not print $input" "read weasyprint's output below; run it by hand with: weasyprint --verbose file.html out.pdf"
+      print -u2 -r -- "$messages"
+      return 1
+    fi
+
+    # Drop the producer and creator tags and keep the title. exiftool only
+    # marks old values as superseded, so qpdf rewrites the file to remove
+    # them; its deterministic id makes an unchanged document render
+    # byte-identical. qpdf exits 3 when it succeeds with warnings.
+    if is available exiftool && is available qpdf; then
+      command exiftool -q -q -overwrite_original -all:all= -PDF:Title="$name" "$pdf" >/dev/null 2>&1 \
+        && command qpdf --linearize --deterministic-id "$pdf" "$workdir/clean.pdf" >/dev/null 2>&1
+      local scrub=$?
+      if (( scrub == 0 || scrub == 3 )) && is file "$workdir/clean.pdf"; then
+        pdf="$workdir/clean.pdf"
+      else
+        _md-to-pdf-report warning "$c[warn]" "the metadata scrub failed, so the pdf keeps its producer tags" "run exiftool and qpdf on the pdf by hand to see why"
+      fi
+    else
+      _md-to-pdf-report warning "$c[warn]" "exiftool or qpdf is missing, so the pdf keeps its producer tags" "$(_md-to-pdf-install 'exiftool qpdf' 'libimage-exiftool-perl qpdf')"
+    fi
+
+    if ! command mv -f -- "$pdf" "$output" 2>/dev/null; then
+      _md-to-pdf-report error "$c[error]" "could not write $output" "check that the folder is writable: ls -ld '${output:h}'"
+      return 1
+    fi
+
+    echo "${c[success]}success:${c[reset]} wrote $output"
+  } always {
+    rm -rf -- "$workdir"
+  }
+}
+
+md-to-pdf "$@"
