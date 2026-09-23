@@ -90,8 +90,21 @@ function md-to-html() {
     return 1
   fi
 
-  local file result failed=()
+  # A start line so a long run is visibly working. md-to-pdf prints its own.
+  if is empty "$MD_CALLER"; then
+    if (( ${#files} == 1 )); then
+      echo "${c[info]}converting:${c[reset]} ${files[1]}"
+    else
+      echo "${c[info]}converting:${c[reset]} ${#files} files"
+    fi
+  fi
+
+  local file result failed=() count=0
   for file in "${files[@]}"; do
+    (( count += 1 ))
+    if (( ${#files} > 1 )); then
+      echo "${c[info-small]}[$count/${#files}]${c[reset]} $file"
+    fi
     # An empty argument usually means an unset variable; name it in the
     # summary rather than leaving a blank.
     if is empty "$file"; then

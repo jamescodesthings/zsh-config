@@ -50,8 +50,19 @@ function md-to-pdf() {
     return 1
   fi
 
-  local file result failed=()
+  # A start line so a long run is visibly working.
+  if (( $# == 1 )); then
+    echo "${c[info]}converting:${c[reset]} $1"
+  else
+    echo "${c[info]}converting:${c[reset]} $# files"
+  fi
+
+  local file result failed=() count=0
   for file in "$@"; do
+    (( count += 1 ))
+    if (( $# > 1 )); then
+      echo "${c[info-small]}[$count/$#]${c[reset]} $file"
+    fi
     # An empty argument usually means an unset variable; name it in the
     # summary rather than leaving a blank.
     if is empty "$file"; then
