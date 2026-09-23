@@ -49,7 +49,8 @@ function md-to-pdf() {
     return 1
   fi
 
-  if is not writeable "${input:h}"; then
+  # A folder that does not exist is left to md-to-html, which says so.
+  if is dir "${input:h}" && is not writeable "${input:h}"; then
     _md-to-pdf-report error "$c[error]" "could not write to ${input:h}" "ls -ld ${(q)${input:h}}"
     return 1
   fi

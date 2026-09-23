@@ -131,8 +131,13 @@ function md-to-html() {
     name="${input:t}"
   fi
   local output="${2:-${input:h}/$name.html}"
+  # The helper always prints a flag, so an empty result means the version
+  # check was interrupted.
   local embed_flag
   embed_flag="$(_md-to-html-embed-flag)"
+  if is empty "$embed_flag"; then
+    return 130
+  fi
 
   # pandoc writes the file itself, so anything it prints is a message.
   local messages
@@ -146,8 +151,14 @@ function md-to-html() {
     --css="$stylesheet" \
     --output="$output" 2>&1)"
   local pandoc_status=$?
-  if (( pandoc_status > 128 )); then
+  # Interrupted (INT or TERM): stay quiet, the caller reports it.
+  if (( pandoc_status == 130 || pandoc_status == 143 )); then
     return $pandoc_status
+  fi
+  if (( pandoc_status > 128 )); then
+    _md-to-html-fail "pandoc crashed (exit status $pandoc_status) while converting $input" "run it by hand to see the crash: pandoc ${(q)input} -o /tmp/test.html; update it with: $(_md-to-html-install pandoc pandoc)"
+    print -u2 -r -- "$messages"
+    return 1
   fi
   if (( pandoc_status != 0 )); then
     _md-to-html-fail "pandoc could not convert $input" "read pandoc's message below; check that the folder is writable: ls -ld ${(q)${output:h}}"
