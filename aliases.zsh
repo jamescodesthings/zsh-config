@@ -177,15 +177,12 @@ if is osx; then
   alias av-all="sudo clamscan -r --bell -i -l ~/projects/av/clamav_scan.log /"
 fi
 
-# Opening things:
-# Todo: convert to functions and parse the input to act more dynamically than this.
+# Opening things. "open here" is the oh function, which reads the current
+# folder when it runs; an alias would fix it at shell start.
 if is osx; then
   if is existing "/Applications/QSpace Pro.app"; then
     alias qspace="open -a '/Applications/QSpace Pro.app'"
-    # Open qspace "here" i.e. $PWD
-    alias oh="qspace \"$PWD\""
   fi
 elif is linux; then
   alias open="xdg-open"
-  alias oh="xdg-open \"$PWD\""
 fi
