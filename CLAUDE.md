@@ -63,6 +63,8 @@ is existing $path    # -e test
 is not empty "$var"  # -z test (negated)
 ```
 
+`md-to-html` and `md-to-pdf` convert markdown with pandoc and WeasyPrint, styled by `configs/md/md.css`. `md-to-pdf` calls `md-to-html` with the dynamically scoped `MD_CALLER=md-to-pdf`, which makes `md-to-html` label its errors as `md-to-pdf` and skip its own success line.
+
 ### `cheatsheets/` directory
 
 Markdown files rendered by the `cheat` function using `glow -w 120` (falls back to `bat`, then `cat`). When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
