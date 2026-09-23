@@ -52,6 +52,13 @@ function md-to-pdf() {
 
   local file result failed=()
   for file in "$@"; do
+    # An empty argument usually means an unset variable; name it in the
+    # summary rather than leaving a blank.
+    if is empty "$file"; then
+      _md-to-pdf-report error "$c[error]" "an empty file name was given" "check the variable or quotes that produced it"
+      failed+=("(empty name)")
+      continue
+    fi
     _md-to-pdf-one "$file"
     result=$?
     # An interrupt stops the whole batch.

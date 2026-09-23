@@ -61,7 +61,7 @@ function md-to-html() {
   while (( $# )); do
     case "$1" in
       -o|--output)
-        if (( $# < 2 )); then
+        if (( $# < 2 )) || is empty "$2"; then
           _md-to-html-fail "-o needs an output path" "$caller file.md -o out.html"
           return 1
         fi
@@ -92,6 +92,13 @@ function md-to-html() {
 
   local file result failed=()
   for file in "${files[@]}"; do
+    # An empty argument usually means an unset variable; name it in the
+    # summary rather than leaving a blank.
+    if is empty "$file"; then
+      _md-to-html-fail "an empty file name was given" "check the variable or quotes that produced it"
+      failed+=("(empty name)")
+      continue
+    fi
     _md-to-html-one "$file" "$output"
     result=$?
     # An interrupt stops the whole batch.
