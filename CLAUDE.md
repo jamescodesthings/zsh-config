@@ -113,6 +113,10 @@ What a clean machine needs:
 
 Use `cheat update` for the user-facing reference.
 
+### `configs/kitty/` directory
+
+`kitty.conf` holds what is the same on every OS and ends with `include os.${KITTY_OS}.conf` (kitty sets `KITTY_OS` to `macos`, `linux` or `bsd` for include lines), then `include overrides.conf`. Key maps and OS-only settings go in `os.macos.conf` (cmd keys, no ctrl except pane focus and moving) or `os.linux.conf` (ctrl keys); nothing in `kitty.conf` should be OS specific. `overrides.conf` is the per-machine layer, linked by `install-box-config` from `overrides.<hostname>.conf` or `overrides.<os>.conf`; a host file replaces the OS file, which is why keys do not live there. Use `cheat kitty` for the keys.
+
 ### `configs/gnome/` directory
 
 GNOME-specific config and tools. Only installed on machines running GNOME on Wayland (`is gnome && is wayland`).
