@@ -119,6 +119,10 @@ function md-to-pdf() {
       return 1
     fi
 
+    if (( interrupted )); then
+      return 130
+    fi
+
     echo "${c[success]}success:${c[reset]} wrote $output"
   } always {
     rm -rf -- "$workdir"
