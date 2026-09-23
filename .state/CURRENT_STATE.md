@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-23 10:04 BST
-- **Current Task Status:** md follow-ups fixed, PDF tables now split across pages instead of jumping, and `oh` opens the current folder (bc69d27, pushed). Research docs still on hold by the user.
+- **Date/Time Stamp:** 2026-09-23 12:10 BST
+- **Current Task Status:** kitty keys split per OS (`os.${KITTY_OS}.conf`), iTerm-style macOS keys, copy on select fixed, close-others kitten on cmd+shift+w (7683c04, pushed). Research docs still on hold by the user.
 
 ## Milestone & Phase Progress
 
@@ -20,7 +20,7 @@
 - [x] Obsidian alternatives R&D: `docs/obsidian-alternatives-rnd-2026-09-19.md` (top pick Things 3 plus Apple Notes, runner-up Logseq, or stay on Obsidian with three changes)
 - [ ] User to choose a route from the Obsidian doc
 - [ ] User to choose items from the macOS workflow doc
-- [ ] User to choose which ranks from the improvements doc to apply (rank 6, `oh`, is now done)
+- [ ] User to choose which ranks from the improvements doc to apply (done: rank 6 `oh`, and ranks 2 to 5 and 7 for kitty were covered or declined)
 - [x] First full `update` runs with real sudo (2026-09-20 11:10 and 15:17)
 - [x] Fixes from those runs: brew sudo reset isolated, agent-forge benign warn no longer a failure, mas Spotlight warnings folded, bun's `.zshrc` edit made portable (3cb50b4)
 - [x] User confirmed the sudo isolation (`survived`) and a clean full run with one sudo prompt
@@ -37,6 +37,9 @@
 - [x] PDF tables and code blocks split across pages; header row repeats
 - [x] `oh` is a function that opens the current folder (was an alias frozen at shell start)
 - [ ] User: try `oh` in a few folders; the QSpace launch itself was only tested with a fake `open`
+
+- [x] kitty: per-OS key files, cmd+left/right line start and end, zoom, cmd+[ ], ctrl+arrows panes, copy on select to clipboard, close-others kitten; user tested all but cmd+shift+w
+- [ ] User: try cmd+shift+w with several panes, then with one pane and several tabs (tested only against fake kitty objects)
 
 ## Reference Plan Links
 
