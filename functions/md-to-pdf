@@ -99,13 +99,19 @@ function md-to-pdf() {
       command exiftool -q -q -overwrite_original -all:all= -PDF:Title="$name" "$pdf" >/dev/null 2>&1 \
         && command qpdf --linearize --deterministic-id "$pdf" "$workdir/clean.pdf" >/dev/null 2>&1
       local scrub=$?
-      if (( scrub == 0 || scrub == 3 )) && is file "$workdir/clean.pdf"; then
+      if (( interrupted )); then
+        return 130
+      elif (( scrub == 0 || scrub == 3 )) && is file "$workdir/clean.pdf"; then
         pdf="$workdir/clean.pdf"
       else
         _md-to-pdf-report warning "$c[warn]" "the metadata scrub failed, so the pdf keeps its producer tags" "run exiftool and qpdf on the pdf by hand to see why"
       fi
     else
       _md-to-pdf-report warning "$c[warn]" "exiftool or qpdf is missing, so the pdf keeps its producer tags" "$(_md-to-pdf-install 'exiftool qpdf' 'libimage-exiftool-perl qpdf')"
+    fi
+
+    if (( interrupted )); then
+      return 130
     fi
 
     if ! command mv -f -- "$pdf" "$output" 2>/dev/null; then
