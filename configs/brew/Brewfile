@@ -19,6 +19,12 @@ brew "tlrc"
 brew "xcodes"
 brew "aria2"       # xcodes downloads Xcode 3 to 5 times faster through it
 
+# md-to-html and md-to-pdf
+brew "pandoc"
+brew "weasyprint"
+brew "exiftool"
+brew "qpdf"
+
 # python-build: asdf compiles every python from source
 brew "openssl@3"
 brew "readline"
