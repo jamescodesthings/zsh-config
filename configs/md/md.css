@@ -137,6 +137,11 @@ a { color: inherit; text-underline-offset: 0.15em; }
   h2 { font-size: 1.25rem; margin-block: 1.4rem 0.6rem; }
   h3 { font-size: 1.08rem; margin-block: 1rem 0.45rem; }
   h1, h2, h3 { break-after: avoid; }
-  blockquote, table, li, tr, pre { break-inside: avoid; }
+  /* Short blocks stay whole. Tables and code blocks may run across pages,
+     since keeping a long one whole pushes it to the next page and leaves the
+     rest of the current page empty. A table breaks between rows, never inside
+     one, and repeats its header row on the new page. */
+  blockquote, li, tr { break-inside: avoid; }
+  thead { display: table-header-group; }
   a { text-decoration: none; }
 }
