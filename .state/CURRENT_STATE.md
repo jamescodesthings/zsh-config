@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-23 08:32 BST
-- **Current Task Status:** New `md-to-html` and `md-to-pdf` functions (pandoc and WeasyPrint, stylesheet in `configs/md/md.css`, cheatsheets for both), built task by task with reviews and a final whole-branch review. Three small follow-ups are open.
+- **Date/Time Stamp:** 2026-09-23 10:04 BST
+- **Current Task Status:** md follow-ups fixed, PDF tables now split across pages instead of jumping, and `oh` opens the current folder (bc69d27, pushed). Research docs still on hold by the user.
 
 ## Milestone & Phase Progress
 
@@ -20,7 +20,7 @@
 - [x] Obsidian alternatives R&D: `docs/obsidian-alternatives-rnd-2026-09-19.md` (top pick Things 3 plus Apple Notes, runner-up Logseq, or stay on Obsidian with three changes)
 - [ ] User to choose a route from the Obsidian doc
 - [ ] User to choose items from the macOS workflow doc
-- [ ] User to choose which ranks from the improvements doc to apply
+- [ ] User to choose which ranks from the improvements doc to apply (rank 6, `oh`, is now done)
 - [x] First full `update` runs with real sudo (2026-09-20 11:10 and 15:17)
 - [x] Fixes from those runs: brew sudo reset isolated, agent-forge benign warn no longer a failure, mas Spotlight warnings folded, bun's `.zshrc` edit made portable (3cb50b4)
 - [x] User confirmed the sudo isolation (`survived`) and a clean full run with one sudo prompt
@@ -31,9 +31,12 @@
 - [ ] User: run `update` so `035-xcode` and the Brewfile step run with real sudo (removes Xcode 26.2 and 26.6, selects 27.0, installs `tcl-tk`)
 
 - [x] `md-to-html` and `md-to-pdf`: functions, stylesheet, Brewfile entries, cheatsheets, docs
-- [ ] Follow-up: a pandoc crash (exit above 128 that is not an interrupt) fails without an error message
-- [ ] Follow-up: `md-to-pdf missing-folder/x.md` says "could not write" instead of "does not exist"
-- [ ] Follow-up: ctrl-c during pandoc's version check prints a stray error line before exiting 130
+- [x] Follow-up: a pandoc crash is now reported
+- [x] Follow-up: a missing folder is reported as missing
+- [x] Follow-up: an interrupt during the version check returns 130 before pandoc runs (no terminal-free test reproduces it)
+- [x] PDF tables and code blocks split across pages; header row repeats
+- [x] `oh` is a function that opens the current folder (was an alias frozen at shell start)
+- [ ] User: try `oh` in a few folders; the QSpace launch itself was only tested with a fake `open`
 
 ## Reference Plan Links
 
