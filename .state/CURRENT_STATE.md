@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-23 12:10 BST
-- **Current Task Status:** kitty keys split per OS (`os.${KITTY_OS}.conf`), iTerm-style macOS keys, copy on select fixed, close-others kitten on cmd+shift+w (7683c04, pushed). Research docs still on hold by the user.
+- **Date/Time Stamp:** 2026-09-23 17:57 BST
+- **Current Task Status:** md-to-html and md-to-pdf take many files and globs (b434d0c, review running); kitty back on the grid layout with the tab colour fixed (71cb10c). Research docs still on hold by the user.
 
 ## Milestone & Phase Progress
 
@@ -39,7 +39,9 @@
 - [ ] User: try `oh` in a few folders; the QSpace launch itself was only tested with a fake `open`
 
 - [x] kitty: per-OS key files, cmd+left/right line start and end, zoom, cmd+[ ], ctrl+arrows panes, copy on select to clipboard, close-others kitten; user tested all but cmd+shift+w
-- [ ] User: try cmd+shift+w with several panes, then with one pane and several tabs (tested only against fake kitty objects)
+- [x] cmd+shift+w confirmed working by the user; the earlier whole-window close was most likely kitty reloading kitty.conf before os.macos.conf was saved (kitty watches only kitty.conf)
+- [x] kitty back on the grid layout (cmd+enter fills a grid) and the inactive tab colour template fixed (71cb10c)
+- [x] md-to-html and md-to-pdf accept several files and globs; md-to-html's output moved to -o (b434d0c)
 
 ## Reference Plan Links
 
