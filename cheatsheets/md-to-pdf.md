@@ -9,9 +9,9 @@
 
 `md-to-pdf notes.md`
 
-Takes exactly one file; convert several with a loop:
+- Convert several files, or a glob, each beside its input:
 
-`for f in *.md; do md-to-pdf "$f"; done`
+`md-to-pdf *.md`
 
 # Notes
 
@@ -20,7 +20,8 @@ Takes exactly one file; convert several with a loop:
 > Images are resolved relative to the markdown file, not the current folder.
 > A notes.html beside the input is never read or changed.
 > Rendering the same file twice gives a byte-identical pdf.
-> Interrupting it (ctrl-c) cleans up and exits 130 without a success line.
+> Interrupting it (ctrl-c) cleans up and exits 130 without a success line; in a batch it also stops the files still to come.
+> In a batch a file that fails is reported and the rest carry on; the exit status is 1 if any failed.
 > Print styles live in the `@media print` block of `~/.custom/configs/md/md.css`.
 > Without exiftool or qpdf the pdf is still written, with a warning.
 > Errors say what failed, how to fix it, print the tool's own output, and point at

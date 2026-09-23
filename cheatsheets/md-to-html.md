@@ -9,11 +9,13 @@
 
 `md-to-html notes.md`
 
-- Write somewhere else:
+- Convert several files, or a glob, each beside its input:
 
-`md-to-html notes.md ~/Desktop/notes.html`
+`md-to-html *.md`
 
-The second argument must end in `.html` or `.htm`, and can't be the input file itself.
+- Write one file somewhere else (`-o` must end in `.html` or `.htm` and can't be the input):
+
+`md-to-html notes.md -o ~/Desktop/notes.html`
 
 # Notes
 
@@ -23,6 +25,7 @@ The second argument must end in `.html` or `.htm`, and can't be the input file i
 > Images are resolved relative to the markdown file, not the current folder.
 > A pandoc warning (a missing image, say) is printed to stderr even on success.
 > Pandoc older than 2.19 falls back to `--self-contained` automatically.
+> In a batch a file that fails is reported and the rest carry on; the exit status is 1 if any failed, and ctrl-c stops the batch.
 > Errors say what failed, how to fix it, and point at `~/.custom/functions/md-to-html`.
 
 # Related commands

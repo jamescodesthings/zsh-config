@@ -26,7 +26,11 @@ function md-to-pdf() {
     echo "${c[lead]}converts a markdown file to an A4 pdf next to it.${c[reset]}"
     echo ""
     echo "${c[h2]}usage${c[reset]}"
-    echo "  md-to-pdf ${c[param]}file.md${c[reset]}    writes file.pdf beside it, overwriting"
+    echo "  md-to-pdf ${c[param]}file.md${c[reset]}            writes file.pdf beside it, overwriting"
+    echo "  md-to-pdf ${c[param]}a.md b.md${c[reset]} / ${c[param]}*.md${c[reset]}  converts each, beside its input"
+    echo ""
+    echo "  a file that fails is reported and the rest carry on; the exit status is 1 if any"
+    echo "  failed. ctrl-c stops the whole batch."
     echo ""
     echo "${c[h2]}how${c[reset]}"
     echo "  md-to-html renders into a temp dir, weasyprint prints it, exiftool and qpdf"
@@ -37,15 +41,45 @@ function md-to-pdf() {
     return 0
   fi
 
-  local input="$1"
+  if is equal "$1" "--"; then
+    shift
+  fi
 
-  if is empty "$input"; then
+  if (( $# == 0 )); then
     _md-to-pdf-report error "$c[error]" "no input file given" "md-to-pdf path/to/file.md"
     return 1
   fi
 
+  local file result failed=()
+  for file in "$@"; do
+    _md-to-pdf-one "$file"
+    result=$?
+    # An interrupt stops the whole batch.
+    if (( result == 130 || result == 143 )); then
+      return $result
+    fi
+    if (( result != 0 )); then
+      failed+=("$file")
+    fi
+  done
+
   if (( $# > 1 )); then
-    _md-to-pdf-report error "$c[error]" "md-to-pdf converts one file at a time" 'for f in *.md; do md-to-pdf "$f"; done'
+    if (( ${#failed} == 0 )); then
+      echo "${c[success]}success:${c[reset]} md-to-pdf converted all $# files"
+    else
+      print -u2 -r -- "${c[error]}error:${c[reset]} md-to-pdf: ${#failed} of $# files failed: ${(j:, :)failed}"
+    fi
+  fi
+
+  (( ${#failed} == 0 ))
+}
+
+# Converts one file to a pdf beside it.
+function _md-to-pdf-one() {
+  local input="$1"
+
+  if is empty "$input"; then
+    _md-to-pdf-report error "$c[error]" "an empty file name was given" "md-to-pdf path/to/file.md"
     return 1
   fi
 
@@ -80,7 +114,7 @@ function md-to-pdf() {
   {
     # md-to-html checks the input and pandoc, and labels its errors as ours.
     local MD_CALLER=md-to-pdf
-    md-to-html "$input" "$workdir/$name.html"
+    md-to-html -o "$workdir/$name.html" -- "$input"
     local html_status=$?
     if (( interrupted )); then
       return 130

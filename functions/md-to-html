@@ -44,8 +44,11 @@ function md-to-html() {
     echo "${c[lead]}converts a markdown file to a styled, self-contained html page next to it.${c[reset]}"
     echo ""
     echo "${c[h2]}usage${c[reset]}"
-    echo "  md-to-html ${c[param]}file.md${c[reset]}             writes file.html beside it, overwriting"
-    echo "  md-to-html ${c[param]}file.md out.html${c[reset]}    writes to out.html instead (must end in .html/.htm, and not be the input)"
+    echo "  md-to-html ${c[param]}file.md${c[reset]}                writes file.html beside it, overwriting"
+    echo "  md-to-html ${c[param]}a.md b.md${c[reset]} / ${c[param]}*.md${c[reset]}     converts each, beside its input"
+    echo "  md-to-html ${c[param]}file.md${c[reset]} ${c[flag]}-o${c[reset]} ${c[param]}out.html${c[reset]}    one file only; writes to out.html (must end in .html/.htm, and not be the input)"
+    echo ""
+    echo "  a file that fails is reported and the rest carry on; the exit status is 1 if any failed."
     echo ""
     echo "${c[h2]}needs${c[reset]}"
     echo "  pandoc, file"
@@ -53,13 +56,69 @@ function md-to-html() {
     return 0
   fi
 
-  local input="$1"
   local caller="${MD_CALLER:-md-to-html}"
+  local output="" files=()
+  while (( $# )); do
+    case "$1" in
+      -o|--output)
+        if (( $# < 2 )); then
+          _md-to-html-fail "-o needs an output path" "$caller file.md -o out.html"
+          return 1
+        fi
+        output="$2"
+        shift 2
+        ;;
+      --)
+        shift
+        files+=("$@")
+        break
+        ;;
+      *)
+        files+=("$1")
+        shift
+        ;;
+    esac
+  done
 
-  if (( $# > 2 )); then
-    _md-to-html-fail "too many arguments" "$caller file.md out.html"
+  if (( ${#files} == 0 )); then
+    _md-to-html-fail "no input file given" "$caller path/to/file.md"
     return 1
   fi
+
+  if is not empty "$output" && (( ${#files} > 1 )); then
+    _md-to-html-fail "-o names one output, but ${#files} files were given" "drop -o to write each file beside its input"
+    return 1
+  fi
+
+  local file result failed=()
+  for file in "${files[@]}"; do
+    _md-to-html-one "$file" "$output"
+    result=$?
+    # An interrupt stops the whole batch.
+    if (( result == 130 || result == 143 )); then
+      return $result
+    fi
+    if (( result != 0 )); then
+      failed+=("$file")
+    fi
+  done
+
+  if (( ${#files} > 1 )); then
+    if (( ${#failed} == 0 )); then
+      echo "${c[success]}success:${c[reset]} $caller converted all ${#files} files"
+    else
+      print -u2 -r -- "${c[error]}error:${c[reset]} $caller: ${#failed} of ${#files} files failed: ${(j:, :)failed}"
+    fi
+  fi
+
+  (( ${#failed} == 0 ))
+}
+
+# Converts one file. The output path is optional; without it the html is
+# written beside the input.
+function _md-to-html-one() {
+  local input="$1"
+  local caller="${MD_CALLER:-md-to-html}"
 
   # A name starting with a dash would be read as an option by pandoc and file.
   if [[ "$input" == -* ]]; then
@@ -88,11 +147,11 @@ function md-to-html() {
 
   if is not empty "$2"; then
     if [[ "${2:a}" == "${input:a}" ]]; then
-      _md-to-html-fail "the output would overwrite the input" "$caller file.md out.html"
+      _md-to-html-fail "the output would overwrite the input" "$caller file.md -o out.html"
       return 1
     fi
     if [[ "$2" != *.html && "$2" != *.htm ]]; then
-      _md-to-html-fail "the output $2 does not end in .html or .htm" "$caller file.md out.html"
+      _md-to-html-fail "the output $2 does not end in .html or .htm" "$caller file.md -o out.html"
       return 1
     fi
   fi

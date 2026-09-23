@@ -63,7 +63,7 @@ is existing $path    # -e test
 is not empty "$var"  # -z test (negated)
 ```
 
-`md-to-html` and `md-to-pdf` convert markdown with pandoc and WeasyPrint, styled by `configs/md/md.css`. `md-to-pdf` calls `md-to-html` with the dynamically scoped `MD_CALLER=md-to-pdf`, which makes `md-to-html` label its errors as `md-to-pdf` and skip its own success line.
+`md-to-html` and `md-to-pdf` convert markdown with pandoc and WeasyPrint, styled by `configs/md/md.css`. Both take any number of files and convert each through a per-file helper (`_md-to-html-one`, `_md-to-pdf-one`), carrying on past a failure and stopping on an interrupt. `md-to-html -o <out.html>` names the output for a single file. `md-to-pdf` calls `md-to-html -o <tmp>.html -- <input>` with the dynamically scoped `MD_CALLER=md-to-pdf`, which makes `md-to-html` label its errors as `md-to-pdf` and skip its own success line.
 
 ### `cheatsheets/` directory
 
