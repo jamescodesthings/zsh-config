@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-20 18:36 BST
-- **Current Task Status:** `update` now covers a clean machine and language versions: Brewfile base stack, `035-xcode`, policy-driven `040-asdf`, install stubs for uv and bun (339ae96, review fixes 0c59c90, pushed). The asdf updater has run for real on the MacBook. `035-xcode` has only run against fakes.
+- **Date/Time Stamp:** 2026-09-23 08:32 BST
+- **Current Task Status:** New `md-to-html` and `md-to-pdf` functions (pandoc and WeasyPrint, stylesheet in `configs/md/md.css`, cheatsheets for both), built task by task with reviews and a final whole-branch review. Three small follow-ups are open.
 
 ## Milestone & Phase Progress
 
@@ -30,12 +30,18 @@
 - [x] Real `040-asdf` run on the MacBook: python 3.14.7, direnv 2.37.1, ruby 4.0.7, rust 1.98.1, golang 1.27.1, terraform 1.16.3, dotnet 10.0.400, lua 5.5.1; deno and the bogus `node` line removed; dotnet 5.0.408 and lua 5.1 kept as pinned
 - [ ] User: run `update` so `035-xcode` and the Brewfile step run with real sudo (removes Xcode 26.2 and 26.6, selects 27.0, installs `tcl-tk`)
 
+- [x] `md-to-html` and `md-to-pdf`: functions, stylesheet, Brewfile entries, cheatsheets, docs
+- [ ] Follow-up: a pandoc crash (exit above 128 that is not an interrupt) fails without an error message
+- [ ] Follow-up: `md-to-pdf missing-folder/x.md` says "could not write" instead of "does not exist"
+- [ ] Follow-up: ctrl-c during pandoc's version check prints a stray error line before exiting 130
+
 ## Reference Plan Links
 
 - [improvements-2026-09-19.md](../docs/improvements-2026-09-19.md) (local only)
 - [macos-workflow-rnd-2026-09-19.md](../docs/macos-workflow-rnd-2026-09-19.md) (local only)
 - [obsidian-alternatives-rnd-2026-09-19.md](../docs/obsidian-alternatives-rnd-2026-09-19.md) (local only)
 - [cheatsheets/update.md](../cheatsheets/update.md)
+- [cheatsheets/md-to-pdf.md](../cheatsheets/md-to-pdf.md)
 
 ## Next Steps
 
