@@ -44,17 +44,25 @@ function md-to-pdf() {
     return 1
   fi
 
-  if is not available weasyprint; then
-    _md-to-pdf-report error "$c[error]" "weasyprint is not installed" "$(_md-to-pdf-install weasyprint weasyprint)"
+  if (( $# > 1 )); then
+    _md-to-pdf-report error "$c[error]" "md-to-pdf converts one file at a time" 'for f in *.md; do md-to-pdf "$f"; done'
+    return 1
+  fi
+
+  if is not writeable "${input:h}"; then
+    _md-to-pdf-report error "$c[error]" "could not write to ${input:h}" "ls -ld ${(q)${input:h}}"
     return 1
   fi
 
   local name="${${input:t}:r}"
+  if is empty "$name"; then
+    name="${input:t}"
+  fi
   local output="${input:h}/$name.pdf"
   local workdir
   workdir="$(mktemp -d "${${TMPDIR:-/tmp}%/}/md-to-pdf.XXXXXX")"
   if (( $? != 0 )) || is empty "$workdir"; then
-    _md-to-pdf-report error "$c[error]" "could not create a temp dir under ${TMPDIR:-/tmp}" "check free space and permissions: df -h '${TMPDIR:-/tmp}'"
+    _md-to-pdf-report error "$c[error]" "could not create a temp dir under ${TMPDIR:-/tmp}" "check free space and permissions: df -h ${(q)${TMPDIR:-/tmp}}"
     return 1
   fi
 
@@ -76,6 +84,11 @@ function md-to-pdf() {
     if (( interrupted )); then
       return 130
     elif (( html_status != 0 )); then
+      return 1
+    fi
+
+    if is not available weasyprint; then
+      _md-to-pdf-report error "$c[error]" "weasyprint is not installed" "$(_md-to-pdf-install weasyprint weasyprint)"
       return 1
     fi
 
@@ -115,7 +128,7 @@ function md-to-pdf() {
     fi
 
     if ! command mv -f -- "$pdf" "$output" 2>/dev/null; then
-      _md-to-pdf-report error "$c[error]" "could not write $output" "check that the folder is writable: ls -ld '${output:h}'"
+      _md-to-pdf-report error "$c[error]" "could not write $output" "check that the folder is writable: ls -ld ${(q)${output:h}}"
       return 1
     fi
 
