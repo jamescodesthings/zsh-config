@@ -20,6 +20,23 @@ function _md-to-html-install() {
   fi
 }
 
+# --embed-resources only exists from pandoc 2.19; older pandoc needs
+# --self-contained. Falls back to --embed-resources when the version can't
+# be parsed, since that is the modern default.
+function _md-to-html-embed-flag() {
+  local line major minor
+  line="$(pandoc --version 2>/dev/null | head -n1)"
+  if [[ "$line" =~ 'pandoc ([0-9]+)\.([0-9]+)' ]]; then
+    major="$match[1]"
+    minor="$match[2]"
+    if (( major < 2 || (major == 2 && minor < 19) )); then
+      print -r -- "--self-contained"
+      return
+    fi
+  fi
+  print -r -- "--embed-resources"
+}
+
 function md-to-html() {
   if is equal "$1" "-h" || is equal "$1" "--help"; then
     echo "${c[h1]}md-to-html${c[reset]}"
@@ -28,7 +45,7 @@ function md-to-html() {
     echo ""
     echo "${c[h2]}usage${c[reset]}"
     echo "  md-to-html ${c[param]}file.md${c[reset]}             writes file.html beside it, overwriting"
-    echo "  md-to-html ${c[param]}file.md out.html${c[reset]}    writes to out.html instead"
+    echo "  md-to-html ${c[param]}file.md out.html${c[reset]}    writes to out.html instead (must end in .html/.htm, and not be the input)"
     echo ""
     echo "${c[h2]}needs${c[reset]}"
     echo "  pandoc, file"
@@ -38,6 +55,11 @@ function md-to-html() {
 
   local input="$1"
   local caller="${MD_CALLER:-md-to-html}"
+
+  if (( $# > 2 )); then
+    _md-to-html-fail "too many arguments" "$caller file.md out.html"
+    return 1
+  fi
 
   # A name starting with a dash would be read as an option by pandoc and file.
   if [[ "$input" == -* ]]; then
@@ -55,13 +77,24 @@ function md-to-html() {
   fi
 
   if is not file "$input"; then
-    _md-to-html-fail "$input does not exist" "check the path; ls -la '${input:h}'"
+    _md-to-html-fail "$input does not exist" "check the path; ls -la ${(q)${input:h}}"
     return 1
   fi
 
   if is not readable "$input"; then
-    _md-to-html-fail "$input is not readable" "chmod u+r '$input'"
+    _md-to-html-fail "$input is not readable" "chmod u+r ${(q)input}"
     return 1
+  fi
+
+  if is not empty "$2"; then
+    if [[ "${2:a}" == "${input:a}" ]]; then
+      _md-to-html-fail "the output would overwrite the input" "$caller file.md out.html"
+      return 1
+    fi
+    if [[ "$2" != *.html && "$2" != *.htm ]]; then
+      _md-to-html-fail "the output $2 does not end in .html or .htm" "$caller file.md out.html"
+      return 1
+    fi
   fi
 
   if [[ ! -s "$input" ]]; then
@@ -77,7 +110,7 @@ function md-to-html() {
   local mime
   mime="$(command file --mime-type -b -- "$input")"
   if [[ "$mime" != text/* ]]; then
-    _md-to-html-fail "$input is $mime, not markdown or plain text" "pass a .md or .txt file; check it with: file '$input'"
+    _md-to-html-fail "$input is $mime, not markdown or plain text" "pass a .md or .txt file; check it with: file ${(q)input}"
     return 1
   fi
 
@@ -89,12 +122,17 @@ function md-to-html() {
   local repo="${CUSTOM_DIR:-$HOME/.custom}"
   local stylesheet="$repo/configs/md/md.css"
   if is not file "$stylesheet"; then
-    _md-to-html-fail "the stylesheet is missing: $stylesheet" "restore it with: git -C '$repo' checkout -- configs/md/md.css"
+    _md-to-html-fail "the stylesheet is missing: $stylesheet" "restore it with: git -C ${(q)repo} checkout -- configs/md/md.css"
     return 1
   fi
 
   local name="${${input:t}:r}"
+  if is empty "$name"; then
+    name="${input:t}"
+  fi
   local output="${2:-${input:h}/$name.html}"
+  local embed_flag
+  embed_flag="$(_md-to-html-embed-flag)"
 
   # pandoc writes the file itself, so anything it prints is a message.
   local messages
@@ -102,14 +140,24 @@ function md-to-html() {
     --from=gfm+task_lists+pipe_tables+strikeout \
     --to=html5 \
     --standalone \
-    --embed-resources \
+    "$embed_flag" \
+    --resource-path="${input:h}:." \
     --metadata title="$name" \
     --css="$stylesheet" \
     --output="$output" 2>&1)"
-  if (( $? != 0 )); then
-    _md-to-html-fail "pandoc could not convert $input" "read pandoc's message below; check that the folder is writable: ls -ld '${output:h}'"
+  local pandoc_status=$?
+  if (( pandoc_status > 128 )); then
+    return $pandoc_status
+  fi
+  if (( pandoc_status != 0 )); then
+    _md-to-html-fail "pandoc could not convert $input" "read pandoc's message below; check that the folder is writable: ls -ld ${(q)${output:h}}"
     print -u2 -r -- "$messages"
     return 1
+  fi
+
+  if is not empty "$messages"; then
+    print -u2 -r -- "${c[warn]}warning:${c[reset]} $caller: pandoc reported problems with $input"
+    print -u2 -r -- "$messages"
   fi
 
   if is empty "$MD_CALLER"; then
