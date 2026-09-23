@@ -9,7 +9,7 @@
 
 `cmd+t` (Linux: `ctrl+t`)
 
-- New pane in the current folder:
+- New pane in the current folder (the grid layout places it: two columns first, then the right column splits, then the left):
 
 `cmd+enter` (Linux: `ctrl+shift+enter`)
 
