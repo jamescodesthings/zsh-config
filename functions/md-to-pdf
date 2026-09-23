@@ -58,19 +58,34 @@ function md-to-pdf() {
     return 1
   fi
 
-  # The temp dir goes however this ends: success, failure or interrupt.
+  # The temp dir goes however this ends: success, failure or interrupt. A
+  # signal that lands while a command substitution is running does not
+  # survive a `return` issued from inside the trap, so the trap only
+  # records the interrupt in a variable; each step below checks it once
+  # its command substitution has returned control, before trusting that
+  # command's own exit status.
+  local interrupted=0
   setopt local_options local_traps
-  trap 'rm -rf -- "$workdir"; return 130' INT TERM
+  trap 'interrupted=1' INT TERM
 
   {
     # md-to-html checks the input and pandoc, and labels its errors as ours.
     local MD_CALLER=md-to-pdf
-    md-to-html "$input" "$workdir/$name.html" || return 1
+    md-to-html "$input" "$workdir/$name.html"
+    local html_status=$?
+    if (( interrupted )); then
+      return 130
+    elif (( html_status != 0 )); then
+      return 1
+    fi
 
     local pdf="$workdir/$name.pdf"
     local messages
     messages="$(weasyprint "$workdir/$name.html" "$pdf" 2>&1)"
-    if (( $? != 0 )); then
+    local weasyprint_status=$?
+    if (( interrupted )); then
+      return 130
+    elif (( weasyprint_status != 0 )); then
       _md-to-pdf-report error "$c[error]" "weasyprint could not print $input" "read weasyprint's output below; run it by hand with: weasyprint --verbose file.html out.pdf"
       print -u2 -r -- "$messages"
       return 1
