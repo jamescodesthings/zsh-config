@@ -1,0 +1,120 @@
+#!/usr/bin/env zsh
+
+# Prints an error block to stderr: what failed, how to fix it, and where this
+# tool lives. md-to-pdf sets MD_CALLER so its own name appears instead.
+function _md-to-html-fail() {
+  local caller="${MD_CALLER:-md-to-html}"
+  print -u2 -r -- "${c[error]}error:${c[reset]} $caller: $1"
+  if is not empty "$2"; then
+    print -u2 -r -- "${c[info]}try:${c[reset]} $2"
+  fi
+  print -u2 -r -- "${c[info]}source:${c[reset]} ${CUSTOM_DIR:-$HOME/.custom}/functions/$caller"
+}
+
+# The command that installs a tool on this machine.
+function _md-to-html-install() {
+  if is osx; then
+    print -r -- "brew install $1"
+  else
+    print -r -- "sudo apt install $2"
+  fi
+}
+
+function md-to-html() {
+  if is equal "$1" "-h" || is equal "$1" "--help"; then
+    echo "${c[h1]}md-to-html${c[reset]}"
+    echo ""
+    echo "${c[lead]}converts a markdown file to a styled, self-contained html page next to it.${c[reset]}"
+    echo ""
+    echo "${c[h2]}usage${c[reset]}"
+    echo "  md-to-html ${c[param]}file.md${c[reset]}             writes file.html beside it, overwriting"
+    echo "  md-to-html ${c[param]}file.md out.html${c[reset]}    writes to out.html instead"
+    echo ""
+    echo "${c[h2]}needs${c[reset]}"
+    echo "  pandoc, file"
+    echo "  stylesheet: ${CUSTOM_DIR:-$HOME/.custom}/configs/md/md.css"
+    return 0
+  fi
+
+  local input="$1"
+  local caller="${MD_CALLER:-md-to-html}"
+
+  # A name starting with a dash would be read as an option by pandoc and file.
+  if [[ "$input" == -* ]]; then
+    input="./$input"
+  fi
+
+  if is empty "$input"; then
+    _md-to-html-fail "no input file given" "$caller path/to/file.md"
+    return 1
+  fi
+
+  if [[ -d "$input" ]]; then
+    _md-to-html-fail "$input is a folder, not a file" "pass the markdown file inside it"
+    return 1
+  fi
+
+  if is not file "$input"; then
+    _md-to-html-fail "$input does not exist" "check the path; ls -la '${input:h}'"
+    return 1
+  fi
+
+  if is not readable "$input"; then
+    _md-to-html-fail "$input is not readable" "chmod u+r '$input'"
+    return 1
+  fi
+
+  if [[ ! -s "$input" ]]; then
+    _md-to-html-fail "$input is empty" "add some markdown to it first"
+    return 1
+  fi
+
+  if is not available file; then
+    _md-to-html-fail "the file command is not installed, so the input type cannot be checked" "$(_md-to-html-install file file)"
+    return 1
+  fi
+
+  local mime
+  mime="$(command file --mime-type -b -- "$input")"
+  if [[ "$mime" != text/* ]]; then
+    _md-to-html-fail "$input is $mime, not markdown or plain text" "pass a .md or .txt file; check it with: file '$input'"
+    return 1
+  fi
+
+  if is not available pandoc; then
+    _md-to-html-fail "pandoc is not installed" "$(_md-to-html-install pandoc pandoc)"
+    return 1
+  fi
+
+  local repo="${CUSTOM_DIR:-$HOME/.custom}"
+  local stylesheet="$repo/configs/md/md.css"
+  if is not file "$stylesheet"; then
+    _md-to-html-fail "the stylesheet is missing: $stylesheet" "restore it with: git -C '$repo' checkout -- configs/md/md.css"
+    return 1
+  fi
+
+  local name="${${input:t}:r}"
+  local output="${2:-${input:h}/$name.html}"
+
+  # pandoc writes the file itself, so anything it prints is a message.
+  local messages
+  messages="$(pandoc "$input" \
+    --from=gfm+task_lists+pipe_tables+strikeout \
+    --to=html5 \
+    --standalone \
+    --embed-resources \
+    --metadata title="$name" \
+    --css="$stylesheet" \
+    --output="$output" 2>&1)"
+  if (( $? != 0 )); then
+    _md-to-html-fail "pandoc could not convert $input" "read pandoc's message below; check that the folder is writable: ls -ld '${output:h}'"
+    print -u2 -r -- "$messages"
+    return 1
+  fi
+
+  if is empty "$MD_CALLER"; then
+    echo "${c[success]}success:${c[reset]} wrote $output"
+  fi
+}
+
+md-to-html "$@"
