@@ -65,4 +65,5 @@ install-link "$CONFIG_SOURCE/current-theme.conf" "$CONFIG_DEST/current-theme.con
 # kitty.conf includes os.${KITTY_OS}.conf, so both are linked on every machine
 install-link "$CONFIG_SOURCE/os.macos.conf" "$CONFIG_DEST/os.macos.conf"
 install-link "$CONFIG_SOURCE/os.linux.conf" "$CONFIG_DEST/os.linux.conf"
+install-link "$CONFIG_SOURCE/close_others.py" "$CONFIG_DEST/close_others.py"
 install-box-config "$CONFIG_SOURCE/overrides.conf" "$CONFIG_DEST/overrides.conf"

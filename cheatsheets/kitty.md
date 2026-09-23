@@ -13,13 +13,13 @@
 
 `cmd+enter` (Linux: `ctrl+shift+enter`)
 
-- Split the pane to the right or below:
-
-`cmd+d` / `cmd+shift+d`
-
 - Close the pane (the last pane closes its tab):
 
 `cmd+w` (Linux: `ctrl+w`)
+
+- Close the other panes in this tab, or the other tabs if this is the only pane:
+
+`cmd+shift+w` (Linux: `ctrl+shift+w`)
 
 - Zoom the current pane to full size and back:
 
@@ -45,7 +45,7 @@
 
 `opt+left` / `opt+right`
 
-- Search the scrollback (opens the pager, then press `/`):
+- Search the scrollback, starting with the selected text if any:
 
 `cmd+f`
 
@@ -64,6 +64,9 @@
 > `cmd+shift+[` and `]` step through tabs, `cmd+plus` and `cmd+minus` change the font size.
 > `ctrl+left` and `ctrl+right` only reach kitty while macOS's "Move left/right a space"
 > shortcuts are off or moved (System Settings, Keyboard, Keyboard Shortcuts, Mission Control).
+> `cmd+f` opens the scrollback in `less`. At its prompt: `/text` and `?text` search, `n` and `N` step through
+> matches, `&text` shows only matching lines (`&` alone shows everything again), `g` and `G` go to the top
+> and bottom, `q` closes it.
 > The config reloads itself when saved.
 
 # Related commands
