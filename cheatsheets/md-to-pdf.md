@@ -9,10 +9,15 @@
 
 `md-to-pdf notes.md`
 
+Takes exactly one file; convert several with a loop:
+
+`for f in *.md; do md-to-pdf "$f"; done`
+
 # Notes
 
 > Renders html with md-to-html into a fresh temp dir, prints it with weasyprint,
 > then strips the producer tags with exiftool and qpdf. The temp dir is always removed.
+> Images are resolved relative to the markdown file, not the current folder.
 > A notes.html beside the input is never read or changed.
 > Rendering the same file twice gives a byte-identical pdf.
 > Interrupting it (ctrl-c) cleans up and exits 130 without a success line.

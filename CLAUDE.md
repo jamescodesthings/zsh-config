@@ -103,7 +103,7 @@ Rules for an updater:
 
 What a clean machine needs:
 
-- `configs/brew/Brewfile` is the base stack: the tools the updaters drive (`git`, `gh`, `mas`, `asdf`, `tmux`, `tlrc`, `xcodes`, `aria2`) and the libraries python-build and ruby-build compile against. `010-brew` installs homebrew through `installers/homebrew` when it is missing, then runs `brew bundle install --no-upgrade` against the Brewfile before upgrading, so everything later in the run finds its tool. It is not an inventory of the machine. On a Debian family machine `040-asdf` installs the equivalent build packages with apt.
+- `configs/brew/Brewfile` is the base stack: the tools the updaters drive (`git`, `gh`, `mas`, `asdf`, `tmux`, `tlrc`, `xcodes`, `aria2`), the libraries python-build and ruby-build compile against, and `pandoc`, `weasyprint`, `exiftool` and `qpdf` for `md-to-html` and `md-to-pdf`. `010-brew` installs homebrew through `installers/homebrew` when it is missing, then runs `brew bundle install --no-upgrade` against the Brewfile before upgrading, so everything later in the run finds its tool. It is not an inventory of the machine. On a Debian family machine `040-asdf` installs the equivalent build packages with apt.
 - `060-uv` and `070-bun` install their tool when no copy exists (brew on macOS; uv's installer and bun's release zip elsewhere, neither of which edits shell profiles). A copy that belongs to homebrew is left to `010-brew` to upgrade.
 - Updaters whose tool needs something only a person can supply keep skipping: the Obsidian vault and agent-forge need a clone and keys, `mas` needs an App Store sign-in, and `snap` and `flatpak` are optional.
 
