@@ -42,8 +42,6 @@ export AI_CONFIG_DIR="/Users/jamesmacmillan/projects/personal/agent-forge"
 export READERR_DIR="$HOME/projects/readerr"
 if [[ -f "$READERR_DIR/zsh/readerr.zsh" ]]; then
   source "$READERR_DIR/zsh/readerr.zsh"
-else
-  echo "${c[error]}error:${c[reset]} readerr: $READERR_DIR/zsh/readerr.zsh not found, clone github.com/jamescodesthings/readerr there"
 fi
 
 # bun completions
@@ -52,3 +50,8 @@ fi
 if is existing "$HOME/.bun/_bun"; then
   source "$HOME/.bun/_bun"
 fi
+### End of Zinit's installer chunk
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/james/.local/bin:$PATH"
