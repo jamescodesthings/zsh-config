@@ -2,7 +2,7 @@
     "autoclose": false,
     "autosu": true,
     "clipboard": "terminal",
-    "colorscheme": "solarized-tc",
+    "colorscheme": "night-owl",
     "helpsplit": "vsplit",
     "hlsearch": true,
     "hltaberrors": true,

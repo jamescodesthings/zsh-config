@@ -48,6 +48,8 @@ else
   echo "$c[info]skipping:$c[reset] micro config directory already exists at $CONFIG_DEST"
 fi
 
+
 install-link "$CONFIG_SOURCE/bindings.json" "$CONFIG_DEST/bindings.json"
 install-link "$CONFIG_SOURCE/settings.json" "$CONFIG_DEST/settings.json"
+install-link "$CONFIG_SOURCE/themes" "$CONFIG_DEST/colorschemes"
 echo "$c[success]success:$c[reset] micro config installed to $CONFIG_DEST"
