@@ -52,7 +52,7 @@
 
 # Notes
 
-> `cheat new <name>` creates the file but does not open it — run `cheat edit <name>` to fill it in.
+> `cheat new <name>` creates the file in zsh-config's `cheatsheets/`, links it into `~/cheatsheets/` and does not open it — run `cheat edit <name>` to fill it in.
 > Subcommand names (list, search, edit, new, update, raw, help) are reserved sheet names.
 
 # Related commands

@@ -67,7 +67,7 @@ is not empty "$var"  # -z test (negated)
 
 ### `cheatsheets/` directory
 
-The sheets here are this repo's own. `link-cheatsheets` links each one into `$CHEATSHEET_DIR` (`~/cheatsheets`), which is where `cheat` reads; `installers/00-zshconfig` and `updaters/_self` call it, and other projects call it from their own installers for their sheets. A name already taken in `~/cheatsheets` by a real file or another project's link is a clash: it is never overwritten, `link-cheatsheets` prints a `warning:` line and returns 1. `cheat new` creates sheets here and links them.
+The sheets here are this repo's own. `link-cheatsheets` links each one into `$CHEATSHEET_DIR` (`~/cheatsheets`, set in `.zshenv`), which is where `cheat` reads; `installers/00-zshconfig` and `updaters/_self` call it, and other projects call it from their own installers for their sheets. A name already taken in `~/cheatsheets` by a real file or another project's link is a clash: it is never overwritten, `link-cheatsheets` prints a `warning:` line and returns 1. `cheat new` creates sheets here and links them.
 
 Markdown files rendered by the `cheat` function using `glow -w 120` (falls back to `bat`, then `cat`). When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
 
