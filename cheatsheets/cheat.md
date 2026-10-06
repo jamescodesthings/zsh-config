@@ -1,6 +1,6 @@
 # cheat
 
-> Personal cheatsheet viewer with tldr fallback. Cheatsheets live in `~/.custom/cheatsheets/`.
+> Personal cheatsheet viewer with tldr fallback. Cheatsheets live in `~/cheatsheets/`.
 
 # Usage
 

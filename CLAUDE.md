@@ -11,7 +11,7 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 - **Prompt**: Powerlevel10k
 - **Version manager**: asdf (for Node, Python, Java, etc.)
 - **Key tools**: eza, fzf, direnv, micro, tmux, thefuck, glow, bat
-- **Cheatsheet viewer**: `cheat` command — renders local markdown from `cheatsheets/` with glow, falls back to tldr
+- **Cheatsheet viewer**: `cheat` command — renders local markdown from `~/cheatsheets` with glow, falls back to tldr
 
 ## Installation
 
@@ -66,6 +66,8 @@ is not empty "$var"  # -z test (negated)
 `md-to-html` and `md-to-pdf` convert markdown with pandoc and WeasyPrint, styled by `configs/md/md.css`. Both take any number of files and convert each through a per-file helper (`_md-to-html-one`, `_md-to-pdf-one`), carrying on past a failure and stopping on an interrupt. `md-to-html -o <out.html>` names the output for a single file. `md-to-pdf` calls `md-to-html -o <tmp>.html -- <input>` with the dynamically scoped `MD_CALLER=md-to-pdf`, which makes `md-to-html` label its errors as `md-to-pdf` and skip its own success line.
 
 ### `cheatsheets/` directory
+
+The sheets here are this repo's own. `link-cheatsheets` links each one into `$CHEATSHEET_DIR` (`~/cheatsheets`), which is where `cheat` reads; `installers/00-zshconfig` and `updaters/_self` call it, and other projects call it from their own installers for their sheets. A name already taken in `~/cheatsheets` by a real file or another project's link is a clash: it is never overwritten, `link-cheatsheets` prints a `warning:` line and returns 1. `cheat new` creates sheets here and links them.
 
 Markdown files rendered by the `cheat` function using `glow -w 120` (falls back to `bat`, then `cat`). When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
 

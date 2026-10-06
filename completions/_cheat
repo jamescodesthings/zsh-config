@@ -3,7 +3,7 @@
 _cheat() {
   local -a cheatsheets
   if [[ -n "$CHEATSHEET_DIR" && -d "$CHEATSHEET_DIR" ]]; then
-    cheatsheets=("${(@f)$(print -rl -- "$CHEATSHEET_DIR"/*.md(N:t:r) 2>/dev/null)}")
+    cheatsheets=("${(@f)$(print -rl -- "$CHEATSHEET_DIR"/*.md(N-.:t:r) 2>/dev/null)}")
   fi
 
   local curcontext="$curcontext" state

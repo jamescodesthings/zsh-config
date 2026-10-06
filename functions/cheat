@@ -66,7 +66,7 @@ function cheat() {
   # No args → list
   if [[ $# -eq 0 ]]; then
     echo "${c[h1]}Local Cheatsheets:${c[reset]}"
-    for f in "$CHEATSHEET_DIR"/*.md(N); do
+    for f in "$CHEATSHEET_DIR"/*.md(N-.); do
       echo "  $(basename "$f" .md)"
     done | sort
     return 0
@@ -80,7 +80,7 @@ function cheat() {
     -h|--help|help)
       echo "${c[h1]}cheat${c[reset]}"
       echo ""
-      echo "${c[lead]}Personal cheatsheet viewer with tldr fallback. Cheatsheets live in \$CHEATSHEET_DIR.${c[reset]}"
+      echo "${c[lead]}Personal cheatsheet viewer with tldr fallback. Cheatsheets are links in \$CHEATSHEET_DIR.${c[reset]}"
       echo ""
       echo "${c[h2]}Usage:${c[reset]}"
       echo "  cheat                          list all local cheatsheets"
@@ -100,7 +100,7 @@ function cheat() {
 
     list)
       echo "${c[h1]}Local Cheatsheets:${c[reset]}"
-      for f in "$CHEATSHEET_DIR"/*.md(N); do
+      for f in "$CHEATSHEET_DIR"/*.md(N-.); do
         echo "  $(basename "$f" .md)"
       done | sort
       ;;
@@ -112,7 +112,7 @@ function cheat() {
         return 1
       fi
       local -a local_results=() tldr_only=()
-      for f in "$CHEATSHEET_DIR"/*.md(N); do
+      for f in "$CHEATSHEET_DIR"/*.md(N-.); do
         local name; name=$(basename "$f" .md)
         [[ "$name" == *"$query"* ]] && local_results+=("$name")
       done
@@ -155,8 +155,8 @@ function cheat() {
         return 1
       fi
       local new_name="${1%.md}"
-      local new_file="$CHEATSHEET_DIR/$new_name.md"
-      if is file "$new_file"; then
+      local new_file="$CUSTOM_DIR/cheatsheets/$new_name.md"
+      if is existing "$CHEATSHEET_DIR/$new_name.md" || [[ -L "$CHEATSHEET_DIR/$new_name.md" ]]; then
         echo "${c[error]}error:${c[reset]} '$new_name' already exists — use ${c[flag]}cheat edit $new_name${c[reset]} to edit it"
         return 1
       fi
@@ -176,7 +176,8 @@ Short description.
 - Related tool
 \`cheat related-name\`
 TEMPLATE
-      echo "${c[success]}created:${c[reset]} cheatsheets/$new_name.md"
+      link-cheatsheets "$CUSTOM_DIR/cheatsheets" >/dev/null
+      echo "${c[success]}created:${c[reset]} $new_file"
       echo "run ${c[flag]}cheat edit $new_name${c[reset]} to fill it in"
       ;;
 

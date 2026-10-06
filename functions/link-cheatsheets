@@ -5,7 +5,7 @@ function link-cheatsheets() {
     source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
   fi
 
-  if is not equal "$#" "1" || is equal "$1" "--help" || is not dir "$1"; then
+  if is not equal "$#" "1" || [[ "$1" == "--help" ]] || is not dir "$1"; then
     echo "$c[h1]link-cheatsheets$c[reset]"
     echo ""
     echo "$c[lead]links every *.md in a folder into \$CHEATSHEET_DIR, so cheat can find the sheets.$c[reset]"
@@ -43,10 +43,15 @@ function link-cheatsheets() {
     dest="$CHEATSHEET_DIR/$name"
     if [[ -L "$dest" && "$(readlink "$dest")" == "$src" ]]; then
       already+=1
-    elif [[ ! -e "$dest" && ( ! -L "$dest" || ! -e "$dest" ) ]]; then
+    elif [[ ! -e "$dest" ]]; then
       # no dest, or a dangling link
       echo "$c[info]linking:$c[reset] $src → $dest"
-      ln -sfn "$src" "$dest" && linked+=1 || clashes+=1
+      if ln -sfn "$src" "$dest"; then
+        linked+=1
+      else
+        echo "$c[warn]warning:$c[reset] could not link $name"
+        clashes+=1
+      fi
     else
       if [[ -L "$dest" ]]; then
         target="$(readlink "$dest")"

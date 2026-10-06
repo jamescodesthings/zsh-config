@@ -1,1 +1,0 @@
-/Users/jamesmacmillan/projects/personal/agent-forge/cheatsheets/skills-wip.md

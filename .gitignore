@@ -50,7 +50,5 @@ Temporary Items
 .ionide
 
 
-cheatsheets/.tldr-last-update
-
 # Local caches written by tools run from this repo
 .cache/
