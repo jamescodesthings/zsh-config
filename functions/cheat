@@ -156,7 +156,7 @@ function cheat() {
       fi
       local new_name="${1%.md}"
       local new_file="$CUSTOM_DIR/cheatsheets/$new_name.md"
-      if is existing "$CHEATSHEET_DIR/$new_name.md" || [[ -L "$CHEATSHEET_DIR/$new_name.md" ]]; then
+      if is existing "$new_file" || is existing "$CHEATSHEET_DIR/$new_name.md" || [[ -L "$CHEATSHEET_DIR/$new_name.md" ]]; then
         echo "${c[error]}error:${c[reset]} '$new_name' already exists — use ${c[flag]}cheat edit $new_name${c[reset]} to edit it"
         return 1
       fi
@@ -176,8 +176,10 @@ Short description.
 - Related tool
 \`cheat related-name\`
 TEMPLATE
-      link-cheatsheets "$CUSTOM_DIR/cheatsheets" >/dev/null
       echo "${c[success]}created:${c[reset]} $new_file"
+      if ! link-cheatsheets "$CUSTOM_DIR/cheatsheets"; then
+        echo "${c[warn]}warning:${c[reset]} $new_name was created but not linked into $CHEATSHEET_DIR"
+      fi
       echo "run ${c[flag]}cheat edit $new_name${c[reset]} to fill it in"
       ;;
 
