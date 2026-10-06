@@ -33,7 +33,6 @@ fi
 
 export BAT_THEME="Solarized (dark)"
 
-export CHEATSHEET_DIR="$HOME/cheatsheets"
 
 
 

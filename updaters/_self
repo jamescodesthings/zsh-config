@@ -15,8 +15,12 @@ fi
 echo "$c[success]success:$c[reset] zsh-config updated"
 
 check-or-load link-cheatsheets
+# Stale-shell migration shim: a shell opened before the move still exports the old CHEATSHEET_DIR.
+if is empty "$CHEATSHEET_DIR" || [[ "${CHEATSHEET_DIR:A}" == "${REPO_DIR:A}"/* ]]; then
+  export CHEATSHEET_DIR="$HOME/cheatsheets"
+fi
 if ! link-cheatsheets "$REPO_DIR/cheatsheets"; then
-  echo "$c[warn]warning:$c[reset] cheatsheet name clash, see above"
+  echo "$c[warn]warning:$c[reset] link-cheatsheets reported a problem, see above"
 fi
 
 exit 0

@@ -25,7 +25,15 @@ function link-cheatsheets() {
     return 0
   fi
 
-  mkdir -p "$CHEATSHEET_DIR" || return 1
+  if [[ "${CHEATSHEET_DIR:A}" == "$dir" || "${CHEATSHEET_DIR:A}" == "$dir"/* || "${CHEATSHEET_DIR:A}" == "${CUSTOM_DIR:A}/cheatsheets" ]]; then
+    echo "$c[error]error:$c[reset] CHEATSHEET_DIR ($CHEATSHEET_DIR) points inside $dir; open a new shell so it picks up ~/cheatsheets"
+    return 1
+  fi
+
+  if ! mkdir -p "$CHEATSHEET_DIR"; then
+    echo "$c[error]error:$c[reset] cannot create $CHEATSHEET_DIR"
+    return 1
+  fi
 
   local l target src dest name
   local -i linked=0 already=0 clashes=0
