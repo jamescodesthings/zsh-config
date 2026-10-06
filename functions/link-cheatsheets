@@ -1,0 +1,65 @@
+#!/usr/bin/env zsh
+
+function link-cheatsheets() {
+  if is empty "$c"; then
+    source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
+  fi
+
+  if is not equal "$#" "1" || is equal "$1" "--help" || is not dir "$1"; then
+    echo "$c[h1]link-cheatsheets$c[reset]"
+    echo ""
+    echo "$c[lead]links every *.md in a folder into \$CHEATSHEET_DIR, so cheat can find the sheets.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  link-cheatsheets $c[param]<dir>$c[reset]"
+    echo ""
+    echo "$c[h2]examples$c[reset]"
+    echo "  link-cheatsheets $c[param]~/projects/personal/pkms/cheatsheets$c[reset]"
+    return 1
+  fi
+
+  local dir="${1:A}"
+
+  if is empty "$CHEATSHEET_DIR"; then
+    echo "$c[info]skipping:$c[reset] CHEATSHEET_DIR is not set"
+    return 0
+  fi
+
+  mkdir -p "$CHEATSHEET_DIR" || return 1
+
+  local l target src dest name
+  local -i linked=0 already=0 clashes=0
+
+  # Sweep: remove dangling links that point into this folder
+  for l in "$CHEATSHEET_DIR"/*(N@); do
+    target="$(readlink "$l")"
+    if [[ "$target" == "$dir"/* && ! -e "$l" ]]; then
+      rm "$l"
+    fi
+  done
+
+  for src in "$dir"/*.md(N); do
+    name="${src:t}"
+    dest="$CHEATSHEET_DIR/$name"
+    if [[ -L "$dest" && "$(readlink "$dest")" == "$src" ]]; then
+      already+=1
+    elif [[ ! -e "$dest" && ( ! -L "$dest" || ! -e "$dest" ) ]]; then
+      # no dest, or a dangling link
+      echo "$c[info]linking:$c[reset] $src → $dest"
+      ln -sfn "$src" "$dest" && linked+=1 || clashes+=1
+    else
+      if [[ -L "$dest" ]]; then
+        target="$(readlink "$dest")"
+      else
+        target="a real file"
+      fi
+      echo "$c[warn]warning:$c[reset] $name taken by $target"
+      clashes+=1
+    fi
+  done
+
+  echo "linked $linked, already linked $already, clashes $clashes"
+  (( clashes == 0 ))
+}
+
+link-cheatsheets "$@"
