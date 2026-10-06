@@ -34,9 +34,6 @@ fi
 export BAT_THEME="Solarized (dark)"
 
 
-
-
-
 # Legacy
 
 if is existing $HOME/.cargo/env; then
