@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-09-23 17:57 BST
-- **Current Task Status:** md-to-html and md-to-pdf take many files and globs (b434d0c, review running); kitty back on the grid layout with the tab colour fixed (71cb10c). Research docs still on hold by the user.
+- **Date/Time Stamp:** 2026-10-06 11:15 BST
+- **Current Task Status:** Cheatsheets moved to `~/cheatsheets` (links only), every project links its own through `link-cheatsheets`; `zshc` alias added. Next: research release-download installers for tools `./install` handles badly.
 
 ## Milestone & Phase Progress
 
@@ -43,7 +43,15 @@
 - [x] kitty back on the grid layout (cmd+enter fills a grid) and the inactive tab colour template fixed (71cb10c)
 - [x] md-to-html and md-to-pdf accept several files and globs; md-to-html's output moved to -o (b434d0c)
 
+- [x] `zshc` alias for `zshconfig` (e59049a)
+- [x] Cheatsheets in `~/cheatsheets`: `link-cheatsheets` (71b2ec4), zsh-config switched (85bc7ce, 6644a82), stale `CHEATSHEET_DIR` guards (fa6bb46, ba24494); agent-forge 6814447, pkms 4c4aa1a, readerr d234315; this machine migrated, 51 links
+- [ ] Next task: research install methods and write installer stubs that download the latest release (tlrc, asdf and others) so a new box needs less manual work
+- [ ] User: pkms `todo.md:49` still says new sheets go in zsh-config's cheatsheets; update or drop that line
+
 ## Reference Plan Links
+
+- [2026-10-06-cheatsheet-dir-design.md](../docs/superpowers/specs/2026-10-06-cheatsheet-dir-design.md) (local only)
+- [2026-10-06-cheatsheet-dir.md](../docs/superpowers/plans/2026-10-06-cheatsheet-dir.md) (local only)
 
 - [improvements-2026-09-19.md](../docs/improvements-2026-09-19.md) (local only)
 - [macos-workflow-rnd-2026-09-19.md](../docs/macos-workflow-rnd-2026-09-19.md) (local only)
@@ -52,6 +60,8 @@
 - [cheatsheets/md-to-pdf.md](../cheatsheets/md-to-pdf.md)
 
 ## Next Steps
+
+- Other machines: after pulling, open a new shell (or restart tmux) and run each project's installer, or `update`, to fill `~/cheatsheets`. `link-cheatsheets` refuses to link while an old in-repo `CHEATSHEET_DIR` is in the environment.
 
 - python 3.14.7 was built before `tcl-tk` was installed, so it has no tkinter. Fix if wanted: `asdf uninstall python 3.14.7`, then `update brew asdf`.
 - Reading order given to the user for the research docs: improvements (ranked table, then sections 1 to 6), Obsidian alternatives (Recommendation only), macOS workflow (ranked table, then ranks 1 to 9). The user has said they will start on improvements.
