@@ -2,7 +2,6 @@
 
 export CUSTOM_DIR="$HOME/.custom"
 export FN_DIR="$CUSTOM_DIR/functions"
-export DISABLE_TMUX=true
 
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"

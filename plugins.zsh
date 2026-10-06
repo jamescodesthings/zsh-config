@@ -14,26 +14,6 @@ zinit snippet OMZL::history.zsh
 ## Plugins
 zinit snippet OMZP::git
 
-# tmux.extra.conf and tmux.only.conf can be found at OMZ
-ZSH_TMUX_AUTOSTART=true
-ZSH_TMUX_DEFAULT_SESSION_NAME="main"
-
-if [[ "$DISABLE_TMUX" == "true" ]]; then
-  ZSH_TMUX_AUTOSTART=false
-fi
-
-zinit ice wait"1" \
-  atinit"
-  ZSH_TMUX_FIXTERM=true
-  ZSH_TMUX_AUTOSTART=$ZSH_TMUX_AUTOSTART
-  ZSH_TMUX_AUTOCONNECT=true
-  " \
-  atclone"
-    curl https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/refs/heads/master/plugins/tmux/tmux.extra.conf -o ./tmux.extra.conf && curl https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/refs/heads/master/plugins/tmux/tmux.only.conf -o ./tmux.only.conf
-  " \
-  atpull"%atclone"
-zinit snippet OMZP::tmux
-
 ## clear completions
 zinit cdclear -q
 

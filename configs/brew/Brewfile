@@ -14,7 +14,6 @@ brew "git"
 brew "gh"
 brew "mas"
 brew "asdf"
-brew "tmux"
 brew "tlrc"
 brew "xcodes"
 brew "aria2"       # xcodes downloads Xcode 3 to 5 times faster through it

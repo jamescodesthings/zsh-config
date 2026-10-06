@@ -10,7 +10,7 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 - **Plugin manager**: [zinit](https://github.com/zdharma-continuum/zinit) (loaded via `load_zinit.zsh`)
 - **Prompt**: Powerlevel10k
 - **Version manager**: asdf (for Node, Python, Java, etc.)
-- **Key tools**: eza, fzf, direnv, micro, tmux, thefuck, glow, bat
+- **Key tools**: eza, fzf, direnv, micro, thefuck, glow, bat
 - **Cheatsheet viewer**: `cheat` command — renders local markdown from `~/cheatsheets` with glow, falls back to tldr
 
 ## Installation
@@ -105,7 +105,7 @@ Rules for an updater:
 
 What a clean machine needs:
 
-- `configs/brew/Brewfile` is the base stack: the tools the updaters drive (`git`, `gh`, `mas`, `asdf`, `tmux`, `tlrc`, `xcodes`, `aria2`), the libraries python-build and ruby-build compile against, and `pandoc`, `weasyprint`, `exiftool` and `qpdf` for `md-to-html` and `md-to-pdf`. `010-brew` installs homebrew through `installers/homebrew` when it is missing, then runs `brew bundle install --no-upgrade` against the Brewfile before upgrading, so everything later in the run finds its tool. It is not an inventory of the machine. On a Debian family machine `040-asdf` installs the equivalent build packages with apt.
+- `configs/brew/Brewfile` is the base stack: the tools the updaters drive (`git`, `gh`, `mas`, `asdf`, `tlrc`, `xcodes`, `aria2`), the libraries python-build and ruby-build compile against, and `pandoc`, `weasyprint`, `exiftool` and `qpdf` for `md-to-html` and `md-to-pdf`. `010-brew` installs homebrew through `installers/homebrew` when it is missing, then runs `brew bundle install --no-upgrade` against the Brewfile before upgrading, so everything later in the run finds its tool. It is not an inventory of the machine. On a Debian family machine `040-asdf` installs the equivalent build packages with apt.
 - `060-uv` and `070-bun` install their tool when no copy exists (brew on macOS; uv's installer and bun's release zip elsewhere, neither of which edits shell profiles). A copy that belongs to homebrew is left to `010-brew` to upgrade.
 - Updaters whose tool needs something only a person can supply keep skipping: the Obsidian vault and agent-forge need a clone and keys, `mas` needs an App Store sign-in, and `snap` and `flatpak` are optional.
 
