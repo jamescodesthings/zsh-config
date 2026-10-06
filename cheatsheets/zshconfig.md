@@ -16,6 +16,10 @@
 
 `zshconfig --edit`
 
+- Short alias, takes the same flags:
+
+`zshc`
+
 # Notes
 
 > After editing any config, run `reload <function>` or `reload all` to apply changes.
