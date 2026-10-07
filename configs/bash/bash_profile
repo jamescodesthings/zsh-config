@@ -1,3 +1,5 @@
 # ~/.bash_profile, linked from zsh-config (configs/bash/bash_profile).
-# Login bash reads this instead of ~/.bashrc, so source it.
-[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+# Login bash reads this instead of ~/.bashrc. Source ~/.profile first (Debian's
+# sources ~/.bashrc itself), then ~/.bashrc unless that already ran.
+[ -f "$HOME/.profile" ] && . "$HOME/.profile"
+[ -z "$ZSH_CONFIG_BASHRC_DONE" ] && [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"

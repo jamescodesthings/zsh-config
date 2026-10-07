@@ -47,6 +47,11 @@
 
 `NO_ZSH=1 bash`
 
+- Stay in bash over ssh, or skip the startup file entirely:
+
+`ssh -t host NO_ZSH=1 bash -i`
+`bash --norc`
+
 # Related commands
 
 - Reload a function without restarting shell

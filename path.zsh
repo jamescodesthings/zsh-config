@@ -2,12 +2,15 @@
 
 # Sourced from .zshenv and .zprofile, so it runs in every zsh, more than once.
 # Idempotent, silent, and no forks: only [[ -d ]] tests.
+#
+# Default mode adds only the entries missing from PATH, so a caller's PATH (a
+# test's fake bin) keeps its order. With _ZSH_CONFIG_PATH_FRONT=1 (set by
+# .zprofile, after macOS path_helper) our entries move to the front.
+# ~/.local/bin is created by installers/00-zshconfig, not here.
 typeset -U path
 
-[[ -d $HOME/.local/bin ]] || mkdir -p $HOME/.local/bin
-
 _path_new=()
-for _p in $HOME/.local/bin $HOME/.bin ${ASDF_DATA_DIR:-$HOME/.asdf}/shims; do
+for _p in $HOME/.local/bin $HOME/.bin $HOME/.bun/bin ${ASDF_DATA_DIR:-$HOME/.asdf}/shims; do
   [[ -d $_p ]] && _path_new+=($_p)
 done
 
@@ -37,8 +40,16 @@ for _p in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
   fi
 done
 
-path=($_path_new $path)
+if [[ -n $_ZSH_CONFIG_PATH_FRONT ]]; then
+  path=($_path_new $path)
+else
+  _path_missing=()
+  for _p in $_path_new; do
+    (( ${path[(Ie)$_p]} )) || _path_missing+=($_p)
+  done
+  path=($_path_missing $path)
+fi
 
 # JetBrains Toolbox launchers, last
 [[ -d $HOME/Library/Application\ Support/JetBrains/Toolbox/scripts ]] && path+=("$HOME/Library/Application Support/JetBrains/Toolbox/scripts")
-unset _path_new _p
+unset _path_new _path_missing _p

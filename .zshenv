@@ -22,19 +22,19 @@ if [[ ! ( $OSTYPE == darwin* || -f /etc/debian_version ) && -o interactive ]]; t
 fi
 
 # PATH
-export PROJECTS="$HOME/projects"
-export ASDF_DATA_DIR="$HOME/.asdf"
-export ASDF_DIR="$ASDF_DATA_DIR"
+export PROJECTS="${PROJECTS:-$HOME/projects}"
+export ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
+export ASDF_DIR="${ASDF_DIR:-$ASDF_DATA_DIR}"
 source $CUSTOM_DIR/path.zsh
 
 # Common variables
 if (( $+commands[micro] )); then
-  export EDITOR="micro"
-  export VISUAL="micro"
+  export EDITOR="${EDITOR:-micro}"
+  export VISUAL="${VISUAL:-micro}"
 fi
-export BAT_THEME="Solarized (dark)"
-export MICRO_TRUECOLOR=1
-export HOMEBREW_NO_AUTO_UPDATE=1
+export BAT_THEME="${BAT_THEME:-Solarized (dark)}"
+export MICRO_TRUECOLOR="${MICRO_TRUECOLOR:-1}"
+export HOMEBREW_NO_AUTO_UPDATE="${HOMEBREW_NO_AUTO_UPDATE:-1}"
 
 # Personal, uncommitted
 [[ -f $CUSTOM_DIR/private.zsh ]] && source $CUSTOM_DIR/private.zsh

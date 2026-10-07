@@ -2,6 +2,8 @@
 # Written in POSIX sh. Puts the user bin directories on PATH, then hands an
 # interactive terminal session over to zsh. Set NO_ZSH=1 to stay in bash.
 
+ZSH_CONFIG_BASHRC_DONE=1
+
 for dir in "$HOME/.local/bin" "$HOME/.bin"; do
   if [ -d "$dir" ]; then
     case ":$PATH:" in
