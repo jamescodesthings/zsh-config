@@ -1,0 +1,24 @@
+# Tools installed from their latest GitHub release on Debian (see `install-release`).
+# One line per tool, whitespace separated. Blank lines and lines starting with # are skipped.
+#
+# <binary> <owner/repo> <asset pattern> <x86_64 token> <arm64 token> <binary path in archive> [<zsh completion path in archive>]
+#
+#   binary             name installed to ~/.local/bin and the key passed to install-release
+#   owner/repo         GitHub repository whose latest release is used
+#   asset pattern      release asset file name (a .tar.gz)
+#   x86_64 token       what this tool calls x86_64 in asset names
+#   arm64 token        what this tool calls arm64 in asset names
+#   binary path        where the binary sits in the archive; just the name for a flat archive
+#   completion path    optional; copied to ~/.local/share/zsh/site-functions/_<binary>
+#
+# Placeholders in the pattern and the paths:
+#   {tag}      the tag as published, e.g. v1.13.1
+#   {version}  the tag without a leading v
+#   {arch}     the token for this machine's architecture
+#
+tldr  tldr-pages/tlrc        tlrc-{tag}-{arch}-unknown-linux-musl.tar.gz   x86_64 aarch64  tldr                              completions/_tldr
+glow  charmbracelet/glow     glow_{version}_Linux_{arch}.tar.gz            x86_64 arm64    glow_{version}_Linux_{arch}/glow  glow_{version}_Linux_{arch}/completions/glow.zsh
+eza   eza-community/eza      eza_{arch}-unknown-linux-gnu.tar.gz           x86_64 aarch64  eza
+delta dandavison/delta       delta-{version}-{arch}-unknown-linux-gnu.tar.gz x86_64 aarch64 delta-{version}-{arch}-unknown-linux-gnu/delta
+bat   sharkdp/bat            bat-{tag}-{arch}-unknown-linux-musl.tar.gz    x86_64 aarch64  bat-{tag}-{arch}-unknown-linux-musl/bat  bat-{tag}-{arch}-unknown-linux-musl/autocomplete/bat.zsh
+asdf  asdf-vm/asdf           asdf-{tag}-linux-{arch}.tar.gz                amd64  arm64    asdf
