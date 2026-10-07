@@ -14,6 +14,8 @@ install-link $REPO_DIR/.zshrc $DEST_ZSHRC
 install-link $REPO_DIR/.zshenv $DEST_ZSHENV
 install-link $REPO_DIR/.zprofile $HOME/.zprofile
 install-link $REPO_DIR/configs/python/.default-python-packages $HOME/.default-python-packages
+install-link $REPO_DIR/configs/bash/bashrc $HOME/.bashrc
+install-link $REPO_DIR/configs/bash/bash_profile $HOME/.bash_profile
 link-cheatsheets "$REPO_DIR/cheatsheets"
 
 echo "$c[success]zshconfig install complete$c[reset]"

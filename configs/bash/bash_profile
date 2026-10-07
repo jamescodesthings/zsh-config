@@ -1,0 +1,3 @@
+# ~/.bash_profile, linked from zsh-config (configs/bash/bash_profile).
+# Login bash reads this instead of ~/.bashrc, so source it.
+[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"

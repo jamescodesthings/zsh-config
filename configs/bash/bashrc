@@ -1,0 +1,29 @@
+# ~/.bashrc, linked from zsh-config (configs/bash/bashrc) by installers/00-zshconfig.
+# Written in POSIX sh. Puts the user bin directories on PATH, then hands an
+# interactive terminal session over to zsh. Set NO_ZSH=1 to stay in bash.
+
+for dir in "$HOME/.local/bin" "$HOME/.bin"; do
+  if [ -d "$dir" ]; then
+    case ":$PATH:" in
+      *":$dir:"*) ;;
+      *) PATH="$dir:$PATH" ;;
+    esac
+  fi
+done
+export PATH
+
+# Plain exec, not -l: a login bash already passed through bash_profile.
+case $- in
+  *i*)
+    if [ -t 0 ] && [ -t 1 ] && [ -z "$NO_ZSH" ] && command -v zsh >/dev/null 2>&1; then
+      exec zsh
+    fi
+    ;;
+esac
+
+# Only reached when bash stays: minimal prompt and safe defaults.
+PS1='\u@\h:\w\$ '
+HISTCONTROL=ignoreboth
+if [ -n "$BASH_VERSION" ]; then
+  shopt -s checkwinsize histappend
+fi
