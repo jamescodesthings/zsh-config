@@ -22,6 +22,11 @@ if is empty "$c"; then
   source "$REPO_DIR/zpm-zsh-colors"
 fi
 
+if is not supported; then
+  echo "$c[error]error:$c[reset] this config is built for macOS and Debian; get the clanker to port it"
+  exit 1
+fi
+
 if is empty "$HOME"; then
   echo "\$HOME not set, set it before running this script"
   exit 1

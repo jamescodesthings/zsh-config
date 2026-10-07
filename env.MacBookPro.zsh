@@ -71,9 +71,6 @@ export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
 export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/usr/local/opt/ruby/lib/pkgconfig"
 
-# Disable brew auto update
-export HOMEBREW_NO_AUTO_UPDATE=1
-
 export ASPNETCORE_ENVIRONMENT=development
 export NODE_OPTIONS="--max_old_space_size=8000"
 

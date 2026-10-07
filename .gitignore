@@ -1,5 +1,7 @@
 .installers/
 private.zsh
+projects/*
+!projects/.gitkeep
 
 docs/
 

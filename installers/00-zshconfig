@@ -12,6 +12,7 @@ DEST_ZSHENV=$HOME/.zshenv
 install-link $REPO_DIR $DEST_DIR
 install-link $REPO_DIR/.zshrc $DEST_ZSHRC
 install-link $REPO_DIR/.zshenv $DEST_ZSHENV
+install-link $REPO_DIR/.zprofile $HOME/.zprofile
 install-link $REPO_DIR/configs/python/.default-python-packages $HOME/.default-python-packages
 link-cheatsheets "$REPO_DIR/cheatsheets"
 
