@@ -34,7 +34,7 @@
 - `020` app stores: `mas`, `flatpak`
 - `030` app extensions: `vscode`
 - `035` Xcode: newest release installed and selected, older releases removed
-- `040` to `070` languages and their tools: `asdf` (versions, by policy), `node` (npm), `uv`, `bun`
+- `040` to `070` languages and their tools: `asdf` (versions, by policy, bun included), `node` (npm), `uv`
 - `080` to `090` shell frameworks: `zinit`
 - `100` to `120` utilities: `micro`, `gh`, `releases` (Debian: tldr, glow, eza, delta, bat and asdf from their latest GitHub release), `tldr`
 - `130` data: `obsidian` (git pull of the vault)
@@ -42,12 +42,19 @@
 
 # Language versions
 
-> `configs/asdf/update-policy` decides what `040-asdf` does: `latest`, `stable` (python) or `remove` per tool.
+> `configs/asdf/update-policy` decides what `040-asdf` does: `latest`, `stable` or `remove` per tool.
+> `configs/asdf/update-policy.<hostname>` adds that machine's tools; a later line for a tool wins.
+> `stable` (python) is the newest release unless it is the `.0` or `.1` of a new series.
 > A tool that is not listed is never touched. Old versions go unless a project under `~/projects` pins them.
+> bun is an asdf tool: never run `bun upgrade`. direnv comes from brew or apt, and the policy removes its asdf copy.
 
 - See what the asdf updater would do, without doing it:
 
 `UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf`
+
+- Add a tool for this machine only: create `configs/asdf/update-policy.<hostname>` with `<tool> latest` lines:
+
+`echo "golang latest" >> ~/.custom/configs/asdf/update-policy.$(get-hostname)`
 
 - Look somewhere else for projects that pin versions:
 
@@ -57,7 +64,8 @@
 
 > `010-brew` installs homebrew if it is missing, then everything in `configs/brew/Brewfile`:
 > the tools the updaters drive and the libraries python and ruby are compiled against.
-> `uv` and `bun` are installed by their own updaters when no copy exists.
+> `uv` is installed by its own updater when no copy exists; bun and the other languages come from `040-asdf`.
+> On macOS `./install` stops and asks for a rerun when the Xcode command line tools are missing.
 > If Xcode needs a download and the Apple ID session has expired, sign in once with `xcodes install --latest`.
 
 # Adding an updater

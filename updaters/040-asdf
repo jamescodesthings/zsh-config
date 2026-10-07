@@ -281,6 +281,7 @@ if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
     SHELL=zsh bun completions > "$BUN_TMP" 2> /dev/null
     if is file "$BUN_TMP" && [[ -s "$BUN_TMP" ]]; then
       command mv "$BUN_TMP" "$BUN_COMPLETION"
+      chmod 644 "$BUN_COMPLETION"
     else
       rm -f "$BUN_TMP"
       echo "$c[warn]warning:$c[reset] bun completions produced nothing, _bun not written"

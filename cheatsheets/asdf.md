@@ -114,6 +114,14 @@
 
 `update asdf`
 
+- Policy: `configs/asdf/update-policy` is the base, `update-policy.<hostname>` adds one machine's tools, and a later line wins. Policies are `latest`, `stable` (python: skip a `.0` or `.1` release of a new series) and `remove`.
+- bun is managed here: never run `bun upgrade`. direnv is not (brew or apt), so the policy removes it.
+- First install is the same code path as `update`: `installers/asdf` runs `updaters/040-asdf`.
+
+- Add a tool for this machine only: create `configs/asdf/update-policy.<hostname>` with a `<tool> latest` line, then run `update asdf`.
+
+`echo "golang latest" >> ~/.custom/configs/asdf/update-policy.$(get-hostname)`
+
 - See what that would do, without doing it:
 
 `UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf`
