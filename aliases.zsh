@@ -18,7 +18,12 @@ alias l1a='ls -1a'
 alias la1='l1a'
 alias l='k -h'
 
-alias s="kitten ssh"
+# Inside kitty, ssh is the kitten (terminfo and shell integration travel with it).
+# Scripts never see aliases; `command ssh` bypasses it by hand.
+if [[ -n $KITTY_WINDOW_ID ]] && is available kitten; then
+  alias ssh="kitten ssh"
+  alias s="kitten ssh"
+fi
 
 alias cht="cheat"
 alias zshc="zshconfig"

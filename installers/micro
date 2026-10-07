@@ -3,6 +3,7 @@
 source "${0:a:h}/_stub"
 
 check-or-load install-link
+check-or-load install-box-config
 
 CONFIG_DEST="$HOME/.config/micro"
 CONFIG_SOURCE="$REPO_DIR/configs/micro"
@@ -42,7 +43,7 @@ else
 fi
 
 
-install-link "$CONFIG_SOURCE/bindings.json" "$CONFIG_DEST/bindings.json"
-install-link "$CONFIG_SOURCE/settings.json" "$CONFIG_DEST/settings.json"
+install-box-config "$CONFIG_SOURCE/bindings.json" "$CONFIG_DEST/bindings.json"
+install-box-config "$CONFIG_SOURCE/settings.json" "$CONFIG_DEST/settings.json"
 install-link "$CONFIG_SOURCE/themes" "$CONFIG_DEST/colorschemes"
 echo "$c[success]success:$c[reset] micro config installed to $CONFIG_DEST"

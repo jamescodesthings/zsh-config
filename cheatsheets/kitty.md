@@ -5,6 +5,10 @@
 
 # Usage
 
+- ssh inside kitty is the kitten (terminfo and shell integration travel with it); `s` is the same alias. Outside kitty, `ssh` is plain ssh. Bypass the alias by hand:
+
+`command ssh host`
+
 - New tab in the current folder:
 
 `cmd+t` (Linux: `ctrl+t`)
