@@ -34,6 +34,19 @@
 > Use for machine-specific PATH entries, tool config, and env vars like `$PICO8`.
 > Hostname comes from `get-hostname` (strips domain from `uname -n`).
 
+# Project drop-ins and NO_ZSH
+
+- Hook another project into the shell without editing this repo:
+
+`$CUSTOM_DIR/projects/<name>.env.zsh` (variables and PATH, every zsh)
+`$CUSTOM_DIR/projects/<name>.zsh` (aliases and functions, interactive only)
+
+> The contents of `projects/` are gitignored; the other project's installer writes and rewrites them.
+
+- Stay in bash for one session (bash otherwise hands over to zsh):
+
+`NO_ZSH=1 bash`
+
 # Related commands
 
 - Reload a function without restarting shell

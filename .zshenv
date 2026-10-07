@@ -4,7 +4,7 @@
 # unsupported-system warning, and runs no slow commands.
 
 # Project root
-export CUSTOM_DIR="$HOME/.custom"
+export CUSTOM_DIR="${CUSTOM_DIR:-$HOME/.custom}"
 
 # Where cheat reads sheets; default-if-unset so tests can override. The old
 # location inside this repo can linger in a long-lived parent (an old terminal), so it is replaced rather than kept.

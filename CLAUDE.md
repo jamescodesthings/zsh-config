@@ -10,7 +10,7 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 - **Plugin manager**: [zinit](https://github.com/zdharma-continuum/zinit) (loaded via `load_zinit.zsh`)
 - **Prompt**: Powerlevel10k
 - **Version manager**: asdf (for Node, Python, Java, etc.)
-- **Key tools**: eza, fzf, direnv, micro, thefuck, glow, bat
+- **Key tools**: eza, fzf, direnv, micro, glow, bat
 - **Cheatsheet viewer**: `cheat` command — renders local markdown from `~/cheatsheets` with glow, falls back to tldr
 
 ## Installation
@@ -27,27 +27,57 @@ The installer symmlinks the repo to `~/.custom`, and `.zshrc`/`.zshenv` to `~` s
 
 ## Architecture
 
-### Load order (`.zshrc`)
+### Shell core
 
-1. `zsh_options.zsh` — setopt flags
-2. `custom_functions.zsh` — autoloads all files in `functions/` via `fpath`
-3. `env.zsh` — PATH, EDITOR, ASDF, exports; its last line sources `load_box_env.zsh`, which sources `env.<hostname>.zsh` if present
+The config runs on macOS and Debian family systems only. `is supported` is the gate: `.zshenv` prints a warning to stderr in an interactive shell elsewhere, and `installers/_stub` refuses to run. Bash is not supported; `configs/bash/bashrc` and `bash_profile` (linked into `~` by `installers/00-zshconfig`) are POSIX sh. They put `~/.local/bin` and `~/.bin` on `PATH`, then `exec zsh` from an interactive terminal session. `NO_ZSH=1` keeps bash, which then gets a minimal prompt and safe defaults.
+
+#### `.zshenv` (every zsh, silent)
+
+Runs for every zsh, interactive or not, so it prints nothing except the unsupported-system warning and runs no slow commands. In order:
+
+1. `CUSTOM_DIR`, as `${CUSTOM_DIR:-$HOME/.custom}` so a caller can override it, then `CHEATSHEET_DIR` (default `~/cheatsheets`; a value pointing inside this repo is replaced) and `FN_DIR`
+2. `custom_functions.zsh`, which puts `functions/` on `fpath` and autoloads it
+3. the `is supported` warning
+4. `PROJECTS`, `ASDF_DATA_DIR`, `ASDF_DIR`, then `path.zsh`
+5. `EDITOR` and `VISUAL` (micro, when installed), `BAT_THEME`, `MICRO_TRUECOLOR`, `HOMEBREW_NO_AUTO_UPDATE`
+6. `private.zsh` (optional, not committed)
+7. every `projects/*.env.zsh`
+
+#### `path.zsh` and `.zprofile`
+
+`path.zsh` builds `PATH` with only `[[ -d ]]` tests, no forks: `~/.local/bin` (created if missing), `~/.bin`, asdf shims, then the first Homebrew prefix found (`/opt/homebrew`, `/usr/local` on macOS only, `/home/linuxbrew/.linuxbrew`), which also sets the `HOMEBREW_*`, `MANPATH` and `INFOPATH` variables that `brew shellenv` would. JetBrains Toolbox scripts go last. It is idempotent (`typeset -U path`) because it runs more than once.
+
+macOS `/etc/zprofile` runs `path_helper` after `.zshenv` and pushes the system paths to the front of a login shell's `PATH`. `.zprofile` sources `path.zsh` again to put ours back.
+
+### Load order (`.zshrc`, interactive shells)
+
+`.zshenv` has already run, so `CUSTOM_DIR`, `PATH`, `private.zsh` and the `projects/*.env.zsh` drop-ins are in place.
+
+1. p10k instant prompt, when its cache exists
+2. `zsh_options.zsh` — setopt flags
+3. `env.zsh` — interactive exports; its last line sources `load_box_env.zsh` (see below)
 4. `zpm-zsh-colors` — `$c[...]` color variables used everywhere
 5. `load_zinit.zsh` — installs zinit if missing, then sources it
 6. `p10k.prompt.zsh` / `p10k.zsh` — prompt config
 7. `plugins.zsh` — zinit plugin declarations
-8. `completions.zsh` — completion setup
+8. `completions.zsh` — adds `completions/` and asdf's completions to `fpath` and runs the one `compinit`, which nothing else may call
 9. `aliases.zsh` — conditional aliases (checks `is available <tool>` before defining)
 10. `wrap-progress.zsh` — when `progress` is installed, autoloads the `wrappers/` versions of `cp`, `mv`, `tar` and similar, and aliases the originals as `cpo`, `mvo` and so on
 11. `load-direnv.zsh`, `load-fzf.zsh`, `configs/ls_colors/ls-colors.sh`
-12. `private.zsh` (optional, not committed)
-13. `$AI_CONFIG_DIR/zsh/aliases.zsh` from the agent-forge checkout, if present
-14. `$READERR_DIR/zsh/readerr.zsh`; prints an error on every shell start when readerr is not cloned at `~/projects/readerr`
-15. `~/.bun/_bun` — bun's completions, if bun is installed
+12. `load-projects.zsh` — sources every `projects/*.zsh` except `*.env.zsh`
+
+### Project drop-ins (`projects/`)
+
+Other projects hook into the shell by writing stubs into `$CUSTOM_DIR/projects/`, so nobody edits `.zshrc` (which `~/.zshrc` symlinks to) or any other tracked file. There are two kinds:
+
+- `<name>.env.zsh` — variables and `PATH` only, silent. `.zshenv` sources it in every zsh.
+- `<name>.zsh` — aliases, functions, anything interactive. `load-projects.zsh` sources it in interactive shells.
+
+The directory's contents are gitignored (`projects/*`, except `projects/.gitkeep`). The stubs belong to the other project: its installer writes them and rewrites them on every run, and its uninstaller removes them. agent-forge's `shared/tools/install-shell-stubs` writes `agent-forge.env.zsh` and `agent-forge.zsh` this way. Do not hand-edit a generated stub, and do not commit one.
 
 ### Per-machine env files
 
-`env.<hostname>.zsh` files (e.g. `env.MacBookPro.zsh`, `env.ubuntu.zsh`) are sourced automatically by `load_box_env.zsh` based on `get-hostname`. Use these for machine-specific PATH entries or tool config.
+`load_box_env.zsh`, sourced last by `env.zsh`, loads three files in order, each only if present: `env.osx.zsh` on macOS or `env.linux.zsh` elsewhere (settings shared by every machine of that OS), then `env.<hostname>.zsh` (e.g. `env.MacBookPro.zsh`, `env.ubuntu.zsh`) for that machine, using `${HOST%%.*}` rather than forking `get-hostname`. Use the host file for machine-specific PATH entries or tool config. They load in interactive shells only, since `env.zsh` is a `.zshrc` file.
 
 ### `functions/` directory
 
@@ -101,7 +131,7 @@ Rules for an updater:
 - Keep the body inside `{ ... exit 0 }`. zsh reads a script as it runs, so a file saved or pulled mid-run otherwise fails with a bogus parse error such as `unmatched "`. `update` itself is wrapped the same way.
 - Shell functions such as `zinit` do not exist inside a script; source what defines them (see `080-zinit`).
 - Never call `brew` directly from an updater; use `brew-isolated` from `updaters/_stub`. Every `brew` command runs `sudo --reset-timestamp`, which ends the sudo session `update` opened and makes the next `sudo` prompt. `brew-isolated` runs brew inside `script -q /dev/null`, because sudo keeps one session per terminal and the reset then only hits the throwaway one. A cask that needs root fails in there rather than prompting, and shows up in the error log.
-- An updater must not leave the repo dirty. `bun upgrade` appends a completions line to `.zshrc` unless it finds one, which is why `.zshrc` carries a portable version of that line.
+- An updater must not leave the repo dirty. `bun upgrade` appends a completions line to `.zshrc` unless it finds one, and `.zshrc` no longer carries that line, so check `git status` after `070-bun`.
 
 What a clean machine needs:
 
@@ -151,7 +181,7 @@ zsh -n path/to/changed-file
 zsh -i -c exit
 ```
 
-A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. A `readerr: ... not found` line means readerr is not cloned on that machine, not that the change broke anything. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
+A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
 
 In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`configs/vscode/tasks.json`), which puts `zsh -n` errors in the Problems panel. ShellCheck does not support zsh, so Bash IDE's ShellCheck integration is switched off in `configs/vscode/settings.osx.json`.
 
