@@ -212,7 +212,7 @@ Every task that creates, edits, or deletes a file follows this chain; a question
 4. `superpowers:subagent-driven-development` skill
    - Use `superpowers:dispatching-parallel-agents` when 2+ tasks are independent with no shared state
 5. `post-implementation-review` skill after **any work that creates or modifies files**: subagent or orchestrator, code or docs/markdown
-6. `/run after-task` (session state handoff and snapshot pruning)
+6. `/run done` (session state handoff and snapshot pruning)
 7. Done: no PRs, no `finishing-a-development-branch`, no human review gate
 
 ## No-confirmation rule
@@ -239,7 +239,7 @@ Key triggers:
 - 2+ independent tasks with no shared state → `superpowers:dispatching-parallel-agents`
 - Any feature or bugfix in prod/existing-test code → `superpowers:test-driven-development`
 - Before claiming any implementation task complete → `superpowers:verification-before-completion` skill
-- Before committing or staging files with credentials/tokens → `/run before-commit` (which runs `secrets-check`)
+- Before committing or staging files with credentials/tokens → `/run commit` (which runs `secrets-check`)
 
 ## Post-implementation review
 
@@ -254,7 +254,7 @@ Trunk-based development. Single chain in `main`. Use branches only when async is
 2. Do work with task-level commits
 3. `git rebase main` before merging; never use a merge commit
 4. Merge back to `main`
-5. Delete branch, then run `commit-commands:clean_gone`
+5. Delete branch, then `git fetch --prune` and delete any local branch whose upstream is gone
 
 Escalate only if: rebase conflict that cannot be resolved autonomously.
 
