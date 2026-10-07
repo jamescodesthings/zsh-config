@@ -4,6 +4,7 @@
 source "${0:a:h}/_stub"
 
 POLICY_FILE="$REPO_DIR/configs/asdf/update-policy"
+HOST_POLICY_FILE="$POLICY_FILE.${HOST%%.*}"
 TOOL_VERSIONS="$HOME/.tool-versions"
 
 # Where to look for projects that pin a version. Colon separated.
@@ -37,7 +38,7 @@ if is linux && is available apt-get; then
     build-essential curl git pkg-config unzip
     libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncurses-dev
     xz-utils liblzma-dev tk-dev libffi-dev libxml2-dev libxmlsec1-dev
-    autoconf patch libyaml-dev libgmp-dev libgdbm-dev libdb-dev uuid-dev
+    autoconf patch libyaml-dev libgmp-dev libgdbm-dev libdb-dev uuid-dev libzstd-dev
     python3 g++ make
   )
   echo "$c[info]installing:$c[reset] build dependencies for python, ruby and node"
@@ -239,18 +240,53 @@ function remove-tool() {
   forget-tool "$tool"
 }
 
-# The policy file is read on its own file descriptor so that nothing run inside
-# the loop can swallow the rest of it through stdin.
-while read -r -u 3 tool policy; do
-  if is empty "$tool" || [[ "$tool" == \#* ]]; then
+# The base policy, then this machine's file when there is one. A later line for
+# a tool replaces the earlier one; the tool keeps the place where it first
+# appeared.
+typeset -A POLICY
+TOOL_ORDER=()
+for file in "$POLICY_FILE" "$HOST_POLICY_FILE"; do
+  if is not file "$file"; then
     continue
   fi
+  while read -r tool policy; do
+    if is empty "$tool" || [[ "$tool" == \#* ]]; then
+      continue
+    fi
+    if (( ! ${TOOL_ORDER[(Ie)$tool]} )); then
+      TOOL_ORDER+=($tool)
+    fi
+    POLICY[$tool]="$policy"
+  done < "$file"
+done
+
+for tool in $TOOL_ORDER; do
+  policy="$POLICY[$tool]"
   case "$policy" in
     latest|stable) update-tool "$tool" "$policy" ;;
     remove)        remove-tool "$tool" ;;
-    *)             echo "$c[warn]warning:$c[reset] $tool has the unknown policy \"$policy\" in $POLICY_FILE" ;;
+    *)             echo "$c[warn]warning:$c[reset] $tool has the unknown policy \"$policy\" in the asdf policy files" ;;
   esac
-done 3< "$POLICY_FILE"
+done
+
+# bun's completion comes from bun itself, so it is written only once the asdf
+# bun runs, and through a temp file so a failure leaves no empty _bun behind.
+if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
+  BUN_COMPLETION="$HOME/.local/share/zsh/site-functions/_bun"
+  if is not empty "$UPDATE_ASDF_DRY_RUN"; then
+    echo "$c[flag]would run:$c[reset] SHELL=zsh bun completions > $BUN_COMPLETION"
+  else
+    mkdir -p "${BUN_COMPLETION:h}"
+    BUN_TMP="$(mktemp)"
+    SHELL=zsh bun completions > "$BUN_TMP" 2> /dev/null
+    if is file "$BUN_TMP" && [[ -s "$BUN_TMP" ]]; then
+      command mv "$BUN_TMP" "$BUN_COMPLETION"
+    else
+      rm -f "$BUN_TMP"
+      echo "$c[warn]warning:$c[reset] bun completions produced nothing, _bun not written"
+    fi
+  fi
+fi
 
 # A line in ~/.tool-versions naming a tool with no plugin does nothing and
 # only ever gets there by accident, so it goes.

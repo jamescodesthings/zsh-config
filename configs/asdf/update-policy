@@ -1,4 +1,5 @@
-# What updaters/040-asdf does with each asdf tool. One tool per line:
+# What updaters/040-asdf does with each asdf tool on every machine. One tool
+# per line:
 #
 #   <tool> latest   install the newest release and make it the global version
 #   <tool> stable   as latest, but hold back from a brand new minor series:
@@ -10,16 +11,17 @@
 # A tool that is not listed here is never touched. After a tool is updated,
 # its older versions are uninstalled unless a project pins them (a
 # .tool-versions, .nvmrc, .node-version or .python-version under ~/projects).
+#
+# update-policy.<hostname> (the short hostname, as in env.<hostname>.zsh) is
+# read after this file and adds tools for one machine. A line there for a tool
+# listed here replaces this file's line.
 
 nodejs latest
 python stable
-direnv latest
-ruby latest
-rust latest
-golang latest
-terraform latest
-dotnet latest
-lua latest
-make latest
+uv     latest
+ruby   latest
+rust   latest
+bun    latest
 
-deno remove
+direnv remove
+deno   remove

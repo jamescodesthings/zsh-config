@@ -1,0 +1,7 @@
+# Extra asdf tools for the MacBookPro, read after update-policy.
+
+golang    latest
+terraform latest
+dotnet    latest
+lua       latest
+make      latest
