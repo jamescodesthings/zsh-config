@@ -35,7 +35,7 @@ function zshconfig() {
     fi
 
     echo "$c[warn]warning:$c[reset] no editor found"
-    echo "run $c[em]$CUSTOM_DIR/installers/micro-install$c[reset] to install micro"
+    echo "run $c[em]$CUSTOM_DIR/installers/micro$c[reset] to install micro"
     return 1
   fi
 }

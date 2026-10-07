@@ -9,6 +9,8 @@ DEST_DIR=$HOME/.custom
 DEST_ZSHRC=$HOME/.zshrc
 DEST_ZSHENV=$HOME/.zshenv
 
+mkdir -p $HOME/.local/bin
+
 install-link $REPO_DIR $DEST_DIR
 install-link $REPO_DIR/.zshrc $DEST_ZSHRC
 install-link $REPO_DIR/.zshenv $DEST_ZSHENV

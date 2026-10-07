@@ -2,25 +2,24 @@
 
 source "${0:a:h}/_stub"
 
-if is available tldr; then
-  echo "$c[info]skipping:$c[reset] tldr is already installed"
+check-or-load install-release
+
+if is debian; then
+  install-release tldr || exit 1
   exit 0
 fi
 
-echo "$c[info]installing:$c[reset] tldr (https://github.com/tldr-pages/tlrc)"
-if is osx; then
-  brew install tlrc
-  if is equal "$?" "0"; then
-    echo "$c[success]success:$c[reset] installed tlrc with brew"
-    exit 0
-  else
-    echo "$c[error]failed:$c[reset] failed to install tlrc with brew"
-    exit 1
-  fi
+if is available tldr; then
+  echo "$c[info]skipping:$c[reset] tldr already installed"
+  exit 0
 fi
 
-if is linux; then
-  echo "$c[error]no good install route:$c[reset]"
-  echo "Check the install instructions: https://github.com/tldr-pages/tlrc#from-github-releases"
-  exit 1
+echo "$c[info]installing:$c[reset] tldr via homebrew"
+if brew install tlrc; then
+  echo "$c[success]success:$c[reset] tldr installed"
+  exit 0
 fi
+
+echo "$c[error]error:$c[reset] homebrew install failed"
+echo "$c[info]install instructions:$c[reset] https://github.com/tldr-pages/tlrc"
+exit 1

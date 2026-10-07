@@ -4,7 +4,6 @@ source "${0:a:h}/_stub"
 
 check-or-load install-link
 
-INSTALL_SCRIPT_SOURCE="https://getmic.ro"
 CONFIG_DEST="$HOME/.config/micro"
 CONFIG_SOURCE="$REPO_DIR/configs/micro"
 
@@ -16,17 +15,11 @@ local micro_plugins=(
   palettero
 )
 
-if is not available curl; then
-  echo "$c[error]failed:$c[reset] curl is required to install micro, please install it and try again"
-  exit 1
-fi
-
-if is not available micro; then
-  echo "$c[info]installing:$c[reset] micro from $INSTALL_SCRIPT_SOURCE"
-  curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
-  sudo mv ./micro /usr/local/bin/
-  sudo chmod +x /usr/local/bin/micro
-  echo "$c[success]success:$c[reset] micro installed to /usr/local/bin/micro"
+if is debian; then
+  echo "$c[info]skipping:$c[reset] micro is installed by 02-apt-base on Debian"
+elif is not available micro; then
+  echo "$c[info]installing:$c[reset] micro via homebrew"
+  brew install micro || { echo "$c[error]error:$c[reset] homebrew install failed"; exit 1 }
 else
   echo "$c[info]skipping:$c[reset] micro is already installed"
 fi

@@ -16,6 +16,8 @@ fi
 
 SCRIPTS=$(ls -1 $INSTALLER_DIR | grep -v '.DS_Store' | grep -v '^_' 2> /dev/null)
 
+failed=()
+
 for script in ${(f)SCRIPTS}; do
   [[ -z "$script" ]] && continue
   echo "$c[info]running installer$c[reset] $script"
@@ -27,11 +29,18 @@ for script in ${(f)SCRIPTS}; do
   "$INSTALLER_DIR/$script"
 
   if is equal "$?" "0"; then
-    echo "$c[success]succesfully ran$c[reset] $script"
+    echo "$c[success]successfully ran$c[reset] $script"
   else
     echo "$c[error]failed$c[reset] $script"
-    exit 1
+    failed+=("$script")
   fi
   echo ""
   echo ""
 done
+
+if (( ${#failed} > 0 )); then
+  for script in $failed; do
+    echo "$c[error]failed:$c[reset] $script"
+  done
+  exit 1
+fi

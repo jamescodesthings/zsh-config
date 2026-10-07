@@ -18,6 +18,16 @@ brew "tlrc"
 brew "xcodes"
 brew "aria2"       # xcodes downloads Xcode 3 to 5 times faster through it
 
+# Shell tools
+brew "glow"
+brew "eza"
+brew "git-delta"
+brew "bat"
+brew "micro"
+brew "httpie"
+brew "progress"
+brew "direnv"
+
 # md-to-html and md-to-pdf
 brew "pandoc"
 brew "weasyprint"

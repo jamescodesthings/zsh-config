@@ -2,46 +2,24 @@
 
 source "${0:a:h}/_stub"
 
+check-or-load install-release
+
+if is debian; then
+  install-release eza || exit 1
+  exit 0
+fi
+
 if is available eza; then
   echo "$c[info]skipping:$c[reset] eza already installed"
   exit 0
 fi
 
-if is osx; then
-  echo "$c[info]installing:$c[reset] eza via homebrew"
-  brew install eza
-  if is equal "$?" "0"; then
-    echo "$c[success]success:$c[reset] eza installed"
-  else
-    echo "$c[error]error:$c[reset] homebrew install failed"
-    echo ""
-    echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
-    exit 1
-  fi
+echo "$c[info]installing:$c[reset] eza via homebrew"
+if brew install eza; then
+  echo "$c[success]success:$c[reset] eza installed"
   exit 0
 fi
 
-if is linux; then
-  echo "$c[info]installing:$c[reset] eza via apt"
-  sudo apt update || exit 1
-  sudo apt install -y gpg || exit 1
-  sudo mkdir -p /etc/apt/keyrings || exit 1
-  wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg || exit 1
-  echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list || exit 1
-  sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list || exit 1
-  sudo apt update || exit 1
-  sudo apt install -y eza
-  if is equal "$?" "0"; then
-    echo "$c[success]success:$c[reset] eza installed"
-  else
-    echo "$c[error]error:$c[reset] apt install failed"
-    echo ""
-    echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
-    exit 1
-  fi
-  exit 0
-fi
-
-echo "$c[error]error:$c[reset] unsupported os"
+echo "$c[error]error:$c[reset] homebrew install failed"
 echo "$c[info]install instructions:$c[reset] https://github.com/eza-community/eza"
 exit 1
