@@ -1,46 +1,11 @@
-#!/usr/bin/env zsh
-
-source "${0:a:h}/installers/_stub"
-
-if is equal "$1" "--help"; then
-  echo "$c[h1]Install Everything$c[reset]"
-  echo "$c[lead]requires zsh, and \$HOME to be set$c[reset]"
-  echo ""
-  echo "$c[info-small]Shell:$c[reset] $SHELL"
-  echo "$c[info-small]HOME:$c[reset] $HOME"
-  echo ""
-  echo "$c[h2]Usage:$c[reset]"
-  echo "install $c[flag][--help]$c[reset]"
-  exit 0
-fi
-
-SCRIPTS=$(ls -1 $INSTALLER_DIR | grep -v '.DS_Store' | grep -v '^_' 2> /dev/null)
-
-failed=()
-
-for script in ${(f)SCRIPTS}; do
-  [[ -z "$script" ]] && continue
-  echo "$c[info]running installer$c[reset] $script"
-  if is not executable "$INSTALLER_DIR/$script"; then
-    echo "$c[warn]warning:$c[reset] $script is not executable, making it executable"
-    chmod +x "$INSTALLER_DIR/$script"
-  fi
-
-  "$INSTALLER_DIR/$script"
-
-  if is equal "$?" "0"; then
-    echo "$c[success]successfully ran$c[reset] $script"
+#!/bin/sh
+# Bootstrap: a fresh Debian may not have zsh, and install.zsh needs it.
+if ! command -v zsh >/dev/null 2>&1; then
+  if [ -f /etc/debian_version ]; then
+    sudo apt-get update && sudo apt-get install -y zsh || exit 1
   else
-    echo "$c[error]failed$c[reset] $script"
-    failed+=("$script")
+    echo "this config is built for macOS and Debian; get the clanker to port it"
+    exit 1
   fi
-  echo ""
-  echo ""
-done
-
-if (( ${#failed} > 0 )); then
-  for script in $failed; do
-    echo "$c[error]failed:$c[reset] $script"
-  done
-  exit 1
 fi
+exec zsh "$(dirname "$0")/install.zsh" "$@"

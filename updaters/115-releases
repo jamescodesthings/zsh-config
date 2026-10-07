@@ -1,0 +1,49 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+if is not debian; then
+  echo "$c[info]skipping:$c[reset] releases are only installed this way on Debian"
+  exit 0
+fi
+
+check-or-load install-release
+
+site="$HOME/.local/share/zsh/site-functions"
+failed=()
+
+for line in "${(@f)$(<"$REPO_DIR/configs/releases")}"; do
+  [[ -z "${line// }" || "$line" == [[:space:]]#\#* ]] && continue
+  bin=${${(z)line}[1]}
+
+  out=$(install-release "$bin" 2>&1)
+  rc=$?
+  [[ -n "$out" ]] && print -r -- "$out"
+  if (( rc != 0 )); then
+    echo "$c[error]error:$c[reset] could not update $bin"
+    failed+=("$bin")
+    continue
+  fi
+
+  # asdf and delta write their own completion, so refresh it when they changed
+  if [[ "$out" == *"installed: $bin"* ]]; then
+    case "$bin" in
+      asdf) gen=(completion zsh) ;;
+      delta) gen=(--generate-completion zsh) ;;
+      *) continue ;;
+    esac
+    if ! { mkdir -p "$site" && "$HOME/.local/bin/$bin" "${gen[@]}" > "$site/_$bin" } then
+      echo "$c[error]error:$c[reset] could not write the $bin zsh completion"
+      failed+=("$bin completion")
+    fi
+  fi
+done
+
+if (( ${#failed} > 0 )); then
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] release tools are current"
+exit 0
+}

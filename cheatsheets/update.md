@@ -36,7 +36,7 @@
 - `035` Xcode: newest release installed and selected, older releases removed
 - `040` to `070` languages and their tools: `asdf` (versions, by policy), `node` (npm), `uv`, `bun`
 - `080` to `090` shell frameworks: `zinit`
-- `100` to `120` utilities: `micro`, `gh`, `tldr`
+- `100` to `120` utilities: `micro`, `gh`, `releases` (Debian: tldr, glow, eza, delta, bat and asdf from their latest GitHub release), `tldr`
 - `130` data: `obsidian` (git pull of the vault)
 - `900` applications that depend on everything above: `agent-forge`
 

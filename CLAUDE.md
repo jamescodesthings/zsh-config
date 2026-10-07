@@ -23,6 +23,8 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 ./installers/00-zshconfig
 ```
 
+`./install` is a POSIX sh bootstrap, because a fresh Debian may not have zsh. When zsh is missing it installs it with apt on Debian and refuses on anything else, then `exec`s `install.zsh`, which holds the real installer. Installers run in name order: `00-zshconfig`, `01-homebrew`, `02-apt-base`, then the per-tool ones. A failed installer does not stop the run; failures are listed at the end and the exit code is 1.
+
 The installer symmlinks the repo to `~/.custom`, and `.zshrc`/`.zshenv` to `~` so changes to this repo are live immediately.
 
 ## Architecture
@@ -108,7 +110,9 @@ Standard format, tldr style with every section at heading level one:
 
 ### `installers/` directory
 
-Each file is an independent install script. `_stub` must be sourced first — it sets `$INSTALLER_DIR`, `$REPO_DIR`, loads `is`, and loads `$c[...]` colors. The main `./install` script runs them in lexicographic order.
+Each file is an independent install script. `_stub` must be sourced first — it sets `$INSTALLER_DIR`, `$REPO_DIR`, loads `is`, and loads `$c[...]` colors. `install.zsh` (started by `./install`) runs them in lexicographic order, so the numbered ones come first: `01-homebrew` (macOS) and `02-apt-base` (Debian: curl, git, tar, unzip, zsh, micro, httpie, progress, direnv, build-essential).
+
+On Debian, tools that apt packages badly come from their latest GitHub release through `install-release <binary>` (`functions/install-release`). `configs/releases` has one row per tool (tlrc as `tldr`, glow, eza, delta, bat, asdf): repo, asset pattern, per-arch tokens and paths inside the archive. It installs to `~/.local/bin`, completions to `~/.local/share/zsh/site-functions`, and records the tag under `~/.local/share/zsh-config/releases`. macOS uses brew for all of them.
 
 New installers should start with:
 ```zsh
@@ -124,7 +128,7 @@ Each run keeps an error log at `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.l
 
 Rules for an updater:
 
-- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities, `130` data, `900` applications that depend on the rest. Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
+- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities (`115-releases` refreshes the Debian release tools), `130` data, `900` applications that depend on the rest. Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
 - Source `_stub` from the same directory; it loads `is` and the colours, and exports the non-interactive environment (`NONINTERACTIVE`, `DEBIAN_FRONTEND`, `GIT_TERMINAL_PROMPT=0`).
 - Skip with `exit 0` when the tool is missing, `exit 1` on failure.
 - Never prompt. Pass the tool's own `--yes` style flag; sudo drops the environment, so pass variables on the sudo command line.
@@ -135,7 +139,7 @@ Rules for an updater:
 
 What a clean machine needs:
 
-- `configs/brew/Brewfile` is the base stack: the tools the updaters drive (`git`, `gh`, `mas`, `asdf`, `tlrc`, `xcodes`, `aria2`), the libraries python-build and ruby-build compile against, and `pandoc`, `weasyprint`, `exiftool` and `qpdf` for `md-to-html` and `md-to-pdf`. `010-brew` installs homebrew through `installers/01-homebrew` when it is missing, then runs `brew bundle install --no-upgrade` against the Brewfile before upgrading, so everything later in the run finds its tool. It is not an inventory of the machine. On a Debian family machine `040-asdf` installs the equivalent build packages with apt.
+- `configs/brew/Brewfile` is the base stack: the tools the updaters drive (`git`, `gh`, `mas`, `asdf`, `tlrc`, `xcodes`, `aria2`), the shell tools (`glow`, `eza`, `git-delta`, `bat`, `micro`, `httpie`, `progress`, `direnv`), the libraries python-build and ruby-build compile against, and `pandoc`, `weasyprint`, `exiftool` and `qpdf` for `md-to-html` and `md-to-pdf`. `010-brew` installs homebrew through `installers/01-homebrew` when it is missing, then runs `brew bundle install --no-upgrade` against the Brewfile before upgrading, so everything later in the run finds its tool. It is not an inventory of the machine. On a Debian family machine `040-asdf` installs the equivalent build packages with apt.
 - `060-uv` and `070-bun` install their tool when no copy exists (brew on macOS; uv's installer and bun's release zip elsewhere, neither of which edits shell profiles). A copy that belongs to homebrew is left to `010-brew` to upgrade.
 - Updaters whose tool needs something only a person can supply keep skipping: the Obsidian vault and agent-forge need a clone and keys, `mas` needs an App Store sign-in, and `snap` and `flatpak` are optional.
 
