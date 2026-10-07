@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-10-06 11:15 BST
-- **Current Task Status:** Cheatsheets moved to `~/cheatsheets` (links only), every project links its own through `link-cheatsheets`; `zshc` alias added. Next: research release-download installers for tools `./install` handles badly.
+- **Date/Time Stamp:** 2026-10-07 14:40 BST
+- **Current Task Status:** Bootstrap rework done in 4 parts (shell core and project drop-ins, Debian release installs, asdf first setup, kitty and micro per-machine keys). Debian end-to-end passed in docker on arm64 and amd64. tmux and thefuck removed.
 
 ## Milestone & Phase Progress
 
@@ -45,10 +45,19 @@
 
 - [x] `zshc` alias for `zshconfig` (e59049a)
 - [x] Cheatsheets in `~/cheatsheets`: `link-cheatsheets` (71b2ec4), zsh-config switched (85bc7ce, 6644a82), stale `CHEATSHEET_DIR` guards (fa6bb46, ba24494); agent-forge 6814447, pkms 4c4aa1a, readerr d234315; this machine migrated, 51 links
-- [ ] Next task: research install methods and write installer stubs that download the latest release (tlrc, asdf and others) so a new box needs less manual work
-- [ ] User: pkms `todo.md:49` still says new sheets go in zsh-config's cheatsheets; update or drop that line
+- [x] tmux removed (7811cae); pkms todo line fixed (pkms 5d49f61)
+- [x] Part 1 shell core: .zshenv/path.zsh/.zprofile, projects/ drop-ins, OS gate, bash handover, startup cleanup (1245a21..d5a9af8, b006674); agent-forge and readerr write stubs
+- [x] Part 2 Debian tools: install-release + configs/releases, apt base list, install wrapper bootstraps zsh, 115-releases (01788ec..9e0b064, 602975d, 00eec15)
+- [x] Part 3 asdf: policy plus update-policy.<host>, installer runs 040-asdf, bun and uv under asdf, direnv via brew/apt (8f07e43, e4d217c, 8e37784)
+- [x] Part 4 terminal: kitty ssh alias inside kitty, uConsole kitty/micro overrides (b5d4e56)
+- [x] Final fix wave for existing machines (37af1be); this Mac migrated (bun, uv, direnv)
+- [ ] User: fill in uConsole keys in configs/kitty/overrides.uconsole.conf and configs/micro/bindings.uconsole.json
+- [ ] User: on each other machine, pull, restart terminals, run ./install (or update)
+- [ ] Follow-ups: move functions/wipcrypt to agent-forge; 900-agent-forge and 130-obsidian updaters as project drop-ins; drop the CHEATSHEET_DIR shim in .zshenv once every machine has restarted; 02-apt-base aborts on any broken third-party apt source; agent-forge skills suite has 43 failing cases (not from this work)
 
 ## Reference Plan Links
+
+- docs/superpowers/specs/2026-10-07-{shell-core,debian-tools,asdf-setup,terminal}-design.md (local only)
 
 - [2026-10-06-cheatsheet-dir-design.md](../docs/superpowers/specs/2026-10-06-cheatsheet-dir-design.md) (local only)
 - [2026-10-06-cheatsheet-dir.md](../docs/superpowers/plans/2026-10-06-cheatsheet-dir.md) (local only)
