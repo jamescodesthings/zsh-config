@@ -4,6 +4,13 @@ source "${0:a:h}/_stub"
 
 check-or-load install-release
 
+# install-release puts asdf in ~/.local/bin, which .zshenv adds to PATH but
+# this running script may not have seen yet.
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
 if is debian; then
   install-release asdf || exit 1
   local site="$HOME/.local/share/zsh/site-functions"
@@ -12,30 +19,26 @@ if is debian; then
     echo "$c[error]error:$c[reset] could not write the asdf zsh completion"
     exit 1
   fi
-  exit 0
-fi
-
-if is available asdf; then
-  if is equal "$1" "--force"; then
+elif is available asdf && is not equal "$1" "--force"; then
+  echo "$c[info]skipping:$c[reset] asdf already installed"
+else
+  if is available asdf; then
     echo "$c[info]reinstalling:$c[reset] asdf (--force)"
-    if brew reinstall asdf; then
-      echo "$c[success]success:$c[reset] asdf reinstalled via homebrew"
-      exit 0
-    fi
-    echo "$c[error]error:$c[reset] homebrew reinstall failed"
-    echo "try: $c[em]brew reinstall asdf$c[reset]"
+    brew reinstall asdf
+  else
+    echo "$c[info]installing:$c[reset] asdf via homebrew"
+    brew install asdf
+  fi
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] homebrew install failed"
+    echo "try: $c[em]brew install asdf$c[reset]"
     exit 1
   fi
-  echo "$c[info]skipping:$c[reset] asdf already installed"
-  exit 0
-fi
-
-echo "$c[info]installing:$c[reset] asdf via homebrew"
-if brew install asdf; then
   echo "$c[success]success:$c[reset] asdf installed via homebrew"
-  exit 0
 fi
 
-echo "$c[error]error:$c[reset] homebrew install failed"
-echo "try: $c[em]brew install asdf$c[reset]"
-exit 1
+# Common tail: asdf is available here. 040-asdf adds the plugins, installs the
+# policy versions and pins them; it is safe to run again.
+touch "$HOME/.tool-versions"
+"$REPO_DIR/updaters/040-asdf"
+exit $?

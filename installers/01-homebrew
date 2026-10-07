@@ -9,6 +9,14 @@ if is not osx; then
   exit 0
 fi
 
+# homebrew and the language builds need the Xcode command line tools. The
+# install dialog is graphical and cannot be finished from here.
+if ! xcode-select -p >/dev/null 2>&1; then
+  xcode-select --install
+  echo "$c[warn]warning:$c[reset] finish the Xcode command line tools dialog, then run ./install again"
+  exit 1
+fi
+
 if is available brew; then
   echo "$c[info]skipping:$c[reset] homebrew already installed"
   exit 0
