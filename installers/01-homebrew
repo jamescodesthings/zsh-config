@@ -19,15 +19,33 @@ fi
 
 if is available brew; then
   echo "$c[info]skipping:$c[reset] homebrew already installed"
-  exit 0
+else
+  echo "$c[info]installing:$c[reset] homebrew"
+  /bin/bash -c "$(curl -fsSL $INSTALL_SCRIPT_URL)"
+
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] homebrew install failed"
+    exit 1
+  fi
+
+  echo "$c[success]success:$c[reset] homebrew installed"
+
+  # a fresh install is not on PATH yet
+  for prefix in /opt/homebrew /usr/local; do
+    if is executable "$prefix/bin/brew"; then
+      eval "$("$prefix/bin/brew" shellenv)"
+      break
+    fi
+  done
 fi
 
-echo "$c[info]installing:$c[reset] homebrew"
-/bin/bash -c "$(curl -fsSL $INSTALL_SCRIPT_URL)"
+# installers/asdf compiles python and ruby, which needs the Brewfile libraries
+echo "$c[info]installing:$c[reset] the Brewfile packages"
+brew bundle install --no-upgrade --file "$REPO_DIR/configs/brew/Brewfile"
 
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] homebrew install failed"
+  echo "$c[error]error:$c[reset] brew bundle install failed"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] homebrew installed"
+echo "$c[success]success:$c[reset] Brewfile packages installed"

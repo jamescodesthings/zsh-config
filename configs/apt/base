@@ -1,0 +1,12 @@
+# Base apt packages for a Debian family machine, one per line.
+# Read by installers/02-apt-base and updaters/000-debian. # starts a comment.
+curl
+git
+tar
+unzip
+zsh
+micro
+httpie
+progress
+direnv
+build-essential

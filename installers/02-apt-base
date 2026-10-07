@@ -7,10 +7,12 @@ if is not debian; then
   exit 0
 fi
 
+# The list lives in configs/apt/base so updaters/000-debian installs the same one.
+PACKAGES=(${(f)"$(sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' "$REPO_DIR/configs/apt/base")"})
+
 echo "$c[info]installing:$c[reset] base packages via apt"
 sudo apt-get update || exit 1
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  curl git tar unzip zsh micro httpie progress direnv build-essential || {
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${PACKAGES[@]}" || {
   echo "$c[error]error:$c[reset] apt install failed"
   exit 1
 }

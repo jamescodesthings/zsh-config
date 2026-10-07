@@ -250,6 +250,9 @@ for file in "$POLICY_FILE" "$HOST_POLICY_FILE"; do
     continue
   fi
   while read -r tool policy; do
+    # a trailing "# comment" is not part of the policy
+    policy="${policy%%\#*}"
+    policy="${policy%"${policy##*[![:space:]]}"}"
     if is empty "$tool" || [[ "$tool" == \#* ]]; then
       continue
     fi
@@ -286,6 +289,24 @@ if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
     else
       rm -f "$BUN_TMP"
       echo "$c[warn]warning:$c[reset] bun completions produced nothing, _bun not written"
+    fi
+  fi
+fi
+
+# Once asdf runs bun, the standalone copies are dead weight and the old one
+# could shadow it, so they go.
+if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
+  for old in "$HOME/.bun/bin/bun" "$HOME/.bun/bin/bunx" "$HOME/.bun/_bun"; do
+    if is existing "$old" || [[ -L "$old" ]]; then
+      echo "$c[info]removing:$c[reset] $old, the standalone bun"
+      run rm -f "$old"
+    fi
+  done
+  if is osx && is available brew && { brew list bun > /dev/null 2>&1 || brew list oven-sh/bun/bun > /dev/null 2>&1 }; then
+    echo "$c[info]removing:$c[reset] the homebrew bun"
+    run brew-isolated uninstall bun
+    if is not equal "$?" "0"; then
+      echo "$c[warn]warning:$c[reset] could not uninstall the homebrew bun"
     fi
   fi
 fi

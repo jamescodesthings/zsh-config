@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ./update.
+{
 
 source "${0:a:h}/installers/_stub"
 
@@ -44,3 +46,4 @@ if (( ${#failed} > 0 )); then
   done
   exit 1
 fi
+}

@@ -10,7 +10,8 @@
 typeset -U path
 
 _path_new=()
-for _p in $HOME/.local/bin $HOME/.bin $HOME/.bun/bin ${ASDF_DATA_DIR:-$HOME/.asdf}/shims; do
+# ~/.bun/bin follows the asdf shims so an old standalone bun cannot shadow asdf's
+for _p in $HOME/.local/bin $HOME/.bin ${ASDF_DATA_DIR:-$HOME/.asdf}/shims $HOME/.bun/bin; do
   [[ -d $_p ]] && _path_new+=($_p)
 done
 

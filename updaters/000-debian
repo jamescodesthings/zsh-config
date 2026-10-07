@@ -25,6 +25,18 @@ if is not equal "$?" "0"; then
   exit 1
 fi
 
+# The base list is shared with installers/02-apt-base, so tools added to it
+# reach machines that were installed earlier.
+BASE_PACKAGES=(${(f)"$(sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' "$REPO_DIR/configs/apt/base")"})
+if is not empty "$BASE_PACKAGES"; then
+  echo "$c[info]installing:$c[reset] base packages"
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${BASE_PACKAGES[@]}"
+  if is not equal "$?" "0"; then
+    echo "$c[error]error:$c[reset] apt base package install failed"
+    exit 1
+  fi
+fi
+
 echo "$c[success]success:$c[reset] apt packages updated"
 
 exit 0

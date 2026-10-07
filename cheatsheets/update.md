@@ -34,7 +34,7 @@
 - `020` app stores: `mas`, `flatpak`
 - `030` app extensions: `vscode`
 - `035` Xcode: newest release installed and selected, older releases removed
-- `040` to `070` languages and their tools: `asdf` (versions, by policy, bun included), `node` (npm), `uv`
+- `040` to `070` languages and their tools: `asdf` (versions, by policy, bun included), `node` (npm), `uv` (uv tools)
 - `080` to `090` shell frameworks: `zinit`
 - `100` to `120` utilities: `micro`, `gh`, `releases` (Debian: tldr, glow, eza, delta, bat and asdf from their latest GitHub release), `tldr`
 - `130` data: `obsidian` (git pull of the vault)
@@ -64,7 +64,8 @@
 
 > `010-brew` installs homebrew if it is missing, then everything in `configs/brew/Brewfile`:
 > the tools the updaters drive and the libraries python and ruby are compiled against.
-> `uv` is installed by its own updater when no copy exists; bun and the other languages come from `040-asdf`.
+> uv, bun and the other languages come from `040-asdf`; `060-uv` only upgrades uv tools and removes the old standalone and brew copies of uv.
+> `./install` runs the Brewfile too (`01-homebrew`), and the Debian base packages live in `configs/apt/base`, which `000-debian` installs on every update.
 > On macOS `./install` stops and asks for a rerun when the Xcode command line tools are missing.
 > If Xcode needs a download and the Apple ID session has expired, sign in once with `xcodes install --latest`.
 

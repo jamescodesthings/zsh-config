@@ -3,34 +3,31 @@
 {
 source "${0:a:h}/_stub"
 
-# uv is part of the base stack, so a machine without it gets it: from brew on
-# macOS, from uv's own installer elsewhere. The installer is told not to edit
-# shell profiles, because ~/.zshrc is a file in this repo.
+# uv is an asdf tool (configs/asdf/update-policy), so 040-asdf installs and
+# upgrades it. This updater only runs after it: it never installs uv and never
+# runs `uv self update`, which would fight asdf.
 if is not available uv; then
-  echo "$c[info]installing:$c[reset] uv"
-  if is osx && is available brew; then
-    brew-isolated install uv
-  else
-    curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 INSTALLER_NO_MODIFY_PATH=1 sh
-    export PATH="$HOME/.local/bin:$PATH"
-  fi
-  if is not available uv; then
-    echo "$c[error]error:$c[reset] uv could not be installed"
-    exit 1
-  fi
+  echo "$c[info]skipping:$c[reset] uv is not installed, 040-asdf installs it"
+  exit 0
 fi
 
-# self update only works for a copy from uv's own installer. A copy from brew
-# is upgraded by 010-brew and refuses, so it is not asked.
-UV_PATH="$(command -v uv)"
-if is osx && is available brew && [[ "${UV_PATH:A}" == "$(brew --prefix)"/* ]]; then
-  echo "$c[info]skipping:$c[reset] uv self update, this copy belongs to homebrew"
-else
-  echo "$c[info]updating:$c[reset] uv"
-  uv self update
-  if is not equal "$?" "0"; then
-    echo "$c[warn]warning:$c[reset] uv self update failed"
+# One-off cleanup of the copies uv had before asdf took it over. It waits
+# until the asdf uv works, so a machine is never left without uv.
+if asdf which uv > /dev/null 2>&1; then
+  for old in "$HOME/.local/bin/uv" "$HOME/.local/bin/uvx" "$HOME/.config/uv/uv-receipt.json"; do
+    if is existing "$old" || [[ -L "$old" ]]; then
+      echo "$c[info]removing:$c[reset] $old, the standalone installer's copy"
+      rm -f "$old"
+    fi
+  done
+  if is osx && is available brew && brew list uv > /dev/null 2>&1; then
+    echo "$c[info]removing:$c[reset] the homebrew uv"
+    brew-isolated uninstall uv
+    if is not equal "$?" "0"; then
+      echo "$c[warn]warning:$c[reset] could not uninstall the homebrew uv"
+    fi
   fi
+  rehash
 fi
 
 echo "$c[info]updating:$c[reset] uv tools"
@@ -40,7 +37,7 @@ if is not equal "$?" "0"; then
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] uv updated"
+echo "$c[success]success:$c[reset] uv tools updated"
 
 exit 0
 }

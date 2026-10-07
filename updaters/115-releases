@@ -17,6 +17,8 @@ for line in "${(@f)$(<"$REPO_DIR/configs/releases")}"; do
   [[ -z "${line// }" || "$line" == [[:space:]]#\#* ]] && continue
   bin=${${(z)line}[1]}
 
+  state="$HOME/.local/share/zsh-config/releases/$bin"
+  before="$(<"$state" 2> /dev/null)"
   out=$(install-release "$bin" 2>&1)
   rc=$?
   [[ -n "$out" ]] && print -r -- "$out"
@@ -27,7 +29,7 @@ for line in "${(@f)$(<"$REPO_DIR/configs/releases")}"; do
   fi
 
   # asdf and delta write their own completion, so refresh it when they changed
-  if [[ "$out" == *"installed: $bin"* ]]; then
+  if [[ "$(<"$state" 2> /dev/null)" != "$before" ]]; then
     case "$bin" in
       asdf) gen=(completion zsh) ;;
       delta) gen=(--generate-completion zsh) ;;
