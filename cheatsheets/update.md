@@ -99,4 +99,4 @@
 # Related commands
 
 - `cheat zshconfig`
-- `cheat install`
+- `cheat install-release`

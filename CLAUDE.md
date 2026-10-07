@@ -25,7 +25,7 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 
 `./install` is a POSIX sh bootstrap, because a fresh Debian may not have zsh. When zsh is missing it installs it with apt on Debian and refuses on anything else, then `exec`s `install.zsh`, which holds the real installer. Installers run in name order: `00-zshconfig`, `01-homebrew`, `02-apt-base`, then the per-tool ones. A failed installer does not stop the run; failures are listed at the end and the exit code is 1.
 
-The installer symmlinks the repo to `~/.custom`, and `.zshrc`/`.zshenv` to `~` so changes to this repo are live immediately.
+The installer symlinks the repo to `~/.custom`, and `.zshrc`, `.zshenv`, `.zprofile` and the bash startup files to `~` so changes to this repo are live immediately.
 
 ## Architecture
 
@@ -47,7 +47,7 @@ Runs for every zsh, interactive or not, so it prints nothing except the unsuppor
 
 #### `path.zsh` and `.zprofile`
 
-`path.zsh` builds `PATH` with only `[[ -d ]]` tests, no forks: `~/.local/bin` (created if missing), `~/.bin`, asdf shims, then the first Homebrew prefix found (`/opt/homebrew`, `/usr/local` on macOS only, `/home/linuxbrew/.linuxbrew`), which also sets the `HOMEBREW_*`, `MANPATH` and `INFOPATH` variables that `brew shellenv` would. JetBrains Toolbox scripts go last. It is idempotent (`typeset -U path`) because it runs more than once.
+`path.zsh` builds `PATH` with only `[[ -d ]]` tests, no forks: `~/.local/bin` (created by `installers/00-zshconfig`, not here), `~/.bin`, asdf shims, then the first Homebrew prefix found (`/opt/homebrew`, `/usr/local` on macOS only, `/home/linuxbrew/.linuxbrew`), which also sets the `HOMEBREW_*`, `MANPATH` and `INFOPATH` variables that `brew shellenv` would. JetBrains Toolbox scripts go last. It is idempotent (`typeset -U path`) because it runs more than once.
 
 macOS `/etc/zprofile` runs `path_helper` after `.zshenv` and pushes the system paths to the front of a login shell's `PATH`. `.zprofile` sources `path.zsh` again to put ours back.
 
@@ -169,7 +169,7 @@ GNOME-specific config and tools. Only installed on machines running GNOME on Way
 
 ## Required tooling
 
-- `zsh`, which every script in this repo targets; there is no bash or POSIX sh fallback
+- `zsh`, which every script in this repo targets, except the POSIX sh `./install` bootstrap and the bash startup files, which only hand over to zsh
 - `git`, for zinit plugin installs and the updaters
 - The `post-implementation-review` skill, which reads the checks section below
 - No build step, package manifest or dependency lockfile exists; tools such as glow, eza and fzf are optional at runtime and guarded by `is available <tool>`

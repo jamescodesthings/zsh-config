@@ -13,4 +13,7 @@ My personal ZSH configuration. I use it on all my machines, and it is designed t
 
 # Installation
 1. Clone it somewhere
-1. run `./install` to install all the things
+1. Run `./install`. On a fresh Debian it installs zsh with apt first; it refuses on any other OS besides macOS.
+1. It links the repo to `~/.custom`, then runs the installers in name order: Homebrew and the Brewfile on macOS, the apt base packages on Debian, then the per-tool ones (asdf, kitty, micro and so on). A failed installer is listed at the end and does not stop the rest.
+1. Run `update` afterwards to keep everything current.
+1. Other projects hook into the shell by writing stubs into `projects/` (see `cheat zshconfig`).
