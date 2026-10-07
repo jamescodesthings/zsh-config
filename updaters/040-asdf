@@ -278,7 +278,8 @@ if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
   else
     mkdir -p "${BUN_COMPLETION:h}"
     BUN_TMP="$(mktemp)"
-    SHELL=zsh bun completions > "$BUN_TMP" 2> /dev/null
+    # The shim does not exist until the final reshim, so run the real binary.
+    SHELL=zsh "$(asdf which bun)" completions > "$BUN_TMP" 2> /dev/null
     if is file "$BUN_TMP" && [[ -s "$BUN_TMP" ]]; then
       command mv "$BUN_TMP" "$BUN_COMPLETION"
       chmod 644 "$BUN_COMPLETION"
