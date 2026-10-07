@@ -4,7 +4,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # eww
 # pnpm
-export PNPM_HOME="/home/james/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 case ":$PATH:" in
   *":$PNPM_HOME/bin:"*) ;;

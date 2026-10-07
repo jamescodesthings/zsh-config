@@ -2,12 +2,6 @@
 
 export _Z_CMD="j"
 
-# ASDF completions (moves to completions.zsh in a later task)
-if is existing "$ASDF_DATA_DIR/completions/_asdf"; then
-  fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
-  autoload -Uz compinit && compinit
-fi
-
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 
 # Disable pager for commands that use it by default, I like to use the terminal's scrollback instead

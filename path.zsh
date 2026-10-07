@@ -18,9 +18,27 @@ for _p in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
   if [[ -d $_p/bin ]]; then
     _path_new+=($_p/bin)
     [[ -d $_p/sbin ]] && _path_new+=($_p/sbin)
+    # What `brew shellenv` exports, without the fork
+    export HOMEBREW_PREFIX=$_p
+    export HOMEBREW_CELLAR=$_p/Cellar
+    case $_p in
+      /opt/homebrew) export HOMEBREW_REPOSITORY=$_p ;;
+      /usr/local) export HOMEBREW_REPOSITORY=/usr/local/Homebrew ;;
+      *) export HOMEBREW_REPOSITORY=$_p/Homebrew ;;
+    esac
+    # Idempotent: add only when not already present. MANPATH keeps its trailing colon.
+    if [[ ":$MANPATH:" != *":$_p/share/man:"* ]]; then
+      export MANPATH="$_p/share/man${MANPATH+:$MANPATH}:"
+    fi
+    if [[ ":$INFOPATH:" != *":$_p/share/info:"* ]]; then
+      export INFOPATH="$_p/share/info${INFOPATH+:$INFOPATH}"
+    fi
     break
   fi
 done
 
 path=($_path_new $path)
+
+# JetBrains Toolbox launchers, last
+[[ -d $HOME/Library/Application\ Support/JetBrains/Toolbox/scripts ]] && path+=("$HOME/Library/Application Support/JetBrains/Toolbox/scripts")
 unset _path_new _p

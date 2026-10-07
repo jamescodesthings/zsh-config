@@ -1,18 +1,11 @@
 #!/usr/bin/env zsh
 
-BOX=$(get-hostname)
-BOX_ENV="$CUSTOM_DIR/env.$BOX.zsh"
-
-DEBUG_LOAD_BOX=0
-
-if is existing "$BOX_ENV"; then
-  if is equal "$DEBUG_LOAD_BOX" "1"; then
-    echo "$BOX_ENV exists, sourcing it"
-  fi
-
-  source $BOX_ENV
+# OS-generic settings first, then the per-machine file. ${HOST%%.*} avoids
+# forking get-hostname on every shell start.
+if [[ $OSTYPE == darwin* ]]; then
+  [[ -f $CUSTOM_DIR/env.osx.zsh ]] && source $CUSTOM_DIR/env.osx.zsh
 else
-  if is equal "$DEBUG_LOAD_BOX" "1"; then
-    echo "$BOX_ENV does not exist, no custom environment to source"
-  fi
+  [[ -f $CUSTOM_DIR/env.linux.zsh ]] && source $CUSTOM_DIR/env.linux.zsh
 fi
+
+[[ -f $CUSTOM_DIR/env.${HOST%%.*}.zsh ]] && source $CUSTOM_DIR/env.${HOST%%.*}.zsh

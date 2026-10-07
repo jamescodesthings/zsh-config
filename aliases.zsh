@@ -32,15 +32,11 @@ if is available eza; then
 fi
 
 if is available git; then
-  if is available g; then
-    # Unalias omz:git commands
-    unalias g
-    unalias gcm
-    unalias gcd
-    unalias grbi
-    unalias gsu
-    unalias gap
-  fi
+  # Unalias omz:git commands that the aliases below replace
+  for _a in g gcm gcd grbi gsu gap; do
+    (( $+aliases[$_a] )) && unalias $_a
+  done
+  unset _a
 
   alias root='cd-gitroot'
 
@@ -88,10 +84,6 @@ if is available python; then
   alias pip='python -m pip'
 fi
 
-if is available thefuck; then
-  eval $(thefuck --alias)
-fi
-
 if is available http; then
   alias http="http --verify=no"
   alias https="https --verify=no"
@@ -105,7 +97,7 @@ if is available docker; then
   alias docker-stop-all='docker stop $(docker ps -q)'
   alias dsa="docker-stop-all"
   if is alias dcup; then
-    unalias dcdn
+    unalias dcup
   fi
   if is alias dcdn; then
     unalias dcdn

@@ -85,7 +85,7 @@ zinit ice wait"0" light-mode ver'develop' atload'_zsh_autosuggest_start' lucid
 zinit $load zsh-users/zsh-autosuggestions
 
 ## Fast Syntax Highlighting: comes last to avoid conflicts
-zinit ice wait"0" light-mode atload"ZINIT[COMPINIT_OPTS]=-C; zpcompinit"
+zinit ice wait"0" light-mode atload"zicdreplay -q"
 zinit $load zdharma/fast-syntax-highlighting
 
 # FZF Everything

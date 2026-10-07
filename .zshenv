@@ -17,7 +17,7 @@ export FN_DIR="$CUSTOM_DIR/functions"
 
 source $CUSTOM_DIR/custom_functions.zsh
 
-if is not supported && [[ -o interactive ]]; then
+if [[ ! ( $OSTYPE == darwin* || -f /etc/debian_version ) && -o interactive ]]; then
   print -u2 "warning: this config is built for macOS and Debian; get the clanker to port it"
 fi
 

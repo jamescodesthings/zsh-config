@@ -4,8 +4,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-fpath=(${fpath[@]:1} $fpath[1])
-
 source $CUSTOM_DIR/zsh_options.zsh
 source $CUSTOM_DIR/env.zsh
 
