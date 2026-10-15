@@ -173,6 +173,8 @@ fi
 if is osx; then
   alias av="sudo clamscan -r --bell -i -l ~/projects/av/clamav_scan.log"
   alias av-all="sudo clamscan -r --bell -i -l ~/projects/av/clamav_scan.log /"
+  alias sleep-disable="sudo pmset -a disablesleep 1"
+  alias sleep-enable="sudo pmset -a disablesleep 0"
 fi
 
 # Opening things. "open here" is the oh function, which reads the current
