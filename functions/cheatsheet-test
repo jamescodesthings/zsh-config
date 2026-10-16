@@ -1,0 +1,104 @@
+#!/usr/bin/env zsh
+
+# Checks that cheatsheets render with cheat. tldr (tlrc) is cheat's first
+# renderer, and it refuses a page with any line it does not understand, so a
+# sheet that looks fine in an editor can still error when shown.
+function cheatsheet-test() {
+  setopt local_options extended_glob
+
+  if is empty "$c"; then
+    source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
+  fi
+
+  if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo "$c[h1]cheatsheet-test$c[reset]"
+    echo ""
+    echo "$c[lead]checks that cheatsheets render with cheat: the tldr page shape, then tldr and glow when installed.$c[reset]"
+    echo ""
+    echo "$c[h2]usage$c[reset]"
+    echo "  cheatsheet-test                   check zsh-config's own cheatsheets/"
+    echo "  cheatsheet-test $c[param]<sheet|dir>...$c[reset]    check those sheets, or every *.md in those folders"
+    echo ""
+    echo "$c[h2]examples$c[reset]"
+    echo "  cheatsheet-test $c[param]~/projects/personal/pkms/cheatsheets$c[reset]"
+    echo "  cheatsheet-test $c[param]cheatsheets/git.md$c[reset]"
+    return 0
+  fi
+
+  local -a targets sheets
+  targets=("$@")
+  if (( ! $#targets )); then
+    targets=("${CUSTOM_DIR:-$HOME/.custom}/cheatsheets")
+  fi
+
+  local target
+  for target in $targets; do
+    if is dir "$target"; then
+      sheets+=("$target"/*.md(N-.))
+    elif is file "$target"; then
+      sheets+=("$target")
+    else
+      echo "$c[error]error:$c[reset] $target is not a sheet or a folder"
+      return 1
+    fi
+  done
+
+  if (( ! $#sheets )); then
+    echo "$c[warn]warning:$c[reset] no *.md sheets in $targets"
+    return 1
+  fi
+
+  local sheet line out
+  local -i failed=0 number bad
+  for sheet in $sheets; do
+    bad=0
+
+    # The shape tlrc accepts, checked here too so the test means the same on
+    # a machine without tlrc: every non-empty line starts with "# ", "> ",
+    # "- " or a backtick, and a backtick line is one example ending in one.
+    number=0
+    while IFS= read -r line || is not empty "$line"; do
+      number+=1
+      # tlrc ignores trailing whitespace and blank lines, but not indenting
+      line="${line%%[[:space:]]#}"
+      if is empty "${line##[[:space:]]#}"; then
+        continue
+      fi
+      if [[ "$line" == '`'* ]]; then
+        if [[ "$line" != *'`' ]] || (( $#line < 2 )); then
+          echo "$c[error]error:$c[reset] $sheet:$number: an example line must end with a backtick"
+          bad=1
+        fi
+      elif [[ "$line" != '# '* && "$line" != '> '* && "$line" != '- '* ]]; then
+        echo "$c[error]error:$c[reset] $sheet:$number: a line must start with \"# \", \"> \", \"- \" or a backtick"
+        bad=1
+      fi
+    done < "$sheet"
+
+    # stdin is closed because both can wait on a terminal that is not there.
+    if is available tldr; then
+      if ! out="$(tldr --render "$sheet" < /dev/null 2>&1 > /dev/null)"; then
+        # tlrc's first line repeats the path; keep only its "(line N)"
+        out="${${(f)out}[1]##*valid tldr page. }"
+        echo "$c[error]error:$c[reset] $sheet: tldr cannot render it ${out%:}"
+        bad=1
+      fi
+    fi
+    if is available glow; then
+      if ! out="$(glow -s dark -w 120 "$sheet" < /dev/null 2>&1 > /dev/null)"; then
+        echo "$c[error]error:$c[reset] $sheet: glow cannot render it: ${${(f)out}[1]}"
+        bad=1
+      fi
+    fi
+
+    failed+=$bad
+  done
+
+  if (( failed )); then
+    echo "$c[error]$failed of $#sheets cheatsheets failed$c[reset]"
+    return 1
+  fi
+  echo "$c[success]$#sheets cheatsheets render$c[reset]"
+}
+
+cheatsheet-test "$@"

@@ -36,10 +36,13 @@
 
 # Project drop-ins and NO_ZSH
 
-- Hook another project into the shell without editing this repo:
+- Hook another project into the shell without editing this repo, with variables and PATH for every zsh:
 
-`$CUSTOM_DIR/projects/<name>.env.zsh` (variables and PATH, every zsh)
-`$CUSTOM_DIR/projects/<name>.zsh` (aliases and functions, interactive only)
+`$CUSTOM_DIR/projects/<name>.env.zsh`
+
+- Hook in aliases and functions, for interactive shells only:
+
+`$CUSTOM_DIR/projects/<name>.zsh`
 
 > The contents of `projects/` are gitignored; the other project's installer writes and rewrites them.
 

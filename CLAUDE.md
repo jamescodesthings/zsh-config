@@ -101,12 +101,14 @@ is not empty "$var"  # -z test (negated)
 
 The sheets here are this repo's own. `link-cheatsheets` links each one into `$CHEATSHEET_DIR` (`~/cheatsheets`, set in `.zshenv`), which is where `cheat` reads; `installers/00-zshconfig` and `updaters/_self` call it, and other projects call it from their own installers for their sheets. A name already taken in `~/cheatsheets` by a real file or another project's link is a clash: it is never overwritten, `link-cheatsheets` prints a `warning:` line and returns 1. `cheat new` creates sheets here and links them.
 
-Markdown files rendered by the `cheat` function using `glow -w 120` (falls back to `bat`, then `cat`). When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
+Markdown files rendered by the `cheat` function with `tldr --render` (tlrc), falling back to `glow -w 120`, then `bat`, then `cat`. When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
 
 Standard format, tldr style with every section at heading level one:
 - `# name` — title, followed by a `>` line saying what it does
 - `# Usage` — `- description:` lines, each followed by the command in backticks
 - `# Related commands` — links to related sheets via `` `cheat related-name` ``
+
+tlrc refuses a whole sheet over one line it does not accept: every non-empty line must start with `# `, `> `, `- ` or a backtick, and a backtick line is one example that ends in a backtick. So no `##` headings, code fences, plain paragraphs or wrapped bullets. **Whenever a cheatsheet is made or changed, run `cheatsheet-test <sheet>` on it and fix every failure before finishing.** `cheatsheet-test` (`functions/cheatsheet-test`) takes sheets or folders, defaults to this repo's `cheatsheets/`, checks each line, renders with tldr and glow when installed (stdin closed), prints `file:line` for each failure and returns 1 if any sheet fails. `installers/00-zshconfig` runs it as a warning. Other projects run it on their own sheets.
 
 ### `installers/` directory
 
@@ -176,7 +178,7 @@ GNOME-specific config and tools. Only installed on machines running GNOME on Way
 
 ## Testing/Running
 
-There is no automated test suite. Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
+There is no automated test suite beyond `cheatsheet-test`. Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
 
 ```zsh
 # Syntax check without executing (prints nothing on success)
@@ -185,6 +187,9 @@ zsh -n path/to/changed-file
 
 # Load the full config in a new interactive shell and exit
 zsh -i -c exit
+
+# Check every cheatsheet renders with cheat
+cheatsheet-test
 ```
 
 A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
@@ -196,6 +201,7 @@ In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`config
 - Syntax-check every changed zsh file: `zsh -n <file>`
 - Confirm the config still loads cleanly: `zsh -i -c exit`
 - Verify the install symlink is still valid: `ls -la ~/.custom`
+- Run `cheatsheet-test` on every new or changed sheet in `cheatsheets/`
 - New files in `installers/` and `updaters/` must be executable: `chmod +x <file>`
 
 # Global workflow

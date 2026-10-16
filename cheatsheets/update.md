@@ -74,12 +74,9 @@
 
 > Numbers go up in tens, so there are nine free slots between any two scripts.
 
-- Create `updaters/NNN-name`, make it executable, and copy the shape of `updaters/120-tldr`:
-  source `_stub`, skip with exit 0 when the tool is missing, exit 1 on failure.
-- Keep the body inside the `{ ... exit 0 }` braces. zsh then parses the whole file before
-  running it, so saving the file mid-run cannot break it.
-- Pass the tool's own `--yes` style flag. stdin is closed, so a tool that still tries to
-  ask a question gets end-of-file rather than hanging the run.
+- Create `updaters/NNN-name`, make it executable, and copy the shape of `updaters/120-tldr`: source `_stub`, skip with exit 0 when the tool is missing, exit 1 on failure.
+- Keep the body inside the `{ ... exit 0 }` braces. zsh then parses the whole file before running it, so saving the file mid-run cannot break it.
+- Pass the tool's own `--yes` style flag. stdin is closed, so a tool that still tries to ask a question gets end-of-file rather than hanging the run.
 
 # Notes
 

@@ -9,21 +9,21 @@
 
 `command ssh host`
 
-- New tab in the current folder:
+- New tab in the current folder (Linux: `ctrl+t`):
 
-`cmd+t` (Linux: `ctrl+t`)
+`cmd+t`
 
-- New pane in the current folder (the grid layout places it: two columns first, then the right column splits, then the left):
+- New pane in the current folder (the grid layout places it: two columns first, then the right column splits, then the left) (Linux: `ctrl+shift+enter`):
 
-`cmd+enter` (Linux: `ctrl+shift+enter`)
+`cmd+enter`
 
-- Close the pane (the last pane closes its tab):
+- Close the pane (the last pane closes its tab) (Linux: `ctrl+w`):
 
-`cmd+w` (Linux: `ctrl+w`)
+`cmd+w`
 
-- Close the other panes in this tab, or the other tabs if this is the only pane:
+- Close the other panes in this tab, or the other tabs if this is the only pane (Linux: `ctrl+shift+w`):
 
-`cmd+shift+w` (Linux: `ctrl+shift+w`)
+`cmd+shift+w`
 
 - Zoom the current pane to full size and back:
 
@@ -57,9 +57,9 @@
 
 `cmd+opt+p`
 
-- Command palette:
+- Command palette (Linux: `ctrl+shift+a`):
 
-`cmd+shift+a` (Linux: `ctrl+shift+a`)
+`cmd+shift+a`
 
 # Notes
 

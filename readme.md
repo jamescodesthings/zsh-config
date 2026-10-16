@@ -9,7 +9,7 @@ My personal ZSH configuration. I use it on all my machines, and it is designed t
 - Is quick and easy to modify.
 - `update` keeps the whole machine current: OS, package managers, languages, shell plugins, tools and more, in a fixed order, asking for sudo once and never prompting again (`cheat update`)
 - `md-to-html` and `md-to-pdf` turn markdown files (one, several, or a glob) into styled pages or A4 pdfs beside them (`cheat md-to-pdf`)
-- `cheat <name>` — personal cheatsheet viewer with glow rendering and tldr fallback (`cheat -h` for usage)
+- `cheat <name>` — personal cheatsheet viewer with glow rendering and tldr fallback (`cheat -h` for usage); `cheatsheet-test <sheet|dir>` checks that sheets render (`cheat cheatsheet-test`)
 
 # Installation
 1. Clone it somewhere

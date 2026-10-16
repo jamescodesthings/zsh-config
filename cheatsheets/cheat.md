@@ -50,6 +50,10 @@
 
 `cheat help`
 
+- Check that sheets render, after making or changing one:
+
+`cheatsheet-test <sheet|dir>`
+
 # Notes
 
 > `cheat new <name>` creates the file in zsh-config's `cheatsheets/`, links it into `~/cheatsheets/` and does not open it — run `cheat edit <name>` to fill it in.

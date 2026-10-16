@@ -4,6 +4,7 @@ source "${0:a:h}/_stub"
 
 check-or-load install-link
 check-or-load link-cheatsheets
+check-or-load cheatsheet-test
 
 DEST_DIR=$HOME/.custom
 DEST_ZSHRC=$HOME/.zshrc
@@ -19,5 +20,8 @@ install-link $REPO_DIR/configs/python/.default-python-packages $HOME/.default-py
 install-link $REPO_DIR/configs/bash/bashrc $HOME/.bashrc
 install-link $REPO_DIR/configs/bash/bash_profile $HOME/.bash_profile
 link-cheatsheets "$REPO_DIR/cheatsheets"
+if ! cheatsheet-test "$REPO_DIR/cheatsheets"; then
+  echo "$c[warn]warning:$c[reset] the cheatsheets above will not render with cheat"
+fi
 
 echo "$c[success]zshconfig install complete$c[reset]"

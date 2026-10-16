@@ -163,24 +163,25 @@ function cheat() {
       cat >| "$new_file" <<TEMPLATE
 # $new_name
 
-Short description.
+> Short description.
 
-## Usage
+# Usage
 
 - Example:
 
 \`command --flag arg\`
 
-## Related commands
+# Related commands
 
-- Related tool
+- Related tool:
+
 \`cheat related-name\`
 TEMPLATE
       echo "${c[success]}created:${c[reset]} $new_file"
       if ! link-cheatsheets "$CUSTOM_DIR/cheatsheets"; then
         echo "${c[warn]}warning:${c[reset]} $new_name was created but not linked into $CHEATSHEET_DIR"
       fi
-      echo "run ${c[flag]}cheat edit $new_name${c[reset]} to fill it in"
+      echo "run ${c[flag]}cheat edit $new_name${c[reset]} to fill it in, then ${c[flag]}cheatsheet-test $new_file${c[reset]}"
       ;;
 
     update)
