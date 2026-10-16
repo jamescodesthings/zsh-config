@@ -1,7 +1,7 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-10-16 11:23 BST
+- **Date/Time Stamp:** 2026-10-16 12:10 BST
 - **Current Task Status:** t310: `cheatsheet-test` added and zsh-config's sheets fixed; t310 done, agent-forge's sheets pass. t322 done: `040-asdf` now borrows the gh token as `GITHUB_API_TOKEN`, so rust and bun version lookups no longer hit the 60 an hour GitHub API limit (3daa74f, merged into main, not pushed). Earlier: bootstrap rework done in 4 parts.
 
 ## Milestone & Phase Progress
@@ -54,6 +54,7 @@
 - [x] t322: GitHub token for asdf plugin version lookups (3daa74f, branch `worktree-t322-asdf-github-token`)
 - [x] t322 merged into main (not pushed)
 - [x] t310: `cheatsheet-test`, sheet fixes; agent-forge's 14 sheets pass too (agent-forge f7b9eee)
+- [x] t324: kitty cmd+enter returns to the grid before splitting (57505c0); the grid already gave the asked-for order
 - [ ] User: after the next `update` installs rust 1.99.1, run `asdf uninstall rust stable` (left by the manual fix; the updater only removes numbered versions)
 - [ ] User: fill in uConsole keys in configs/kitty/overrides.uconsole.conf and configs/micro/bindings.uconsole.json
 - [ ] User: on each other machine, pull, restart terminals, run ./install (or update)
