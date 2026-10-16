@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-10-07 14:40 BST
-- **Current Task Status:** Bootstrap rework done in 4 parts (shell core and project drop-ins, Debian release installs, asdf first setup, kitty and micro per-machine keys). Debian end-to-end passed in docker on arm64 and amd64. tmux and thefuck removed.
+- **Date/Time Stamp:** 2026-10-16 11:15 BST
+- **Current Task Status:** t322 done: `040-asdf` now borrows the gh token as `GITHUB_API_TOKEN`, so rust and bun version lookups no longer hit the 60 an hour GitHub API limit (3daa74f, on branch `worktree-t322-asdf-github-token`, not merged or pushed). Earlier: bootstrap rework done in 4 parts.
 
 ## Milestone & Phase Progress
 
@@ -51,6 +51,9 @@
 - [x] Part 3 asdf: policy plus update-policy.<host>, installer runs 040-asdf, bun and uv under asdf, direnv via brew/apt (8f07e43, e4d217c, 8e37784)
 - [x] Part 4 terminal: kitty ssh alias inside kitty, uConsole kitty/micro overrides (b5d4e56)
 - [x] Final fix wave for existing machines (37af1be); this Mac migrated (bun, uv, direnv)
+- [x] t322: GitHub token for asdf plugin version lookups (3daa74f, branch `worktree-t322-asdf-github-token`)
+- [ ] Merge `worktree-t322-asdf-github-token` into main and push (waits on the user through the hub)
+- [ ] User: after the next `update` installs rust 1.99.1, run `asdf uninstall rust stable` (left by the manual fix; the updater only removes numbered versions)
 - [ ] User: fill in uConsole keys in configs/kitty/overrides.uconsole.conf and configs/micro/bindings.uconsole.json
 - [ ] User: on each other machine, pull, restart terminals, run ./install (or update)
 - [ ] Follow-ups: move functions/wipcrypt to agent-forge; 900-agent-forge and 130-obsidian updaters as project drop-ins; drop the CHEATSHEET_DIR shim in .zshenv once every machine has restarted; 02-apt-base aborts on any broken third-party apt source; agent-forge skills suite has 43 failing cases (not from this work)

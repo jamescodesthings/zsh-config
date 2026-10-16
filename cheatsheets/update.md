@@ -47,7 +47,7 @@
 > `stable` (python) is the newest release unless it is the `.0` or `.1` of a new series.
 > A tool that is not listed is never touched. Old versions go unless a project under `~/projects` pins them.
 > bun is an asdf tool: never run `bun upgrade`. direnv comes from brew or apt, and the policy removes its asdf copy.
-> `could not work out the latest version` usually means the GitHub API limit ran out. `040-asdf` uses the `gh` login's token, so `gh auth login` fixes it.
+> `could not work out the ... version of <tool>` usually means the GitHub API limit ran out. `040-asdf` uses the `gh` login's token, so `gh auth login` fixes it.
 
 - See what the asdf updater would do, without doing it:
 
