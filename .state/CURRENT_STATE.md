@@ -73,7 +73,7 @@
 
 ## Next Steps
 
-- Other machines: after pulling, open a new shell (or restart tmux) and run each project's installer, or `update`, to fill `~/cheatsheets`. `link-cheatsheets` refuses to link while an old in-repo `CHEATSHEET_DIR` is in the environment.
+- Other machines: after pulling, open a new shell and run each project's installer, or `update`, to fill `~/cheatsheets`. `link-cheatsheets` refuses to link while an old in-repo `CHEATSHEET_DIR` is in the environment.
 
 - python 3.14.7 was built before `tcl-tk` was installed, so it has no tkinter. Fix if wanted: `asdf uninstall python 3.14.7`, then `update brew asdf`.
 - Reading order given to the user for the research docs: improvements (ranked table, then sections 1 to 6), Obsidian alternatives (Recommendation only), macOS workflow (ranked table, then ranks 1 to 9). The user has said they will start on improvements.

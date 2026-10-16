@@ -11,7 +11,7 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 - **Prompt**: Powerlevel10k
 - **Version manager**: asdf (for Node, Python, Java, etc.)
 - **Key tools**: eza, fzf, direnv, micro, glow, bat
-- **Cheatsheet viewer**: `cheat` command — renders local markdown from `~/cheatsheets` with glow, falls back to tldr
+- **Cheatsheet viewer**: `cheat` command — renders local markdown from `~/cheatsheets` with `tldr --render` (then glow, bat or cat), and shows the tldr page when no local sheet matches
 
 ## Installation
 
