@@ -3,13 +3,13 @@
 {
 source "${0:a:h}/_stub"
 
-# projects is agent-forge's project map, on PATH through its projects/ drop-in.
+# projects comes from project-manager, on PATH through its projects/ drop-in.
 # "--update update" refreshes its GitHub repo cache, then pulls every installed
 # project with git pull --ff-only and runs that project's zsh/install.zsh,
 # printing an ok or FAIL line for each and exiting 1 if any failed. It never
 # prompts without a terminal.
 if ! whence projects > /dev/null; then
-  echo "$c[info]skipping:$c[reset] projects not installed (it comes with agent-forge)"
+  echo "$c[info]skipping:$c[reset] projects not installed (it comes with project-manager)"
   exit 0
 fi
 

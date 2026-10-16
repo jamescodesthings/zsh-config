@@ -54,3 +54,6 @@ Temporary Items
 
 # Local caches written by tools run from this repo
 .cache/
+
+# Claude Code worktrees
+.claude/worktrees/
