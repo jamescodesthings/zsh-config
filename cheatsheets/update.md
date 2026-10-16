@@ -13,7 +13,7 @@
 
 `update brew tldr`
 
-- Pull and reinstall every installed project (project-manager's `projects`):
+- Pull and reinstall every installed project, agent-forge included (project-manager's `projects`):
 
 `update projects`
 
