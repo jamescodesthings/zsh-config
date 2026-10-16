@@ -2,7 +2,7 @@
 
 - **Active Tool:** Claude Code CLI
 - **Date/Time Stamp:** 2026-10-16 11:23 BST
-- **Current Task Status:** t310: `cheatsheet-test` added and zsh-config's sheets fixed; t310 stays open until agent-forge fixes its 5 failing sheets. t322 done: `040-asdf` now borrows the gh token as `GITHUB_API_TOKEN`, so rust and bun version lookups no longer hit the 60 an hour GitHub API limit (3daa74f, merged into main, not pushed). Earlier: bootstrap rework done in 4 parts.
+- **Current Task Status:** t310: `cheatsheet-test` added and zsh-config's sheets fixed; t310 done, agent-forge's sheets pass. t322 done: `040-asdf` now borrows the gh token as `GITHUB_API_TOKEN`, so rust and bun version lookups no longer hit the 60 an hour GitHub API limit (3daa74f, merged into main, not pushed). Earlier: bootstrap rework done in 4 parts.
 
 ## Milestone & Phase Progress
 
@@ -53,7 +53,7 @@
 - [x] Final fix wave for existing machines (37af1be); this Mac migrated (bun, uv, direnv)
 - [x] t322: GitHub token for asdf plugin version lookups (3daa74f, branch `worktree-t322-asdf-github-token`)
 - [x] t322 merged into main (not pushed)
-- [/] t310: `cheatsheet-test` and sheet fixes done; waiting on agent-forge's 5 failing sheets (the hub routes it)
+- [x] t310: `cheatsheet-test`, sheet fixes; agent-forge's 14 sheets pass too (agent-forge f7b9eee)
 - [ ] User: after the next `update` installs rust 1.99.1, run `asdf uninstall rust stable` (left by the manual fix; the updater only removes numbered versions)
 - [ ] User: fill in uConsole keys in configs/kitty/overrides.uconsole.conf and configs/micro/bindings.uconsole.json
 - [ ] User: on each other machine, pull, restart terminals, run ./install (or update)
