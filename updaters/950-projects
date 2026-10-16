@@ -1,0 +1,26 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+# projects is agent-forge's project map, on PATH through its projects/ drop-in.
+# "--update update" refreshes its GitHub repo cache, then pulls every installed
+# project with git pull --ff-only and runs that project's zsh/install.zsh,
+# printing an ok or FAIL line for each and exiting 1 if any failed. It never
+# prompts without a terminal.
+if ! whence projects > /dev/null; then
+  echo "$c[info]skipping:$c[reset] projects not installed (it comes with agent-forge)"
+  exit 0
+fi
+
+echo "$c[info]updating:$c[reset] every installed project"
+projects --update update
+if is not equal "$?" "0"; then
+  echo "$c[error]error:$c[reset] projects update failed for at least one project, see the FAIL lines above"
+  exit 1
+fi
+
+echo "$c[success]success:$c[reset] projects updated"
+
+exit 0
+}

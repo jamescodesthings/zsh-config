@@ -13,6 +13,10 @@
 
 `update brew tldr`
 
+- Pull and reinstall every project on agent-forge's `projects` map:
+
+`update projects`
+
 - Show the updaters in run order:
 
 `update --list`

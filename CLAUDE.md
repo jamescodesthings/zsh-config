@@ -132,7 +132,7 @@ Each run keeps an error log at `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.l
 
 Rules for an updater:
 
-- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities (`115-releases` refreshes the Debian release tools), `130` data, `900` applications that depend on the rest. Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
+- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities (`115-releases` refreshes the Debian release tools), `130` data, `900` applications that depend on the rest, `950-projects` last (pulls and reinstalls every project on agent-forge's `projects` map, skipped when `projects` is missing). Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
 - Source `_stub` from the same directory; it loads `is` and the colours, and exports the non-interactive environment (`NONINTERACTIVE`, `DEBIAN_FRONTEND`, `GIT_TERMINAL_PROMPT=0`).
 - Skip with `exit 0` when the tool is missing, `exit 1` on failure.
 - Never prompt. Pass the tool's own `--yes` style flag; sudo drops the environment, so pass variables on the sudo command line.
