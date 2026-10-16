@@ -48,6 +48,21 @@ if is linux && is available apt-get; then
   fi
 fi
 
+# Most plugins list their versions through the GitHub API, which allows 60
+# unauthenticated requests an hour. A run of update can use those up, and then
+# "asdf list all" comes back empty (bun) or with only its named channels
+# (rust). The plugins send GITHUB_API_TOKEN when it is set, which raises the
+# limit to 5000, so borrow the gh login when there is one.
+if is empty "$GITHUB_API_TOKEN" && is available gh; then
+  GITHUB_API_TOKEN="$(gh auth token 2> /dev/null)"
+  if is not empty "$GITHUB_API_TOKEN"; then
+    export GITHUB_API_TOKEN
+  fi
+fi
+if is empty "$GITHUB_API_TOKEN"; then
+  echo "$c[info]note:$c[reset] no GitHub token (install gh and run gh auth login for one), so plugins share the 60 an hour GitHub API limit"
+fi
+
 echo "$c[info]updating:$c[reset] asdf plugins"
 run asdf plugin update --all
 if is not equal "$?" "0"; then
@@ -166,7 +181,7 @@ function update-tool() {
   fi
 
   if is empty "$target"; then
-    echo "$c[error]error:$c[reset] could not work out the $policy version of $tool"
+    echo "$c[error]error:$c[reset] could not work out the $policy version of $tool: asdf list all $tool gave no plain release, often the GitHub API rate limit"
     FAILED+=($tool)
     return
   fi
