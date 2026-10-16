@@ -1073,7 +1073,7 @@ run_cycle_key() {
   # pulled out below. Printed back out immediately after, minus that line, so
   # the operator still sees exactly what create-key reported, just delayed
   # until it finishes instead of arriving live.
-  create_key_output=$("$create_key")
+  create_key_output=$("$create_key" --force)
   create_key_rc=$?
   print -r -- "$create_key_output" | grep -v '^BACKUP_PATH='
 
