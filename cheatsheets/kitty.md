@@ -65,6 +65,10 @@
 
 `cmd+left` / `cmd+right`
 
+- Move one word left or right (macOS only):
+
+`opt+left` / `opt+right`
+
 - Paste (Linux only):
 
 `ctrl+v`
