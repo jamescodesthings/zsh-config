@@ -1,98 +1,40 @@
 # npm
 
-> npm aliases and helpers.
+> Aliases and helpers zsh-config adds over npm. Defined only when `npm` is available.
 
-# Running
+# Run
 
-- Start the project:
+- `npmst`: `npm start`
+- `npmr <script>`: `npm run`
 
-`npmst`
+# Install
 
-- Run a script:
+- `npmS <pkg>`: `npm i -S`
+- `npmD <pkg>`: `npm i -D`
+- `npmSE <pkg>`: `npm i -E`, exact version
+- `npmDE <pkg>`: `npm i -D -E`
+- `npmil`: `npm i --legacy-peer-deps`
+- `npmSEl <pkg>`: `npm i -E --legacy-peer-deps`
+- `npmDEl <pkg>`: `npm i -D -E --legacy-peer-deps`
+- `npmg <pkg>`: `npm i -g`
+- `npmiy`: `npm init -y`
 
-`npmr <script>`
+# Uninstall
 
-# Installing
+- `npmU <pkg>`: `npm uninstall -S -D`
+- `npmUl <pkg>`: `npm uninstall -S -D --legacy-peer-deps`
+- `npmUG <pkg>`: `npm uninstall -g`
 
-- Install a dependency (save to dependencies):
+# List
 
-`npmS <pkg>`
+- `npmL0`: local packages, top level
+- `npmL0g`: global packages, top level
 
-- Install a dev dependency:
+# Update
 
-`npmD <pkg>`
-
-- Install exact version (no semver range):
-
-`npmSE <pkg>`
-
-- Install exact dev dependency:
-
-`npmDE <pkg>`
-
-- Install with legacy peer deps:
-
-`npmil`
-
-- Install exact with legacy peer deps:
-
-`npmSEl <pkg>`
-
-- Install exact dev with legacy peer deps:
-
-`npmDEl <pkg>`
-
-- Install globally:
-
-`npmg <pkg>`
-
-- Init new project (skip prompts):
-
-`npmiy`
-
-# Uninstalling
-
-- Uninstall a package:
-
-`npmU <pkg>`
-
-- Uninstall with legacy peer deps:
-
-`npmUl <pkg>`
-
-- Uninstall global package:
-
-`npmUG <pkg>`
-
-# Listing
-
-- List installed packages (local):
-
-`npmL0`
-
-- List installed packages (global):
-
-`npmL0g`
-
-# Updating
-
-- Interactively update outdated packages to latest, one at a time:
-
-`npm-update-latest`
-
-- Interactively check and update packages (uses `npx npm-check`):
-
-`npm-check-update`
-
-`ncu`
-
-# Notes
-
-> `npm-update-latest` runs `npm outdated --json`, prompts `[y/n]` for each outdated package,
-> then runs `npm install <pkg>@latest --save` (or `--save-dev` for dev deps) for confirmed updates.
-> All aliases only defined when `npm` is available.
+- `npm-update-latest`: for each outdated package, ask `[y/n]`, then `npm install <pkg>@latest` with `--save` or `--save-dev`
+- `npm-check-update`, `ncu`: `npx npm-check -u -E`
 
 # Related commands
 
-- Full npm reference:
-`tldr npm`
+- `tldr npm`

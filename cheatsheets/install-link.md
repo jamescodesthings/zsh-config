@@ -1,27 +1,20 @@
 # install-link
 
-> Create a symlink from a source path to a target path, backing up any existing file.
+> Symlink `<from>` to `<to>`, backing up what is there. Runs `rm`, `mv` and `ln` through sudo.
+> Exit 1 on wrong arguments or any failed step.
 
 # Usage
 
-- Symlink <from> to <to>, backing up any existing file at <to>:
-
-`install-link <from> <to>`
-
-# Examples
-
-- Symlink the asdf config to home directory:
+- Link a config into place:
 
 `install-link ./configs/asdf/.asdfrc ~/.asdfrc`
 
-# Notes
+# Existing target
 
-> If <to> is an existing symlink: removes it.
-> If <to> is an existing file: moves it to <to>.bak.
-> Creates any missing parent directories.
-> Used by installer scripts and `install-box-config`.
+- A symlink: removed
+- A file: moved to `<to>.bak`
+- A directory: moved to `<to>_bak`
 
 # Related commands
 
-- Install a per-machine config with hostname/OS fallback:
-`cheat install-box-config`
+- `cheat install-box-config`

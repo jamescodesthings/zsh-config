@@ -1,62 +1,29 @@
 # eza
 
-> Modern replacement for ls with colour, icons, and git status. Used as ls alias in this config.
+> ls replacement. `ls` is aliased to `eza --group-directories-first` when eza is installed.
 
-# Basic listing
+# Options
 
-- List files (aliased as ls):
+- `-l`: long format
+- `-a`: include hidden files
+- `-h`: human-readable sizes (long format)
+- `--git`: git status column (with `-l`)
+- `--icons`: file icons
+- `--sort=modified`: sort by modified time
+- `--sort=size`: sort by size
+- `--tree`: tree view
+- `--level=<n>`: limit the tree depth
 
-`eza`
+# Usage
 
-- Long format with permissions, size, date:
-
-`eza -l`
-
-- Include hidden files:
-
-`eza -a`
-
-- Long format including hidden:
+- Long list with hidden files:
 
 `eza -la`
 
-# Display options
+- Tree two levels deep, long format:
 
-- Show file sizes in human-readable format:
-
-`eza -lh`
-
-- Show git status column:
-
-`eza -l --git`
-
-- Show file icons:
-
-`eza --icons`
-
-- Sort by modified time (newest first):
-
-`eza -l --sort=modified`
-
-- Sort by size:
-
-`eza -l --sort=size`
-
-# Tree view
-
-- Tree view of current directory:
-
-`eza --tree`
-
-- Tree limited to depth N:
-
-`eza --tree --level=<n>`
-
-- Tree with long format:
-
-`eza --tree -l`
+`eza --tree --level=2 -l`
 
 # Related commands
 
-- Full eza reference
-`tldr eza`
+- `tldr eza`

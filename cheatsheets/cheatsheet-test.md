@@ -1,7 +1,13 @@
 # cheatsheet-test
 
-> Check that cheatsheets render with `cheat`, which shows them with tldr first.
-> Every non-empty line must start with `# `, `> `, `- ` or a backtick, and a backtick line is one example ending in a backtick.
+> Check that sheets render with `cheat`: the line shape, then tldr and glow when installed.
+> Exit 1 when any sheet fails; each failure prints the file and line.
+
+# Rules
+
+- Every non-empty line starts with `# `, `> `, `- ` or a backtick
+- A backtick line is one example ending in a backtick
+- No indenting
 
 # Usage
 
@@ -9,25 +15,15 @@
 
 `cheatsheet-test`
 
-- Check one sheet, or every sheet in a folder:
-
-`cheatsheet-test ~/projects/personal/pkms/cheatsheets`
-
-- Check a sheet after making or changing it:
+- Check one sheet:
 
 `cheatsheet-test cheatsheets/git.md`
 
-# Notes
+- Check every sheet in a folder:
 
-> Each failure prints the file and line. tldr and glow also render each sheet when they are installed; the line check runs everywhere.
-> The exit code is 1 when any sheet fails, so another project's installer or test target can call it.
+`cheatsheet-test ~/projects/personal/pkms/cheatsheets`
 
 # Related commands
 
-- Create a sheet in the right shape:
-
-`cheat new <name>`
-
-- Link a project's sheets into `~/cheatsheets`:
-
-`link-cheatsheets <dir>`
+- `cheat cheat-new`
+- `cheat link-cheatsheets`

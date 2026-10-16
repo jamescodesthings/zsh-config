@@ -1,136 +1,62 @@
 # asdf
 
-> Multiple runtime version manager. Manages Node, Python, Java, and more via plugins.
+> Runtime version manager (Node, Python, Java and more) through plugins.
+> `update asdf` applies `configs/asdf/update-policy`; bun is managed here, never run `bun upgrade`.
 
 # Plugins
 
-- Add a plugin:
+- `asdf plugin add <name>`: add a plugin
+- `asdf plugin add <name> <git-url>`: add from a git repo
+- `asdf plugin list`: installed plugins
+- `asdf plugin list all`: available plugins
+- `asdf plugin update <name>`: update one plugin
+- `asdf plugin update --all`: update every plugin
+- `asdf plugin remove <name>`: remove a plugin and its versions
 
-`asdf plugin add <name>`
+# Install
 
-- Add a plugin from a custom git repo:
+- `asdf install`: versions from `.tool-versions`
+- `asdf install <name> <version>`: one version
+- `asdf install <name> latest`: newest release
+- `asdf install <name> latest:3`: newest matching a prefix
 
-`asdf plugin add <name> <git-url>`
+# Set
 
-- List installed plugins:
+- `asdf set <name> <version>`: current directory's `.tool-versions`
+- `asdf set -u <name> <version>`: user-level (`~/.tool-versions`)
+- `asdf set -p <name> <version>`: parent directory
 
-`asdf plugin list`
+# Inspect
 
-- List all available plugins:
+- `asdf current`: current versions of every tool
+- `asdf current <name>`: one tool
+- `asdf list <name>`: installed versions
+- `asdf list all <name>`: available versions
+- `asdf latest <name>`: newest version
+- `asdf latest --all`: newest for every installed tool
+- `asdf where <name> <version>`: install path
+- `asdf info`: OS, shell and asdf debug info
 
-`asdf plugin list all`
+# Maintain
 
-- Update a plugin:
+- `asdf uninstall <name> <version>`: remove a version
+- `asdf reshim <name> <version>`: rebuild shims
 
-`asdf plugin update <name>`
+# zsh-config
 
-- Update all plugins:
-
-`asdf plugin update --all`
-
-- Remove a plugin and all its versions:
-
-`asdf plugin remove <name>`
-
-# Installing versions
-
-- Install version from `.tool-versions` in current directory:
-
-`asdf install`
-
-- Install a specific version:
-
-`asdf install <name> <version>`
-
-- Install latest stable version:
-
-`asdf install <name> latest`
-
-- Install latest version matching a prefix:
-
-`asdf install <name> latest:3`
-
-# Setting versions
-
-- Set version in current directory's `.tool-versions`:
-
-`asdf set <name> <version>`
-
-- Set version globally (user-level):
-
-`asdf set -u <name> <version>`
-
-- Set version for parent directory:
-
-`asdf set -p <name> <version>`
-
-# Listing versions
-
-- Show current version for all tools:
-
-`asdf current`
-
-- Show current version for a tool:
-
-`asdf current <name>`
-
-- List installed versions of a tool:
-
-`asdf list <name>`
-
-- List all available versions of a tool:
-
-`asdf list all <name>`
-
-- Show latest stable version:
-
-`asdf latest <name>`
-
-- Show latest for all installed tools:
-
-`asdf latest --all`
-
-# Maintenance
-
-- Uninstall a specific version:
-
-`asdf uninstall <name> <version>`
-
-- Show install path for a version:
-
-`asdf where <name> <version>`
-
-- Recreate shims after manual plugin changes:
-
-`asdf reshim <name> <version>`
-
-- Show OS, shell, and asdf debug info:
-
-`asdf info`
-
-# Custom helpers
-
-- Update the tools in `configs/asdf/update-policy`, set them globally and remove old versions that no project pins:
-
-`update asdf`
-
-- Policy: `configs/asdf/update-policy` is the base, `update-policy.<hostname>` adds one machine's tools, and a later line wins. Policies are `latest`, `stable` (python: skip a `.0` or `.1` release of a new series) and `remove`.
-- bun is managed here: never run `bun upgrade`. direnv is not (brew or apt), so the policy removes it.
-- First install is the same code path as `update`: `installers/asdf` runs `updaters/040-asdf`.
-
-- Add a tool for this machine only: create `configs/asdf/update-policy.<hostname>` with a `<tool> latest` line, then run `update asdf`.
+- `update asdf`: install and upgrade the policy tools, set them globally, remove old versions that no project pins
+- `asdf-cleanup`: remove every version that is not the global one, pinned or not
+- Policies: `latest`, `stable` (python: skips a new series' `.0` and `.1`), `remove`
+- `configs/asdf/update-policy` is the base; `update-policy.<hostname>` adds one machine's tools, a later line wins
+- direnv is not under asdf (brew or apt); the policy removes it
+- Add a tool for this machine, then run `update asdf`:
 
 `echo "golang latest" >> ~/.custom/configs/asdf/update-policy.$(get-hostname)`
 
-- See what that would do, without doing it:
+- Show what the updater would do:
 
 `UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf`
 
-- Remove all non-current versions of every installed plugin, pinned or not:
-
-`asdf-cleanup`
-
 # Related commands
 
-- Full asdf reference
-`tldr asdf`
+- `tldr asdf`

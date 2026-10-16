@@ -1,46 +1,31 @@
 # fzf
 
-> Fuzzy finder for the terminal. Integrated into this shell for history search and file selection.
+> Fuzzy finder. Key bindings come from `load-fzf.zsh` in interactive shells.
 
-# Shell key bindings (loaded by load-fzf.zsh)
+# Key bindings
 
-- Fuzzy search command history:
+- `Ctrl+R`: search command history
+- `Ctrl+T`: pick files or directories, insert the paths at the cursor
+- `Alt+C`: pick a subdirectory and cd into it
 
-`Ctrl+R`
+# Usage
 
-- Fuzzy file finder (inserts path at cursor):
-
-`Ctrl+T`
-
-- Fuzzy cd into subdirectory:
-
-`Alt+C`
-
-# Piped usage
-
-- Fuzzy select from a list:
+- Select from a list:
 
 `cat list.txt | fzf`
 
-- Multi-select (Tab to select, Enter to confirm):
+- Multi-select (Tab marks, Enter confirms):
 
 `ls | fzf -m`
 
-- Preview file content while selecting:
+- Preview the file under the cursor:
 
 `fzf --preview 'bat --color=always {}'`
 
-# In scripts
-
-- Select a git branch:
+- Check out a branch:
 
 `git branch | fzf | xargs git checkout`
 
-- Kill a process by name:
-
-`ps aux | fzf | awk '{print $2}' | xargs kill`
-
 # Related commands
 
-- Full fzf reference
-`tldr fzf`
+- `tldr fzf`

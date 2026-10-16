@@ -1,15 +1,14 @@
 # git-prune-local
 
-> Delete local branches that have been deleted from the remote.
-> Lists affected branches and prompts for confirmation before deleting.
+> Delete local branches whose origin branch is gone (`git branch -D`).
+> Lists them and asks first. Run `git fetch --prune` beforehand so gone branches show.
 
 # Usage
 
-- List and prune stale local branches:
+- List and prune:
 
 `git-prune-local`
 
 # Related commands
 
-- Delete a specific branch locally and on origin
-`cheat git-cleanup-branch`
+- `cheat git-cleanup-branch`

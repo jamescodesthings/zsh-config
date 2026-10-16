@@ -1,77 +1,92 @@
 # kitty
 
-> Terminal keys for this config. macOS keys live in `configs/kitty/os.macos.conf`,
-> Linux keys in `configs/kitty/os.linux.conf`; kitty loads the one for the OS it runs on.
+> Terminal keys for this config; macOS keys shown, Linux key in the description where it differs.
+> Keys live in `configs/kitty/os.macos.conf` and `os.linux.conf`.
 
-# Usage
-
-- ssh inside kitty is the kitten (terminfo and shell integration travel with it); `s` is the same alias. Outside kitty, `ssh` is plain ssh. Bypass the alias by hand:
-
-`command ssh host`
+# Panes and tabs
 
 - New tab in the current folder (Linux: `ctrl+t`):
 
 `cmd+t`
 
-- New pane in the current folder: the 2nd sits beside the first, the 3rd splits the right column, the 4th makes a 2x2 grid, and so on. From a zoomed pane it returns to the grid first (Linux: `ctrl+shift+enter`):
+- New pane in the current folder, back to the grid first (Linux: `ctrl+shift+enter`):
 
 `cmd+enter`
 
-- Close the pane (the last pane closes its tab) (Linux: `ctrl+w`):
+- Close the pane (Linux: `ctrl+w`):
 
 `cmd+w`
 
-- Close the other panes in this tab, or the other tabs if this is the only pane (Linux: `ctrl+shift+w`):
+- Close the other panes, or the other tabs if this is the only pane (Linux: `ctrl+shift+w`):
 
 `cmd+shift+w`
 
-- Zoom the current pane to full size and back:
+- Zoom the pane and back (macOS only):
 
 `cmd+shift+enter`
 
-- Move focus to the pane in that direction:
+- Detach the pane into its own tab or window (macOS only):
 
-`ctrl+arrows`
+`cmd+opt+p`
 
-- Step to the previous or next pane:
+- Previous or next pane (macOS only):
 
 `cmd+[` / `cmd+]`
+
+- Next or previous tab (Linux only):
+
+`ctrl+tab` / `ctrl+shift+tab`
+
+- Quit kitty (Linux only):
+
+`ctrl+shift+q`
+
+# Focus, move, resize
+
+- Focus the pane in that direction:
+
+`ctrl+arrows`
 
 - Move the pane itself:
 
 `ctrl+shift+arrows`
 
-- Jump to the start or end of the command line:
+- Resize the pane (Linux: `ctrl+alt+arrows`):
+
+`ctrl+opt+arrows`
+
+- Reset pane sizes (Linux: `ctrl+alt+backspace`):
+
+`ctrl+opt+backspace`
+
+# Editing
+
+- Start or end of the command line (macOS only):
 
 `cmd+left` / `cmd+right`
 
-- Move a word left or right:
+- Paste (Linux only):
 
-`opt+left` / `opt+right`
-
-- Search the scrollback, starting with the selected text if any:
-
-`cmd+f`
-
-- Detach the pane into its own tab or window:
-
-`cmd+opt+p`
+`ctrl+v`
 
 - Command palette (Linux: `ctrl+shift+a`):
 
 `cmd+shift+a`
 
-# Notes
+# ssh
 
-> Selecting text copies it to the clipboard; `cmd+c` and `cmd+v` still copy and paste.
-> kitty's own macOS keys still work: `cmd+k` clears, `cmd+1` to `cmd+9` pick a tab,
-> `cmd+shift+[` and `]` step through tabs, `cmd+plus` and `cmd+minus` change the font size.
-> `ctrl+left` and `ctrl+right` only reach kitty while macOS's "Move left/right a space"
-> shortcuts are off or moved (System Settings, Keyboard, Keyboard Shortcuts, Mission Control).
-> `cmd+f` opens the scrollback in `less`. At its prompt: `/text` and `?text` search, `n` and `N` step through
-> matches, `&text` shows only matching lines (`&` alone shows everything again), `g` and `G` go to the top
-> and bottom, `q` closes it.
-> The config reloads itself when saved.
+- `ssh` and `s` are `kitten ssh` inside kitty
+- Bypass the alias:
+
+`command ssh host`
+
+# kitty defaults on macOS
+
+- `cmd+f`: search the scrollback
+- `cmd+k`: clear
+- `cmd+1` to `cmd+9`: pick a tab
+- `cmd+shift+[` / `cmd+shift+]`: previous or next tab
+- `cmd+plus` / `cmd+minus`: font size
 
 # Related commands
 

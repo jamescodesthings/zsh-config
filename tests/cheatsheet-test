@@ -1,0 +1,50 @@
+#!/usr/bin/env zsh
+# Tests functions/cheatsheet-test from a plain `zsh -f -c`, as another
+# project's script would call it, under shell options that once broke it.
+# Run: tests/cheatsheet-test. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+# A folder name with a space and a glob character, so quoting is tested too
+GOOD="$TMP/good [sheets]"
+BAD="$TMP/bad"
+mkdir -p "$GOOD" "$BAD"
+printf '# a\n\n> A sheet.\n\n- Run it:\n\n`a --flag`\n' > "$GOOD/a.md"
+printf '# b\n\n> Another.\n\n- `-x`: an option\n' > "$GOOD/b.md"
+printf '# c\n\n## not a tldr heading\n' > "$BAD/c.md"
+
+failed=0
+
+# expect <exit code> <description> <shell options> <args...>
+function expect() {
+  local want="$1" what="$2" opts="$3"
+  shift 3
+  local out code
+  out="$(zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is cheatsheet-test
+    eval "$2"
+    shift 2
+    cheatsheet-test "$@"
+  ' _ "$REPO_DIR" "$opts" "$@" 2>&1)"
+  code=$?
+  if [[ "$code" == "$want" ]]; then
+    echo "ok: $what${opts:+ ($opts)}"
+  else
+    echo "FAIL: $what${opts:+ ($opts)}: exit $code, wanted $want"
+    echo "$out" | sed 's/^/    /'
+    failed=1
+  fi
+}
+
+for opts in '' 'setopt sh_glob' 'setopt no_bare_glob_qual' 'setopt no_glob' 'setopt null_glob' 'setopt ksh_glob' 'emulate sh'; do
+  expect 0 "a folder of good sheets passes" "$opts" "$GOOD"
+  expect 1 "a folder with a bad sheet fails" "$opts" "$BAD"
+done
+expect 0 "one good sheet passes" '' "$GOOD/a.md"
+expect 1 "a missing path fails" '' "$TMP/nope"
+expect 1 "an empty folder fails" '' "$TMP"
+
+exit $failed

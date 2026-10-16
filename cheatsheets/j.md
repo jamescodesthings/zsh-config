@@ -1,74 +1,37 @@
 # j
 
-> Wrapper around rupa/z (directory frecency). Subcommands manage z history; unrecognised args navigate.
+> Directory jumper over rupa/z, with commands to manage z's history.
+> Needs the z plugin loaded. Bare `j` lists z's ranks; an unknown word is passed to z as a query.
 
-# Navigation
+# Commands
 
-- Jump to highest-ranked directory matching query:
+- `cheat j list`: list every entry by rank
+- `cheat j search`: filter entries by regex
+- `cheat j add`: add a path or raise its rank
+- `cheat j delete`: remove entries matching a regex
+- `cheat j bump`: put one entry at the top
+- `cheat j reorder`: reorder the top entries in your editor
+- `cheat j clean`: remove entries for missing directories
+- `cheat j stats`: totals, top 5, oldest and newest
+- `cheat j edit`: open the z data file in your editor
+
+# Help
+
+- `j help`, `j -h`, `j --help`: show usage
+
+# Jump
+
+- Go to the best match, or to the best match for several terms:
 
 `j <query>`
 
-- Jump to highest-ranked directory matching multiple terms:
-
 `j projects zsh`
-
-# Subcommands
-
-- List all tracked directories sorted by rank:
-
-`j list`
-
-- Search entries by regex:
-
-`j search <regex>`
-
-- Search with no argument — navigates to best z match:
-
-`j search`
-
-- Add a path to history (increments rank if already present):
-
-`j add <path>`
-
-- Delete entries matching a regex (shows matches, confirms):
-
-`j delete <regex>`
-
-- Set a single matching entry to max rank + 1 (bring to top):
-
-`j bump <regex>`
-
-- Reorder top 10 entries in $EDITOR (opens paths-only file):
-
-`j reorder`
-
-- Reorder top N entries:
-
-`j reorder --count <n>`
-
-- Remove entries for directories that no longer exist:
-
-`j clean`
-
-- Show stats: total, top 5, oldest/newest:
-
-`j stats`
-
-- Open z data file directly in $EDITOR:
-
-`j edit`
-
-# How frecency works
-
-> z tracks directories you visit and scores them by frequency + recency.
-> Higher score = higher priority when jumping. `j bump` promotes an entry above all others.
 
 # Environment
 
-> `_Z_DATA` — path to z data file (default: `~/.z`)
-> `EDITOR` — editor for `reorder` and `edit` (default: `micro`)
+- `_Z_DATA`: z data file (default `~/.z`)
+- `EDITOR`: used by `reorder` and `edit` (default `micro`)
 
 # Related commands
 
-- Full z reference (upstream):
-`tldr z`
+- `tldr z`

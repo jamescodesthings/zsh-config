@@ -1,45 +1,38 @@
 # http
 
-> HTTPie — curl replacement with a human-friendly syntax.
+> HTTPie, a curl replacement. `http` and `https` are aliased with `--verify=no`, so TLS certificates are not checked.
 
-# Requests
+# Usage
 
-- GET request:
+- GET a URL:
 
 `http <url>`
 
-- Download file to disk:
+- Download to disk:
 
 `http --download <url>`
 
-- Add custom request header:
+- Add a header:
 
 `http <url> Header:value`
-
-# Auth
 
 - Basic auth:
 
 `http -a user:pass <url>`
 
-- Bearer token auth:
+- Bearer token:
 
 `http -A bearer -a <token> <url>`
 
-# POST
-
-- String JSON field:
+- POST a string field:
 
 `http POST <url> key=value`
 
-- Non-string field (number, bool, array):
+- POST a non-string field (number, bool, array):
 
 `http POST <url> key:=value`
 
 # Related commands
 
-- Full httpie reference
-`tldr httpie`
-
-- curl reference
-`tldr curl`
+- `tldr httpie`
+- `tldr curl`

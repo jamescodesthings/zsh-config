@@ -1,19 +1,14 @@
 # git-i-really-fucked-up
 
-> Destructive. Hard resets the current branch to its upstream on origin.
-> All uncommitted changes and unpushed commits will be lost.
-> Prompts for confirmation before running.
+> Destructive: `git reset --hard` the current branch to `origin/<branch>`. Asks first.
+> Uncommitted changes and unpushed commits are lost.
 
 # Usage
 
-- Reset current branch to origin/<branch>:
+- Reset to origin:
 
 `git-i-really-fucked-up`
 
 # Related commands
 
-- Prune stale local branches
-`cheat git-prune-local`
-
-- Standard git reset reference
-`tldr git-reset`
+- `cheat git-prune-local`

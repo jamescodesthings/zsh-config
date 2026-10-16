@@ -1,27 +1,18 @@
 # start-workstation
 
-> Trigger a GitHub Actions workflow to start a cloud workstation.
+> Run the GitHub Actions workflow that starts the cloud workstation.
+> Needs `gh` logged in (`gh auth login`). Clones `$GH_REPO` into `$PROJECT_DIR` if missing.
 
 # Usage
 
-- Start the workstation:
+- Start it:
 
 `start-workstation`
 
-# What it does
-
-> Authenticates `gh` CLI, creates `$PROJECT_DIR` if needed, clones `$GH_REPO` if not already cloned.
-> Runs: `gh workflow run "$WORKFLOW_ID" -f name=$USER_NAME`
-
 # Environment
 
-> `ORG` — GitHub org (default: `7digital`)
-> `PROJECT_DIR` — local clone directory (default: `~/projects/$ORG`)
-> `USER_NAME` — workstation name passed to workflow (default: `jamesm`)
-> `GH_REPO` — repository containing the workflow (default: `developer-cloud-workstation`)
-> `WORKFLOW_ID` — workflow name to trigger (default: `Start Workstation`)
-
-# Related commands
-
-- Authenticate GitHub CLI:
-`gh auth login`
+- `ORG`: GitHub org (default `7digital`)
+- `PROJECT_DIR`: clone folder (default `~/projects/$ORG`)
+- `USER_NAME`: workstation name passed to the workflow (default `jamesm`)
+- `GH_REPO`: repo holding the workflow (default `developer-cloud-workstation`)
+- `WORKFLOW_ID`: workflow name (default `Start Workstation`)

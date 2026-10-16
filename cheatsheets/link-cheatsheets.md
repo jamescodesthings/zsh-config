@@ -1,7 +1,7 @@
 # link-cheatsheets
 
-> Link every `*.md` sheet in a folder into `$CHEATSHEET_DIR` so `cheat` finds it.
-> Stale links into that folder are removed; real files and other folders' links are never touched.
+> Link every `*.md` in a folder into `$CHEATSHEET_DIR` so `cheat` finds it.
+> Prints `linked N, already linked N, clashes N`. Exit 0 when nothing clashed; 1 on a clash, an error, or usage (no argument, a non-folder, `--help`).
 
 # Usage
 
@@ -9,9 +9,16 @@
 
 `link-cheatsheets ~/projects/personal/pkms/cheatsheets`
 
-- Use it from an installer only when it exists:
+- From an installer, only when it exists:
 
 `whence link-cheatsheets && link-cheatsheets "$REPO_DIR/cheatsheets"`
+
+# Markers
+
+- Stale links into that folder are removed
+- A name taken by a real file or another folder's link: warns, never overwritten, exit 1
+- `$CHEATSHEET_DIR` inside the folder: error; open a new shell
+- `$CHEATSHEET_DIR` unset: skips
 
 # Related commands
 

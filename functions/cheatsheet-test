@@ -4,7 +4,10 @@
 # renderer, and it refuses a page with any line it does not understand, so a
 # sheet that looks fine in an editor can still error when shown.
 function cheatsheet-test() {
-  setopt local_options extended_glob
+  # The caller's options must not matter: other projects call this from their
+  # own scripts, where glob qualifiers or extended globs may be switched off.
+  emulate -L zsh
+  setopt extended_glob
 
   if is empty "$c"; then
     source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
@@ -31,10 +34,13 @@ function cheatsheet-test() {
     targets=("${CUSTOM_DIR:-$HOME/.custom}/cheatsheets")
   fi
 
-  local target
+  # The glob sits in a string so the file still parses when it is autoloaded
+  # under sh_glob, which reads "(N-.)" as a syntax error.
+  local target pattern
   for target in $targets; do
     if is dir "$target"; then
-      sheets+=("$target"/*.md(N-.))
+      pattern="${(b)target}/*.md(N-.)"
+      sheets+=(${~pattern})
     elif is file "$target"; then
       sheets+=("$target")
     else

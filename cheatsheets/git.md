@@ -1,52 +1,42 @@
 # git
 
-> Custom git aliases and helpers for this zsh config.
+> Aliases and helpers zsh-config adds over git. Defined only when `git` is available.
 
 # Aliases
 
-- Commit with message:
-
-`gcm "message"`
-
-- Stage hunks interactively:
-
-`gap`
-
-- Interactive rebase on last N commits:
-
-`grbi HEAD~<n>`
-
-- CD to git root of current repo:
-
-`root`
-
+- `gcm`: `git commit -m`
+- `gap`: `git add -p`, stage hunks
+- `grbi`: `git rebase -i --ignore-date`
+- `gm`: `git merge`
+- `gmff`: `git merge --ff-only`
+- `gbD`: `git branch -D`
+- `gsu`: `git submodule update --init --recursive`
+- `gsa`: `git submodule add`
+- `root`: cd to the repo root
+- `git-i-fucked-up`: `git reset HEAD~1`, undo the last commit and keep the changes
 
 # Gitflow
 
-- Check out the main branch (reads `git config gitflow.branch.main`, defaults to `main`):
-
-`gcom`
-
-- Check out the develop branch (reads `git config gitflow.branch.develop`, required — no default):
-
-`gcod`
+- `gcom`: check out `git config gitflow.branch.main`, default `main`
+- `gcod`: check out `git config gitflow.branch.develop`, no default, errors when unset
 
 # Utilities
 
-- Print the current branch name:
+- `git-branch`: print the current branch name
 
-`git-branch`
+# Examples
+
+- Commit with a message:
+
+`gcm "message"`
+
+- Interactive rebase on the last N commits:
+
+`grbi HEAD~3`
 
 # Related commands
 
-- Hard reset to origin/current-branch (destructive)
-`cheat git-i-really-fucked-up`
-
-- Delete local branches gone from remote
-`cheat git-prune-local`
-
-- Delete a branch locally and on origin
-`cheat git-cleanup-branch`
-
-- Standard git subcommands
-`tldr git`
+- `cheat git-i-really-fucked-up`
+- `cheat git-prune-local`
+- `cheat git-cleanup-branch`
+- `tldr git`

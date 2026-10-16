@@ -1,40 +1,15 @@
 # docker
 
-> Docker aliases and helpers.
+> Aliases and helpers zsh-config adds over docker. Defined only when `docker` is available.
 
-# Container management
+# Commands
 
-- Stop all running containers and prune system + dangling volumes:
-
-`dsp`
-
-- Stop all running containers (without pruning):
-
-`docker-stop-all`
-
-`dsa`
-
-# Compose
-
-- Start services in detached mode:
-
-`dcup`
-
-- Stop and remove containers and volumes:
-
-`dcdn`
-
-# Notes
-
-> `dsp` is destructive: removes stopped containers, unused images, networks, and build cache.
-> `dcup` = `docker compose up -d`
-> `dcdn` = `docker compose down -v`
-> All aliases only defined when `docker` is available.
+- `dsp`: stop all running containers, `docker system prune -f`, remove dangling volumes; destructive (stopped containers, unused images, networks, build cache); extra args go to `docker system prune`
+- `dsa`, `docker-stop-all`: `docker stop $(docker ps -q)`
+- `dcup`: `docker compose up -d`
+- `dcdn`: `docker compose down -v`, removes volumes
 
 # Related commands
 
-- Full docker reference:
-`tldr docker`
-
-- Docker compose reference:
-`tldr docker-compose`
+- `tldr docker`
+- `tldr docker-compose`

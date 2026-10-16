@@ -103,10 +103,12 @@ The sheets here are this repo's own. `link-cheatsheets` links each one into `$CH
 
 Markdown files rendered by the `cheat` function with `tldr --render` (tlrc), falling back to `glow -w 120`, then `bat`, then `cat`. When no local sheet matches, `cheat` falls back to `tldr`. Filename convention: `git-commit.md` for multi-word commands (matches `cheat git commit`).
 
-Standard format, tldr style with every section at heading level one:
-- `# name` — title, followed by a `>` line saying what it does
-- `# Usage` — `- description:` lines, each followed by the command in backticks
-- `# Related commands` — links to related sheets via `` `cheat related-name` ``
+Sheets are minimal lists in tldr style, every section at heading level one; pkms's `any.md` and `any-task.md` are the model:
+- `# name`, then a `>` line saying what it does, and at most a line or two of hard facts (what it needs, exit codes)
+- Sections of `- ` items: a one-line marker, option or fact, or a `- description:` line followed by one example in backticks
+- No prose, notes or history; colour comes down to how to turn it off
+- A zsh-config tool with real subcommands (`cheat`) gets a top sheet with a `# Commands` list of `cheat <tool> <subcommand>` lines and one `<tool>-<subcommand>.md` sheet each. Third-party tools stay one sheet.
+- `# Related commands`: links to related sheets via `` `cheat related-name` ``, when useful
 
 tlrc refuses a whole sheet over one line it does not accept: every non-empty line must start with `# `, `> `, `- ` or a backtick, and a backtick line is one example that ends in a backtick. So no `##` headings, code fences, plain paragraphs or wrapped bullets. **Whenever a cheatsheet is made or changed, run `cheatsheet-test <sheet>` on it and fix every failure before finishing.** `cheatsheet-test` (`functions/cheatsheet-test`) takes sheets or folders, defaults to this repo's `cheatsheets/`, checks each line, renders with tldr and glow when installed (stdin closed), prints `file:line` for each failure and returns 1 if any sheet fails. `installers/00-zshconfig` runs it as a warning. Other projects run it on their own sheets.
 
@@ -178,7 +180,7 @@ GNOME-specific config and tools. Only installed on machines running GNOME on Way
 
 ## Testing/Running
 
-There is no automated test suite beyond `cheatsheet-test`. Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
+There is no automated test suite beyond `cheatsheet-test` and its own test, `tests/cheatsheet-test`. Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
 
 ```zsh
 # Syntax check without executing (prints nothing on success)
@@ -190,6 +192,9 @@ zsh -i -c exit
 
 # Check every cheatsheet renders with cheat
 cheatsheet-test
+
+# Test cheatsheet-test itself, from a plain zsh -f under hostile glob options
+tests/cheatsheet-test
 ```
 
 A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.

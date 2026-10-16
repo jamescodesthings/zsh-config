@@ -1,14 +1,21 @@
 # glow
 
-> Markdown renderer for the terminal. Used by cheat to display cheatsheets.
+> Markdown renderer. `cheat` renders sheets with `glow -w 120`.
+
+# Options
+
+- `-w <n>`: wrap width
+- `-p`: use a pager
+- `-s <style>`: `auto` (default), `dark`, `light`
+- `-t`: TUI file browser for a directory
 
 # Usage
 
-- Render a markdown file:
+- Render a file:
 
 `glow <file.md>`
 
-- Render at a specific width (120 chars — used by cheat):
+- Render at the width cheat uses:
 
 `glow -w 120 <file.md>`
 
@@ -16,25 +23,10 @@
 
 `echo "# Hello" | glow -`
 
-- Render with pager:
-
-`glow -p <file.md>`
-
-- Browse markdown files interactively (TUI):
+- Browse a directory:
 
 `glow -t <directory>`
 
-# Styles
-
-- Auto-detect dark/light (default):
-
-`glow -s auto <file.md>`
-
-- Force dark or light style:
-
-`glow -s dark <file.md>`
-
 # Related commands
 
-- bat for syntax-highlighted file viewing
-`cheat bat`
+- `cheat bat`

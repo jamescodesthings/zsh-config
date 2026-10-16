@@ -1,18 +1,14 @@
 # git-cleanup-branch
 
-> Delete a branch locally and push the deletion to origin.
-> Cannot delete main, master, or the currently checked-out branch.
+> Delete a branch locally (`git branch -D`) and on origin.
+> Refuses `main`, `master` and the current branch. Exit 1 on refusal or failure.
 
 # Usage
 
-- Delete a branch locally and from origin:
+- Delete the branch:
 
-`git-cleanup-branch <branch-name>`
+`git-cleanup-branch <branch>`
 
 # Related commands
 
-- Delete all local branches gone from remote
-`cheat git-prune-local`
-
-- Standard branch management
-`tldr git-branch`
+- `cheat git-prune-local`

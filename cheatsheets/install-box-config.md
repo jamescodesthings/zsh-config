@@ -1,31 +1,26 @@
 # install-box-config
 
-> Install a per-machine config file by trying hostname-specific, OS-specific, then default variants.
+> Install a per-machine config by symlink, picking the best variant for this machine.
+> Exit 1 on no arguments, no hostname or an unsupported OS.
 
 # Usage
 
-- Install a config file to a destination, choosing the best variant for this machine:
-
-`install-box-config <config-source> <config-destination>`
-
-# Resolution order
-
-> Tries: source.HOSTNAME.ext, source.OS.ext, source.ext — errors if none exist.
-> OS is detected via `uname -s` lowercased (e.g. `linux`, `darwin`).
-
-# Examples
-
-- Install VSCode settings, picking the best variant for this machine:
+- Install a config, host variant first:
 
 `install-box-config $CUSTOM_DIR/configs/vscode/settings.json ~/.config/Code/User/settings.json`
 
-# Notes
+# Order
 
-> Creates a symlink via `install-link` (backs up existing files to `.bak`).
-> Uses `get-hostname` for hostname detection.
-> Used by the `installers/` scripts.
+- `settings.<hostname>.json`: this machine
+- `settings.osx.json` or `settings.linux.json`: this OS
+- `settings.json`: the default
+
+# Markers
+
+- Links with `install-link`: an existing target is backed up
+- No variant and no default: warns, exit 0
+- No variant, file at destination: moved to the host variant name, then linked
 
 # Related commands
 
-- Create a symlink with backup:
-`cheat install-link`
+- `cheat install-link`

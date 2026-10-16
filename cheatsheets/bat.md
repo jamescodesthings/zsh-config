@@ -1,35 +1,36 @@
 # bat
 
-> cat with syntax highlighting and git integration.
-> Used as a fallback renderer in cheat when glow is unavailable.
+> cat with syntax highlighting and git integration. `cheat` falls back to it when glow is missing.
+> Where only `batcat` is installed, `bat` is aliased to it.
+
+# Options
+
+- `-p`: plain output, no decorations
+- `--color=always`: keep colour when piped
+- `-l <lang>`: set the language
+- `-n`: line numbers only
+- `--highlight-line <n>`: highlight a line
 
 # Usage
 
-- Print file with syntax highlighting:
+- Print a file highlighted:
 
 `bat <file>`
 
-- Print without decorations (plain output, for piping):
-
-`bat -p <file>`
-
-- Print with colour always (even when piped):
+- Plain, coloured, for piping:
 
 `bat -p --color=always <file>`
 
-- Specify language for syntax highlighting:
+- Force the language:
 
 `bat -l json <file>`
 
-- Show line numbers:
+# Colour
 
-`bat -n <file>`
+- Turn colour off:
 
-- Highlight specific line:
-
-`bat --highlight-line 42 <file>`
+`bat --color=never <file>`
 
 # Related commands
 
-- cat reference
-`tldr cat`
+- `tldr cat`

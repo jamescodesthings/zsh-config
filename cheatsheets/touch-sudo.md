@@ -1,26 +1,18 @@
 # touch-sudo
 
-> Enable Touch ID authentication for `sudo` on macOS.
+> Enable Touch ID for `sudo` on macOS. Asks first; errors on Linux.
+> Rewrites `/etc/pam.d/sudo` with `pam_tid.so` and `pam_smartcard.so` first in the auth chain; a macOS update may reset it.
 
 # Usage
 
-- Enable Touch ID for sudo:
+- Enable:
 
 `touch-sudo`
 
-# Notes
+- Check the result:
 
-> macOS only — errors on Linux.
-> Modifies `/etc/pam.d/sudo` (configurable via `$TOUCH_SUDO_FILE`).
-> Adds `pam_tid.so` (Touch ID) and `pam_smartcard.so` to the auth chain.
-> Changes take effect immediately — no reboot required.
-> After a macOS update, PAM config may be reset and this will need to be re-run.
+`cat /etc/pam.d/sudo`
 
 # Environment
 
-> `TOUCH_SUDO_FILE` — PAM config file path (default: `/etc/pam.d/sudo`)
-
-# Related commands
-
-- Verify the change took effect:
-`cat /etc/pam.d/sudo`
+- `TOUCH_SUDO_FILE`: PAM file to write (default `/etc/pam.d/sudo`)

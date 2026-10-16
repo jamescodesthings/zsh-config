@@ -4,87 +4,33 @@
 
 # Global
 
-- Toggle between editor and console:
+- `ESC`: toggle editor and console
+- `Ctrl+R`: run or reload cart
+- `Ctrl+S`: quick save
+- `Ctrl+M`: mute or unmute
+- `Ctrl+6`, `Ctrl+7`, `Ctrl+8`, `Ctrl+9`: screenshot, label, GIF start, GIF save
 
-`ESC`
+# Code editor
 
-- Run / reload cart:
-
-`Ctrl+R`
-
-- Quick save:
-
-`Ctrl+S`
-
-- Mute / unmute:
-
-`Ctrl+M`
-
-- Screenshot / label / GIF start / GIF save:
-
-`Ctrl+6 / 7 / 8 / 9`
-
-# Code Editor
-
-- Undo / redo:
-
-`Ctrl+Z / Y`
-
-- Cut / copy / paste:
-
-`Ctrl+X / C / V`
-
-- Search / find next:
-
-`Ctrl+F / G`
-
-- Comment / uncomment block:
-
-`Ctrl+B`
-
-- Duplicate line:
-
-`Ctrl+D`
-
-- Help on keyword under cursor:
-
-`Ctrl+U`
-
-- Jump to line number:
-
-`Ctrl+L`
-
-- Line start / end:
-
-`Ctrl+W / E`
-
-- File start / end:
-
-`Ctrl+up / dn`
-
-- Jump by word:
-
-`Ctrl+← / →`
-
-- Indent / unindent:
-
-`Tab / Shift+Tab`
-
-- Jump to prev / next function:
-
-`Alt+up / dn`
+- `Ctrl+Z`, `Ctrl+Y`: undo, redo
+- `Ctrl+X`, `Ctrl+C`, `Ctrl+V`: cut, copy, paste
+- `Ctrl+F`, `Ctrl+G`: search, find next
+- `Ctrl+B`: comment or uncomment block
+- `Ctrl+D`: duplicate line
+- `Ctrl+U`: help on keyword under cursor
+- `Ctrl+L`: jump to line number
+- `Ctrl+W`, `Ctrl+E`: line start, end
+- `Ctrl+up`, `Ctrl+down`: file start, end
+- `Ctrl+left`, `Ctrl+right`: jump by word
+- `Tab`, `Shift+Tab`: indent, unindent
+- `Alt+up`, `Alt+down`: previous, next function
 
 # Runtime
 
-- Move (P1) / O+X buttons:
-
-`D-pad / ZXCV`
-
-- Pause menu:
-
-`Enter / P`
+- `D-pad`, `ZXCV`: move (P1), O and X buttons
+- `Enter`, `P`: pause menu
 
 # Related commands
 
-- PICO-8 API reference
-`cheat pico-8`
+- `cheat pico-8`
+- `cheat pico-8-lang`

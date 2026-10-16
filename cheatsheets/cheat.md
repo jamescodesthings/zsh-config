@@ -1,65 +1,39 @@
 # cheat
 
-> Personal cheatsheet viewer with tldr fallback. Cheatsheets live in `~/cheatsheets/`.
+> Show a personal cheatsheet from `~/cheatsheets`, falling back to tldr when none matches.
+> Renders with tldr, then glow, bat, cat. Needs `CHEATSHEET_DIR` set. Exit: 0 done, 1 error.
 
-# Usage
+# Commands
 
-- List all local cheatsheets (default when no args):
+- `cheat cheat list`: list local sheets (also bare `cheat`)
+- `cheat cheat search`: search local sheets and tldr by name
+- `cheat cheat new`: create a sheet from the template
+- `cheat cheat edit`: open a sheet in `$EDITOR`
+- `cheat cheat raw`: print a sheet's markdown
+- `cheat cheat update`: refresh the tldr cache
+- `cheat help` (`-h`, `--help`): the built-in help
 
-`cheat`
+# Show a sheet
 
-- Show a cheatsheet:
+- Show a sheet:
 
 `cheat git`
 
-- Multi-word command — maps to `git-commit.md`:
+- Several words join with `-` (`git-commit.md`):
 
 `cheat git commit`
 
-- Print raw markdown instead of rendering:
+- Print the markdown instead of rendering:
 
 `cheat git --raw`
 
-# Subcommands
+# Rules
 
-- List local cheatsheets:
-
-`cheat list`
-
-- Search local cheatsheets and tldr by name:
-
-`cheat search <query>`
-
-- Create a new cheatsheet from template:
-
-`cheat new <name>`
-
-- Open an existing cheatsheet in $EDITOR:
-
-`cheat edit <name>`
-
-- Print raw markdown of a local or tldr sheet:
-
-`cheat raw <name>`
-
-- Update the tldr page cache:
-
-`cheat update`
-
-- Show help:
-
-`cheat help`
-
-- Check that sheets render, after making or changing one:
-
-`cheatsheet-test <sheet|dir>`
-
-# Notes
-
-> `cheat new <name>` creates the file in zsh-config's `cheatsheets/`, links it into `~/cheatsheets/` and does not open it — run `cheat edit <name>` to fill it in.
-> Subcommand names (list, search, edit, new, update, raw, help) are reserved sheet names.
+- The subcommand names above are reserved: no sheet can be called `list`, `search`, `edit`, `new`, `update`, `raw` or `help`
+- `$VAR` names outside backticks expand when shown
+- The tldr cache refreshes itself in the background every 7 days
 
 # Related commands
 
-- Community cheatsheets for thousands of commands:
-`tldr <command>`
+- `cheat cheatsheet-test`
+- `cheat link-cheatsheets`

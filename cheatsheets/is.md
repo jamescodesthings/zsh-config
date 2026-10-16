@@ -1,98 +1,47 @@
 # is
 
-> Predicate utility for shell conditionals. Returns 0 (true) or 1 (false).
-> Supports is not <predicate> for negation.
+> Predicates for shell conditionals. Exit 0 true, 1 false.
+> `is not <predicate>` negates; `a`, `an` and `the` are allowed before it (`is an existing <path>`).
 
-# Path predicates
+# Path
 
-- Test if path is a regular file:
+- `is file <path>`: regular file
+- `is dir <path>`: directory
+- `is link <path>`: symlink
+- `is existing <path>`: exists, any type
+- `is readable <path>`, `is writeable <path>`, `is executable <path>`
+- `is older <a> <b>`, `is newer <a> <b>`: modification time
 
-`is file <path>`
+# Command
 
-- Test if path is a directory:
+- `is available <command>`: in PATH
+- `is alias <name>`: alias is defined
 
-`is dir <path>`
+# String and number
 
-- Test if path is a symlink:
+- `is empty "$var"`: empty or unset
+- `is equal "$a" "$b"`: equal, as text or as numbers
+- `is matching "<regex>" "$val"`: whole value matches
+- `is substring "<text>" "$val"`: value contains it
+- `is number "$val"`: integer or decimal
+- `is gt`, `is lt`, `is ge`, `is le` with `"$a" "$b"`: numeric compare
+- `is true "$val"`, `is false "$val"`: `true` or `0` counts as true
 
-`is link <path>`
+# Platform
 
-- Test if path exists (any type):
+- `is osx`, `is linux`, `is debian`, `is arch`, `is ubuntu`, `is windows`
+- `is supported`: macOS or Debian family
+- `is m1`: Apple Silicon
+- `is iterm`: running in iTerm
+- `is tty`: Linux with no display (console)
+- `is gnome`, `is wayland`, `is x11`
 
-`is existing <path>`
+# Examples
 
-- Test if path is readable / writeable / executable:
-
-`is readable <path>`
-
-# Command predicates
-
-- Test if command is in PATH:
-
-`is available <command>`
-
-# String predicates
-
-- Test if variable is empty/unset:
-
-`is empty "$var"`
-
-- Test if two values are equal:
-
-`is equal "$a" "$b"`
-
-- Test if value matches regex:
-
-`is matching "^[0-9]+$" "$val"`
-
-- Test if value contains substring:
-
-`is substring "foo" "$val"`
-
-# Numeric predicates
-
-- Test if value is a number:
-
-`is number "$val"`
-
-- Greater than / less than:
-
-`is gt "$a" "$b"`
-
-- Greater than or equal / less than or equal:
-
-`is ge "$a" "$b"`
-
-# Platform predicates
-
-- macOS / Linux / Apple Silicon / Arch:
-
-`is osx` / `is linux` / `is m1` / `is arch`
-
-- Running in iTerm / TTY:
-
-`is iterm` / `is tty`
-
-- Running in GNOME / Wayland / X11:
-
-`is gnome` / `is wayland` / `is x11`
-
-# File age predicates
-
-- First path older than second:
-
-`is older <path-a> <path-b>`
-
-- First path newer than second:
-
-`is newer <path-a> <path-b>`
-
-# Negation
-
-- Negate any predicate with not:
+- Negate:
 
 `is not empty "$var"`
 
-- Use as condition in scripts:
+- In a condition:
 
 `if is available brew; then brew install something; fi`

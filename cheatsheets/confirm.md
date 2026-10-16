@@ -1,23 +1,17 @@
 # confirm
 
-> Interactive yes/no prompt. Returns 0 if confirmed, 1 if denied.
+> Ask y/n. Exit 0 on `y` or `Y`, 1 on anything else.
 
 # Usage
 
-- Prompt with default message:
+- Ask with the default message:
 
 `confirm`
 
-- Prompt with custom message:
+- Ask with your own message:
 
-`confirm "Are you sure you want to delete this?"`
+`confirm "Delete this?"`
 
-# In scripts
+- Guard a command:
 
-- Use as a guard:
-
-`if confirm "Delete all temp files?"; then rm -rf /tmp/myapp; fi`
-
-- Use with negation:
-
-`if ! confirm "Continue?"; then echo "Aborted."; return 1; fi`
+`if confirm "Continue?"; then rm -rf /tmp/myapp; fi`

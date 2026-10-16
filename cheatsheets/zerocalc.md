@@ -1,103 +1,42 @@
 # zerocalc
 
-> ZeroCalc keyboard shortcuts (PicoCalc device).
+> ZeroCalc (PicoCalc device) keyboard shortcuts. The `zerocalc` host env is `env.zerocalc.zsh`.
 
-# Mouse Mode
+# Mouse mode
 
-- Toggle mouse mode:
-
-`F5`
-
-- Move cursor:
-
-`D-pad`
-
-- Left click:
-
-`[`
-
-- Right click:
-
-`]`
+- `F5`: toggle mouse mode
+- `D-pad`: move cursor
+- `[`: left click
+- `]`: right click
 
 # Navigation
 
-- Home / End:
-
-`RSHIFT + ← / →`
-
-- Page Up / Down:
-
-`RSHIFT + up / dn`
-
-- File start / end:
-
-`RSHIFT + [ / ]`
-
-- Jump by word:
-
-`Ctrl + ← / →`
-
-- Word jump (readline):
-
-`Alt + F / B`
+- `RSHIFT + left`, `RSHIFT + right`: home, end
+- `RSHIFT + up`, `RSHIFT + down`: page up, down
+- `RSHIFT + [`, `RSHIFT + ]`: file start, end
+- `Ctrl + left`, `Ctrl + right`: jump by word
+- `Alt + F`, `Alt + B`: word jump (readline)
 
 # Selection
 
-- Select character:
+- `LSHIFT + arrow`: select character
+- `LSHIFT + RSHIFT + left`, `LSHIFT + RSHIFT + right`: select word
+- `LSHIFT + RSHIFT + [`, `LSHIFT + RSHIFT + ]`: select to line start, end
 
-`LSHIFT + arrow`
+# Right Shift shortcuts
 
-- Select word:
+- `RSHIFT + A`: line start
+- `RSHIFT + E`: line end
+- `RSHIFT + U`: delete to line start
+- `RSHIFT + K`: delete to line end
+- `RSHIFT + W`: delete word back
+- `RSHIFT + L`: clear screen
+- `RSHIFT + C`: interrupt
+- `RSHIFT + D`: EOF
+- `RSHIFT + Z`: suspend
+- `RSHIFT + key`: send Ctrl+key
+- `LSHIFT + RSHIFT + key`: send Ctrl+Shift+key
 
-`LSHIFT + RSHIFT + ← / →`
+# Related commands
 
-- Select to line start / end:
-
-`LSHIFT + RSHIFT + [ / ]`
-
-# Right Shift Shortcuts
-
-- Line start:
-
-`RSHIFT + A`
-
-- Line end:
-
-`RSHIFT + E`
-
-- Delete to line start:
-
-`RSHIFT + U`
-
-- Delete to line end:
-
-`RSHIFT + K`
-
-- Delete word back:
-
-`RSHIFT + W`
-
-- Clear screen:
-
-`RSHIFT + L`
-
-- Interrupt:
-
-`RSHIFT + C`
-
-- EOF:
-
-`RSHIFT + D`
-
-- Suspend:
-
-`RSHIFT + Z`
-
-- Send Ctrl+key:
-
-`RSHIFT + key`
-
-- Send Ctrl+Shift+key:
-
-`LSHIFT + RSHIFT + key`
+- `cheat raspi`

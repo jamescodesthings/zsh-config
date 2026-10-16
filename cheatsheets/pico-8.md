@@ -1,32 +1,25 @@
 # pico-8
 
-> PICO-8 zsh helpers. Requires `$PICO8` set to binary path (in per-host env file).
+> PICO-8 launchers. Needs `$PICO8` set to the binary path in the per-host env file (`env.<hostname>.zsh`).
 
 # Usage
 
-- Launch PICO-8 with current directory as cart root (background):
-
-`picoh`
-
-- Launch PICO-8 without a specific cart root:
+- launch in the foreground:
 
 `pico`
 
-# Environment
+- launch in the background with the current directory as cart root:
 
-> `PICO8` — path to the PICO-8 binary (set in `env.$HOSTNAME.zsh`, e.g. `env.MacBookPro.zsh`)
-> Current binary: `$PICO8`
+`picoh`
 
-# Notes
+# Facts
 
-> `pico` runs in the foreground. `picoh` runs in the background (`&`) with the current directory as cart root.
-> On machines other than `zerocalc`, both `pico` and `picoh` pass `-width 512 -height 512 -window_x 0 -window_y 0`.
-> `pico`, `pico-8`, and `pico8` are aliases — all launch the same binary.
+- `pico`, `pico-8`, `pico8`: aliases for the same launch
+- Not on `zerocalc`: `pico` and `picoh` add `-width 512 -height 512 -window_x 0 -window_y 0`
+- `picoh --help`: usage
 
 # Related commands
 
-- Edit the per-host env file:
-`cheat zshconfig`
-
-- PICO-8 language/API reference:
-`cheat pico-8-lang`
+- `cheat zshconfig`
+- `cheat pico-8-lang`
+- `cheat pico-8-shortcuts`

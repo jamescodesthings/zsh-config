@@ -1,7 +1,7 @@
 # oh
 
-> Open a folder in the file manager: QSpace Pro when installed, otherwise Finder or the desktop's default.
-> Reads the current folder when it runs, so it always opens where you are.
+> Open a folder in QSpace Pro if installed, else Finder (macOS) or `xdg-open` (Linux).
+> Exit 1 if the path does not exist or no opener is found.
 
 # Usage
 
@@ -16,7 +16,3 @@
 - Open the folder a file is in:
 
 `oh notes.md`
-
-# Related commands
-
-- `qspace` opens QSpace Pro itself (macOS)

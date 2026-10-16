@@ -1,22 +1,23 @@
 # raspi
 
-> Raspberry Pi / PicoCalc commands and filesystem reference.
+> Raspberry Pi and PicoCalc commands and paths.
+> `aptu` is a zsh-config alias. `battery` is `upower -d` on uconsole and a script in `/usr/local/bin` on the PicoCalc.
 
-# System Commands
+# System
 
-- Battery level:
+- battery level:
 
 `battery`
 
-- Check if plugged in:
+- check if plugged in:
 
 `battery-supply`
 
-- Update all packages:
+- update all packages:
 
 `aptu`
 
-- System config TUI:
+- system config TUI:
 
 `sudo raspi-config`
 
@@ -24,98 +25,64 @@
 
 `vcgencmd measure_temp`
 
-- Throttling / undervoltage status bitmask:
+- throttling and undervoltage bitmask:
 
 `vcgencmd get_throttled`
 
-# Kernel & Modules
+# Kernel and modules
 
-- Watch kernel messages live:
+- watch kernel messages live:
 
 `dmesg -wH | grep <name>`
 
-- Check if kernel module loaded:
+- check a module is loaded:
 
 `lsmod | grep <name>`
 
-- Load kernel module:
+- load a module:
 
 `sudo modprobe <name>`
 
 # Input
 
-- Test input events:
+- test input events:
 
 `evtest`
 
-- Find keyboard device number:
+- find the keyboard device number:
 
 `grep -A4 picocalc /proc/bus/input/devices`
 
-- Watch raw key events:
+- watch raw key events:
 
 `evtest /dev/input/event<n>`
 
-# Config Files
+# Config files
 
-- Hardware overlays:
+- hardware overlays:
 
 `sudo nano /boot/firmware/config.txt`
 
-- Kernel boot args:
+- kernel boot args:
 
 `sudo nano /boot/firmware/cmdline.txt`
 
-# Key Directories
+# Directories
 
-- Your projects:
-
-`~/projects/`
-
-- Custom scripts (battery, reset, btoff, bton):
-
-`/usr/local/bin/`
-
-- Boot config (config.txt, cmdline.txt, overlays/):
-
-`/boot/firmware/`
-
-- Compiled .dtbo device tree overlays:
-
-`/boot/firmware/overlays/`
-
-- PicoCalc sysfs (battery_percent, keyboard_backlight):
-
-`/sys/firmware/picocalc/`
-
-- User app config files:
-
-`~/.config/`
-
-- Custom systemd unit files:
-
-`/etc/systemd/system/`
-
-- Module options and blacklists:
-
-`/etc/modprobe.d/`
-
-- Modules loaded at boot:
-
-`/etc/modules`
-
-- Udev device rules:
-
-`/etc/udev/rules.d/`
-
-- Filesystem mount table:
-
-`/etc/fstab`
+- `~/projects/`: your projects
+- `/usr/local/bin/`: custom scripts (battery, reset, btoff, bton)
+- `/boot/firmware/`: boot config (config.txt, cmdline.txt, overlays/)
+- `/boot/firmware/overlays/`: compiled .dtbo device tree overlays
+- `/sys/firmware/picocalc/`: PicoCalc sysfs (battery_percent, keyboard_backlight)
+- `~/.config/`: user app config
+- `/etc/systemd/system/`: custom systemd units
+- `/etc/modprobe.d/`: module options and blacklists
+- `/etc/modules`: modules loaded at boot
+- `/etc/udev/rules.d/`: udev device rules
+- `/etc/fstab`: filesystem mount table
 
 # Related commands
 
-- Package management
-`tldr apt`
-
-- Service management
-`tldr systemctl`
+- `tldr apt`
+- `tldr systemctl`
+- `cheat zerocalc`
