@@ -13,7 +13,7 @@
 
 `cmd+t`
 
-- New pane in the current folder (the grid layout places it: two columns first, then the right column splits, then the left) (Linux: `ctrl+shift+enter`):
+- New pane in the current folder: the 2nd sits beside the first, the 3rd splits the right column, the 4th makes a 2x2 grid, and so on. From a zoomed pane it returns to the grid first (Linux: `ctrl+shift+enter`):
 
 `cmd+enter`
 
