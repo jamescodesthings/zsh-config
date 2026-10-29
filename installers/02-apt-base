@@ -11,7 +11,12 @@ fi
 PACKAGES=(${(f)"$(sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' "$REPO_DIR/configs/apt/base")"})
 
 echo "$c[info]installing:$c[reset] base packages via apt"
-sudo apt-get update || exit 1
+# One broken third-party source makes apt-get update exit non-zero even
+# though every other list refreshed, so that is a warning; the install below
+# still fails the run if a package cannot be found.
+if ! sudo apt-get update; then
+  echo "$c[warn]warning:$c[reset] apt-get update reported errors, a third-party apt source may be broken; installing from the lists it did fetch"
+fi
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${PACKAGES[@]}" || {
   echo "$c[error]error:$c[reset] apt install failed"
   exit 1

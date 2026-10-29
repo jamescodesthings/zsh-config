@@ -19,9 +19,15 @@ fi
 APT=(sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold")
 
 echo "$c[info]updating:$c[reset] apt packages"
-"${APT[@]}" update && "${APT[@]}" upgrade && "${APT[@]}" autoremove
+# One broken third-party source makes apt-get update exit non-zero even
+# though every other list refreshed, so that is a warning and the upgrade
+# still runs on what it did fetch.
+if ! "${APT[@]}" update; then
+  echo "$c[warn]warning:$c[reset] apt-get update reported errors, a third-party apt source may be broken; upgrading from the lists it did fetch"
+fi
+"${APT[@]}" upgrade && "${APT[@]}" autoremove
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] apt update failed"
+  echo "$c[error]error:$c[reset] apt upgrade failed"
   exit 1
 fi
 
