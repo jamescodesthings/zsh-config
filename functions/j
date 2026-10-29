@@ -45,6 +45,78 @@ function _j_match_paths() {
   done < "$data_file"
 }
 
+# Rewrite z entries under <old> to <new>. Entries that land on an existing path
+# are merged: ranks summed, time the larger. Other lines keep their order.
+# Args: [--dry-run] <old> <new>
+function _j_move() {
+  local dry=0
+  local -a args=()
+  local a
+  for a in "$@"; do
+    if [[ "$a" == --dry-run ]]; then dry=1; else args+=("$a"); fi
+  done
+  if (( ${#args[@]} != 2 )) || [[ -z "${args[1]}" || -z "${args[2]}" ]]; then
+    echo "${c[error]}error:${c[reset]} j move requires <old> and <new>"
+    return 1
+  fi
+  local old="${args[1]:a}" new="${args[2]:a}"
+  old="${old%/}"; new="${new%/}"
+  if [[ -z "$old" || "$new" == "$old" ]]; then
+    echo "${c[error]}error:${c[reset]} <old> and <new> must be different folders"
+    return 1
+  fi
+  if [[ -z "$new" || "$new" == "$old"/* ]]; then
+    echo "${c[error]}error:${c[reset]} <new> must not be inside <old>"
+    return 1
+  fi
+
+  local data_file; data_file=$(_j_data_file) || return 1
+  local tmp report
+  tmp=$(mktemp "${data_file}.XXXXXX") || return 1
+  report=$(mktemp "${data_file}.XXXXXX") || { rm -f "$tmp"; return 1; }
+  # Output goes to $tmp; a line "old -> new" per rewritten path goes to $report
+  awk -F'|' -v old="$old" -v new="$new" -v report="$report" '
+    BEGIN { ol = length(old) }
+    {
+      p = $1; moved = 0
+      if (p == old || substr(p, 1, ol + 1) == old "/") {
+        p = new substr(p, ol + 1); moved = 1
+        print $1 " -> " p > report
+      }
+      if (moved || (p in idx)) {
+        if (p in idx && (moved || mv[p])) {
+          i = idx[p]; rank[i] += $2; if ($3 + 0 > time[i] + 0) time[i] = $3
+          mv[p] = 1; next
+        }
+      }
+      n++; idx[p] = n; path[n] = p; rank[n] = $2; time[n] = $3; mv[p] = moved; raw[n] = $0; mvd[n] = moved
+    }
+    END {
+      for (i = 1; i <= n; i++) {
+        if (mv[path[i]]) print path[i] "|" rank[i] "|" time[i]
+        else print raw[i]
+      }
+    }
+  ' "$data_file" > "$tmp"
+  local count; count=$(wc -l < "$report" | tr -d ' ')
+  if (( count == 0 )); then
+    rm -f "$tmp" "$report"
+    echo "${c[error]}error:${c[reset]} no entries under $old"
+    return 1
+  fi
+  local line
+  if (( dry )); then
+    while IFS= read -r line; do echo "would move $line"; done < "$report"
+    echo "${c[info]}dry run: would move ${count} entries${c[reset]}"
+    rm -f "$tmp" "$report"
+    return 0
+  fi
+  mv "$tmp" "$data_file" || { rm -f "$tmp" "$report"; return 1; }
+  while IFS= read -r line; do echo "${c[success]}moved${c[reset]} $line"; done < "$report"
+  echo "${c[success]}moved ${count} entries${c[reset]}"
+  rm -f "$report"
+}
+
 function j() {
   if (( ! $+functions[_z] )); then
     echo "${c[error]}error:${c[reset]} z plugin not loaded (rupa/z required)"
@@ -82,6 +154,7 @@ function j() {
       echo "  ${c[flag]}bump${c[reset]} ${c[param]}[query]${c[reset]}         set matching entry to max rank + 1"
       echo "  ${c[flag]}reorder${c[reset]} ${c[flag]}[--count N]${c[reset]}   edit top N entries in \$EDITOR to reorder"
       echo "  ${c[flag]}clean${c[reset]}                  remove entries for non-existent directories"
+      echo "  ${c[flag]}move${c[reset]} ${c[flag]}[--dry-run]${c[reset]} ${c[param]}<old> <new>${c[reset]}  rewrite entries under <old> to <new> after the folder moved"
       echo "  ${c[flag]}stats${c[reset]}                  show entry count, top 5, oldest/newest"
       echo "  ${c[flag]}edit${c[reset]}                   open z data file in \$EDITOR"
       echo "  ${c[flag]}help${c[reset]}, ${c[flag]}-h${c[reset]}, ${c[flag]}--help${c[reset]}     show this help"
@@ -236,6 +309,11 @@ function j() {
       else
         echo "${c[warn]}cancelled${c[reset]}"
       fi
+      ;;
+
+    move)
+      _j_move "$@"
+      return $?
       ;;
 
     stats)

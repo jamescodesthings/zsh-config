@@ -1,0 +1,147 @@
+#!/usr/bin/env zsh
+# Tests `hist move` and `j move` from a plain `zsh -f -c`, with the history
+# base and the z data file pointed at temp locations.
+# Run: tests/hist-j-move. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+export PER_DIRECTORY_HISTORY_BASE="$TMP/hist"
+export PER_DIRECTORY_HISTORY_FILE="zsh-per-directory-history"
+export _Z_DATA="$TMP/z"
+export REPO_DIR
+HB="$PER_DIRECTORY_HISTORY_BASE"
+HF="$PER_DIRECTORY_HISTORY_FILE"
+
+failed=0
+
+function pass() { echo "ok: $1"; }
+function fail() { echo "FAIL: $1"; [[ -n "$2" ]] && echo "$2" | sed 's/^/    /'; failed=1; }
+
+# run <hist|j> args... ; sets OUT and CODE
+function run() {
+  OUT="$(zsh -f -c '
+    fpath=("$REPO_DIR/functions" $fpath)
+    autoload -Uz is deps confirm hist j
+    typeset -gA c
+    function _z() { :; }
+    tool=$1; shift
+    $tool "$@"
+  ' _ "$@" 2>&1)"
+  CODE=$?
+}
+
+# check <description> <got> <want>
+function check() {
+  if [[ "$2" == "$3" ]]; then pass "$1"; else fail "$1" "got:  $2
+want: $3"; fi
+}
+
+# expect_error <description> <hist|j> args...
+function expect_error() {
+  local what="$1"; shift
+  run "$@"
+  if [[ "$CODE" == 1 && "$OUT" == *"error:"* ]]; then pass "$what"; else fail "$what: exit $CODE" "$OUT"; fi
+}
+
+function hfile() { echo "$HB$1/$HF"; }
+function reset_hist() { rm -rf "$HB"; mkdir -p "$HB"; }
+function put() { mkdir -p "${1:h}"; printf '%b' "$2" > "$1"; }
+
+# ---- hist move ----
+reset_hist
+put "$(hfile /a/proj)" ': 100:0;ls\n'
+put "$(hfile /a/proj/sub)" ': 200:0;make\n'
+put "$(hfile /a/other)" ': 300:0;keep\n'
+run hist move /a/proj /b/proj
+check "hist move: exit 0" "$CODE" 0
+check "hist move: dir moved" "$(cat "$(hfile /b/proj)")" ': 100:0;ls'
+check "hist move: subdir moved" "$(cat "$(hfile /b/proj/sub)")" ': 200:0;make'
+[[ ! -e "$HB/a/proj" ]] && pass "hist move: old tree removed" || fail "hist move: old tree removed" "$(find "$HB")"
+check "hist move: unrelated kept" "$(cat "$(hfile /a/other)")" ': 300:0;keep'
+[[ "$OUT" == *"/a/proj"*"/b/proj"* && "$OUT" == *"/a/proj/sub"* ]] && pass "hist move: prints moved files" || fail "hist move: prints moved files" "$OUT"
+
+# old directory does not exist on disk (it never does in these tests); trailing slash
+reset_hist
+put "$(hfile /gone/x)" ': 1:0;a\n'
+run hist move /gone/x/ /new/x/
+check "hist move: trailing slashes, old missing on disk" "$(cat "$(hfile /new/x)" 2>/dev/null)" ': 1:0;a'
+
+# prefix sibling is not moved
+reset_hist
+put "$(hfile /a/foo)" ': 1:0;foo\n'
+put "$(hfile /a/foobar)" ': 2:0;foobar\n'
+run hist move /a/foo /z/foo
+check "hist move: foobar untouched" "$(cat "$(hfile /a/foobar)" 2>/dev/null)" ': 2:0;foobar'
+check "hist move: foo moved" "$(cat "$(hfile /z/foo)" 2>/dev/null)" ': 1:0;foo'
+
+# merge, interleaved, with a multi-line entry
+reset_hist
+put "$(hfile /a/p)" ': 100:0;old1\n: 300:0;echo one\\\ntwo\n'
+put "$(hfile /b/p)" ': 200:0;new1\n: 400:0;new2\n'
+run hist move /a/p /b/p
+check "hist move: merge sorted by time, multi-line kept" "$(cat "$(hfile /b/p)")" ': 100:0;old1
+: 200:0;new1
+: 300:0;echo one\
+two
+: 400:0;new2'
+[[ ! -e "$(hfile /a/p)" ]] && pass "hist move: merge removes old file" || fail "hist move: merge removes old file"
+
+# merge with lines that are not timestamped: append old then new
+reset_hist
+put "$(hfile /a/p)" 'oldplain\n'
+put "$(hfile /b/p)" 'newplain\n'
+run hist move /a/p /b/p
+check "hist move: untimestamped merge appends" "$(cat "$(hfile /b/p)")" 'oldplain
+newplain'
+
+# dry run
+reset_hist
+put "$(hfile /a/p)" ': 1:0;x\n'
+before="$(find "$HB" -type f | sort | xargs cat)"
+run hist move --dry-run /a/p /b/p
+check "hist move: dry run exit 0" "$CODE" 0
+check "hist move: dry run changes nothing" "$(find "$HB" -type f | sort | xargs cat)" "$before"
+[[ ! -e "$HB/b" && "$OUT" == *"/a/p"* ]] && pass "hist move: dry run prints plan" || fail "hist move: dry run prints plan" "$OUT"
+
+# errors
+expect_error "hist move: no args" hist move
+expect_error "hist move: one arg" hist move /a/p
+expect_error "hist move: same path" hist move /a/p /a/p/
+expect_error "hist move: new inside old" hist move /a/p /a/p/sub
+expect_error "hist move: nothing to move" hist move /nothing/here /elsewhere
+
+# ---- j move ----
+put "$_Z_DATA" '/a/proj|10|1000\n/a/proj/sub|5|2000\n/a/foobar|7|3000\n/c/keep|3|4000\n'
+run j move /a/proj /b/proj
+check "j move: exit 0" "$CODE" 0
+check "j move: rewrites, keeps order and others" "$(cat "$_Z_DATA")" '/b/proj|10|1000
+/b/proj/sub|5|2000
+/a/foobar|7|3000
+/c/keep|3|4000'
+run j move /a/foo /z/foo
+check "j move: prefix sibling not moved (nothing to move)" "$CODE" 1
+check "j move: prefix sibling data intact" "$(grep -c foobar "$_Z_DATA")" 1
+
+put "$_Z_DATA" '/x|1|5\n/a/p|10|1000\n/b/p|4|900\n/y|2|6\n'
+run j move /a/p /b/p
+check "j move: merge sums ranks, max time, one line" "$(cat "$_Z_DATA")" '/x|1|5
+/b/p|14|1000
+/y|2|6'
+
+put "$_Z_DATA" '/a/p|10|1000\n'
+before="$(cat "$_Z_DATA")"
+run j move --dry-run /a/p /b/p
+check "j move: dry run exit 0" "$CODE" 0
+check "j move: dry run changes nothing" "$(cat "$_Z_DATA")" "$before"
+[[ "$OUT" == *"/a/p"*"/b/p"* ]] && pass "j move: dry run prints plan" || fail "j move: dry run prints plan" "$OUT"
+check "j move: no temp files left" "$(ls "$TMP" | grep -c '^z\.')" 0
+
+expect_error "j move: no args" j move
+expect_error "j move: one arg" j move /a/p
+expect_error "j move: same path" j move /a/p /a/p/
+expect_error "j move: new inside old" j move /a/p /a/p/sub
+expect_error "j move: nothing to move" j move /nothing /elsewhere
+
+exit $failed

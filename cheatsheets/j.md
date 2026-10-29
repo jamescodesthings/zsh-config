@@ -12,6 +12,7 @@
 - `cheat j bump`: put one entry at the top
 - `cheat j reorder`: reorder the top entries in your editor
 - `cheat j clean`: remove entries for missing directories
+- `cheat j move`: move a folder's entries to its new path
 - `cheat j stats`: totals, top 5, oldest and newest
 - `cheat j edit`: open the z data file in your editor
 

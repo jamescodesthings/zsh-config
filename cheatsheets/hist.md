@@ -10,6 +10,7 @@
 - `cheat hist delete`: delete matching lines from every file
 - `cheat hist open`: open the history folder
 - `cheat hist clean`: remove files for missing directories
+- `cheat hist move`: move a folder's history to its new path
 - `cheat hist stats`: entry count per directory
 
 # Help

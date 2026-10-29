@@ -87,6 +87,108 @@ function _hist_header() {
   fi
 }
 
+# Merge two per-directory history files to stdout.
+# When both start with a ': epoch:elapsed;' entry, entries (a header line plus
+# any continuation lines of a multi-line command) are sorted by epoch, stable,
+# so a multi-line entry stays whole. Otherwise the files are just concatenated,
+# old then dest, because sorting plain lines is not safe.
+function _hist_merge_files() {
+  local dest="$1" old="$2" f first
+  local ts_re='^: [0-9]+:[0-9]+;'
+  local timestamped=1
+  for f in "$dest" "$old"; do
+    [[ -s "$f" ]] || continue
+    IFS= read -r first < "$f"
+    [[ "$first" =~ $ts_re ]] || timestamped=0
+  done
+  if (( ! timestamped )); then
+    cat "$old" "$dest"
+    return
+  fi
+  awk '
+    function emit() { if (e != "") printf "%d\t%d\t%s\n", ts, ++n, e; e = "" }
+    /^: [0-9]+:[0-9]+;/ { emit(); split($0, a, ":"); ts = a[2] + 0; e = $0; next }
+    { e = e "\001" $0 }
+    END { emit() }
+  ' "$dest" "$old" | sort -s -t$'\t' -k1,1n -k2,2n | cut -f3- | tr '\001' '\n'
+}
+
+# Move per-directory history of <old> and its subfolders to <new>.
+# Args: [--dry-run] <old> <new>
+function _hist_move() {
+  local base="${PER_DIRECTORY_HISTORY_BASE:-$HOME/.zsh_history_dirs}"
+  local hist_file="${PER_DIRECTORY_HISTORY_FILE:-zsh-per-directory-history}"
+  base="${base%/}"
+  local dry=0
+  local -a args=()
+  local a
+  for a in "$@"; do
+    if [[ "$a" == --dry-run ]]; then dry=1; else args+=("$a"); fi
+  done
+  if (( ${#args[@]} != 2 )) || [[ -z "${args[1]}" || -z "${args[2]}" ]]; then
+    echo "${c[error]}error:${c[reset]} hist move requires <old> and <new>"
+    return 1
+  fi
+  local old="${args[1]:a}" new="${args[2]:a}"
+  old="${old%/}"; new="${new%/}"
+  if [[ -z "$old" || "$new" == "$old" ]]; then
+    echo "${c[error]}error:${c[reset]} <old> and <new> must be different folders"
+    return 1
+  fi
+  if [[ -z "$new" || "$new" == "$old"/* ]]; then
+    echo "${c[error]}error:${c[reset]} <new> must not be inside <old>"
+    return 1
+  fi
+
+  local -a files=()
+  [[ -d "$base$old" ]] && files=("${(@f)$(find "$base$old" -type f -name "$hist_file" 2>/dev/null | sort)}")
+  files=("${files[@]:#}")
+  if (( ${#files[@]} == 0 )); then
+    echo "${c[error]}error:${c[reset]} no history found under $old"
+    return 1
+  fi
+
+  local f suffix dest tmp verb moved=0 merged=0 failed=0
+  for f in "${files[@]}"; do
+    suffix="${f#$base$old}"
+    dest="$base$new$suffix"
+    if [[ -e "$dest" ]]; then
+      verb="merge"; (( merged++ ))
+    else
+      verb="move"
+    fi
+    if (( dry )); then
+      echo "would $verb ${old}${suffix%/$hist_file} -> ${new}${suffix%/$hist_file}"
+      (( moved++ ))
+      continue
+    fi
+    mkdir -p "${dest:h}" || { failed=1; continue; }
+    if [[ "$verb" == merge ]]; then
+      tmp=$(mktemp "${dest}.XXXXXX") || { failed=1; continue; }
+      if _hist_merge_files "$dest" "$f" > "$tmp"; then
+        mv "$tmp" "$dest" && rm -f "$f"
+      else
+        rm -f "$tmp"; failed=1; continue
+      fi
+    else
+      mv "$f" "$dest" || { failed=1; continue; }
+    fi
+    echo "${c[success]}${verb}d${c[reset]} ${old}${suffix%/$hist_file} -> ${new}${suffix%/$hist_file}"
+    (( moved++ ))
+  done
+
+  # Remove the old folders that are now empty; never above the old folder itself
+  (( dry )) || find "$base$old" -depth -type d -empty -delete 2>/dev/null
+  local note=""
+  (( merged )) && note=" (${merged} merged)"
+  if (( dry )); then
+    echo "${c[info]}dry run: would move ${moved} file(s)${note}${c[reset]}"
+  else
+    echo "${c[success]}moved ${moved} file(s)${note}${c[reset]}"
+  fi
+  return $failed
+}
+
 function hist() {
   unset "history[$HISTCMD]"
   local DEPS=(grep sed confirm)
@@ -227,6 +329,11 @@ function hist() {
       fi
       ;;
 
+    move)
+      _hist_move "$@"
+      return $?
+      ;;
+
     stats)
       echo "${c[h1]}History stats:${c[reset]}"
       local -a rows=()
@@ -256,7 +363,8 @@ function hist() {
       echo "  hist ${c[flag]}delete${c[reset]} ${c[param]}<query>${c[reset]}         find matches, confirm, delete from all files"
       echo "  hist ${c[flag]}open${c[reset]}                       open history base directory"
       echo "  hist ${c[flag]}clean${c[reset]}                      remove files for directories that no longer exist"
-      echo "  hist ${c[flag]}stats${c[reset]}                      show entry count per directory"
+      echo "  hist ${c[flag]}move${c[reset]} ${c[flag]}[--dry-run]${c[reset]} ${c[param]}<old> <new>${c[reset]}  move history of a folder and its subfolders after the folder moved"
+      echo "  hist ${c[flag]}stats${c[reset]}                     show entry count per directory"
       echo ""
       echo "${c[h2]}Flags:${c[reset]}"
       echo "  ${c[flag]}-q, --quiet${c[reset]}  suppress file headers (search + list)"
