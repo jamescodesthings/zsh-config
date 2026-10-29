@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-10-16 12:36 BST
-- **Current Task Status:** t310: `cheatsheet-test` added and zsh-config's sheets fixed; t310 done, agent-forge's sheets pass. t322 done: `040-asdf` now borrows the gh token as `GITHUB_API_TOKEN`, so rust and bun version lookups no longer hit the 60 an hour GitHub API limit (3daa74f, merged into main, not pushed). Earlier: bootstrap rework done in 4 parts.
+- **Date/Time Stamp:** 2026-10-29 17:50 GMT
+- **Current Task Status:** Burn-down of 2026-10-29 done: every open item checked, stale ones closed, apt fix, hist move and j move, obsidian updater retired, .hub/ ignored, instructions synced. What is left is only James's, held in Anytype through the hub.
 
 ## Milestone & Phase Progress
 
@@ -18,9 +18,9 @@
 - [x] Per-run error log for `update`, reprinted at the end, newest 20 kept (840846b)
 - [x] macOS dev workflow R&D: `docs/macos-workflow-rnd-2026-09-19.md`, 21 ranked items
 - [x] Obsidian alternatives R&D: `docs/obsidian-alternatives-rnd-2026-09-19.md` (top pick Things 3 plus Apple Notes, runner-up Logseq, or stay on Obsidian with three changes)
-- [ ] User to choose a route from the Obsidian doc
-- [ ] User to choose items from the macOS workflow doc
-- [ ] User to choose which ranks from the improvements doc to apply (done: rank 6 `oh`, and ranks 2 to 5 and 7 for kitty were covered or declined)
+- [x] Obsidian route: closed as stale 2026-10-29; notes went to Raven and tasks to Anytype, and 130-obsidian is retired
+- [ ] James: choose items from the macOS workflow doc (held in Anytype)
+- [ ] James: choose which ranks from the improvements doc to apply (held in Anytype) (done: rank 6 `oh`, and ranks 2 to 5 and 7 for kitty were covered or declined)
 - [x] First full `update` runs with real sudo (2026-09-20 11:10 and 15:17)
 - [x] Fixes from those runs: brew sudo reset isolated, agent-forge benign warn no longer a failure, mas Spotlight warnings folded, bun's `.zshrc` edit made portable (3cb50b4)
 - [x] User confirmed the sudo isolation (`survived`) and a clean full run with one sudo prompt
@@ -28,7 +28,7 @@
 
 - [x] Brewfile base stack, `035-xcode`, policy-driven `040-asdf`, uv and bun stubs (339ae96, 0c59c90)
 - [x] Real `040-asdf` run on the MacBook: python 3.14.7, direnv 2.37.1, ruby 4.0.7, rust 1.98.1, golang 1.27.1, terraform 1.16.3, dotnet 10.0.400, lua 5.5.1; deno and the bogus `node` line removed; dotnet 5.0.408 and lua 5.1 kept as pinned
-- [ ] User: run `update` so `035-xcode` and the Brewfile step run with real sudo (removes Xcode 26.2 and 26.6, selects 27.0, installs `tcl-tk`)
+- [x] `update` ran with real sudo: only Xcode 27.1 is installed and selected, and python 3.15.2 has tkinter (checked 2026-10-29)
 
 - [x] `md-to-html` and `md-to-pdf`: functions, stylesheet, Brewfile entries, cheatsheets, docs
 - [x] Follow-up: a pandoc crash is now reported
@@ -36,7 +36,7 @@
 - [x] Follow-up: an interrupt during the version check returns 130 before pandoc runs (no terminal-free test reproduces it)
 - [x] PDF tables and code blocks split across pages; header row repeats
 - [x] `oh` is a function that opens the current folder (was an alias frozen at shell start)
-- [ ] User: try `oh` in a few folders; the QSpace launch itself was only tested with a fake `open`
+- [ ] James: try `oh` in a few folders (held in Anytype); the QSpace launch itself was only tested with a fake `open`
 
 - [x] kitty: per-OS key files, cmd+left/right line start and end, zoom, cmd+[ ], ctrl+arrows panes, copy on select to clipboard, close-others kitten; user tested all but cmd+shift+w
 - [x] cmd+shift+w confirmed working by the user; the earlier whole-window close was most likely kitty reloading kitty.conf before os.macos.conf was saved (kitty watches only kitty.conf)
@@ -57,10 +57,15 @@
 - [x] t324: kitty cmd+enter returns to the grid before splitting (57505c0); the grid already gave the asked-for order
 - [x] t311 (agent-forge's task): every sheet swept to a minimal list, 21 new subcommand sheets for cheat, j and hist; cheatsheet-test fixed for folders under hostile glob options, with tests/cheatsheet-test (5a743f0)
 - [x] kitty opt+left / opt+right move a word (user asked 2026-10-16)
-- [ ] User: after the next `update` installs rust 1.99.1, run `asdf uninstall rust stable` (left by the manual fix; the updater only removes numbered versions)
-- [ ] User: fill in uConsole keys in configs/kitty/overrides.uconsole.conf and configs/micro/bindings.uconsole.json
-- [ ] User: on each other machine, pull, restart terminals, run ./install (or update)
-- [ ] Follow-ups: move functions/wipcrypt to agent-forge; 900-agent-forge and 130-obsidian updaters as project drop-ins; drop the CHEATSHEET_DIR shim in .zshenv once every machine has restarted; 02-apt-base aborts on any broken third-party apt source; agent-forge skills suite has 43 failing cases (not from this work)
+- [x] rust `stable` is gone; only 1.99.1 is installed (checked 2026-10-29)
+- [ ] James: fill in uConsole keys (held in Anytype) in configs/kitty/overrides.uconsole.conf and configs/micro/bindings.uconsole.json
+- [ ] James: on each other machine, pull, restart terminals, run ./install (or update) (held in Anytype)
+- [x] wipcrypt: agent-forge owns it and `make sync-wipcrypt` keeps this copy current
+- [x] 900-agent-forge retired (415d1c2); 130-obsidian retired (vault gone)
+- [x] apt keeps going past one broken source (02-apt-base, 000-debian), tested in docker
+- [x] `hist move` and `j move` for folders that moved, with tests/hist-j-move
+- [x] .hub/ ignored; Global workflow block re-synced to agent-forge changelog 2026-10-29
+- [ ] Drop the CHEATSHEET_DIR shim in .zshenv once every machine has pulled and restarted (waits on the other-machines item)
 
 ## Reference Plan Links
 
@@ -79,7 +84,15 @@
 
 - Other machines: after pulling, open a new shell and run each project's installer, or `update`, to fill `~/cheatsheets`. `link-cheatsheets` refuses to link while an old in-repo `CHEATSHEET_DIR` is in the environment.
 
-- python 3.14.7 was built before `tcl-tk` was installed, so it has no tkinter. Fix if wanted: `asdf uninstall python 3.14.7`, then `update brew asdf`.
 - Reading order given to the user for the research docs: improvements (ranked table, then sections 1 to 6), Obsidian alternatives (Recommendation only), macOS workflow (ranked table, then ranks 1 to 9). The user has said they will start on improvements.
-- `xcodes uninstall <version>` with a same-numbered beta installed is untested; with stdin closed it should fail with a warning, not hang.
-- agent-forge backs up and relinks Antigravity's `settings.json` on every install. That belongs in the agent-forge repo.
+- `xcodes uninstall <version>` with a same-numbered beta installed is untested; no beta is installed, so it cannot be tested here.
+- Antigravity's settings.json relink belongs to agent-forge; passed to the hub 2026-10-29.
+
+## Decisions 2026-10-29
+
+- Obsidian: retired 130-obsidian (the vault folder is gone). Alternatives: keep it as a harmless skip, or move it into a project drop-in; neither has a vault to serve.
+- Broken apt source: warn and carry on with the lists that did refresh. Alternatives: keep aborting (one stale PPA blocks every update), or disable the broken source automatically (edits system config without asking).
+- Folder reorganise: zsh-config itself does not move (personal, not a fork, already at ~/projects/personal). What breaks on a move is history and z data keyed on paths, so `hist move` and `j move` were added. Alternatives: let `hist clean` and `j clean` drop them (loses history), or symlink old paths (clutters ~/projects).
+- Hub v3: no zsh-config file names the old hub commands; `.hub/` ignored; `hub oh` calls zsh-config's `oh` unchanged.
+- CHEATSHEET_DIR shim in .zshenv: kept until every machine has pulled. Alternative: drop it now, which breaks `link-cheatsheets` on a machine whose shells still carry the old value.
+- wipcrypt: keep the synced copy. Alternative: drop it and rely on agent-forge's PATH, which leaves machines without agent-forge without it.
