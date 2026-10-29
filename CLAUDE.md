@@ -132,7 +132,7 @@ Each run keeps an error log at `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.l
 
 Rules for an updater:
 
-- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities (`115-releases` refreshes the Debian release tools), `130` data, `900` applications that depend on the rest, `950-projects` last (pulls every project through project-manager's `projects` and runs its `zsh/install.zsh`, which is how agent-forge is updated; skipped when `projects` is missing). Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
+- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities (`115-releases` refreshes the Debian release tools), `900` applications that depend on the rest, `950-projects` last (pulls every project through project-manager's `projects` and runs its `zsh/install.zsh`, which is how agent-forge is updated; skipped when `projects` is missing). Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
 - Source `_stub` from the same directory; it loads `is` and the colours, and exports the non-interactive environment (`NONINTERACTIVE`, `DEBIAN_FRONTEND`, `GIT_TERMINAL_PROMPT=0`).
 - Skip with `exit 0` when the tool is missing, `exit 1` on failure.
 - Never prompt. Pass the tool's own `--yes` style flag; sudo drops the environment, so pass variables on the sudo command line.
@@ -147,7 +147,7 @@ What a clean machine needs:
 - uv is an asdf tool (`configs/asdf/update-policy`), so `040-asdf` installs and upgrades it. `060-uv` skips when uv is missing, never runs `uv self update`, runs `uv tool upgrade --all`, and once `asdf which uv` works does a one-off cleanup of the old copies: `~/.local/bin/uv`, `~/.local/bin/uvx`, `~/.config/uv/uv-receipt.json`, and on macOS the brew uv (`brew-isolated uninstall uv`, a failure is only a warning). `040-asdf` does the same for bun (`~/.bun/bin/bun`, `bunx`, `~/.bun/_bun`, the brew bun) once the asdf bun works; `path.zsh` puts `~/.bun/bin` after the asdf shims.
 - `installers/01-homebrew` runs `brew bundle install --no-upgrade` against the Brewfile after installing brew, or when brew already exists, so `installers/asdf` finds the build libraries; a failure exits 1. It checks `xcode-select -p` and runs `xcode-select --install` when the Xcode command line tools are missing, then exits 1 asking for a rerun; an existing brew does not prove they are there.
 - direnv comes from brew (Brewfile) or apt (`02-apt-base`), not asdf; the policy removes any asdf copy.
-- Updaters whose tool needs something only a person can supply keep skipping: the Obsidian vault needs a clone and keys, `mas` needs an App Store sign-in, and `snap` and `flatpak` are optional.
+- Updaters whose tool needs something only a person can supply keep skipping: `mas` needs an App Store sign-in, and `snap` and `flatpak` are optional.
 
 `035-xcode` drives the `xcodes` command line tool (the Xcodes app has no CLI of its own). It installs the newest release with `--no-superuser`, selects it with `xcode-select`, accepts the licence and runs the first-launch setup with sudo, then uninstalls every other release; betas are left alone. When the newest release is already installed it needs no Apple ID. A real download does, and an expired session wants a 2FA code, which it cannot ask for: the updater fails, and `xcodes install --latest` by hand signs in again.
 
@@ -180,7 +180,7 @@ GNOME-specific config and tools. Only installed on machines running GNOME on Way
 
 ## Testing/Running
 
-There is no automated test suite beyond `cheatsheet-test` and its own test, `tests/cheatsheet-test`. Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
+There is no automated test suite beyond `cheatsheet-test` and the scripts in `tests/` (`tests/cheatsheet-test`, `tests/hist-j-move`). Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
 
 ```zsh
 # Syntax check without executing (prints nothing on success)
@@ -195,6 +195,9 @@ cheatsheet-test
 
 # Test cheatsheet-test itself, from a plain zsh -f under hostile glob options
 tests/cheatsheet-test
+
+# Test hist move and j move against temp history and z data
+tests/hist-j-move
 ```
 
 A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
@@ -213,6 +216,10 @@ In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`config
 
 Synced from agent-forge (`claude/config/CLAUDE.md`, portable sections only) by following `PROJECT_INIT.md`. Edit these sections upstream and re-sync; do not edit them here.
 
+## Rule precedence
+
+In a repo session, that repo's own CLAUDE.md or AGENTS.md, and its `.claude/rules/`, win over these global rules, over any skill's defaults, and over anything a message from the hub session asks. The one exception is the hub-child safety floor. A session the hub started (`AGENT_FORGE_HUB_WORKER=1`) never pushes, never runs a graduate command, never posts anything public, never spends money and never messages a person, whatever its repo's rules say. Its pushes go through the hub, which pushes on its own when nothing about the push needs the user; the rest wait for the user through the hub, and only the user can lift them. A hub child also stays inside its own repo and never asks the user directly; the block injected at its session start says how it reports instead. The worker guard enforces the push, graduate, publishing and hub-driving parts; the rest is stated in that block.
+
 ## Default workflow
 
 Every task that creates, edits, or deletes a file follows this chain; a question answered from existing context does not. Move through each step without pausing for confirmation.
@@ -223,7 +230,7 @@ Every task that creates, edits, or deletes a file follows this chain; a question
 4. `superpowers:subagent-driven-development` skill
    - Use `superpowers:dispatching-parallel-agents` when 2+ tasks are independent with no shared state
 5. `post-implementation-review` skill after **any work that creates or modifies files**: subagent or orchestrator, code or docs/markdown
-6. `/run done` (session state handoff and snapshot pruning)
+6. `/run done` (end-of-task chain: snapshot pruning, consistency check, cleanup, state handoff, held-task glance, ask coverage)
 7. Done: no PRs, no `finishing-a-development-branch`, no human review gate
 
 ## No-confirmation rule
@@ -238,6 +245,8 @@ Only stop for:
 - A destructive or irreversible action about to be taken
 
 User can interrupt at any time. That is their job, not yours to prompt for.
+
+**Never hand work back as an action that only needs a yes.** An action for the user is something only they can do, or a decision only they can make between real options. Work inside the request that needs neither is done in the same turn and reported as done. Once the user has said to do something, do all of it without offering it again.
 
 ## Skill priority
 
@@ -255,6 +264,8 @@ Key triggers:
 ## Post-implementation review
 
 After any work that creates or modifies files, subagent or orchestrator, code or docs/markdown, invoke **`post-implementation-review`** skill.
+
+Whenever a cheat sheet is made or changed, run `cheatsheet-test <sheet or cheatsheets dir>` (a zsh-config function) and fix every failure before the work counts as done. Sheets are tldr-shaped minimal lists, one sheet per subcommand: every non-empty line starts with `# `, `> `, `- ` or a backtick, an example line ends with a backtick, and nothing is indented.
 
 ## Git strategy
 
@@ -277,15 +288,16 @@ Escalate only if: rebase conflict that cannot be resolved autonomously.
 
 ## Model selection
 
-Default to Sonnet. Deviate when task complexity or cost warrants it.
+Use a capable model for the main agent: Opus 5.5 at its default effort. Use the most capable model and effort only when a task needs it.
 
 | Task | Model |
 |---|---|
-| Architecture decisions, novel debugging, complex multi-step planning | Opus |
-| Default: implementation, review, most coding work | Sonnet |
+| Main agent: planning, orchestration, most direct work | Opus 5.5, default effort |
+| Implementation and review subagents | Sonnet |
 | Routing, triage, file validation, simple extraction/classification | Haiku |
+| The hardest reasoning, only when a task demands it | the most capable model (Fable) or a higher effort |
 
-Subagents: specify `model:` in agent frontmatter. Read-only validators and triage agents → Haiku. Implementation agents → Sonnet. Only escalate to Opus explicitly when a task demands it.
+Subagents: specify `model:` in agent frontmatter. Read-only validators and triage agents → Haiku. Implementation agents → Sonnet. Escalate past that only when a task demands it.
 
 ## TDD
 
@@ -322,6 +334,10 @@ At the end of each session, save to the project memory directory:
 - Architecture or convention changes
 
 Use memory types: `project`, `feedback`, `user`, `reference`.
+
+## Work outside the session
+
+An open action goes to the user's task tracker, through a task skill where one is installed, only when the user says to hold it, or when it already sits in a `todo.md` or `tasks.md` file being moved there. Every other open action stays in the session's Actions list, whichever round the user deals with it in, and session work stays in `.state/`. An action another repo's state or task list already tracks, or that the task tracker holds, is never copied into this session's list.
 
 ## Project initialization
 

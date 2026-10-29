@@ -57,3 +57,6 @@ Temporary Items
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Hub per-repo cache (agent-forge hub v3)
+.hub/
