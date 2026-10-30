@@ -1,19 +1,15 @@
 #!/usr/bin/env zsh
 
 function git-cleanup-branch() {
+  cheat-help git-cleanup-branch "$@" && return 0
   local DEPS=(git)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if is empty "$1" || is equal "$1" "--help"; then
-    echo "$c[h1]git-cleanup-branch$c[reset]"
-    echo ""
-    echo "$c[lead]deletes a branch locally and pushes the deletion to origin.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  git-cleanup-branch $c[param]<branch-name>$c[reset]"
-    echo ""
+  if is empty "$1"; then
+    echo "$c[error]error:$c[reset] git-cleanup-branch needs a branch name"
+    echo "see: cheat git-cleanup-branch"
     return 1
   fi
 

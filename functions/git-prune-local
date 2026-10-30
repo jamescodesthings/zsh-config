@@ -5,20 +5,12 @@ function git-prune-local_list() {
 }
 
 function git-prune-local() {
+  cheat-help git-prune-local "$@" && return 0
   local DEPS=(git grep awk xargs confirm)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if is equal "$1" "--help"; then
-    echo "$c[h1]git-prune-local$c[reset]"
-    echo ""
-    echo "$c[lead]deletes local branches that have been deleted from the remote.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  git-prune-local $c[flag][--help]$c[reset]"
-    return 0
-  fi
 
   echo "$c[info]the following branches will be deleted:$c[reset]"
   git-prune-local_list

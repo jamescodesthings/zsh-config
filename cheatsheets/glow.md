@@ -2,6 +2,14 @@
 
 > Markdown renderer. `cheat` renders sheets with `glow -w 120`.
 
+# Getting started
+
+- `glow <file.md>`: render a file
+- `glow -w 120 <file.md>`: render at the width cheat uses
+- `echo "# Hello" | glow -`: render from stdin
+
+- Next: `glow -t <directory>` browses a folder.
+
 # Options
 
 - `-w <n>`: wrap width
@@ -9,24 +17,7 @@
 - `-s <style>`: `auto` (default), `dark`, `light`
 - `-t`: TUI file browser for a directory
 
-# Usage
+# More
 
-- Render a file:
-
-`glow <file.md>`
-
-- Render at the width cheat uses:
-
-`glow -w 120 <file.md>`
-
-- Render from stdin:
-
-`echo "# Hello" | glow -`
-
-- Browse a directory:
-
-`glow -t <directory>`
-
-# Related commands
-
-- `cheat bat`
+- `cheat bat`: plain code and text viewer
+- `cheat zsh-config`: everything zsh-config gives you

@@ -1,25 +1,23 @@
 # pico-8
 
-> PICO-8 launchers. Needs `$PICO8` set to the binary path in the per-host env file (`env.<hostname>.zsh`).
+> PICO-8 launchers.
+> Needs `$PICO8` set to the binary path in the per-host env file (`env.<hostname>.zsh`).
 
-# Usage
+# Getting started
 
-- launch in the foreground:
+- `pico`: launch in the foreground
+- `picoh`: launch in the background with the current directory as the cart root
+- Next: `cheat pico-8-lang` for the API, `cheat pico-8-shortcuts` for the keys
 
-`pico`
-
-- launch in the background with the current directory as cart root:
-
-`picoh`
-
-# Facts
+# Launchers
 
 - `pico`, `pico-8`, `pico8`: aliases for the same launch
+- `picoh [--help]`: background launch, `--help` shows usage
 - Not on `zerocalc`: `pico` and `picoh` add `-width 512 -height 512 -window_x 0 -window_y 0`
-- `picoh --help`: usage
 
-# Related commands
+# More
 
-- `cheat zshconfig`
-- `cheat pico-8-lang`
-- `cheat pico-8-shortcuts`
+- `cheat pico-8-lang`: the API reference
+- `cheat pico-8-shortcuts`: editor and runtime keys
+- `cheat zerocalc`: the PicoCalc keys
+- `cheat zsh-config`: everything zsh-config gives you

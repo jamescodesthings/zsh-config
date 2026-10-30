@@ -3,16 +3,21 @@
 > Find a regex in all history, global first. Matches are highlighted and repeats grouped.
 > Needs a query.
 
-# Usage
+# Options
+
+- `-q`: commands only, no directory headers
+
+# Examples
 
 - Search:
 
 `hist search <regex>`
 
-- Commands only, no directory headers:
+- Commands only:
 
 `hist search <regex> -q`
 
-# Related commands
+# See also
 
+- `cheat hist`: the top sheet
 - `cheat hist delete`

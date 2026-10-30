@@ -2,16 +2,13 @@
 
 > Ask y/n. Exit 0 on `y` or `Y`, 1 on anything else.
 
-# Usage
+# Getting started
 
-- Ask with the default message:
+- `confirm`: ask with the default message
+- `confirm "Delete this?"`: ask with your own message
+- `if confirm "Continue?"; then rm -rf /tmp/myapp; fi`: guard a command
 
-`confirm`
+# More
 
-- Ask with your own message:
-
-`confirm "Delete this?"`
-
-- Guard a command:
-
-`if confirm "Continue?"; then rm -rf /tmp/myapp; fi`
+- `cheat is`
+- `cheat zsh-config`: everything zsh-config gives you

@@ -13,19 +13,13 @@ function cheatsheet-test() {
     source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
   fi
 
-  if [[ "$1" == "--help" || "$1" == "-h" ]]; then
-    echo "$c[h1]cheatsheet-test$c[reset]"
-    echo ""
-    echo "$c[lead]checks that cheatsheets render with cheat: the tldr page shape, then tldr and glow when installed.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  cheatsheet-test                   check zsh-config's own cheatsheets/"
-    echo "  cheatsheet-test $c[param]<sheet|dir>...$c[reset]    check those sheets, or every *.md in those folders"
-    echo ""
-    echo "$c[h2]examples$c[reset]"
-    echo "  cheatsheet-test $c[param]~/projects/personal/pkms/cheatsheets$c[reset]"
-    echo "  cheatsheet-test $c[param]cheatsheets/git.md$c[reset]"
-    return 0
+  cheat-help cheatsheet-test "$@" && return 0
+
+  # --strict turns the structure warnings below into failures
+  local -i strict=0
+  if (( ${@[(Ie)--strict]} )); then
+    strict=1
+    set -- "${@:#--strict}"
   fi
 
   local -a targets sheets
@@ -54,7 +48,8 @@ function cheatsheet-test() {
     return 1
   fi
 
-  local sheet line out
+  local sheet line out name parent height first_section last_section candidate warning
+  local -a sections warnings
   local -i failed=0 number bad
   for sheet in $sheets; do
     bad=0
@@ -96,6 +91,46 @@ function cheatsheet-test() {
         bad=1
       fi
     fi
+
+    # The shared structure (cheat cheat-format). A top sheet is one with no
+    # parent sheet beside it: it opens with "Getting started", ends with
+    # "More" and fits half a kitty window. A child sheet (hub-join.md beside
+    # hub.md) ends with "See also". Warnings, unless --strict.
+    name="${sheet:t:r}"
+    parent=""
+    sections=(${(f)"$(grep -E '^# ' "$sheet" | sed -e 's/^# //' -e 's/[[:space:]]*$//')"})
+    shift sections 2> /dev/null
+    first_section="${(L)sections[1]}"
+    last_section="${(L)sections[-1]}"
+    warnings=()
+    candidate="$name"
+    while [[ "$candidate" == *-* ]]; do
+      candidate="${candidate%-*}"
+      if is file "${sheet:h}/$candidate.md"; then
+        parent="$candidate"
+        break
+      fi
+    done
+    if is empty "$parent"; then
+      [[ "$first_section" != "getting started" ]] && warnings+=("a top sheet's first section should be \"Getting started\"")
+      [[ "$last_section" != "more" ]] && warnings+=("a top sheet's last section should be \"More\"")
+      if is available tldr && is file "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml"; then
+        height=$(tldr --config "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml" --color never --render "$sheet" < /dev/null 2> /dev/null | wc -l)
+      else
+        height=$(grep -c . "$sheet")
+      fi
+      (( height > 35 )) && warnings+=("a top sheet should fit half a kitty window: $height lines, aim for 35")
+    else
+      [[ "$last_section" != "see also" ]] && warnings+=("a sheet under $parent should end with \"See also\"")
+    fi
+    for warning in $warnings; do
+      if (( strict )); then
+        echo "$c[error]error:$c[reset] $sheet: $warning"
+        bad=1
+      else
+        echo "$c[warn]warning:$c[reset] $sheet: $warning"
+      fi
+    done
 
     failed+=$bad
   done

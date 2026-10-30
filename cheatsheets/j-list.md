@@ -2,13 +2,14 @@
 
 > List every z entry, highest rank first.
 
-# Usage
+# Examples
 
 - List entries:
 
 `j list`
 
-# Related commands
+# See also
 
+- `cheat j`: the top sheet
 - `cheat j search`
 - `cheat j stats`

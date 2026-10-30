@@ -3,45 +3,40 @@
 > Predicates for shell conditionals. Exit 0 true, 1 false.
 > `is not <predicate>` negates; `a`, `an` and `the` are allowed before it (`is an existing <path>`).
 
+# Getting started
+
+- `if is available brew; then brew install something; fi`: use it in a condition
+- `is not empty "$var"`: negate
+- Next: pick a predicate below
+
 # Path
 
-- `is file <path>`: regular file
-- `is dir <path>`: directory
-- `is link <path>`: symlink
-- `is existing <path>`: exists, any type
-- `is readable <path>`, `is writeable <path>`, `is executable <path>`
-- `is older <a> <b>`, `is newer <a> <b>`: modification time
+- `is file|dir|link|existing <path>`: regular file, directory, symlink, exists (any type)
+- `is readable|writeable|executable <path>`
+- `is older|newer <a> <b>`: modification time
 
-# Command
+# Command and text
 
 - `is available <command>`: in PATH
 - `is alias <name>`: alias is defined
-
-# String and number
-
 - `is empty "$var"`: empty or unset
 - `is equal "$a" "$b"`: equal, as text or as numbers
 - `is matching "<regex>" "$val"`: whole value matches
 - `is substring "<text>" "$val"`: value contains it
 - `is number "$val"`: integer or decimal
-- `is gt`, `is lt`, `is ge`, `is le` with `"$a" "$b"`: numeric compare
-- `is true "$val"`, `is false "$val"`: `true` or `0` counts as true
+- `is gt|lt|ge|le "$a" "$b"`: numeric compare
+- `is true|false "$val"`: `true` or `0` counts as true
 
 # Platform
 
-- `is osx`, `is linux`, `is debian`, `is arch`, `is ubuntu`, `is windows`
+- `is osx|linux|debian|arch|ubuntu|windows`
 - `is supported`: macOS or Debian family
 - `is m1`: Apple Silicon
 - `is iterm`: running in iTerm
 - `is tty`: Linux with no display (console)
-- `is gnome`, `is wayland`, `is x11`
+- `is gnome|wayland|x11`
 
-# Examples
+# More
 
-- Negate:
-
-`is not empty "$var"`
-
-- In a condition:
-
-`if is available brew; then brew install something; fi`
+- `cheat confirm`, `cheat deps`: other shell helpers
+- `cheat zsh-config`: everything zsh-config gives you

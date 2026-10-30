@@ -16,6 +16,7 @@ function deps-command() {
 }
 
 function deps() {
+  cheat-help deps "$@" && return 0
   local missing=0
 
   for dependency in "$@"; do

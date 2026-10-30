@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 function git-i-really-fucked-up() {
+  cheat-help git-i-really-fucked-up "$@" && return 0
   local DEPS=(
     confirm
     git

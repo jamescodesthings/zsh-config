@@ -3,37 +3,38 @@
 > Show a personal cheatsheet from `~/cheatsheets`, falling back to tldr when none matches.
 > Renders with tldr, then glow, bat, cat. Needs `CHEATSHEET_DIR` set. Exit: 0 done, 1 error.
 
-# Commands
+# Getting started
 
-- `cheat cheat list`: list local sheets (also bare `cheat`)
-- `cheat cheat search`: search local sheets and tldr by name
-- `cheat cheat new`: create a sheet from the template
-- `cheat cheat edit`: open a sheet in `$EDITOR`
-- `cheat cheat raw`: print a sheet's markdown
-- `cheat cheat update`: refresh the tldr cache
-- `cheat help` (`-h`, `--help`): the built-in help
+- `cheat <tool>`: show a sheet, e.g. `cheat git`
+- `cheat`: list every local sheet
+- `cheat search <query>`: find a sheet by part of its name
+- Next: `cheat cheat new <name>` makes a sheet of your own
 
 # Show a sheet
 
-- Show a sheet:
+- `cheat <word> [<word>...]`: words join with `-`, so `cheat git commit` shows `git-commit.md`
+- `cheat <tool> <word>`: a word with no sheet falls back to the nearest parent sheet
+- `cheat <tool> --raw`: print the markdown instead of rendering it
+- `<tool> --help`: zsh-config tools show their own sheet
+- `NO_COLOR=1 cheat <tool>`: colour off
 
-`cheat git`
+# Make and keep sheets
 
-- Several words join with `-` (`git-commit.md`):
-
-`cheat git commit`
-
-- Print the markdown instead of rendering:
-
-`cheat git --raw`
+- `cheat cheat new <name>`: create from the template and link it
+- `cheat cheat edit <name>`: open in `$EDITOR`
+- `cheat cheat raw <name>`: print a sheet's markdown
+- `cheat cheat refresh`: refresh the tldr cache (it also refreshes itself every 7 days)
 
 # Rules
 
-- The subcommand names above are reserved: no sheet can be called `list`, `search`, `edit`, `new`, `update`, `raw` or `help`
+- `list`, `search`, `edit`, `new`, `refresh`, `raw` and `help` are reserved: no sheet can have those names
 - `$VAR` names outside backticks expand when shown
-- The tldr cache refreshes itself in the background every 7 days
+- `cheat help`, `cheat -h` and `cheat --help` show this sheet
 
-# Related commands
+# More
 
-- `cheat cheatsheet-test`
-- `cheat link-cheatsheets`
+- `cheat cheat list`, `cheat cheat search`, `cheat cheat new`, `cheat cheat edit`, `cheat cheat raw`, `cheat cheat refresh`: one sheet each
+- `cheat cheat format`: the shared sheet structure
+- `cheat cheatsheet-test`: check sheets render
+- `cheat link-cheatsheets`: link a project's sheets in
+- `cheat zsh-config`: everything zsh-config gives you

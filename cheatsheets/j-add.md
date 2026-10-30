@@ -3,12 +3,13 @@
 > Add a path to z, or raise its rank by 1 if it is there.
 > With no path it runs z.
 
-# Usage
+# Examples
 
 - Add a path:
 
 `j add <path>`
 
-# Related commands
+# See also
 
+- `cheat j`: the top sheet
 - `cheat j bump`

@@ -1,14 +1,17 @@
 # git-cleanup-branch
 
-> Delete a branch locally (`git branch -D`) and on origin.
-> Refuses `main`, `master` and the current branch. Exit 1 on refusal or failure.
+> Delete a branch locally (git branch -D) and on origin.
+> Refuses main, master and the current branch.
 
-# Usage
+# Examples
 
 - Delete the branch:
 
 `git-cleanup-branch <branch>`
 
-# Related commands
+# See also
 
+- `cheat git`
+- `cheat zsh-config`: everything zsh-config gives you
 - `cheat git-prune-local`
+- Exit 1 on refusal or failure

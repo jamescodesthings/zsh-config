@@ -9,7 +9,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 SHEETS="$TMP/sheets"
 mkdir -p "$SHEETS"
-for name in a a-b cheat; do
+for name in a a-b cheat update; do
   printf '# %s\n\n> sheet %s\n' "$name" "$name" > "$SHEETS/$name.md"
 done
 
@@ -48,6 +48,7 @@ function expect() {
 }
 
 expect "a sheet by name" 0 "sheet a" cheat a
+expect "a sheet called update is a sheet, not a subcommand" 0 "sheet update" cheat update
 expect "two words join with -" 0 "sheet a-b" cheat a b
 expect "a missing child falls back to its parent" 0 "sheet a-b" cheat a b c
 expect "a missing first child falls back to the top sheet" 0 "sheet a" cheat a zzz

@@ -1,8 +1,8 @@
 # cheat list
 
-> List the local sheets in `~/cheatsheets`.
+> List the local sheets in `~/cheatsheets`, sorted by name.
 
-# Commands
+# Examples
 
 - List local sheets:
 
@@ -11,3 +11,7 @@
 - Bare `cheat` does the same:
 
 `cheat`
+
+# See also
+
+- `cheat cheat search`: find a sheet by name

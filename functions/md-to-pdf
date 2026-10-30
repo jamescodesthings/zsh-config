@@ -20,26 +20,7 @@ function _md-to-pdf-install() {
 }
 
 function md-to-pdf() {
-  if is equal "$1" "-h" || is equal "$1" "--help"; then
-    echo "${c[h1]}md-to-pdf${c[reset]}"
-    echo ""
-    echo "${c[lead]}converts a markdown file to an A4 pdf next to it.${c[reset]}"
-    echo ""
-    echo "${c[h2]}usage${c[reset]}"
-    echo "  md-to-pdf ${c[param]}file.md${c[reset]}            writes file.pdf beside it, overwriting"
-    echo "  md-to-pdf ${c[param]}a.md b.md${c[reset]} / ${c[param]}*.md${c[reset]}  converts each, beside its input"
-    echo ""
-    echo "  a file that fails is reported and the rest carry on; the exit status is 1 if any"
-    echo "  failed. ctrl-c stops the whole batch."
-    echo ""
-    echo "${c[h2]}how${c[reset]}"
-    echo "  md-to-html renders into a temp dir, weasyprint prints it, exiftool and qpdf"
-    echo "  strip the producer tags. any file.html beside the input is ignored."
-    echo ""
-    echo "${c[h2]}needs${c[reset]}"
-    echo "  pandoc, weasyprint, file; exiftool and qpdf for the metadata scrub"
-    return 0
-  fi
+  cheat-help md-to-pdf "$@" && return 0
 
   if is equal "$1" "--"; then
     shift

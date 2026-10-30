@@ -2,12 +2,13 @@
 
 > Show the entry count, the top 5 by rank, and the oldest and newest entries.
 
-# Usage
+# Examples
 
 - Show stats:
 
 `j stats`
 
-# Related commands
+# See also
 
+- `cheat j`: the top sheet
 - `cheat j list`

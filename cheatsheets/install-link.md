@@ -3,11 +3,10 @@
 > Symlink `<from>` to `<to>`, backing up what is there. Runs `rm`, `mv` and `ln` through sudo.
 > Exit 1 on wrong arguments or any failed step.
 
-# Usage
+# Getting started
 
-- Link a config into place:
-
-`install-link ./configs/asdf/.asdfrc ~/.asdfrc`
+- `install-link <from> <to>`: e.g. `install-link ./configs/asdf/.asdfrc ~/.asdfrc`
+- Next: `install-box-config` picks a per-machine `<from>` for you
 
 # Existing target
 
@@ -15,6 +14,7 @@
 - A file: moved to `<to>.bak`
 - A directory: moved to `<to>_bak`
 
-# Related commands
+# More
 
 - `cheat install-box-config`
+- `cheat zsh-config`: everything zsh-config gives you

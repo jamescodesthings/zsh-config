@@ -1,8 +1,9 @@
 # cheat raw
 
-> Print a sheet's markdown, from the local sheet or else tldr. Exit 1 if neither has it.
+> Print a sheet's markdown, from the local sheet or else tldr.
+> Exit 1 if neither has it.
 
-# Commands
+# Examples
 
 - Print a sheet's markdown:
 
@@ -12,6 +13,10 @@
 
 `cheat raw git commit`
 
-- Same output through the show form:
+- The same through the show form:
 
 `cheat git --raw`
+
+# See also
+
+- `cheat cheat edit`

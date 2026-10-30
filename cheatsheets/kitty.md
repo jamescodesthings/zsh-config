@@ -1,97 +1,47 @@
 # kitty
 
-> Terminal keys for this config; macOS keys shown, Linux key in the description where it differs.
-> Keys live in `configs/kitty/os.macos.conf` and `os.linux.conf`.
+> Keys for this config; macOS key shown, Linux key in the description where it differs.
+> Source: `configs/kitty/os.macos.conf` and `os.linux.conf`.
 
-# Panes and tabs
+# Getting started
 
-- New tab in the current folder (Linux: `ctrl+t`):
+- `cmd+t`: new tab in this folder (Linux `ctrl+t`)
+- `cmd+enter`: new pane in this folder (Linux `ctrl+shift+enter`)
+- `ctrl+arrows`: focus the pane in that direction
 
-`cmd+t`
+- Next: close with `cmd+w` (Linux `ctrl+w`).
 
-- New pane in the current folder, back to the grid first (Linux: `ctrl+shift+enter`):
+# Panes
 
-`cmd+enter`
+- `cmd+shift+w`: close the other panes, or the other tabs when alone (Linux `ctrl+shift+w`)
+- `cmd+shift+enter`: zoom the pane and back (macOS only)
+- `cmd+[` / `cmd+]`: previous or next pane (macOS only)
+- `cmd+opt+p`: detach the pane into a tab or window (macOS only)
+- `ctrl+shift+arrows`: move the pane itself
+- `ctrl+opt+arrows`: resize the pane (Linux `ctrl+alt+arrows`)
+- `ctrl+opt+backspace`: reset pane sizes (Linux `ctrl+alt+backspace`)
 
-- Close the pane (Linux: `ctrl+w`):
+# Tabs and window
 
-`cmd+w`
-
-- Close the other panes, or the other tabs if this is the only pane (Linux: `ctrl+shift+w`):
-
-`cmd+shift+w`
-
-- Zoom the pane and back (macOS only):
-
-`cmd+shift+enter`
-
-- Detach the pane into its own tab or window (macOS only):
-
-`cmd+opt+p`
-
-- Previous or next pane (macOS only):
-
-`cmd+[` / `cmd+]`
-
-- Next or previous tab (Linux only):
-
-`ctrl+tab` / `ctrl+shift+tab`
-
-- Quit kitty (Linux only):
-
-`ctrl+shift+q`
-
-# Focus, move, resize
-
-- Focus the pane in that direction:
-
-`ctrl+arrows`
-
-- Move the pane itself:
-
-`ctrl+shift+arrows`
-
-- Resize the pane (Linux: `ctrl+alt+arrows`):
-
-`ctrl+opt+arrows`
-
-- Reset pane sizes (Linux: `ctrl+alt+backspace`):
-
-`ctrl+opt+backspace`
+- `ctrl+tab` / `ctrl+shift+tab`: next or previous tab (Linux only)
+- `cmd+1` to `cmd+9`: pick a tab (macOS default)
+- `cmd+shift+[` / `cmd+shift+]`: previous or next tab (macOS default)
+- `ctrl+shift+q`: quit kitty (Linux only)
 
 # Editing
 
-- Start or end of the command line (macOS only):
-
-`cmd+left` / `cmd+right`
-
-- Move one word left or right (macOS only):
-
-`opt+left` / `opt+right`
-
-- Paste (Linux only):
-
-`ctrl+v`
-
-- Command palette (Linux: `ctrl+shift+a`):
-
-`cmd+shift+a`
+- `cmd+left` / `cmd+right`: start or end of the command line (macOS only)
+- `opt+left` / `opt+right`: one word left or right (macOS only)
+- `ctrl+v`: paste (Linux only)
+- `cmd+f`: search the scrollback; `cmd+k` clear; `cmd+plus` / `cmd+minus` font size (macOS defaults)
+- `cmd+shift+a`: command palette (Linux `ctrl+shift+a`)
 
 # ssh
 
-- `ssh` and `s` are `kitten ssh` inside kitty
-- Bypass the alias:
+- `ssh` and `s` are `kitten ssh` inside kitty; bypass with:
 
-`command ssh host`
+`command ssh <host>`
 
-# kitty defaults on macOS
+# More
 
-- `cmd+f`: search the scrollback
-- `cmd+k`: clear
-- `cmd+1` to `cmd+9`: pick a tab
-- `cmd+shift+[` / `cmd+shift+]`: previous or next tab
-- `cmd+plus` / `cmd+minus`: font size
-
-# Related commands
-
-- `cheat zshconfig`
+- `cheat zsh-config`: everything zsh-config gives you

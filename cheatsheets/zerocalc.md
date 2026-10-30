@@ -1,6 +1,12 @@
 # zerocalc
 
-> ZeroCalc (PicoCalc device) keyboard shortcuts. The `zerocalc` host env is `env.zerocalc.zsh`.
+> ZeroCalc (PicoCalc device) keyboard shortcuts.
+> The `zerocalc` host env is `env.zerocalc.zsh`.
+
+# Getting started
+
+- `F5`: toggle mouse mode, then `D-pad` moves the cursor
+- Next: the sections below
 
 # Mouse mode
 
@@ -23,7 +29,7 @@
 - `LSHIFT + RSHIFT + left`, `LSHIFT + RSHIFT + right`: select word
 - `LSHIFT + RSHIFT + [`, `LSHIFT + RSHIFT + ]`: select to line start, end
 
-# Right Shift shortcuts
+# Right Shift
 
 - `RSHIFT + A`: line start
 - `RSHIFT + E`: line end
@@ -31,12 +37,11 @@
 - `RSHIFT + K`: delete to line end
 - `RSHIFT + W`: delete word back
 - `RSHIFT + L`: clear screen
-- `RSHIFT + C`: interrupt
-- `RSHIFT + D`: EOF
-- `RSHIFT + Z`: suspend
+- `RSHIFT + C`, `RSHIFT + D`, `RSHIFT + Z`: interrupt, EOF, suspend
 - `RSHIFT + key`: send Ctrl+key
 - `LSHIFT + RSHIFT + key`: send Ctrl+Shift+key
 
-# Related commands
+# More
 
-- `cheat raspi`
+- `cheat raspi`: Pi and PicoCalc commands and paths
+- `cheat zsh-config`: everything zsh-config gives you

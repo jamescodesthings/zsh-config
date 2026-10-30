@@ -1,24 +1,29 @@
 # md-to-html
 
 > Convert markdown to a styled, self-contained html page next to each input.
-> Overwrites existing output. Needs `pandoc` and `file`. Exit 1 if any file failed, 130 on ctrl-c, which also stops a batch.
+> Overwrites existing output. Needs pandoc and file.
 
-# Usage
+# Options
 
-- Convert one file, or several:
+- `-o`, `--output <file>`: write one file elsewhere (ends in .html or .htm, not the input)
+- `--help`: show usage
+
+# Examples
+
+- Convert one file:
 
 `md-to-html notes.md`
 
+- Convert several:
+
 `md-to-html *.md`
 
-- Write one file elsewhere (`-o` or `--output`; ends in `.html` or `.htm`, not the input):
+- Write elsewhere:
 
 `md-to-html notes.md -o ~/Desktop/notes.html`
 
-- Show usage:
-
-`md-to-html --help`
-
-# Related commands
+# See also
 
 - `cheat md-to-pdf`
+- `cheat zsh-config`: everything zsh-config gives you
+- Exit: 1 if any file failed, 130 on ctrl-c, which also stops a batch

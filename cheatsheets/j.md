@@ -3,36 +3,42 @@
 > Directory jumper over rupa/z, with commands to manage z's history.
 > Needs the z plugin loaded. Bare `j` lists z's ranks; an unknown word is passed to z as a query.
 
-# Commands
+# Getting started
 
-- `cheat j list`: list every entry by rank
-- `cheat j search`: filter entries by regex
-- `cheat j add`: add a path or raise its rank
-- `cheat j delete`: remove entries matching a regex
-- `cheat j bump`: put one entry at the top
-- `cheat j reorder`: reorder the top entries in your editor
-- `cheat j clean`: remove entries for missing directories
-- `cheat j move`: move a folder's entries to its new path
-- `cheat j stats`: totals, top 5, oldest and newest
-- `cheat j edit`: open the z data file in your editor
+- `j <query>`: jump to the best match; several terms narrow it, e.g. `j projects zsh`
+- `j list`: see every entry by rank
+- `j stats`: totals, top 5, oldest and newest
 
-# Help
+- Next: tidy the list with `j clean` and `j reorder`.
 
-- `j help`, `j -h`, `j --help`: show usage
+# Find
 
-# Jump
+- `j list`: list every entry by rank
+- `j search <regex>`: filter entries by regex
+- `j stats`: totals, top 5, oldest and newest
 
-- Go to the best match, or to the best match for several terms:
+# Change ranks
 
-`j <query>`
+- `j add <path>`: add a path or raise its rank
+- `j bump <regex>`: put one entry at the top
+- `j reorder [--count N]`: reorder the top entries in your editor
+- `j edit`: open the z data file in your editor
 
-`j projects zsh`
+# Tidy
+
+- `j delete <regex>`: remove entries matching a regex
+- `j clean`: remove entries for missing directories
+- `j move [--dry-run] <old> <new>`: carry a moved folder's ranks over
 
 # Environment
 
 - `_Z_DATA`: z data file (default `~/.z`)
 - `EDITOR`: used by `reorder` and `edit` (default `micro`)
+- `j help`, `j -h`, `j --help`: show usage
 
-# Related commands
+# More
 
-- `tldr z`
+- `cheat j <command>`: one sheet per command above
+- `cheat hist`: the same tidying for shell history
+- `tldr z`: the z plugin itself
+- `cheat zsh-config`: everything zsh-config gives you

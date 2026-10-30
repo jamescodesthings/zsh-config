@@ -2,12 +2,13 @@
 
 > Delete per-directory history files whose directory no longer exists, after listing them and asking.
 
-# Usage
+# Examples
 
 - Clean stale files:
 
 `hist clean`
 
-# Related commands
+# See also
 
+- `cheat hist`: the top sheet
 - `cheat hist stats`

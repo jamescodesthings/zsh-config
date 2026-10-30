@@ -1,14 +1,15 @@
 # j search
 
 > Show the entries whose path matches a regex.
-> With no query it jumps to z's best match for "search".
+> With no query it jumps to the best z match for "search".
 
-# Usage
+# Examples
 
 - Filter entries:
 
 `j search <regex>`
 
-# Related commands
+# See also
 
+- `cheat j`: the top sheet
 - `cheat j list`

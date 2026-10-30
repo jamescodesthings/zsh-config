@@ -190,6 +190,7 @@ function _hist_move() {
 }
 
 function hist() {
+  cheat-help hist "$@" && return 0
   unset "history[$HISTCMD]"
   local DEPS=(grep sed confirm)
   if ! deps "${DEPS[@]}"; then
@@ -352,32 +353,13 @@ function hist() {
       done
       ;;
 
-    -h|--help|help)
-      echo "${c[h1]}hist${c[reset]}"
-      echo ""
-      echo "${c[lead]}History helper for per-directory-history. Manages history across global and per-directory files.${c[reset]}"
-      echo ""
-      echo "${c[h2]}Subcommands:${c[reset]}"
-      echo "  hist ${c[flag]}search${c[reset]} ${c[param]}<query>${c[reset]} ${c[flag]}[-q]${c[reset]}  grep all history files for a pattern"
-      echo "  hist ${c[flag]}list${c[reset]} ${c[flag]}[-q]${c[reset]}               list all history (global first)"
-      echo "  hist ${c[flag]}delete${c[reset]} ${c[param]}<query>${c[reset]}         find matches, confirm, delete from all files"
-      echo "  hist ${c[flag]}open${c[reset]}                       open history base directory"
-      echo "  hist ${c[flag]}clean${c[reset]}                      remove files for directories that no longer exist"
-      echo "  hist ${c[flag]}move${c[reset]} ${c[flag]}[--dry-run]${c[reset]} ${c[param]}<old> <new>${c[reset]}  move history of a folder and its subfolders after the folder moved"
-      echo "  hist ${c[flag]}stats${c[reset]}                     show entry count per directory"
-      echo ""
-      echo "${c[h2]}Flags:${c[reset]}"
-      echo "  ${c[flag]}-q, --quiet${c[reset]}  suppress file headers (search + list)"
-      echo ""
-      echo "${c[h2]}Environment:${c[reset]}"
-      echo "  ${c[param]}PER_DIRECTORY_HISTORY_BASE${c[reset]}           ${c[sub]}${base}${c[reset]}"
-      echo "  ${c[param]}PER_DIRECTORY_HISTORY_FILE${c[reset]}           ${c[sub]}${hist_file}${c[reset]}"
-      echo "  ${c[param]}_per_directory_history_main_histfile${c[reset]} ${c[sub]}${global_file}${c[reset]}"
+    help)
+      cheat hist
       ;;
 
     *)
       echo "${c[error]}error:${c[reset]} unknown subcommand: $subcmd"
-      echo "run ${c[flag]}hist --help${c[reset]} for usage"
+      echo "see: cheat hist"
       return 1
       ;;
   esac

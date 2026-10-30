@@ -1,20 +1,18 @@
 #!/usr/bin/env zsh
 
 function link-cheatsheets() {
+  cheat-help link-cheatsheets "$@" && return 0
   if is empty "$c"; then
     source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
   fi
 
-  if is not equal "$#" "1" || [[ "$1" == "--help" ]] || is not dir "$1"; then
-    echo "$c[h1]link-cheatsheets$c[reset]"
-    echo ""
-    echo "$c[lead]links every *.md in a folder into \$CHEATSHEET_DIR, so cheat can find the sheets.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  link-cheatsheets $c[param]<dir>$c[reset]"
-    echo ""
-    echo "$c[h2]examples$c[reset]"
-    echo "  link-cheatsheets $c[param]~/projects/personal/pkms/cheatsheets$c[reset]"
+  if is not equal "$#" "1"; then
+    echo "$c[error]error:$c[reset] link-cheatsheets needs one folder"
+    echo "see: cheat link-cheatsheets"
+    return 1
+  elif is not dir "$1"; then
+    echo "$c[error]error:$c[reset] not a folder: $1"
+    echo "see: cheat link-cheatsheets"
     return 1
   fi
 

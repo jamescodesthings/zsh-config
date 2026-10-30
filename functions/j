@@ -118,6 +118,7 @@ function _j_move() {
 }
 
 function j() {
+  cheat-help j "$@" && return 0
   if (( ! $+functions[_z] )); then
     echo "${c[error]}error:${c[reset]} z plugin not loaded (rupa/z required)"
     return 1
@@ -137,31 +138,8 @@ function j() {
 
   case "$subcmd" in
 
-    -h|--help|help)
-      echo "${c[h1]}j${c[reset]}"
-      echo ""
-      echo "${c[lead]}Wrapper around rupa/z with subcommands for managing directory frecency history.${c[reset]}"
-      echo "${c[lead]}Unknown subcommands are forwarded directly to \`_z\` for navigation.${c[reset]}"
-      echo ""
-      echo "${c[h2]}Navigation (forwarded to z):${c[reset]}"
-      echo "  j ${c[param]}<query>${c[reset]}              cd to highest-ranked directory matching query"
-      echo ""
-      echo "${c[h2]}Subcommands:${c[reset]}"
-      echo "  ${c[flag]}list${c[reset]}                   list all entries sorted by rank"
-      echo "  ${c[flag]}search${c[reset]} ${c[param]}[query]${c[reset]}       filter entries by regex (no query → navigate)"
-      echo "  ${c[flag]}add${c[reset]} ${c[param]}[path]${c[reset]}           add or increment a path (no path → navigate)"
-      echo "  ${c[flag]}delete${c[reset]} ${c[param]}[query]${c[reset]}       show matches, confirm, remove (no query → navigate)"
-      echo "  ${c[flag]}bump${c[reset]} ${c[param]}[query]${c[reset]}         set matching entry to max rank + 1"
-      echo "  ${c[flag]}reorder${c[reset]} ${c[flag]}[--count N]${c[reset]}   edit top N entries in \$EDITOR to reorder"
-      echo "  ${c[flag]}clean${c[reset]}                  remove entries for non-existent directories"
-      echo "  ${c[flag]}move${c[reset]} ${c[flag]}[--dry-run]${c[reset]} ${c[param]}<old> <new>${c[reset]}  rewrite entries under <old> to <new> after the folder moved"
-      echo "  ${c[flag]}stats${c[reset]}                  show entry count, top 5, oldest/newest"
-      echo "  ${c[flag]}edit${c[reset]}                   open z data file in \$EDITOR"
-      echo "  ${c[flag]}help${c[reset]}, ${c[flag]}-h${c[reset]}, ${c[flag]}--help${c[reset]}     show this help"
-      echo ""
-      echo "${c[h2]}Environment:${c[reset]}"
-      echo "  ${c[param]}_Z_DATA${c[reset]}   ${c[sub]}${_Z_DATA:-$HOME/.z}${c[reset]}"
-      echo "  ${c[param]}EDITOR${c[reset]}    ${c[sub]}${EDITOR:-micro}${c[reset]}"
+    help)
+      cheat j
       ;;
 
     list)

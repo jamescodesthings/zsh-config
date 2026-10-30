@@ -1,13 +1,14 @@
 # hist open
 
-> Open the history folder (`xdg-open`, then `open`; otherwise print the path).
+> Open the history folder (xdg-open, then open; otherwise print the path).
 
-# Usage
+# Examples
 
 - Open the folder:
 
 `hist open`
 
-# Related commands
+# See also
 
+- `cheat hist`: the top sheet
 - `cheat hist stats`

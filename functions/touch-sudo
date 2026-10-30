@@ -21,20 +21,12 @@ EOF
 }
 
 function touch-sudo() {
+  cheat-help touch-sudo "$@" && return 0
   local DEPS=(is confirm)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if is equal "$1" "--help"; then
-    echo "$c[h1]touch-sudo$c[reset]"
-    echo ""
-    echo "$c[lead]enables touchid authentication for sudo (macos only).$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  touch-sudo $c[flag][--help]$c[reset]"
-    return 0
-  fi
 
   if is not osx; then
     echo "$c[error]error:$c[reset] touch-sudo is macos only"

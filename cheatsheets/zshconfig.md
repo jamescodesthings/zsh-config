@@ -2,21 +2,12 @@
 
 > Jump to or edit the zsh config directory (`~/.custom`, a symlink to this repo). Alias `zshc`.
 
-# Usage
+# Getting started
 
-- Change into the config directory:
-
-`zshconfig`
-
-- Open it in VS Code, else micro on `.zshrc`:
-
-`zshconfig -e`
-
-`zshconfig --edit`
-
-- Edit this machine's env file (`env.<hostname>.zsh`, in micro):
-
-`zshenv`
+- `zshconfig`: change into the config directory
+- `zshconfig -e` or `zshconfig --edit`: open it in VS Code, else micro on `.zshrc`
+- `zshenv`: edit this machine's env file (`env.<hostname>.zsh`, in micro)
+- Next: `reload <function>` picks up a function you changed
 
 # Drop-ins
 
@@ -26,18 +17,12 @@
 
 # Stay in bash
 
-- One session (bash otherwise hands over to zsh):
+- `NO_ZSH=1 bash`: one session (bash otherwise hands over to zsh)
+- `ssh -t host NO_ZSH=1 bash -i`: over ssh
+- `bash --norc`: skip the startup file
 
-`NO_ZSH=1 bash`
-
-- Over ssh:
-
-`ssh -t host NO_ZSH=1 bash -i`
-
-- Skip the startup file:
-
-`bash --norc`
-
-# Related commands
+# More
 
 - `cheat reload`
+- `cheat update`
+- `cheat zsh-config`: everything zsh-config gives you

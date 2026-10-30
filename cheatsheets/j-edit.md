@@ -2,12 +2,13 @@
 
 > Open the z data file in your editor.
 
-# Usage
+# Examples
 
-- Open `$_Z_DATA` (default `~/.z`):
+- Open $_Z_DATA (default ~/.z):
 
 `j edit`
 
-# Related commands
+# See also
 
+- `cheat j`: the top sheet
 - `cheat j reorder`

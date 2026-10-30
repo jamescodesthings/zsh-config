@@ -10,23 +10,15 @@ function _reload_do() {
 }
 
 function reload() {
+  cheat-help reload "$@" && return 0
   local DEPS=(is)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if is equal "$1" "--help" || is empty "$1"; then
-    echo "$c[h1]reload$c[reset]"
-    echo ""
-    echo "$c[lead]reloads a zsh function by name, or all functions at once.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  reload $c[param]<function>$c[reset]"
-    echo "  reload $c[param]all$c[reset]"
-    echo ""
-    echo "$c[h2]examples$c[reset]"
-    echo "  reload $c[param]update$c[reset]"
-    echo "  reload $c[param]all$c[reset]"
+  if is empty "$1"; then
+    echo "$c[error]error:$c[reset] reload needs a function name or all"
+    echo "see: cheat reload"
     return 0
   fi
 

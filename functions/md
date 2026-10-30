@@ -1,25 +1,15 @@
 #!/usr/bin/env zsh
 
 function md() {
+  cheat-help md "$@" && return 0
   local DEPS=(is)
   if ! deps $DEPS; then
     return 1
   fi
 
-  if is equal "$1" "--help" || is empty "$1"; then
-    echo "$c[h1]md$c[reset]"
-    echo ""
-    echo "$c[lead]makes a directory and immediately cds into it.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  md $c[flag][--no-follow]$c[reset] $c[param]<path>$c[reset]"
-    echo ""
-    echo "$c[h2]flags$c[reset]"
-    echo "  $c[flag]--no-follow$c[reset]    create the directory without changing into it"
-    echo ""
-    echo "$c[h2]examples$c[reset]"
-    echo "  md $c[param]new-project$c[reset]"
-    echo "  md $c[flag]--no-follow$c[reset] $c[param]src/components$c[reset]"
+  if is empty "$1"; then
+    echo "$c[error]error:$c[reset] md needs a path"
+    echo "see: cheat md"
     return 0
   fi
 

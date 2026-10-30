@@ -1,18 +1,7 @@
 #!/usr/bin/env zsh
 
 function zshconfig() {
-  if is equal "$1" "--help"; then
-    echo "$c[h1]zshconfig$c[reset]"
-    echo "$c[lead]jumps to zsh config, and allows you to edit it.$c[reset]"
-    echo "$c[it]$c[info]note:$c[reset]$c[it] Use zshenv to edit this box's env file$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  zshconfig $c[flag][-e|--edit]$c[reset]"
-    echo ""
-    echo "$c[h2]flags$c[reset]"
-    echo "  $c[flag]-e, --edit$c[reset]  opens the zsh config in an editor"
-    return 0
-  fi
+  cheat-help zshconfig "$@" && return 0
 
   if is empty "$1"; then
     if is available realpath; then

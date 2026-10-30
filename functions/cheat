@@ -102,7 +102,7 @@ function cheat() {
       echo "  ${c[flag]}search${c[reset]} ${c[param]}<query>${c[reset]}                search local + tldr by name"
       echo "  ${c[flag]}edit${c[reset]} ${c[param]}<name>${c[reset]}                  open in \$EDITOR"
       echo "  ${c[flag]}new${c[reset]} ${c[param]}<name>${c[reset]}                   create from template"
-      echo "  ${c[flag]}update${c[reset]}                         update tldr cache"
+      echo "  ${c[flag]}refresh${c[reset]}                        refresh the tldr cache"
       echo "  ${c[flag]}raw${c[reset]} ${c[param]}<name>${c[reset]}                   print raw markdown"
       echo "  ${c[flag]}help${c[reset]}, ${c[flag]}-h${c[reset]}, ${c[flag]}--help${c[reset]}             show this help"
       ;;
@@ -172,19 +172,24 @@ function cheat() {
       cat >| "$new_file" <<TEMPLATE
 # $new_name
 
-> Short description.
+> What it is for, in one line.
 
-# Usage
+# Getting started
 
-- Example:
+- The first thing to run:
 
-\`command --flag arg\`
+\`$new_name\`
 
-# Related commands
+- Next: what to do once that works
 
-- Related tool:
+# Everyday
 
-\`cheat related-name\`
+- \`$new_name <command> [target] [--flag]\`: what it does
+
+# More
+
+- \`cheat $new_name <command>\`: every option of a command
+- \`cheat zsh-config\`: everything zsh-config gives you
 TEMPLATE
       echo "${c[success]}created:${c[reset]} $new_file"
       if ! link-cheatsheets "$CUSTOM_DIR/cheatsheets"; then
@@ -193,7 +198,7 @@ TEMPLATE
       echo "run ${c[flag]}cheat edit $new_name${c[reset]} to fill it in, then ${c[flag]}cheatsheet-test $new_file${c[reset]}"
       ;;
 
-    update)
+    refresh)
       if ! is available tldr; then
         echo "${c[warn]}warn:${c[reset]} tldr not available"
         return 1

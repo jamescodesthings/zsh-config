@@ -2,12 +2,13 @@
 
 > Remove entries whose directory no longer exists, after listing them and asking.
 
-# Usage
+# Examples
 
 - Clean stale entries:
 
 `j clean`
 
-# Related commands
+# See also
 
+- `cheat j`: the top sheet
 - `cheat j delete`

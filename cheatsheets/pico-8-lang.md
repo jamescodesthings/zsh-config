@@ -1,6 +1,6 @@
-# pico-8-lang
+# pico-8 lang
 
-> PICO-8 API reference. Optional arguments are in `[ ]`.
+> PICO-8 API reference, grouped by job. Optional arguments are in `[ ]`.
 
 # Callbacks
 
@@ -95,7 +95,7 @@
 - `stat(32)`, `stat(33)`: mouse X, Y
 - `stat(34)`: mouse buttons, bit0=L, bit1=R, bit2=M
 
-# Related commands
+# See also
 
-- `cheat pico-8`
-- `cheat pico-8-shortcuts`
+- `cheat pico-8`: the launchers
+- `cheat pico-8-shortcuts`: editor and runtime keys

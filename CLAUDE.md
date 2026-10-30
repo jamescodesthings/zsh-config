@@ -109,14 +109,13 @@ The `--help` convention for every repo's tools: `<tool> [words...] --help` shows
 
 Completions shipped by other repos go into `~/.local/share/zsh/site-functions/` (their installer links `_<tool>` there, as agent-forge does with `_hub`). `completions.zsh` puts that directory on `fpath` before its one `compinit`, which rescans on every shell start, so nothing in zsh-config changes per tool. `completions/_cheat` completes cheat's subcommands and sheet names a word at a time (`cheat hub <tab>` offers the words after `hub-` in the sheet names).
 
-Sheets are minimal lists in tldr style, every section at heading level one; pkms's `any.md` and `any-task.md` are the model:
-- `# name`, then a `>` line saying what it does, and at most a line or two of hard facts (what it needs, exit codes)
-- Sections of `- ` items: a one-line marker, option or fact, or a `- description:` line followed by one example in backticks
-- No prose, notes or history; colour comes down to how to turn it off
-- A zsh-config tool with real subcommands (`cheat`) gets a top sheet with a `# Commands` list of `cheat <tool> <subcommand>` lines and one `<tool>-<subcommand>.md` sheet each. Third-party tools stay one sheet.
-- `# Related commands`: links to related sheets via `` `cheat related-name` ``, when useful
+Every repo's sheets share one structure, written down in `cheatsheets/cheat-format.md` (`cheat cheat format`), which is the reference for other repos too. In short:
+- A top sheet (`tool.md`): `# tool`, one `>` purpose line, `# Getting started` with the 2 or 3 commands that get someone working, the everyday groups in the order a user works, maintenance, and `# More` last, pointing at the command and topic sheets and at the repo overview (`cheat zsh-config` here). It fits half a kitty window: 35 rendered lines.
+- A child sheet (`tool-command.md` or `tool-topic.md`, any sheet whose `-` prefix names a sheet beside it): what it does and why in 2 lines, `# Options`, `# Examples`, and `# See also` last, with quirks.
+- Headings are plain words; the renderer colours them. No prose, notes or history.
+- `cheatsheets/zsh-config.md` is this repo's overview. Third-party tools stay one top sheet each.
 
-tlrc refuses a whole sheet over one line it does not accept: every non-empty line must start with `# `, `> `, `- ` or a backtick, and a backtick line is one example that ends in a backtick. So no `##` headings, code fences, plain paragraphs or wrapped bullets. **Whenever a cheatsheet is made or changed, run `cheatsheet-test <sheet>` on it and fix every failure before finishing.** `cheatsheet-test` (`functions/cheatsheet-test`) takes sheets or folders, defaults to this repo's `cheatsheets/`, checks each line, renders with tldr and glow when installed (stdin closed), prints `file:line` for each failure and returns 1 if any sheet fails. `installers/00-zshconfig` runs it as a warning. Other projects run it on their own sheets.
+tlrc refuses a whole sheet over one line it does not accept: every non-empty line must start with `# `, `> `, `- ` or a backtick, and a backtick line is one example that ends in a backtick. So no `##` headings, code fences, plain paragraphs or wrapped bullets. **Whenever a cheatsheet is made or changed, run `cheatsheet-test --strict <sheet>` on it and fix every failure before finishing.** `cheatsheet-test` (`functions/cheatsheet-test`) takes sheets or folders, defaults to this repo's `cheatsheets/`, checks each line, renders with tldr and glow when installed (stdin closed), prints `file:line` for each failure and returns 1 if any sheet fails. It also checks the shared structure (first and last sections, the 35-line height of a top sheet); those are warnings unless `--strict`, so another repo can move over at its own pace. `installers/00-zshconfig` runs it as a warning. Other projects run it on their own sheets.
 
 ### `installers/` directory
 
@@ -215,7 +214,7 @@ In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`config
 - Syntax-check every changed zsh file: `zsh -n <file>`
 - Confirm the config still loads cleanly: `zsh -i -c exit`
 - Verify the install symlink is still valid: `ls -la ~/.custom`
-- Run `cheatsheet-test` on every new or changed sheet in `cheatsheets/`
+- Run `cheatsheet-test --strict` on every new or changed sheet in `cheatsheets/`
 - New files in `installers/` and `updaters/` must be executable: `chmod +x <file>`
 
 # Global workflow

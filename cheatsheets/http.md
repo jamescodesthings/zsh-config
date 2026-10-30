@@ -2,37 +2,23 @@
 
 > HTTPie, a curl replacement. `http` and `https` are aliased with `--verify=no`, so TLS certificates are not checked.
 
-# Usage
+# Getting started
 
-- GET a URL:
+- `http <url>`: GET a URL
+- `http POST <url> key=value`: POST a string field
+- `http <url> Header:value`: add a header
 
-`http <url>`
+- Next: `key:=value` posts numbers, bools and arrays.
 
-- Download to disk:
+# Requests
 
-`http --download <url>`
+- `http POST <url> key:=value`: POST a non-string field
+- `http --download <url>`: download to disk
+- `http -a user:pass <url>`: basic auth
+- `http -A bearer -a <token> <url>`: bearer token
 
-- Add a header:
+# More
 
-`http <url> Header:value`
-
-- Basic auth:
-
-`http -a user:pass <url>`
-
-- Bearer token:
-
-`http -A bearer -a <token> <url>`
-
-- POST a string field:
-
-`http POST <url> key=value`
-
-- POST a non-string field (number, bool, array):
-
-`http POST <url> key:=value`
-
-# Related commands
-
-- `tldr httpie`
-- `tldr curl`
+- `tldr httpie`: all the options
+- `tldr curl`: the thing it replaces
+- `cheat zsh-config`: everything zsh-config gives you

@@ -2,41 +2,37 @@
 
 > Aliases and helpers zsh-config adds over git. Defined only when `git` is available.
 
-# Aliases
+# Getting started
 
-- `gcm`: `git commit -m`
-- `gap`: `git add -p`, stage hunks
-- `grbi`: `git rebase -i --ignore-date`
-- `gm`: `git merge`
-- `gmff`: `git merge --ff-only`
-- `gbD`: `git branch -D`
-- `gsu`: `git submodule update --init --recursive`
-- `gsa`: `git submodule add`
-- `root`: cd to the repo root
-- `git-i-fucked-up`: `git reset HEAD~1`, undo the last commit and keep the changes
+- `gap`: stage hunks one by one (`git add -p`)
+- `gcm "message"`: commit with a message
+- `git-i-fucked-up`: undo the last commit, keep the changes
 
-# Gitflow
+- Next: `grbi HEAD~3` tidies the last few commits.
 
-- `gcom`: check out `git config gitflow.branch.main`, default `main`
-- `gcod`: check out `git config gitflow.branch.develop`, no default, errors when unset
+# Branches
 
-# Utilities
-
+- `gcom`: check out the main branch (`gitflow.branch.main`, default `main`)
+- `gcod`: check out the develop branch (`gitflow.branch.develop`, errors when unset)
 - `git-branch`: print the current branch name
+- `gbD <branch>`: `git branch -D`, force delete
+- `root`: cd to the repo root
 
-# Examples
+# Combine
 
-- Commit with a message:
+- `gm <branch>`: `git merge`
+- `gmff <branch>`: `git merge --ff-only`
+- `grbi <ref>`: `git rebase -i --ignore-date`
 
-`gcm "message"`
+# Submodules
 
-- Interactive rebase on the last N commits:
+- `gsa <url> [path]`: `git submodule add`
+- `gsu`: `git submodule update --init --recursive`
 
-`grbi HEAD~3`
+# More
 
-# Related commands
-
-- `cheat git-i-really-fucked-up`
-- `cheat git-prune-local`
-- `cheat git-cleanup-branch`
-- `tldr git`
+- `cheat git cleanup-branch`: tidy a branch
+- `cheat git prune-local`: delete local branches whose origin is gone
+- `cheat git i-really-fucked-up`: the bigger undo
+- `tldr git`: the rest of git
+- `cheat zsh-config`: everything zsh-config gives you

@@ -1,22 +1,14 @@
 #!/usr/bin/env zsh
 
 function install-release() {
+  cheat-help install-release "$@" && return 0
   if is empty "$c"; then
     source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
   fi
 
-  if is not equal "$#" "1" || [[ "$1" == "--help" ]]; then
-    echo "$c[h1]install-release$c[reset]"
-    echo ""
-    echo "$c[lead]installs the latest GitHub release of a tool into ~/.local/bin (Debian only, no sudo).$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  install-release $c[param]<binary>$c[reset]"
-    echo ""
-    echo "$c[h2]examples$c[reset]"
-    echo "  install-release $c[param]glow$c[reset]"
-    echo ""
-    echo "$c[lead]tools are listed in configs/releases.$c[reset]"
+  if is not equal "$#" "1"; then
+    echo "$c[error]error:$c[reset] install-release needs one binary name"
+    echo "see: cheat install-release"
     return 1
   fi
 

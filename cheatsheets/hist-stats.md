@@ -2,12 +2,13 @@
 
 > Show the line count for the global file and each directory, largest first.
 
-# Usage
+# Examples
 
 - Show counts:
 
 `hist stats`
 
-# Related commands
+# See also
 
+- `cheat hist`: the top sheet
 - `cheat hist clean`

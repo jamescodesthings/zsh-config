@@ -15,6 +15,16 @@ printf '# a\n\n> A sheet.\n\n- Run it:\n\n`a --flag`\n' > "$GOOD/a.md"
 printf '# b\n\n> Another.\n\n- `-x`: an option\n' > "$GOOD/b.md"
 printf '# c\n\n## not a tldr heading\n' > "$BAD/c.md"
 
+# The shared structure: a top sheet and a child sheet that follow it, and a
+# pair that do not
+SHAPED="$TMP/shaped"
+UNSHAPED="$TMP/unshaped"
+mkdir -p "$SHAPED" "$UNSHAPED"
+printf '# t\n\n> A tool.\n\n# Getting started\n\n- Start:\n\n`t`\n\n# More\n\n- `cheat t go`: go\n' > "$SHAPED/t.md"
+printf '# t go\n\n> Go.\n\n# Options\n\n- `--far`: further\n\n# See also\n\n- `cheat t`\n' > "$SHAPED/t-go.md"
+printf '# u\n\n> A tool.\n\n# Usage\n\n- Start:\n\n`u`\n' > "$UNSHAPED/u.md"
+printf '# u go\n\n> Go.\n\n# Options\n\n- `--far`: further\n' > "$UNSHAPED/u-go.md"
+
 failed=0
 
 # expect <exit code> <description> <shell options> <args...>
@@ -24,7 +34,7 @@ function expect() {
   local out code
   out="$(zsh -f -c '
     fpath=("$1/functions" $fpath)
-    autoload -Uz is cheatsheet-test
+    autoload -Uz is cheat cheat-help cheatsheet-test
     eval "$2"
     shift 2
     cheatsheet-test "$@"
@@ -46,5 +56,8 @@ done
 expect 0 "one good sheet passes" '' "$GOOD/a.md"
 expect 1 "a missing path fails" '' "$TMP/nope"
 expect 1 "an empty folder fails" '' "$TMP"
+expect 0 "sheets in the shared structure pass --strict" '' --strict "$SHAPED"
+expect 0 "sheets out of the structure only warn without --strict" '' "$UNSHAPED"
+expect 1 "sheets out of the structure fail --strict" '' --strict "$UNSHAPED"
 
 exit $failed

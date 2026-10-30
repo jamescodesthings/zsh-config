@@ -3,26 +3,24 @@
 > Create a sheet in zsh-config's `cheatsheets/` and link it into `~/cheatsheets`.
 > Does not open it. Exit 1 if the name is taken or missing.
 
-# Commands
+# Examples
 
 - Create a sheet:
 
 `cheat new my-tool`
 
-- Fill it in, then check it:
+- Fill it in:
 
 `cheat edit my-tool`
 
-`cheatsheet-test my-tool.md`
+- Check it:
 
-# Template
+`cheatsheet-test cheatsheets/my-tool.md`
 
-- Title `# name`, then a `> ` line
-- `# Usage` with an example item
-- `# Related commands` with a `cheat related-name` item
+# See also
 
-# Related commands
-
-- `cheat cheat-edit`
+- `cheat cheat format`: the structure a sheet should follow
+- `cheat cheat edit`
 - `cheat cheatsheet-test`
 - `cheat link-cheatsheets`
+- The template is a stub (title, `>` line, `# Usage`, `# Related commands`); reshape it to the format

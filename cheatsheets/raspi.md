@@ -3,86 +3,46 @@
 > Raspberry Pi and PicoCalc commands and paths.
 > `aptu` is a zsh-config alias. `battery` is `upower -d` on uconsole and a script in `/usr/local/bin` on the PicoCalc.
 
+# Getting started
+
+- `battery`: battery level
+- `vcgencmd measure_temp`: CPU temperature
+- `aptu`: update all packages
+- Next: `evtest` if the keyboard misbehaves, `sudo raspi-config` for settings
+
 # System
 
-- battery level:
-
-`battery`
-
-- check if plugged in:
-
-`battery-supply`
-
-- update all packages:
-
-`aptu`
-
-- system config TUI:
-
-`sudo raspi-config`
-
-- CPU temperature:
-
-`vcgencmd measure_temp`
-
-- throttling and undervoltage bitmask:
-
-`vcgencmd get_throttled`
+- `battery-supply`: check if plugged in
+- `sudo raspi-config`: system config TUI
+- `vcgencmd get_throttled`: throttling and undervoltage bitmask
 
 # Kernel and modules
 
-- watch kernel messages live:
-
-`dmesg -wH | grep <name>`
-
-- check a module is loaded:
-
-`lsmod | grep <name>`
-
-- load a module:
-
-`sudo modprobe <name>`
+- `dmesg -wH | grep <name>`: watch kernel messages live
+- `lsmod | grep <name>`: check a module is loaded
+- `sudo modprobe <name>`: load a module
 
 # Input
 
-- test input events:
-
-`evtest`
-
-- find the keyboard device number:
-
-`grep -A4 picocalc /proc/bus/input/devices`
-
-- watch raw key events:
-
-`evtest /dev/input/event<n>`
+- `evtest`: test input events
+- `grep -A4 picocalc /proc/bus/input/devices`: find the keyboard device number
+- `evtest /dev/input/event<n>`: watch raw key events
 
 # Config files
 
-- hardware overlays:
-
-`sudo nano /boot/firmware/config.txt`
-
-- kernel boot args:
-
-`sudo nano /boot/firmware/cmdline.txt`
+- `sudo nano /boot/firmware/config.txt`: hardware overlays
+- `sudo nano /boot/firmware/cmdline.txt`: kernel boot args
 
 # Directories
 
-- `~/projects/`: your projects
 - `/usr/local/bin/`: custom scripts (battery, reset, btoff, bton)
-- `/boot/firmware/`: boot config (config.txt, cmdline.txt, overlays/)
-- `/boot/firmware/overlays/`: compiled .dtbo device tree overlays
+- `/boot/firmware/`: boot config; `overlays/` holds compiled .dtbo overlays
 - `/sys/firmware/picocalc/`: PicoCalc sysfs (battery_percent, keyboard_backlight)
-- `~/.config/`: user app config
-- `/etc/systemd/system/`: custom systemd units
-- `/etc/modprobe.d/`: module options and blacklists
-- `/etc/modules`: modules loaded at boot
-- `/etc/udev/rules.d/`: udev device rules
-- `/etc/fstab`: filesystem mount table
+- `/etc/systemd/system/`, `/etc/modprobe.d/`, `/etc/modules`, `/etc/udev/rules.d/`, `/etc/fstab`: units, module options, boot modules, udev rules, mounts
+- `~/projects/`, `~/.config/`: your projects, user app config
 
-# Related commands
+# More
 
-- `tldr apt`
-- `tldr systemctl`
-- `cheat zerocalc`
+- `cheat zerocalc`: the PicoCalc keys
+- `tldr apt`, `tldr systemctl`
+- `cheat zsh-config`: everything zsh-config gives you

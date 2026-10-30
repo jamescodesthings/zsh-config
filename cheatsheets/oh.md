@@ -3,16 +3,13 @@
 > Open a folder in QSpace Pro if installed, else Finder (macOS) or `xdg-open` (Linux).
 > Exit 1 if the path does not exist or no opener is found.
 
-# Usage
+# Getting started
 
-- Open the current folder:
+- `oh`: open the current folder
+- `oh <folder>`: open another, e.g. `oh ~/Downloads`
+- `oh <file>`: open the folder the file is in, e.g. `oh notes.md`
 
-`oh`
+# More
 
-- Open another folder:
-
-`oh ~/Downloads`
-
-- Open the folder a file is in:
-
-`oh notes.md`
+- `cheat j`: jump to a folder
+- `cheat zsh-config`: everything zsh-config gives you

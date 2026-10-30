@@ -14,7 +14,7 @@ _cheat() {
       'search:search local sheets and tldr by name'
       'edit:open a sheet in $EDITOR'
       'new:create a sheet from the template'
-      'update:refresh the tldr cache'
+      'refresh:refresh the tldr cache'
       'raw:print a sheet'"'"'s markdown'
       'help:show cheat'"'"'s own sheet'
     )
@@ -27,7 +27,7 @@ _cheat() {
   local -a typed
   typed=(${${words[2,CURRENT-1]}:#-*})
   case "$typed[1]" in
-    list|update|help|search|new) return 1 ;;
+    list|refresh|help|search|new) return 1 ;;
     edit|raw) typed=("${(@)typed[2,-1]}") ;;
   esac
 

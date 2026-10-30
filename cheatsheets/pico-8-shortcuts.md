@@ -1,4 +1,4 @@
-# pico-8-shortcuts
+# pico-8 shortcuts
 
 > PICO-8 keyboard shortcuts for the editor and runtime.
 
@@ -30,7 +30,7 @@
 - `D-pad`, `ZXCV`: move (P1), O and X buttons
 - `Enter`, `P`: pause menu
 
-# Related commands
+# See also
 
-- `cheat pico-8`
-- `cheat pico-8-lang`
+- `cheat pico-8`: the launchers
+- `cheat pico-8-lang`: the API reference

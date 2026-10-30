@@ -2,11 +2,13 @@
 
 > Colour test functions and the `$c[...]` array from `zpm-zsh-colors`, loaded before the functions in `.zshrc`.
 
-# Test functions
+# Getting started
 
 - `test-color-24bit`: 24-bit gradient
 - `test-color-names`: named colours
 - `test-color-codes`: colour codes
+
+- Next: use `$c[...]` for all user-facing output, never raw ANSI codes.
 
 # Keys
 
@@ -29,6 +31,7 @@
 
 `echo "${c[success]}success:${c[reset]} done"`
 
-# Related commands
+# More
 
-- `cheat deps`
+- `cheat deps`: check a function's tools are installed
+- `cheat zsh-config`: everything zsh-config gives you

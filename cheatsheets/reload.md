@@ -2,12 +2,12 @@
 
 > Reload an autoloaded zsh function without restarting the shell.
 
-# Usage
+# Getting started
 
-- Reload one function:
+- `reload <function>`: reload one, e.g. `reload cheat`
+- `reload all`: reload every function in `functions/`
 
-`reload cheat`
+# More
 
-- Reload every function in `functions/`:
-
-`reload all`
+- `cheat zshconfig`: edit the config
+- `cheat zsh-config`: everything zsh-config gives you

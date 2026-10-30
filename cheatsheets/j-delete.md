@@ -3,12 +3,13 @@
 > Remove every entry matching a regex, after showing them and asking.
 > With no query it runs z.
 
-# Usage
+# Examples
 
 - Delete matching entries:
 
 `j delete <regex>`
 
-# Related commands
+# See also
 
+- `cheat j`: the top sheet
 - `cheat j clean`

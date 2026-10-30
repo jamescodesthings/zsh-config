@@ -38,23 +38,7 @@ function _md-to-html-embed-flag() {
 }
 
 function md-to-html() {
-  if is equal "$1" "-h" || is equal "$1" "--help"; then
-    echo "${c[h1]}md-to-html${c[reset]}"
-    echo ""
-    echo "${c[lead]}converts a markdown file to a styled, self-contained html page next to it.${c[reset]}"
-    echo ""
-    echo "${c[h2]}usage${c[reset]}"
-    echo "  md-to-html ${c[param]}file.md${c[reset]}                writes file.html beside it, overwriting"
-    echo "  md-to-html ${c[param]}a.md b.md${c[reset]} / ${c[param]}*.md${c[reset]}     converts each, beside its input"
-    echo "  md-to-html ${c[param]}file.md${c[reset]} ${c[flag]}-o${c[reset]} ${c[param]}out.html${c[reset]}    one file only; writes to out.html (must end in .html/.htm, and not be the input)"
-    echo ""
-    echo "  a file that fails is reported and the rest carry on; the exit status is 1 if any failed."
-    echo ""
-    echo "${c[h2]}needs${c[reset]}"
-    echo "  pandoc, file"
-    echo "  stylesheet: ${CUSTOM_DIR:-$HOME/.custom}/configs/md/md.css"
-    return 0
-  fi
+  cheat-help md-to-html "$@" && return 0
 
   local caller="${MD_CALLER:-md-to-html}"
   local output="" files=()

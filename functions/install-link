@@ -1,16 +1,10 @@
 #!/usr/bin/env zsh
 
 function install-link() {
-  if is not equal "$#" "2" || is equal "$1" "--help"; then
-    echo "$c[h1]install-link$c[reset]"
-    echo ""
-    echo "$c[lead]creates a symlink from a source path to a target path, backing up any existing file.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  install-link $c[param]<from>$c[reset] $c[param]<to>$c[reset]"
-    echo ""
-    echo "$c[h2]examples$c[reset]"
-    echo "  install-link $c[param]./configs/asdf/.asdfrc$c[reset] $c[param]~/.asdfrc$c[reset]"
+  cheat-help install-link "$@" && return 0
+  if is not equal "$#" "2"; then
+    echo "$c[error]error:$c[reset] install-link needs a source and a target"
+    echo "see: cheat install-link"
     return 1
   fi
 

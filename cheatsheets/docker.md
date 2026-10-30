@@ -2,14 +2,21 @@
 
 > Aliases and helpers zsh-config adds over docker. Defined only when `docker` is available.
 
-# Commands
+# Getting started
 
-- `dsp`: stop all running containers, `docker system prune -f`, remove dangling volumes; destructive (stopped containers, unused images, networks, build cache); extra args go to `docker system prune`
-- `dsa`, `docker-stop-all`: `docker stop $(docker ps -q)`
-- `dcup`: `docker compose up -d`
-- `dcdn`: `docker compose down -v`, removes volumes
+- `dcup`: `docker compose up -d`, start the stack in the background
+- `dcdn`: `docker compose down -v`, stop it and remove its volumes
 
-# Related commands
+- Next: `dsa` when you want every container stopped.
 
-- `tldr docker`
-- `tldr docker-compose`
+# Clean up
+
+- `dsa`, `docker-stop-all`: stop every running container
+- `dsp [args]`: stop all, `docker system prune -f`, remove dangling volumes; args go to `docker system prune`
+- Destructive: `dsp` removes stopped containers, unused images, networks and build cache
+
+# More
+
+- `tldr docker`: docker itself
+- `tldr docker-compose`: compose
+- `cheat zsh-config`: everything zsh-config gives you

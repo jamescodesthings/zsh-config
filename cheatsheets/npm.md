@@ -2,39 +2,34 @@
 
 > Aliases and helpers zsh-config adds over npm. Defined only when `npm` is available.
 
-# Run
+# Getting started
 
-- `npmst`: `npm start`
+- `npmiy`: `npm init -y`
+- `npmS <pkg>`, `npmD <pkg>`: `npm i -S`, `npm i -D`
 - `npmr <script>`: `npm run`
+
+- Next: `npmst` is `npm start`.
 
 # Install
 
-- `npmS <pkg>`: `npm i -S`
-- `npmD <pkg>`: `npm i -D`
-- `npmSE <pkg>`: `npm i -E`, exact version
-- `npmDE <pkg>`: `npm i -D -E`
+- `npmSE <pkg>`, `npmDE <pkg>`: exact version, `-E`, as dependency or dev dependency
 - `npmil`: `npm i --legacy-peer-deps`
-- `npmSEl <pkg>`: `npm i -E --legacy-peer-deps`
-- `npmDEl <pkg>`: `npm i -D -E --legacy-peer-deps`
+- `npmSEl <pkg>`, `npmDEl <pkg>`: exact version with `--legacy-peer-deps`
 - `npmg <pkg>`: `npm i -g`
-- `npmiy`: `npm init -y`
 
-# Uninstall
+# Uninstall and list
 
 - `npmU <pkg>`: `npm uninstall -S -D`
-- `npmUl <pkg>`: `npm uninstall -S -D --legacy-peer-deps`
+- `npmUl <pkg>`: the same with `--legacy-peer-deps`
 - `npmUG <pkg>`: `npm uninstall -g`
-
-# List
-
-- `npmL0`: local packages, top level
-- `npmL0g`: global packages, top level
+- `npmL0`, `npmL0g`: top level packages, local or global
 
 # Update
 
-- `npm-update-latest`: for each outdated package, ask `[y/n]`, then `npm install <pkg>@latest` with `--save` or `--save-dev`
+- `npm-update-latest`: for each outdated package, ask `[y/n]`, then install `@latest`
 - `npm-check-update`, `ncu`: `npx npm-check -u -E`
 
-# Related commands
+# More
 
-- `tldr npm`
+- `tldr npm`: npm itself
+- `cheat zsh-config`: everything zsh-config gives you

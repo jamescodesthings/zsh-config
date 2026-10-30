@@ -3,16 +3,21 @@
 > List all history, global first, then each directory.
 > Repeated commands are grouped as `git status (4)`.
 
-# Usage
+# Options
+
+- `-q`: commands only, no directory headers
+
+# Examples
 
 - List all history:
 
 `hist list`
 
-- Commands only, no directory headers:
+- Commands only:
 
 `hist list -q`
 
-# Related commands
+# See also
 
+- `cheat hist`: the top sheet
 - `cheat hist search`

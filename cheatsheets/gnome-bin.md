@@ -3,40 +3,32 @@
 > Window scripts for GNOME on Wayland, in `configs/gnome/bin/`, linked to `~/.local/bin/` by `./installers/gnome`.
 > Need the `window-list@personal` extension. Focus scripts exit 0 if focused, 1 if not found; they skip minimised windows.
 
-# Scripts
+# Getting started
 
-- Close every window (apps may ask to save):
+- `list-windows`: see windows with class, title and minimised state
+- `focus-window-by-class <class>`: bring one to the front
+- `window-debug-env`: check the extension, tools and fallbacks if something fails
 
-`quit-all-apps`
+- Next: `quit-all-apps` closes everything at once.
 
-- List windows with class, title and minimised state:
+# List windows
 
-`list-windows`
+- `list-windows`: windows with class, title and minimised state
+- `list-window-classes`: classes, sorted and unique
+- `list-window-names`: titles, minimised ones prefixed `[minimized]`
 
-- List window classes, sorted and unique:
+# Focus a window
 
-`list-window-classes`
+- `focus-window-by-class <class>`: by class (case-insensitive, exact)
+- `focus-window-by-name <name>`: by title substring (case-insensitive)
+- `focus-window-by-name-regex <pattern>`: by title regex
 
-- List window titles, minimised ones prefixed `[minimized]`:
+# Close and debug
 
-`list-window-names`
+- `quit-all-apps`: close every window (apps may ask to save)
+- `window-debug-env`: check the extension, tools and fallbacks
 
-- Focus by class (case-insensitive, exact):
+# More
 
-`focus-window-by-class <class>`
-
-- Focus by title substring (case-insensitive):
-
-`focus-window-by-name <name>`
-
-- Focus by title regex:
-
-`focus-window-by-name-regex <pattern>`
-
-- Check the extension, tools and fallbacks:
-
-`window-debug-env`
-
-# Related commands
-
-- `cheat is`
+- `cheat is`: the predicate the scripts use
+- `cheat zsh-config`: everything zsh-config gives you

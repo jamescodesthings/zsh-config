@@ -3,16 +3,7 @@
 # Opens a folder in the file manager: QSpace Pro when it is installed,
 # otherwise Finder on macOS and the desktop's default on Linux.
 function oh() {
-  if is equal "$1" "-h" || is equal "$1" "--help"; then
-    echo "${c[h1]}oh${c[reset]}"
-    echo ""
-    echo "${c[lead]}opens the current folder, or the one given, in the file manager.${c[reset]}"
-    echo ""
-    echo "${c[h2]}usage${c[reset]}"
-    echo "  oh                 the current folder"
-    echo "  oh ${c[param]}path${c[reset]}            that folder; a file opens its folder"
-    return 0
-  fi
+  cheat-help oh "$@" && return 0
 
   local target="${1:-$PWD}"
 
