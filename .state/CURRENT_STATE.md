@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-10-29 17:50 GMT
-- **Current Task Status:** Burn-down of 2026-10-29 done: every open item checked, stale ones closed, apt fix, hist move and j move, obsidian updater retired, .hub/ ignored, instructions synced. What is left is only James's, held in Anytype through the hub.
+- **Date/Time Stamp:** 2026-10-30 00:12 GMT
+- **Current Task Status:** Cheat v4 (hub brief 2026-10-29-cheat-v4) done for zsh-config: parent fallback and --help convention (232f452), shared sheet structure, cheatsheet-test --strict, cheat zsh-config overview, `cheat refresh` (e2972a3). Earlier: the 2026-10-29 burn-down.
 
 ## Milestone & Phase Progress
 
@@ -96,3 +96,12 @@
 - Hub v3: no zsh-config file names the old hub commands; `.hub/` ignored; `hub oh` calls zsh-config's `oh` unchanged.
 - CHEATSHEET_DIR shim in .zshenv: kept until every machine has pulled. Alternative: drop it now, which breaks `link-cheatsheets` on a machine whose shells still carry the old value.
 - wipcrypt: keep the synced copy. Alternative: drop it and rely on agent-forge's PATH, which leaves machines without agent-forge without it.
+
+## Decisions 2026-10-30 (cheat v4)
+
+- Fallback lives in cheat: flags dropped, longest existing sheet shown, note on stderr; tldr's exact page beats a local parent. Alternative: each tool resolving its own parent, which every repo would repeat.
+- --help for zsh tools via `cheat-help <tool> "$@" && return 0`; `--help` anywhere or `-h` first, as James asked. Alternative: `--help` only as the first word, which misses `hub join --x --help`.
+- Renderer: cheat passes its own tlrc config (configs/tlrc/cheat.toml: compact, bold headings) rather than changing the user's tlrc config or tldr's own pages. Headings are plain words, no icons. Alternative: emoji headings, which misalign in some terminals and every repo would have to match.
+- Structure checks in cheatsheet-test are warnings unless --strict, so other repos can move over gradually; zsh-config's own sheets pass --strict. A sheet is a child when a `-` prefix of its name is a sheet beside it, which makes md-to-html a child of md (a name coincidence, harmless).
+- `cheat update` now shows the update sheet; the tldr cache refresh became `cheat refresh`. Alternative: rename the update sheet, but `cheat update` is what CLAUDE.md and every other sheet already point at.
+- Completions from other repos go in ~/.local/share/zsh/site-functions/, already on fpath before compinit; no per-tool change in zsh-config.
