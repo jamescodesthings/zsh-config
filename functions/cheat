@@ -43,6 +43,11 @@ function cheat() {
   local render_cmd render_args=()
   if is available tldr; then
     render_cmd="tldr"; render_args=("--render")
+    # cheat's own tlrc settings (compact, heading styles); tldr's pages and
+    # the user's tlrc config are left alone
+    if is file "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml"; then
+      render_args=("--config" "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml" "--render")
+    fi
   elif is available glow; then
     render_cmd="glow"; render_args=("-w" "120")
   elif is available bat; then
@@ -78,6 +83,10 @@ function cheat() {
   case "$subcmd" in
 
     -h|--help|help)
+      if is file "$CHEATSHEET_DIR/cheat.md"; then
+        cheat cheat
+        return $?
+      fi
       echo "${c[h1]}cheat${c[reset]}"
       echo ""
       echo "${c[lead]}Personal cheatsheet viewer with tldr fallback. Cheatsheets are links in \$CHEATSHEET_DIR.${c[reset]}"
@@ -194,55 +203,79 @@ TEMPLATE
       ;;
 
     raw)
-      local raw_name="${(j:-:)@}"
-      raw_name="${raw_name%.md}"
-      if is empty "$raw_name"; then
-        echo "${c[error]}error:${c[reset]} raw requires a sheet name"
+      if is empty "$1"; then
+        echo "${c[error]}error:${c[reset]} raw requires a sheet name" >&2
         return 1
       fi
-      if is file "$CHEATSHEET_DIR/$raw_name.md"; then
-        cat "$CHEATSHEET_DIR/$raw_name.md"
-      elif is available tldr; then
-        tldr --raw "$raw_name"
-      else
-        echo "${c[error]}error:${c[reset]} '$raw_name' not found"
-        return 1
-      fi
+      cheat "$@" --raw
+      return $?
       ;;
 
     *)
-      # Not a known subcommand — treat all args as sheet name (join with -)
-      local -a name_parts=("$subcmd" "$@")
-      local raw_mode=0
-      local -a clean_parts=()
-      for part in "${name_parts[@]}"; do
-        [[ "$part" == "--raw" ]] && raw_mode=1 || clean_parts+=("$part")
+      # Any other words name a sheet, joined with -. Flags are dropped, so
+      # `<tool> <words> --help` can hand everything to `cheat <tool> <words>`.
+      # A missing sheet falls back to its nearest parent: `cheat hub join all`
+      # shows hub-join.md when there is no hub-join-all.md.
+      local -a words=()
+      local raw_mode=0 part
+      for part in "$subcmd" "$@"; do
+        case "$part" in
+          --raw|-r) raw_mode=1 ;;
+          -*) ;;
+          *) words+=("${part%.md}") ;;
+        esac
       done
-      local sheet_name="${(j:-:)clean_parts}"
-      sheet_name="${sheet_name%.md}"
+      if (( ! $#words )); then
+        cheat list
+        return $?
+      fi
 
-      if (( raw_mode )); then
-        if is file "$CHEATSHEET_DIR/$sheet_name.md"; then
-          cat "$CHEATSHEET_DIR/$sheet_name.md"
-        elif is available tldr; then
-          tldr --raw "$sheet_name"
-        else
-          echo "${c[error]}error:${c[reset]} '$sheet_name' not found"
-          return 1
+      local -i n
+      local sheet=""
+      for (( n = $#words; n > 0; n-- )); do
+        if is file "$CHEATSHEET_DIR/${(j:-:)words[1,n]}.md"; then
+          sheet="$CHEATSHEET_DIR/${(j:-:)words[1,n]}.md"
+          break
         fi
-      else
-        if is file "$CHEATSHEET_DIR/$sheet_name.md"; then
-          local _cheat_tmp; _cheat_tmp=$(mktemp)
-          _cheat_expand_vars "$CHEATSHEET_DIR/$sheet_name.md" > "$_cheat_tmp"
-          $render_cmd "${render_args[@]}" "$_cheat_tmp"
-          rm -f "$_cheat_tmp"
-        elif is available tldr; then
-          tldr "$sheet_name"
-        else
-          echo "${c[error]}error:${c[reset]} '$sheet_name' not found and tldr is not available"
-          return 1
+      done
+
+      # A local parent loses to tldr's page for the exact words, so
+      # `cheat git commit` still finds tldr's git-commit beside a local git.md
+      if is not empty "$sheet" && (( n < $#words )) && is available tldr; then
+        local -a exact_args=()
+        (( raw_mode )) && exact_args=(--raw)
+        if tldr "${exact_args[@]}" "${words[@]}" 2> /dev/null; then
+          return 0
         fi
       fi
+
+      if is not empty "$sheet"; then
+        if (( n < $#words )); then
+          echo "${c[info-small]}no sheet for \"${words[*]}\", showing \"${words[1,n]}\"${c[reset]}" >&2
+        fi
+        if (( raw_mode )); then
+          cat "$sheet"
+        else
+          local _cheat_tmp; _cheat_tmp=$(mktemp)
+          _cheat_expand_vars "$sheet" > "$_cheat_tmp"
+          $render_cmd "${render_args[@]}" "$_cheat_tmp"
+          rm -f "$_cheat_tmp"
+        fi
+        return 0
+      fi
+
+      # No local sheet: tldr's own pages, with the same parent fallback
+      if is available tldr; then
+        local -a tldr_args=()
+        (( raw_mode )) && tldr_args=(--raw)
+        for (( n = $#words; n > 0; n-- )); do
+          if tldr "${tldr_args[@]}" "${words[1,n]}" 2> /dev/null; then
+            return 0
+          fi
+        done
+      fi
+      echo "${c[error]}error:${c[reset]} no sheet for \"${words[*]}\"" >&2
+      return 1
       ;;
   esac
 }

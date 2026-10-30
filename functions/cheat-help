@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+
+# The --help convention for tools that ship a cheat sheet:
+#
+#   cheat-help <tool> "$@" && return 0
+#
+# at the top of the tool. When the arguments hold --help, or start with -h,
+# it shows `cheat <tool> <the words>`, dropping every flag, and returns 0;
+# cheat falls back to the nearest parent sheet for a word with no sheet of its
+# own. Otherwise it prints nothing and returns 1, and the tool carries on.
+function cheat-help() {
+  local tool="$1"
+  shift
+  if [[ "$1" != -h ]] && (( ! ${@[(Ie)--help]} )); then
+    return 1
+  fi
+  cheat "$tool" "${@:#-*}"
+  return 0
+}
+
+cheat-help "$@"

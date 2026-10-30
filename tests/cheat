@@ -1,0 +1,100 @@
+#!/usr/bin/env zsh
+# Tests functions/cheat's sheet lookup and functions/cheat-help, from a plain
+# `zsh -f -c` with tldr, glow and bat off PATH so sheets print through cat.
+# Run: tests/cheat. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+SHEETS="$TMP/sheets"
+mkdir -p "$SHEETS"
+for name in a a-b cheat; do
+  printf '# %s\n\n> sheet %s\n' "$name" "$name" > "$SHEETS/$name.md"
+done
+
+failed=0
+
+# run <args...>: runs cheat in a clean shell; sets OUT, ERR and CODE
+function run() {
+  local fn="$1"
+  shift
+  OUT="$(zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is cheat cheat-help
+    export CHEATSHEET_DIR="$2" CUSTOM_DIR="$1"
+    path=(/usr/bin /bin)
+    fn="$3"
+    shift 3
+    "$fn" "$@"
+  ' _ "$REPO_DIR" "$SHEETS" "$fn" "$@" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+# expect <description> <code> <text the output must hold, or "-" for none> <fn> <args...>
+function expect() {
+  local what="$1" want="$2" holds="$3"
+  shift 3
+  run "$@"
+  if [[ "$CODE" == "$want" ]] && { [[ "$holds" == - && -z "$OUT" ]] || [[ "$holds" != - && "$OUT" == *"$holds"* ]]; }; then
+    echo "ok: $what"
+  else
+    echo "FAIL: $what: exit $CODE (wanted $want), output:"
+    print -r -- "$OUT" | sed 's/^/    /'
+    print -r -- "$ERR" | sed 's/^/    err: /'
+    failed=1
+  fi
+}
+
+expect "a sheet by name" 0 "sheet a" cheat a
+expect "two words join with -" 0 "sheet a-b" cheat a b
+expect "a missing child falls back to its parent" 0 "sheet a-b" cheat a b c
+expect "a missing first child falls back to the top sheet" 0 "sheet a" cheat a zzz
+expect "flags are dropped" 0 "sheet a-b" cheat a b --some-option --help
+expect "--raw prints the markdown" 0 "# a-b" cheat a b c --raw
+expect "a name with no sheet anywhere fails" 1 - cheat nosuch
+expect "cheat --help shows the cheat sheet" 0 "sheet cheat" cheat --help
+expect "cheat-help shows the sheet for --help" 0 "sheet a-b" cheat-help a b --help
+expect "cheat-help takes -h as the first word" 0 "sheet a" cheat-help a -h
+expect "cheat-help ignores a call with no --help" 1 - cheat-help a b
+
+# A fake tldr that knows one page, a-z, as tldr's own git-commit would be
+mkdir -p "$TMP/bin"
+printf '#!/bin/sh\nfor a; do last="$a"; done\ncase " $* " in *" --render "*) cat "$last"; exit 0 ;; esac\n[ "$last" = z ] && { echo "tldr page $*"; exit 0; }\nexit 1\n' > "$TMP/bin/tldr"
+chmod +x "$TMP/bin/tldr"
+function run_with_tldr() {
+  OUT="$(zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is cheat
+    export CHEATSHEET_DIR="$2" CUSTOM_DIR="$1"
+    path=("$3" /usr/bin /bin)
+    shift 3
+    cheat "$@"
+  ' _ "$REPO_DIR" "$SHEETS" "$TMP/bin" "$@" 2> /dev/null)"
+  CODE=$?
+}
+run_with_tldr a z
+if [[ "$CODE" == 0 && "$OUT" == "tldr page a z" ]]; then
+  echo "ok: tldr's page for the exact words beats a local parent"
+else
+  echo "FAIL: tldr's page for the exact words beats a local parent: exit $CODE, output: $OUT"
+  failed=1
+fi
+run_with_tldr a b c
+if [[ "$CODE" == 0 && "$OUT" == *"# a-b"* ]]; then
+  echo "ok: with tldr present, a missing child still falls back to the local parent"
+else
+  echo "FAIL: with tldr present, a missing child still falls back to the local parent: exit $CODE, output: $OUT"
+  failed=1
+fi
+
+run cheat a b c
+if [[ "$ERR" == *"a b c"* && "$ERR" == *"a b"* ]]; then
+  echo "ok: a fallback says which sheet it showed"
+else
+  echo "FAIL: a fallback says which sheet it showed: stderr was: $ERR"
+  failed=1
+fi
+
+exit $failed

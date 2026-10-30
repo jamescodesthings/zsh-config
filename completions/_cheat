@@ -1,32 +1,45 @@
 #compdef cheat
 
+# Completes cheat's subcommands and sheet names word by word: after
+# `cheat hub `, the words that follow hub in hub-*.md (join, status, ...).
 _cheat() {
-  local -a cheatsheets
+  local -a sheets next subcommands
   if [[ -n "$CHEATSHEET_DIR" && -d "$CHEATSHEET_DIR" ]]; then
-    cheatsheets=("${(@f)$(print -rl -- "$CHEATSHEET_DIR"/*.md(N-.:t:r) 2>/dev/null)}")
+    sheets=("$CHEATSHEET_DIR"/*.md(N-.:t:r))
   fi
 
-  local curcontext="$curcontext" state
+  if (( CURRENT == 2 )); then
+    subcommands=(
+      'list:list local sheets'
+      'search:search local sheets and tldr by name'
+      'edit:open a sheet in $EDITOR'
+      'new:create a sheet from the template'
+      'update:refresh the tldr cache'
+      'raw:print a sheet'"'"'s markdown'
+      'help:show cheat'"'"'s own sheet'
+    )
+    _describe -t subcommands 'subcommand' subcommands
+    compadd -- ${(u)sheets%%-*}
+    return
+  fi
 
-  _arguments -C -s \
-    '(-h --help)'{-h,--help}'[show help]' \
-    '(-l --list)'{-l,--list}'[list local cheatsheets]' \
-    '(-u --update)'{-u,--update}'[update tldr cache]' \
-    '(-s --search)'{-s,--search}'[search local + tldr by name]:query:' \
-    '(-e --edit)'{-e,--edit}'[open in $EDITOR]' \
-    '(-n --new)'{-n,--new}'[create new cheatsheet]:name:' \
-    '(-r --raw)'{-r,--raw}'[print raw markdown]' \
-    '*:cheatsheet:->sheet'
-
-  case "$state" in
-    sheet)
-      if (( ${#cheatsheets} > 0 )); then
-        compadd -- "${cheatsheets[@]}"
-      else
-        _message 'no cheatsheets found in $CHEATSHEET_DIR'
-      fi
-      ;;
+  # The words typed so far, flags left out, joined as a sheet name prefix
+  local -a typed
+  typed=(${${words[2,CURRENT-1]}:#-*})
+  case "$typed[1]" in
+    list|update|help|search|new) return 1 ;;
+    edit|raw) typed=("${(@)typed[2,-1]}") ;;
   esac
+
+  local prefix="${(j:-:)typed}"
+  if [[ -n "$prefix" ]]; then
+    next=(${(M)sheets:#$prefix-*})
+    next=(${${next#$prefix-}%%-*})
+  else
+    next=(${sheets%%-*})
+  fi
+  compadd -- ${(u)next}
+  _arguments '--raw[print the markdown instead of rendering it]'
 }
 
-_cheat
+_cheat "$@"
