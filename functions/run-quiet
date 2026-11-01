@@ -54,7 +54,7 @@ function run-quiet() {
 
   (( ${_PROGRESS_ACTIVE:-0} )) && progress step "$label"
 
-  "$@" >> "$log" 2>&1
+  "$@" < /dev/null >> "$log" 2>&1
   local -i code=$?
 
   if (( code )); then

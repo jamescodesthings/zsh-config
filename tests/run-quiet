@@ -66,4 +66,14 @@ has "no command is a usage error" "$OUT" "rc=2"
 run -- 'progress start t 2; run-quiet one true; run-quiet two true; progress done'
 has "advances an active progress run" "$ERR" "step 2/2 two"
 
+mkfifo "$TMP/fifo"
+sleep 4 > "$TMP/fifo" &
+holder=$!
+SECONDS=0
+run -- 'run-quiet reader sh -c "cat; echo eof-seen"; print -r -- "rc=$?"' < "$TMP/fifo"
+kill $holder 2> /dev/null
+(( SECONDS < 3 )) && echo "ok: child does not wait on the caller's stdin" || { echo "FAIL: child waited ${SECONDS}s on stdin"; failed=1; }
+logs=("$TMP"/logs/children/*-reader.log(N))
+same "child stdin is /dev/null: a reader gets EOF at once" "$(< "${logs[1]}")|$OUT" "eof-seen|rc=0"
+
 exit $failed

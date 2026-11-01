@@ -92,4 +92,14 @@ same "no key in plain mode falls back to list" "${${(f)OUT}[1]}" \
 run "cp $TMP/schema.json $TMP/cfg/linked.schema.json; config linked get root"
 same "linked schema file found without --schema" "$OUT" "~/projects"
 
+function stored() { run "config $S set clear-timeout $1; jq -c '.[\"clear-timeout\"]' $TMP/cfg/demo.json"; }
+stored 007
+same "007 is stored as the string" "$OUT" '"007"'
+stored 12
+same "12 is stored as a number" "$OUT" "12"
+for v in -3 1.5 2e3 0; do stored $v; same "$v is stored as a number" "$OUT" "$(jq -nc "$v")"; done
+for v in 01 1. .5 +1; do stored $v; same "$v is stored as a string" "$OUT" "\"$v\""; done
+run "config $S set verbose true"
+same "config file mode is 0644" "$(stat -f %Lp $TMP/cfg/demo.json 2>/dev/null || stat -c %a $TMP/cfg/demo.json)" "644"
+
 exit $failed

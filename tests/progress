@@ -108,6 +108,19 @@ else
   echo "ok: spinner stops when the caller's shell exits"
 fi
 
+# Early return: the precmd hook stops the spinner and shows the cursor
+run CLI_PROGRESS_FORCE=1 TERM=xterm-kitty -- 'progress start t 2; pid=$_PROGRESS_PID; sleep 0.3; _progress_hook
+  sleep 0.2; print -r -- "after=$(kill -0 $pid 2>/dev/null && print yes || print no) active=$_PROGRESS_ACTIVE"'
+same "hook: no background job survives the precmd hook" "$OUT" "after=no active=0"
+has "hook: cursor shown again" "$ERR" $'\e[?25h'
+has "hook: kitty tab progress cleared" "$ERR" $'\e]9;4;0;0\a'
+
+# Early return: the state file vanishing stops the spinner by itself
+run CLI_PROGRESS_FORCE=1 -- 'progress start t 2; pid=$_PROGRESS_PID; sleep 0.3; rm -f "$_PROGRESS_FILE"; sleep 0.5
+  print -r -- "after=$(kill -0 $pid 2>/dev/null && print yes || print no)"; kill $pid 2>/dev/null'
+same "state file gone: spinner exits" "$OUT" "after=no"
+has "state file gone: cursor shown again" "$ERR" $'\e[?25h'
+
 # Kitty: progress in the tab after 2 s, cleared on done
 run CLI_PROGRESS_FORCE=1 TERM=xterm-kitty -- 'progress start t 2; progress step a; sleep 2.4; progress done'
 has "kitty: OSC 9;4 progress after 2 s" "$ERR" $'\e]9;4;1;'

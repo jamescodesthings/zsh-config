@@ -15,8 +15,10 @@
 # escapes, one line per step (`step 2/5 label`) and a final done or failed
 # line. The state lives in this shell's _PROGRESS_* variables, so call it in
 # the shell that runs the work, never inside $(...). The spinner is a
-# background job; done and fail stop it, and it stops itself when this shell
-# exits, whatever the reason.
+# background job; done and fail stop it. It also stops itself when this shell
+# exits, when its state file is removed, and, in an interactive shell, a precmd
+# hook stops it when the prompt returns, so an interrupted run leaves no
+# spinner and no hidden cursor.
 #
 # CLI_PROGRESS_FORCE=1 animates even when stderr is no terminal (tests).
 
@@ -55,6 +57,11 @@ function _progress_anim() {
       (( kitty )) && print -rn -- $'\e]9;4;0;0\a' >&2
       exit 0
     fi
+    if [[ ! -e "$file" ]]; then
+      print -rn -- $'\r\e[2K\e[1B\r\e[2K\e[1A\e[?25h' >&2
+      (( kitty )) && print -rn -- $'\e]9;4;0;0\a' >&2
+      exit 0
+    fi
     { IFS= read -r n; IFS= read -r label; } < "$file" 2> /dev/null
     (( n > total )) && n=$total
     (( n < 1 )) && n=1
@@ -66,6 +73,18 @@ function _progress_anim() {
     (( f++ ))
     _progress_nap
   done
+}
+
+# The precmd hook: when the prompt comes back with a run still active (the work
+# was interrupted or returned early, so done and fail never ran), stop the
+# spinner, show the cursor, clear the tab progress and remove the hook.
+function _progress_hook() {
+  if (( ${_PROGRESS_ACTIVE:-0} )); then
+    _progress_stop
+    _PROGRESS_ACTIVE=0
+  fi
+  (( $+functions[add-zsh-hook] )) && add-zsh-hook -d precmd _progress_hook
+  return 0
 }
 
 # Stops the spinner job and clears its two lines and the tab progress.
@@ -81,6 +100,7 @@ function _progress_stop() {
   fi
   [[ -n "$_PROGRESS_FILE" ]] && rm -f "$_PROGRESS_FILE"
   _PROGRESS_PID=0
+  (( $+functions[add-zsh-hook] )) && add-zsh-hook -d precmd _progress_hook
 }
 
 # The final line: _progress_finish ok|err <word> <detail>
@@ -124,6 +144,10 @@ function progress() {
         print -rn -- $'\e[?25l' >&2
         ( _progress_anim "$_PROGRESS_FILE" "$_PROGRESS_TITLE" $_PROGRESS_TOTAL $_PROGRESS_START $$ $_PROGRESS_KITTY ) &!
         _PROGRESS_PID=$!
+        if [[ -o interactive ]]; then
+          autoload -Uz add-zsh-hook
+          add-zsh-hook precmd _progress_hook
+        fi
       fi
       ;;
     step)

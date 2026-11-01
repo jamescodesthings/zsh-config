@@ -11,8 +11,9 @@
 # on each call needs no install step and no state, so it comes first; the
 # linked file is the fallback for a tool that registers once.
 #
-# Values are strings, numbers or booleans: set turns true/false and numbers
-# into JSON booleans and numbers, anything else stays a string.
+# Values are strings, numbers or booleans: set turns true/false and valid JSON
+# numbers (0, -3, 1.5, 2e3; not 007) into JSON booleans and numbers, anything
+# else stays a string. The file is written with mode 0644.
 # With no subcommand, an fzf picker over the settings (plain mode or no fzf:
 # list), then a prompt for the new value.
 function config() {
@@ -95,7 +96,8 @@ function _config_known() {
 
 # _config_json value: the value as a JSON literal (booleans and numbers kept).
 function _config_json() {
-  if [[ "$1" == (true|false) || "$1" == -#<->(.<->|)([eE][+-]#<->|) ]]; then
+  # only a valid JSON number stays a number: no leading zeros, no "1." or ".5"
+  if [[ "$1" == (true|false) || "$1" =~ '^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$' ]]; then
     print -r -- "$1"
   else
     jq -n --arg v "$1" '$v'
@@ -129,6 +131,7 @@ function _config_write() {
   local -a src=(-n)
   [[ -s "$file" ]] && src=("$file")
   if jq "$@" "${src[@]}" > "$tmp" 2> /dev/null; then
+    chmod 0644 "$tmp"
     mv -f "$tmp" "$file"
   else
     rm -f "$tmp"
