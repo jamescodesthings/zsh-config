@@ -1,0 +1,119 @@
+#!/usr/bin/env zsh
+# Tests functions/progress from a plain `zsh -f -c`. The animated path is
+# forced with CLI_PROGRESS_FORCE=1 because a test has no terminal on stderr.
+# Run: tests/progress. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+I_DONE=$'\U000f0995' I_FAIL=$'\U000f0cbc'
+
+# run <env...> -- <zsh code>: sets OUT, ERR (stderr, escapes kept), ERRN
+# (stderr with seconds replaced by Ns), CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin TMPDIR="$TMP" "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-init cli-icon say progress cheat-help
+    export CUSTOM_DIR="$1"
+    eval "$2"
+  ' _ "$REPO_DIR" "$1" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+  ERRN="$(print -r -- "$ERR" | sed -E 's/[0-9]+\.[0-9]s/Ns/g')"
+}
+
+function same() {
+  if [[ "$2" == "$3" ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"
+    failed=1
+  fi
+}
+
+# has <description> <haystack> <needle>
+function has() {
+  if [[ "$2" == *"$3"* ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1: ${(q+)3} not in ${(q+)2}"
+    failed=1
+  fi
+}
+
+# Plain path
+run CLI_PLAIN=1 -- 'progress start "hub update" 3; progress step zsh-config; progress step pkms; progress step readerr; progress done'
+same "plain: one line per step, then done with elapsed time" "$OUT|$ERRN" "|step 1/3 zsh-config
+step 2/3 pkms
+step 3/3 readerr
+${I_DONE}  done  hub update  3/3 in Ns"
+
+run CLI_PLAIN=1 -- 'progress start "hub update" 3; progress step a; progress step b; progress fail'
+same "plain: fail names the step" "$ERRN" "step 1/3 a
+step 2/3 b
+${I_FAIL}  failed  hub update  at step 2/3 after Ns"
+
+run CLI_PLAIN=1 -- 'progress start t 2; progress step a; progress step b; progress step c; progress step d; progress done; print -r -- "rc=$?"'
+same "step past total stays at total and done works" "$ERRN|$OUT" "step 1/2 a
+step 2/2 b
+step 2/2 c
+step 2/2 d
+${I_DONE}  done  t  2/2 in Ns|rc=0"
+
+run CLI_PLAIN=1 -- 'progress start t 1; sleep 1; progress step a; progress done'
+has "done reports elapsed time" "$ERR" "1/1 in 1."
+
+run CLI_PLAIN=1 -- 'progress step a; print -r -- "rc=$?"'
+same "step before start does nothing, returns 1" "$ERR|$OUT" "|rc=1"
+
+run CLI_PLAIN=1 -- 'progress start t; print -r -- "rc=$?"'
+same "start without a total is a usage error" "$CODE" "0"
+has "start without a total says so" "$OUT" "rc=2"
+
+run CLI_PLAIN=1 -- 'progress bogus; print -r -- "rc=$?"'
+has "unknown subcommand exits 2" "$OUT" "rc=2"
+
+# Animated path (forced)
+run CLI_PROGRESS_FORCE=1 -- 'progress start "hub update" 2; pid=$_PROGRESS_PID
+  progress step one; sleep 0.4; progress step two; sleep 0.3
+  print -r -- "alive=$(kill -0 $pid 2>/dev/null && print yes || print no)"
+  progress done
+  sleep 0.2
+  print -r -- "after=$(kill -0 $pid 2>/dev/null && print yes || print no)"'
+has "anim: spinner job runs while working" "$OUT" "alive=yes"
+has "anim: no background job survives done" "$OUT" "after=no"
+has "anim: draws the step counter and the title" "$ERR" "step 2/2"
+has "anim: draws the dim label line" "$ERR" "two"
+has "anim: hides then shows the cursor" "$ERR" $'\e[?25l'
+has "anim: ends with the done line" "$ERR" "${I_DONE}"
+[[ "$ERR" == *$'\e]9;4'* ]] && { echo "FAIL: anim outside kitty must not emit OSC 9;4"; failed=1; } || echo "ok: anim: no kitty escapes outside kitty"
+
+run CLI_PROGRESS_FORCE=1 -- 'progress start t 1; pid=$_PROGRESS_PID; progress step a; sleep 0.2; progress fail
+  sleep 0.2; print -r -- "after=$(kill -0 $pid 2>/dev/null && print yes || print no)"'
+same "anim: no background job survives fail" "$OUT" "after=no"
+has "anim: fail line" "$ERR" "${I_FAIL}"
+
+run CLI_PROGRESS_FORCE=1 -- 'progress start t 1; print -r -- $_PROGRESS_PID; exit 0'
+pid="${OUT%%$'\n'*}"
+sleep 0.5
+if kill -0 "$pid" 2> /dev/null; then
+  echo "FAIL: spinner outlived the shell that started it"
+  kill "$pid"
+  failed=1
+else
+  echo "ok: spinner stops when the caller's shell exits"
+fi
+
+# Kitty: progress in the tab after 2 s, cleared on done
+run CLI_PROGRESS_FORCE=1 TERM=xterm-kitty -- 'progress start t 2; progress step a; sleep 2.4; progress done'
+has "kitty: OSC 9;4 progress after 2 s" "$ERR" $'\e]9;4;1;'
+has "kitty: tab progress cleared on done" "$ERR" $'\e]9;4;0;0\a'
+
+run CLI_PROGRESS_FORCE=1 TERM=xterm-kitty -- 'progress start t 2; progress step a; sleep 0.3; progress done'
+[[ "$ERR" == *$'\e]9;4;1;'* ]] && { echo "FAIL: kitty progress shown before 2 s"; failed=1; } || echo "ok: kitty: short run shows no tab progress"
+
+exit $failed

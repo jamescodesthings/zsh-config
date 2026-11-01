@@ -1,0 +1,159 @@
+#!/usr/bin/env zsh
+
+# progress start <title> <total> | step <label> | done | fail
+#
+# A spinner with `step X/Y` and the title on one line, the current step's
+# label dimmed on a second, and the elapsed time on done. Drawn on stderr, so
+# stdout stays clean. In kitty (TERM=xterm-kitty or KITTY_WINDOW_ID) the tab
+# also shows a progress bar (OSC 9;4) once the run has lasted 2 seconds.
+#
+#   progress start "hub update" 5
+#   progress step "zsh-config"      # call once per step, 1 to total
+#   progress done                   # or `progress fail`
+#
+# Plain mode (CLI_PLAIN, NO_COLOR, or stderr not a terminal): no animation, no
+# escapes, one line per step (`step 2/5 label`) and a final done or failed
+# line. The state lives in this shell's _PROGRESS_* variables, so call it in
+# the shell that runs the work, never inside $(...). The spinner is a
+# background job; done and fail stop it, and it stops itself when this shell
+# exits, whatever the reason.
+#
+# CLI_PROGRESS_FORCE=1 animates even when stderr is no terminal (tests).
+
+# Seconds to sleep between frames, using zselect when it is there.
+function _progress_nap() {
+  if (( $+builtins[zselect] )); then
+    zselect -t 8
+  else
+    sleep 0.08
+  fi
+}
+
+# The spinner job: _progress_anim <state file> <title> <total> <start> <parent pid> <kitty 0|1>
+# redraws two lines every frame until it is killed (quiet, done and fail clear
+# the lines) or the parent shell is gone (it clears them itself).
+function _progress_anim() {
+  emulate -L zsh
+  zmodload zsh/zselect 2> /dev/null
+  zmodload zsh/datetime 2> /dev/null
+  local file="$1" title="$2" parent="$5"
+  local -i total=$3 kitty=$6 f=0 n=1 pct
+  local -F start=$4
+  local label="" spin head num dim off
+  local -a slices=($'\xf3\xb0\xaa\x9e' $'\xf3\xb0\xaa\x9f' $'\xf3\xb0\xaa\xa0' $'\xf3\xb0\xaa\xa1' $'\xf3\xb0\xaa\xa2' $'\xf3\xb0\xaa\xa3' $'\xf3\xb0\xaa\xa4' $'\xf3\xb0\xaa\xa5')
+  col -v spin info
+  col -v head heading
+  col -v num num
+  col -v dim prose-60
+  [[ -n "$spin" ]] && off=$'\e[0m'
+
+  trap - EXIT
+  trap 'exit 0' TERM INT HUP
+  while true; do
+    if ! kill -0 "$parent" 2> /dev/null; then
+      print -rn -- $'\r\e[2K\e[1B\r\e[2K\e[1A\e[?25h' >&2
+      (( kitty )) && print -rn -- $'\e]9;4;0;0\a' >&2
+      exit 0
+    fi
+    { IFS= read -r n; IFS= read -r label; } < "$file" 2> /dev/null
+    (( n > total )) && n=$total
+    (( n < 1 )) && n=1
+    print -rn -- $'\r\e[2K'"${spin}${slices[f % 8 + 1]}${off} ${head}${title}${off}  ${num}step ${n}/${total}${off}"$'\n\r\e[2K'"  ${dim}${label}${off}"$'\e[1A' >&2
+    if (( kitty && EPOCHREALTIME - start >= 2 )); then
+      pct=$(( (n - 1) * 100 / total ))
+      print -rn -- $'\e]9;4;1;'"${pct}"$'\a' >&2
+    fi
+    (( f++ ))
+    _progress_nap
+  done
+}
+
+# Stops the spinner job and clears its two lines and the tab progress.
+function _progress_stop() {
+  if (( ${_PROGRESS_PID:-0} )); then
+    kill "$_PROGRESS_PID" 2> /dev/null
+    local -i tries=0
+    while kill -0 "$_PROGRESS_PID" 2> /dev/null && (( tries++ < 50 )); do
+      _progress_nap
+    done
+    print -rn -- $'\r\e[2K\e[1B\r\e[2K\e[1A\e[?25h' >&2
+    (( _PROGRESS_KITTY )) && print -rn -- $'\e]9;4;0;0\a' >&2
+  fi
+  [[ -n "$_PROGRESS_FILE" ]] && rm -f "$_PROGRESS_FILE"
+  _PROGRESS_PID=0
+}
+
+# The final line: _progress_finish ok|err <word> <detail>
+function _progress_finish() {
+  local role="$1" word="$2" detail="$3" icon on head off
+  cli-icon -v icon "$([[ "$role" == ok ]] && print done || print fail)"
+  col -v on "$role"
+  col -v head heading
+  [[ -n "$on" ]] && off=$'\e[0m'
+  local elapsed
+  printf -v elapsed '%.1f' $(( EPOCHREALTIME - _PROGRESS_START ))
+  print -r -- "${on}${icon}  ${word}${off}  ${head}${_PROGRESS_TITLE}${off}  ${on}${detail//@elapsed@/${elapsed}s}${off}" >&2
+}
+
+function progress() {
+  emulate -L zsh
+  cheat-help progress "$@" && return 0
+  zmodload zsh/datetime 2> /dev/null
+  local sub="$1"
+  shift
+
+  case "$sub" in
+    start)
+      if [[ -z "$1" ]] || [[ "$2" != <1-> ]]; then
+        say fail "progress start: needs a title and a total number of steps"
+        return 2
+      fi
+      (( ${_PROGRESS_PID:-0} )) && _progress_stop
+      typeset -g _PROGRESS_TITLE="$1" _PROGRESS_LABEL=""
+      typeset -gi _PROGRESS_TOTAL=$2 _PROGRESS_N=0 _PROGRESS_PID=0 _PROGRESS_KITTY=0 _PROGRESS_ACTIVE=1
+      typeset -gF _PROGRESS_START=$EPOCHREALTIME
+      typeset -g _PROGRESS_FILE="" _PROGRESS_MODE=plain
+      if [[ -z "$CLI_PLAIN" && -z "$NO_COLOR" ]] && [[ -n "$CLI_PROGRESS_FORCE" || -t 2 ]]; then
+        _PROGRESS_MODE=anim
+        [[ "$TERM" == xterm-kitty || -n "$KITTY_WINDOW_ID" ]] && _PROGRESS_KITTY=1
+        _PROGRESS_FILE="$(mktemp "${TMPDIR:-/tmp}/progress.XXXXXX")" || {
+          _PROGRESS_MODE=plain
+          return 0
+        }
+        print -r -- "1"$'\n' >| "$_PROGRESS_FILE"
+        print -rn -- $'\e[?25l' >&2
+        ( _progress_anim "$_PROGRESS_FILE" "$_PROGRESS_TITLE" $_PROGRESS_TOTAL $_PROGRESS_START $$ $_PROGRESS_KITTY ) &!
+        _PROGRESS_PID=$!
+      fi
+      ;;
+    step)
+      (( ${_PROGRESS_ACTIVE:-0} )) || return 1
+      (( _PROGRESS_N++ ))
+      _PROGRESS_LABEL="$*"
+      local -i shown=$(( _PROGRESS_N > _PROGRESS_TOTAL ? _PROGRESS_TOTAL : _PROGRESS_N ))
+      if [[ "$_PROGRESS_MODE" == anim ]]; then
+        print -r -- "${shown}"$'\n'"${_PROGRESS_LABEL}" >| "$_PROGRESS_FILE"
+      else
+        print -r -- "step ${shown}/${_PROGRESS_TOTAL} ${_PROGRESS_LABEL}" >&2
+      fi
+      ;;
+    done|fail)
+      (( ${_PROGRESS_ACTIVE:-0} )) || return 1
+      _progress_stop
+      local -i shown=$(( _PROGRESS_N > _PROGRESS_TOTAL ? _PROGRESS_TOTAL : _PROGRESS_N ))
+      if [[ "$sub" == done ]]; then
+        _progress_finish ok done "${shown}/${_PROGRESS_TOTAL} in @elapsed@"
+      else
+        _progress_finish err failed "at step ${shown}/${_PROGRESS_TOTAL} after @elapsed@"
+      fi
+      _PROGRESS_ACTIVE=0
+      ;;
+    *)
+      say fail "progress: the first word is start, step, done or fail, not ${sub:-nothing}"
+      return 2
+      ;;
+  esac
+  return 0
+}
+
+progress "$@"

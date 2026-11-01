@@ -1,0 +1,67 @@
+#!/usr/bin/env zsh
+
+# run-quiet <label> <command...>: runs a child command with its stdout and
+# stderr appended to a child log, so nothing from it reaches the terminal.
+# Advances `progress` with the label when a progress run is active, returns
+# the command's exit code, and on failure records a problem and a fix that
+# point at the log (`problems` prints them at the end of the run). Call it in
+# the tool's own shell, not inside $(...), or the problem is lost.
+#
+# The log is log-child-file's when that function exists, else
+# <logs>/children/<yyyy-MM-dd-HHmmss>-<parent>-<label>.log, where <logs> is
+# $CLI_LOG_DIR or ~/.custom/logs, <parent> is $LOG_COMMAND or the calling
+# function, and the label is made filename-safe.
+
+# _run_quiet_log <parent> <label>: prints the child log path and creates its folder.
+function _run_quiet_log() {
+  local parent="$1" label="$2" file=""
+  if (( $+functions[log-child-file] || $+commands[log-child-file] )); then
+    file="$(log-child-file "$parent" "$label" 2> /dev/null)"
+  fi
+  if [[ -z "$file" ]]; then
+    setopt local_options extended_glob
+    zmodload zsh/datetime 2> /dev/null
+    local safe="${label//[^A-Za-z0-9._-]##/-}"
+    safe="${safe##-##}"
+    safe="${safe%%-##}"
+    local safe_parent="${parent//[^A-Za-z0-9._-]##/-}"
+    local stamp
+    strftime -s stamp '%Y-%m-%d-%H%M%S' "$EPOCHSECONDS"
+    file="${CLI_LOG_DIR:-$HOME/.custom/logs}/children/${stamp}-${safe_parent:-shell}-${safe:-child}.log"
+  fi
+  mkdir -p "${file:h}" || return 1
+  print -r -- "$file"
+}
+
+function run-quiet() {
+  emulate -L zsh
+  cheat-help run-quiet "$@" && return 0
+
+  if (( $# < 2 )); then
+    say fail "run-quiet: needs a label and a command"
+    return 2
+  fi
+  local label="$1"
+  shift
+
+  local -a stack=(${funcstack:#(run-quiet|_run_quiet*)})
+  local parent="${LOG_COMMAND:-${stack[1]:-${ZSH_ARGZERO:t}}}"
+  local log
+  log="$(_run_quiet_log "$parent" "$label")" || {
+    say fail "run-quiet: cannot create a log for ${label}"
+    return 1
+  }
+
+  (( ${_PROGRESS_ACTIVE:-0} )) && progress step "$label"
+
+  "$@" >> "$log" 2>&1
+  local -i code=$?
+
+  if (( code )); then
+    problem "${label} failed (exit ${code})"
+    fix "log open child" "for its output"
+  fi
+  return $code
+}
+
+run-quiet "$@"

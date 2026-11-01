@@ -1,0 +1,69 @@
+#!/usr/bin/env zsh
+# Tests functions/run-quiet from a plain `zsh -f -c`. Run: tests/run-quiet.
+# Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+# run <env...> -- <zsh code>: sets OUT, ERR, CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin TMPDIR="$TMP" CLI_LOG_DIR="$TMP/logs" CLI_PLAIN=1 "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-init cli-icon say problem fix problems progress run-quiet cheat-help
+    export CUSTOM_DIR="$1"
+    eval "$2"
+  ' _ "$REPO_DIR" "$1" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+function same() {
+  if [[ "$2" == "$3" ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"
+    failed=1
+  fi
+}
+
+function has() {
+  if [[ "$2" == *"$3"* ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1: ${(q+)3} not in ${(q+)2}"
+    failed=1
+  fi
+}
+
+function build() { print -r -- 'echo to-stdout; echo to-stderr >&2'; }
+
+run LOG_COMMAND=hub-up -- 'run-quiet "pull zsh-config" sh -c "echo to-stdout; echo to-stderr >&2"; print -r -- "rc=$?"; print -r -- "problems=${#_CLI_PROBLEMS}"'
+same "success: exit code 0, no problem, nothing on the terminal" "$OUT|$ERR" "rc=0
+problems=0|"
+logs=("$TMP"/logs/children/*-hub-up-pull-zsh-config.log(N))
+same "success: one log named stamp-parent-label" "${#logs}" "1"
+same "success: both streams land in the log" "$(sort "${logs[1]}" 2> /dev/null | tr '\n' ' ')" "to-stderr to-stdout "
+[[ "${logs[1]:t}" == [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]-* ]] \
+  && echo "ok: log name starts with yyyy-MM-dd-HHmmss" || { echo "FAIL: log name ${logs[1]:t}"; failed=1; }
+
+rm -rf "$TMP/logs"
+run -- 'function mytool() { run-quiet "step/two: a b" sh -c "echo oops; exit 7"; print -r -- "rc=$?"; print -r -- "${_CLI_PROBLEMS[*]}"; print -r -- "${_CLI_FIXES[*]//$'"'"'\0'"'"'/|}" }; mytool'
+same "failure: exit code passed through, problem and fix recorded" "$OUT|$ERR" "rc=7
+step/two: a b failed (exit 7)
+log open child|for its output|"
+logs=("$TMP"/logs/children/*-mytool-step-two-a-b.log(N))
+same "failure: parent is the calling function, label made filename-safe" "${#logs}" "1"
+same "failure: output is in the log" "$(< "${logs[1]}")" "oops"
+
+run -- 'run-quiet only-a-label; print -r -- "rc=$?"'
+has "no command is a usage error" "$OUT" "rc=2"
+
+run -- 'progress start t 2; run-quiet one true; run-quiet two true; progress done'
+has "advances an active progress run" "$ERR" "step 2/2 two"
+
+exit $failed

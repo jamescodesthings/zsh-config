@@ -1,0 +1,70 @@
+#!/usr/bin/env zsh
+
+# pick [-v|--var VAR] <header> <items...>: an fzf picker for an argument the
+# caller was not given. The header says what will happen once the choice is
+# made, the first item is the default (Enter takes it), and the choice is
+# printed, or stored in VAR with -v. Plain mode, no fzf, or no terminal on
+# stdin and stderr: fails with `say fail` naming the missing argument (the
+# header) and returns 2, so a script never hangs waiting for a person.
+# Escape or ctrl-c in the picker returns 1 and prints nothing.
+#
+# CLI_PICK_FORCE=1 skips the terminal check (tests, with a fake fzf).
+function pick() {
+  emulate -L zsh
+  cheat-help pick "$@" && return 0
+
+  local var=""
+  while (( $# )); do
+    case "$1" in
+      -v|--var)
+        if (( $# < 2 )); then
+          say fail "pick: $1 needs a variable name"
+          return 2
+        fi
+        var="$2"
+        shift 2
+        ;;
+      --) shift; break ;;
+      *) break ;;
+    esac
+  done
+
+  local header="$1"
+  shift
+  if [[ -z "$header" ]]; then
+    say fail "pick: needs a header saying what will happen, then the items"
+    return 2
+  fi
+  if (( ! $# )); then
+    say fail "pick: nothing to choose from for ${header}"
+    return 2
+  fi
+
+  if [[ -n "$CLI_PLAIN" || -n "$NO_COLOR" ]] || (( ! $+commands[fzf] )); then
+    say fail "missing argument: ${header}"
+    return 2
+  fi
+  if [[ -z "$CLI_PICK_FORCE" ]] && [[ ! -t 0 || ! -t 2 ]]; then
+    say fail "missing argument: ${header}"
+    return 2
+  fi
+
+  local -a colors=()
+  local info cmd
+  info="$(col --hex info 2> /dev/null)"
+  cmd="$(col --hex cmd 2> /dev/null)"
+  [[ -n "$info" && -n "$cmd" ]] && colors=(--color "header:${info},prompt:${cmd},pointer:${cmd}")
+
+  local choice
+  choice="$(print -rl -- "$@" | fzf --height='~12' --reverse --no-sort \
+    --header="$header" --prompt='> ' "${colors[@]}")" || return 1
+  [[ -n "$choice" ]] || return 1
+
+  if [[ -n "$var" ]]; then
+    typeset -g "$var=$choice"
+  else
+    print -r -- "$choice"
+  fi
+}
+
+pick "$@"

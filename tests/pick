@@ -1,0 +1,58 @@
+#!/usr/bin/env zsh
+# Tests functions/pick from a plain `zsh -f -c`, with a fake fzf on PATH.
+# Run: tests/pick. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+I_ERR=$'\U000f0159'
+mkdir -p "$TMP/bin"
+print -r -- $'#!/bin/sh\necho "$@" > "$FZF_ARGS"\nhead -n 1' > "$TMP/bin/fzf"
+chmod +x "$TMP/bin/fzf"
+
+# run <env...> -- <zsh code>: sets OUT, ERR, CODE; PICK_PATH overrides PATH
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP" PATH="${PICK_PATH:-/usr/bin:/bin}" FZF_ARGS="$TMP/args" "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-init cli-icon say pick cheat-help
+    export CUSTOM_DIR="$1"
+    eval "$2"
+  ' _ "$REPO_DIR" "$1" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+  ERRP="$(print -r -- "$ERR" | sed $'s/\x1b\[[0-9;]*m//g')"
+}
+
+function same() {
+  if [[ "$2" == "$3" ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"
+    failed=1
+  fi
+}
+
+PICK_PATH="$TMP/bin:/usr/bin:/bin" run CLI_PLAIN=1 -- 'pick "hub join: start working in the repo you pick" a b c'
+same "plain mode fails naming the argument, exit 2" "$OUT|$ERR|$CODE" "|${I_ERR}  missing argument: hub join: start working in the repo you pick|2"
+
+PICK_PATH="$TMP/bin:/usr/bin:/bin" run -- 'pick "pick a repo"'
+same "no items is an error, exit 2" "$ERRP|$CODE" "${I_ERR}  pick: nothing to choose from for pick a repo|2"
+
+PICK_PATH="$TMP/bin:/usr/bin:/bin" run -- 'pick "pick a repo" a b'
+same "no terminal fails like plain mode, exit 2" "$OUT|$CODE" "|2"
+
+run CLI_PICK_FORCE=1 -- 'pick "pick a repo" a b'
+same "no fzf fails, exit 2" "$ERRP|$CODE" "${I_ERR}  missing argument: pick a repo|2"
+
+PICK_PATH="$TMP/bin:/usr/bin:/bin" run CLI_PICK_FORCE=1 -- 'pick "pick a repo" first second third'
+same "fzf path prints the first item (the default)" "$OUT|$CODE" "first|0"
+same "header reaches fzf" "$(grep -c -- '--header=pick a repo' $TMP/args)" "1"
+
+PICK_PATH="$TMP/bin:/usr/bin:/bin" run CLI_PICK_FORCE=1 -- 'pick -v chosen "pick" x y; print -r -- "var=$chosen"'
+same "-v sets the variable and prints nothing else" "$OUT" "var=x"
+
+exit $failed
