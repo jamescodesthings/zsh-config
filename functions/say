@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+
+# say ok|info|warn|fail <text...>: one status line, an icon then the text,
+# the whole line in the role's colour (ok, info, warn, err). fail goes to
+# stderr. Plain mode (cli-init) keeps the icon and drops the colour.
+function say() {
+  local kind="$1" role icon
+  shift
+  case "$kind" in
+    ok) role=ok; cli-icon -v icon ok ;;
+    info) role=info; cli-icon -v icon info ;;
+    warn) role=warn; cli-icon -v icon warn ;;
+    fail) role=err; cli-icon -v icon err ;;
+    *)
+      print -u2 -- "say: the first word is ok, info, warn or fail, not ${kind:-nothing}"
+      return 2
+      ;;
+  esac
+
+  local on off
+  col -v on "$role"
+  [[ -n "$on" ]] && off=$'\e[0m'
+  if [[ "$kind" == fail ]]; then
+    print -r -u2 -- "${on}${icon}  $*${off}"
+  else
+    print -r -- "${on}${icon}  $*${off}"
+  fi
+}
+
+say "$@"

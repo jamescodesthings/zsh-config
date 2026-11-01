@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+# fix <command> [reason...]: remember a command that fixes or explains a
+# problem, shown under the problems at the end (`problems`). The command is
+# one argument: quote it.
+function fix() {
+  typeset -ga _CLI_FIXES
+  local command="$1"
+  shift
+  _CLI_FIXES+=("${command}"$'\0'"$*")
+}
+
+fix "$@"

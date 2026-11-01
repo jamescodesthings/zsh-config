@@ -1,0 +1,73 @@
+#!/usr/bin/env zsh
+# Tests functions/say and the problem block (problem, fix, problems) from a
+# plain `zsh -f -c`. Run: tests/say. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+I_OK=$'\U000f05e0' I_INFO=$'\U000f09de' I_WARN=$'\U000f0026' I_ERR=$'\U000f0159' I_STEP=$'\U000f035f'
+E=$'\e' NL=$'\n'
+
+# run <env...> -- <zsh code>: sets OUT (stdout), ERR (stderr), CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-init cli-icon say problem fix problems
+    export CUSTOM_DIR="$1"
+    eval "$2"
+  ' _ "$REPO_DIR" "$1" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+# same <description> <got> <wanted>
+function same() {
+  if [[ "$2" == "$3" ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"
+    failed=1
+  fi
+}
+
+run CLI_PLAIN=1 -- 'say ok pushed 3 commits'
+same "say ok: icon and text on stdout" "$OUT|$ERR" "${I_OK}  pushed 3 commits|"
+
+run CLI_PLAIN=1 -- 'say info hub is already up'
+same "say info uses the neutral dot" "$OUT" "${I_INFO}  hub is already up"
+
+run CLI_PLAIN=1 -- 'say warn readerr has changes'
+same "say warn" "$OUT" "${I_WARN}  readerr has changes"
+
+run CLI_PLAIN=1 -- 'say fail pkms did not stop'
+same "say fail goes to stderr" "$OUT|$ERR" "|${I_ERR}  pkms did not stop"
+
+run CLI_PLAIN=1 -- 'say nope text; print -r -- "rc=$?"'
+same "say with an unknown kind fails" "${OUT}|${${ERR:+err}}" "rc=2|err"
+
+run COLORTERM=truecolor -- 'say ok done'
+same "say colours the line in the role colour" "$OUT" "${E}[38;2;34;218;110m${I_OK}  done${E}[0m"
+
+run CLI_PLAIN=1 -- 'problems; print -r -- "rc=$?"'
+same "problems with nothing collected prints nothing and returns 0" "$OUT|$ERR" "rc=0|"
+
+run CLI_PLAIN=1 -- 'problem "pkms did not reach a safe point in 300s"; fix "hub join pkms" "to see what it is doing"; problems; print -r -- "rc=$?"'
+same "one problem with a fix" "$OUT|$ERR" "rc=1|${I_ERR}  1 problem${NL}pkms did not reach a safe point in 300s${NL}${NL}${I_STEP} hub join pkms  to see what it is doing"
+
+run CLI_PLAIN=1 LOG_FILE=/tmp/x.log -- 'problem a; problem b; fix "x y"; problems'
+same "two problems, a fix with no reason, and the log hint when a log is open" "$ERR" "${I_ERR}  2 problems${NL}a${NL}b${NL}${NL}${I_STEP} x y${NL}${I_STEP} log open last  for the full run"
+
+run CLI_PLAIN=1 -- 'problem a; problems 2>/dev/null; problems; print -r -- "rc=$?"'
+same "problems clears the list once printed" "$OUT" "rc=0"
+
+run COLORTERM=truecolor -- 'col -v C cmd; col -v D dim; col -v R reset; problem a; fix "x y" because; problems; print -rn -- "$C|$D|$R" >&2'
+cmd_col="${${ERR##*$NL}%%|*}"
+dim_col="${${ERR##*$NL}#*|}"; dim_col="${dim_col%%|*}"
+same "the fix command is cyan and its reason dimmed" "${${ERR%$NL*}##*$NL}" "${cmd_col}${I_STEP} x y${E}[0m  ${dim_col}because${E}[0m"
+
+exit $failed

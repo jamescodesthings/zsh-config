@@ -1,0 +1,51 @@
+#!/usr/bin/env zsh
+
+# problems: the block at the end of a run, on stderr, when `problem` was
+# called. The count with the error icon in the err colour, each problem dimmed
+# in that colour, a blank line, then each `fix` as one command in the cmd
+# colour with its reason dimmed, and a `log open last` hint when this run has
+# a log (LOG_FILE). Returns 1 when there were problems, 0 when none; the lists
+# are cleared once printed.
+function problems() {
+  typeset -ga _CLI_PROBLEMS _CLI_FIXES
+  local -i count=${#_CLI_PROBLEMS}
+  (( count )) || { _CLI_FIXES=(); return 0; }
+
+  local err faint cmd dim off entry command reason
+  col -v err err
+  col -v faint err-60
+  col -v cmd cmd
+  col -v dim dim
+  [[ -n "$err" ]] && off=$'\e[0m'
+  local icon step
+  cli-icon -v icon err
+  cli-icon -v step step
+
+  local -a fixes=("${_CLI_FIXES[@]}")
+  [[ -n "$LOG_FILE" ]] && fixes+=("log open last"$'\0'"for the full run")
+
+  {
+    print -r -- "${err}${icon}  ${count} problem$( (( count > 1 )) && print s)${off}"
+    for entry in "${_CLI_PROBLEMS[@]}"; do
+      print -r -- "${faint}${entry}${off}"
+    done
+    if (( ${#fixes} )); then
+      print
+      for entry in "${fixes[@]}"; do
+        command="${entry%%$'\0'*}"
+        reason="${entry#*$'\0'}"
+        if [[ -n "$reason" ]]; then
+          print -r -- "${cmd}${step} ${command}${off}  ${dim}${reason}${off}"
+        else
+          print -r -- "${cmd}${step} ${command}${off}"
+        fi
+      done
+    fi
+  } >&2
+
+  _CLI_PROBLEMS=()
+  _CLI_FIXES=()
+  return 1
+}
+
+problems "$@"

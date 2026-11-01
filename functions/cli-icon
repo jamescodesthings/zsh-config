@@ -1,0 +1,43 @@
+#!/usr/bin/env zsh
+
+# cli-icon [-v VAR] <name>: the Nerd Font (nf-md) glyph every helper uses for
+# a name, written as UTF-8 bytes so it works whatever the locale. Needs a
+# Nerd Font in the terminal; installers/fonts installs the one kitty asks for.
+#
+#   ok    nf-md-check_circle       warn  nf-md-alert
+#   info  nf-md-circle_medium      err   nf-md-close_circle
+#   step  nf-md-chevron_right_circle (a fix, a hint, a step)
+#   log   nf-md-file_document      ask   nf-md-help_circle
+#   run   nf-md-progress_clock     done  nf-md-progress_check
+#   fail  nf-md-progress_close
+function cli-icon() {
+  local var=""
+  if [[ "$1" == -v ]]; then
+    var="$2"
+    shift 2
+  fi
+  local glyph
+  case "$1" in
+    ok) glyph=$'\xf3\xb0\x97\xa0' ;;
+    info) glyph=$'\xf3\xb0\xa7\x9e' ;;
+    warn) glyph=$'\xf3\xb0\x80\xa6' ;;
+    err) glyph=$'\xf3\xb0\x85\x99' ;;
+    step) glyph=$'\xf3\xb0\x8d\x9f' ;;
+    log) glyph=$'\xf3\xb0\x88\x99' ;;
+    ask) glyph=$'\xf3\xb0\x8b\x97' ;;
+    run) glyph=$'\xf3\xb0\xa6\x96' ;;
+    done) glyph=$'\xf3\xb0\xa6\x95' ;;
+    fail) glyph=$'\xf3\xb0\xb2\xbc' ;;
+    *)
+      print -u2 -- "cli-icon: no icon called ${1:-nothing}"
+      return 2
+      ;;
+  esac
+  if [[ -n "$var" ]]; then
+    typeset -g "$var=$glyph"
+  else
+    print -rn -- "$glyph"
+  fi
+}
+
+cli-icon "$@"

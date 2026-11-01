@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+
+# problem <text...>: remember a problem to report at the end of the run with
+# `problems`. Call it in the tool's own shell, not inside $(...), or the
+# problem is lost with the subshell.
+function problem() {
+  typeset -ga _CLI_PROBLEMS
+  _CLI_PROBLEMS+=("$*")
+}
+
+problem "$@"

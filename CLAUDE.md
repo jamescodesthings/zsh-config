@@ -104,7 +104,10 @@ The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, pro
 - `configs/palette/palette.conf` is the one palette: `key = value` lines, a value being `#rrggbb`, another key, or `key-NN` (NN per cent of that colour over `background`). It holds the background, 15 hues and the roles (`cmd`, `tool`, `target`, `flag`, `num`, `heading`, `marker`, `prose`, `dim`, `ok`, `info`, `warn`, `err`, `tag-cmd`, `tag-child`), each role an alias of a hue. `~/.config/zsh-config/palette.conf` is read after it and wins per key. Rust and Swift tools parse the same file themselves.
 - `col <name|name-NN|role|bold|reset>` prints the escape: truecolor when `COLORTERM` is `truecolor` or `24bit`, the nearest of the 256 colours otherwise, nothing when `NO_COLOR` is set or `CLI_PLAIN=1`. `col -v VAR name` sets a variable instead (no subshell), `col --hex name` prints the resolved hex, `col --list` shows every hue and role.
 - `cli-init "$@"` is a tool's first line: it sets `CLI_PLAIN=1` for `--plain`, `NO_COLOR` or a stdout that is not a terminal, and loads the palette once into the shell. Plain mode keeps the icons and drops colour, animation and kitty escapes.
-- `tests/col` covers resolution, mixing, the user override, both escape forms and plain mode.
+- `cli-icon [-v VAR] <name>` is the one place for the nf-md glyphs (ok, info, warn, err, step, log, ask, run, done, fail), written as UTF-8 bytes so they work under any locale. info is nf-md-circle_medium.
+- `say ok|info|warn|fail <text>` prints one status line: icon, two spaces, text, all in the role colour; `fail` goes to stderr.
+- `problem <text>` and `fix <command> [reason]` collect while a tool runs; `problems` prints the block at the end on stderr and returns 1 (0 when there were none): the count with the error icon, each problem dimmed in the error colour, a blank line, then each fix as one command in the `cmd` colour with its reason dimmed, plus `log open last` when the run has a log (`LOG_FILE`). Call `problem` and `fix` in the tool's own shell, never inside `$(...)`.
+- `tests/col` and `tests/say` cover them.
 
 ### `cheatsheets/` directory
 
