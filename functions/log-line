@@ -1,0 +1,14 @@
+#!/usr/bin/env zsh
+
+# log-line <text...>: appends `HH:MM:SS text` to LOG_FILE (see log-start).
+# Does nothing when no log is open.
+function log-line() {
+  emulate -L zsh
+  zmodload -F zsh/datetime b:strftime 2>/dev/null
+  [[ -n "$LOG_FILE" ]] || return 0
+  local stamp
+  strftime -s stamp '%H:%M:%S' $EPOCHSECONDS
+  print -r -- "$stamp $*" >> "$LOG_FILE"
+}
+
+log-line "$@"

@@ -1,0 +1,205 @@
+#!/usr/bin/env zsh
+
+# log [list|open] ...: reads the logs log-start writes, under
+# ${CLI_LOG_DIR:-$HOME/.custom/logs}/{commands,children}.
+#
+#   log list [-n|--lines N]      both folders interleaved by date, newest last
+#   log open [last|~N|child|<name>] [-e|--editor]
+#
+# REPLY-style results of the private helpers go in the global _LOG_* arrays.
+
+# _log_all: fills _LOG_PATHS with every log path, oldest first (file name
+# order, so the date prefix interleaves the two folders)
+function _log_all() {
+  local base="${CLI_LOG_DIR:-$HOME/.custom/logs}" f
+  local -a rows=()
+  for f in "$base"/{commands,children}/*.log(N); do
+    # date first, then commands before children at the same second, then name
+    rows+=("${${f:t}[1,17]}${${${f:h:t}[1,2]/co/0}/ch/1}${f:t}"$'\t'"$f")
+  done
+  rows=("${(@o)rows}")
+  typeset -ga _LOG_PATHS
+  _LOG_PATHS=("${(@)rows#*$'\t'}")
+}
+
+# _log_tag <path>: sets REPLY to command or child
+function _log_kind() {
+  [[ "${1:h:t}" == children ]] && REPLY=child || REPLY=command
+}
+
+function _log_list() {
+  local count=20
+  while (( $# )); do
+    case "$1" in
+      -n|--lines)
+        if [[ "$2" != <-> || "$2" == 0 ]]; then
+          say fail "log list: $1 needs a number of lines"
+          return 2
+        fi
+        count="$2"; shift 2 ;;
+      *) say fail "log list: unknown option $1"; return 2 ;;
+    esac
+  done
+
+  local head dimc num60 numc reset prose bright tcmd tchild cmdc flagc
+  col -v head heading; col -v dimc dim; col -v num60 num-60; col -v numc num
+  col -v reset reset; col -v prose prose; col -v bright grey
+  col -v tcmd tag-cmd; col -v tchild tag-child; col -v cmdc cmd; col -v flagc flag
+  local icon; cli-icon -v icon log
+  local base="${CLI_LOG_DIR:-$HOME/.custom/logs}"
+  local shown="${base/#$HOME/~}"
+  [[ -n "$CLI_LOG_DIR" ]] && shown="$base"
+
+  print -r -- "${head}${icon}  log list${reset}"
+  print -r -- "  ${dimc}${shown} (newest last; log list -n|--lines N for more)${reset}"
+  print
+
+  _log_all
+  local total=$#_LOG_PATHS
+  if (( total == 0 )); then
+    print -r -- "  ${dimc}no logs yet${reset}"
+    return 0
+  fi
+
+  local first=$(( total - count + 1 )) i dist handle tag name hcol ncol
+  (( first < 1 )) && first=1
+  for (( i = first; i <= total; i++ )); do
+    dist=$(( total - i ))
+    if (( dist == 0 )); then handle=last; hcol="$numc"; ncol="$bright"
+    else handle="~$dist"; hcol="$num60"; ncol="$prose"; fi
+    _log_kind "$_LOG_PATHS[i]"
+    if [[ "$REPLY" == child ]]; then
+      tag="${tchild}[child]  ${reset}"
+    else
+      tag="${tcmd}[command]${reset}"
+    fi
+    name="${_LOG_PATHS[i]:t}"
+    printf '  %s%-4s%s  %s  %s%s%s\n' "$hcol" "$handle" "$reset" "$tag" "$ncol" "$name" "$reset"
+  done
+
+  print
+  print -r -- "  ${cmdc}log open last${reset} ${dimc}|${reset} ${cmdc}~1${reset} ${dimc}|${reset} ${cmdc}child${reset} ${dimc}|${reset} ${cmdc}<name>${reset}  ${dimc}to view a log,${reset} ${flagc}[-e|--editor]${reset} ${dimc}to edit it${reset}"
+}
+
+# _log_resolve <handle>: sets REPLY to a path, or says why not (returns 1)
+function _log_resolve() {
+  local want="$1" f
+  local total=$#_LOG_PATHS
+  if (( total == 0 )); then
+    say fail "log: no logs yet"
+    return 1
+  fi
+  case "$want" in
+    last) REPLY="$_LOG_PATHS[-1]"; return 0 ;;
+    child)
+      for f in "${(@Oa)_LOG_PATHS}"; do
+        if [[ "${f:h:t}" == children ]]; then REPLY="$f"; return 0; fi
+      done
+      say fail "log: no child logs yet"
+      return 1 ;;
+    '~'<->|<-999>)  # a bare number works too: zsh expands an unquoted ~2 itself
+      local n="${want#\~}"
+      if (( n >= total )); then
+        say fail "log: no log $want (only $total, ~0 is last)"
+        return 1
+      fi
+      REPLY="$_LOG_PATHS[$(( total - n ))]"
+      return 0 ;;
+  esac
+  for f in "${_LOG_PATHS[@]}"; do
+    [[ "${f:t}" == "$want" ]] && { REPLY="$f"; return 0; }
+  done
+  local -a named
+  for f in "${_LOG_PATHS[@]}"; do [[ "${f:t}" == *${want}* ]] && named+=("$f"); done
+  if (( $#named == 1 )); then
+    REPLY="$named[1]"; return 0
+  elif (( $#named > 1 )); then
+    say fail "log: $want matches ${#named} logs; use a longer name or ~N"
+    return 1
+  fi
+  say fail "log: no log matches $want"
+  return 1
+}
+
+function _log_open() {
+  local want="" editor=0
+  while (( $# )); do
+    case "$1" in
+      -e|--editor) editor=1 ;;
+      -*) say fail "log open: unknown option $1"; return 2 ;;
+      *)
+        if [[ -n "$want" ]]; then say fail "log open: one log at a time"; return 2; fi
+        want="$1" ;;
+    esac
+    shift
+  done
+
+  _log_all
+  if [[ -z "$want" ]]; then
+    if [[ -z "$CLI_PLAIN" ]] && [[ -t 0 ]] && (( $+commands[fzf] )) && (( $#_LOG_PATHS )); then
+      local -a items=(last child)
+      local f
+      for f in "${(@Oa)_LOG_PATHS}"; do items+=("${f:t}"); done
+      if (( $+functions[pick] || ${+commands[pick]} )) || autoload -Uz +X pick 2>/dev/null; then
+        want="$(pick "open which log" "${items[@]}")" || return 1
+      else
+        want="$(print -rl -- "${items[@]}" | fzf --prompt='log open > ' --header='last and child first, then every log, newest first')" || return 1
+      fi
+      [[ -n "$want" ]] || return 1
+    else
+      want=last
+    fi
+  fi
+
+  _log_resolve "$want" || return 1
+  local file="$REPLY"
+
+  if (( editor )); then
+    ${=EDITOR:-vi} "$file"
+    return $?
+  fi
+
+  _log_kind "$file"
+  local kindrole=tag-cmd icon on reset stampc prose line
+  [[ "$REPLY" == child ]] && kindrole=tag-child
+  col -v on "$kindrole"; col -v reset reset; col -v stampc num-60; col -v prose prose
+  cli-icon -v icon log
+  print -r -- "${on}${icon}  ${file:t}${reset}"
+  print
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" == [0-9][0-9]:[0-9][0-9]:[0-9][0-9]" "* ]]; then
+      print -r -- "${stampc}${line[1,8]}${reset} ${prose}${line[10,-1]}${reset}"
+    else
+      print -r -- "${prose}${line}${reset}"
+    fi
+  done < "$file"
+}
+
+function log() {
+  emulate -L zsh
+  setopt extended_glob
+  cheat-help log "$@" && return 0
+  cli-init "$@"
+  set -- "${@:#--plain}"
+
+  local sub="${1:-list}"
+  (( $# )) && shift
+  case "$sub" in
+    list) _log_list "$@" ;;
+    open) _log_open "$@" ;;
+    *)
+      local guess=""
+      case "$sub" in
+        l*|*ist|*st) guess=list ;;
+        o*|*pen|*en) guess=open ;;
+      esac
+      if [[ -n "$guess" ]]; then
+        say fail "log: no subcommand called $sub; did you mean $guess?"
+      else
+        say fail "log: no subcommand called $sub; use list or open"
+      fi
+      return 2 ;;
+  esac
+}
+
+log "$@"

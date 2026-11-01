@@ -1,0 +1,140 @@
+#!/usr/bin/env zsh
+# Tests log-start, log-line and log from a plain `zsh -f -c`, against a temp
+# CLI_LOG_DIR. Run: tests/log. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+LOGS="$TMP/logs"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+I_LOG=$'\U000f0219' I_ERR=$'\U000f0159'
+NL=$'\n'
+
+# run <env...> -- <zsh code>: sets OUT (stdout), ERR (stderr), CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin CLI_LOG_DIR="$LOGS" "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-init cli-icon say cheat-help log log-start log-line
+    export CUSTOM_DIR="$1"
+    eval "$2"
+  ' _ "$REPO_DIR" "$1" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+function same() {
+  if [[ "$2" == "$3" ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"
+    failed=1
+  fi
+}
+
+count() { local -a f; f=($~1(N)); print ${#f}; }
+
+# log-start names and creates the file, and exports the variables
+run CLI_PLAIN=1 -- 'log-start "hub down/all"; print -r -- "$LOG_COMMAND|${LOG_FILE:t}"; print -r -- "$(env | grep -c "^LOG_FILE=")"; [[ -f $LOG_FILE ]] && print exists; print $(wc -l < $LOG_FILE)'
+lines=("${(@f)OUT}")
+same "log-start keeps LOG_COMMAND as given" "${lines[1]%%|*}" "hub down/all"
+[[ "${lines[1]#*|}" == [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]-hub-down-all.log ]] \
+  && echo "ok: log-start file name is yyyy-MM-dd-HHmmss-command.log" || { echo "FAIL: file name ${lines[1]}"; failed=1; }
+same "log-start exports LOG_FILE" "${lines[2]}" "1"
+same "log-start creates it with a first line" "${lines[3]}|${lines[4]}" "exists|1"
+same "the file is under commands/" "$(count "$LOGS/commands/*.log")" "1"
+
+# log-line stamps; no-op without a file
+run CLI_PLAIN=1 -- 'log-start t; log-line hello there; log-line second; cat $LOG_FILE'
+body="${OUT#*$NL}"
+[[ "$body" == [0-9][0-9]:[0-9][0-9]:[0-9][0-9]" hello there"${NL}[0-9][0-9]:[0-9][0-9]:[0-9][0-9]" second" ]] \
+  && echo "ok: log-line appends HH:MM:SS text" || { echo "FAIL: log-line body ${(q+)body}"; failed=1; }
+run CLI_PLAIN=1 -- 'log-line nothing; print rc=$?'
+same "log-line without a log is a no-op" "$OUT|$ERR" "rc=0|"
+
+# pruning to 50 per folder
+rm -rf "$LOGS"; mkdir -p "$LOGS/commands" "$LOGS/children"
+for i in {1..55}; do : > "$LOGS/commands/2020-01-01-0000${(l:2::0:)i}-old.log"; done
+for i in {1..52}; do : > "$LOGS/children/2020-01-01-0000${(l:2::0:)i}-kid.log"; done
+run CLI_PLAIN=1 -- 'log-start new'
+same "log-start keeps 50 commands" "$(count "$LOGS/commands/*.log")" "50"
+same "log-start keeps 50 children" "$(count "$LOGS/children/*.log")" "50"
+same "log-start drops the oldest" "$([[ -e $LOGS/commands/2020-01-01-000001-old.log ]] && print yes || print no)" "no"
+
+# fixture for list and open
+rm -rf "$LOGS"; mkdir -p "$LOGS/commands" "$LOGS/children"
+print -r -- '14:00:01 updating' > "$LOGS/commands/2026-10-30-143950-update.log"
+print -r -- '14:41:02 down all: 6 sessions' > "$LOGS/commands/2026-10-30-144102-hub-down.log"
+print -r -- '14:41:40 pkms: no ack in 300s' > "$LOGS/children/2026-10-30-144102-hub-down-pkms.log"
+print -r -- '13:14:02 hub started' > "$LOGS/commands/2026-11-01-131402-hub.log"
+
+exp="${I_LOG}  log list${NL}  $LOGS (newest last; log list -n|--lines N for more)${NL}${NL}"
+exp+="  ~3    [command]  2026-10-30-143950-update.log${NL}"
+exp+="  ~2    [command]  2026-10-30-144102-hub-down.log${NL}"
+exp+="  ~1    [child]    2026-10-30-144102-hub-down-pkms.log${NL}"
+exp+="  last  [command]  2026-11-01-131402-hub.log${NL}${NL}"
+exp+="  log open last | ~1 | child | <name>  to view a log, [-e|--editor] to edit it"
+run CLI_PLAIN=1 -- 'log list'
+same "log list interleaves by date with handles and tags" "$OUT" "$exp"
+run CLI_PLAIN=1 -- 'log'
+same "log with no arguments is log list" "$OUT" "$exp"
+
+run CLI_PLAIN=1 -- 'log list -n 2'
+same "log list -n limits, newest kept, handles unchanged" "$(print -r -- "$OUT" | grep -c '^  \(~\|last\)')|$(print -r -- "$OUT" | grep -c '~3')" "2|0"
+run CLI_PLAIN=1 -- 'log list --lines 1'
+same "log list --lines" "$(print -r -- "$OUT" | grep -c '^  last')" "1"
+run CLI_PLAIN=1 -- 'log list -n x'
+same "log list -n needs a number" "$CODE" "2"
+
+# open
+run CLI_PLAIN=1 -- 'log open last'
+same "log open last" "$OUT" "${I_LOG}  2026-11-01-131402-hub.log${NL}${NL}13:14:02 hub started"
+run CLI_PLAIN=1 -- 'log open "~2"'
+same "log open ~2 (quoted)" "$OUT" "${I_LOG}  2026-10-30-144102-hub-down.log${NL}${NL}14:41:02 down all: 6 sessions"
+run CLI_PLAIN=1 -- 'log open "~1"'
+same "log open ~1 (a child)" "${OUT%%$NL*}" "${I_LOG}  2026-10-30-144102-hub-down-pkms.log"
+run CLI_PLAIN=1 -- 'log open 1'
+same "log open 1 is ~1 without the shell eating the tilde" "${OUT%%$NL*}" "${I_LOG}  2026-10-30-144102-hub-down-pkms.log"
+run CLI_PLAIN=1 -- 'log open child'
+same "log open child" "${OUT##*$NL}" "14:41:40 pkms: no ack in 300s"
+run CLI_PLAIN=1 -- 'log open update'
+same "log open by unique substring" "${OUT%%$NL*}" "${I_LOG}  2026-10-30-143950-update.log"
+run CLI_PLAIN=1 -- 'log open 2026-10-30-144102-hub-down.log'
+same "log open by full name" "${OUT%%$NL*}" "${I_LOG}  2026-10-30-144102-hub-down.log"
+run CLI_PLAIN=1 -- 'log open hub-down'
+same "log open ambiguous name fails" "$CODE|${${ERR:+err}}" "1|err"
+run CLI_PLAIN=1 -- 'log open nothere'
+same "log open unknown handle" "$CODE|$ERR" "1|${I_ERR}  log: no log matches nothere"
+run CLI_PLAIN=1 -- 'log open ~9'
+same "log open ~N out of range" "$CODE|${${ERR:+err}}" "1|err"
+run CLI_PLAIN=1 -- 'log open'
+same "log open with no argument in plain mode means last" "${OUT%%$NL*}" "${I_LOG}  2026-11-01-131402-hub.log"
+run CLI_PLAIN=1 EDITOR=echo -- 'log open "~3" -e'
+same "log open -e runs the editor on the file" "$OUT" "$LOGS/commands/2026-10-30-143950-update.log"
+run CLI_PLAIN=1 EDITOR=echo -- 'log open --editor child'
+same "log open --editor child" "$OUT" "$LOGS/children/2026-10-30-144102-hub-down-pkms.log"
+
+# colour: the helpers go plain when stdout is not a terminal, so run under a pty
+if (( $+commands[script] )); then
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin CLI_LOG_DIR="$LOGS" CUSTOM_DIR="$REPO_DIR" COLORTERM=truecolor script -q /dev/null \
+    zsh -f -c 'fpath=("$1/functions" $fpath); autoload -Uz col cli-init cli-icon say cheat-help log; log open last' _ "$REPO_DIR" 2>&1)"
+  [[ "$OUT" == *$'\e[38;2;'*"13:14:02"* ]] && echo "ok: log open colours on a terminal" || { echo "FAIL: log open colour: ${(q+)OUT}"; failed=1; }
+fi
+
+# empty store
+rm -rf "$LOGS"
+run CLI_PLAIN=1 -- 'log list'
+same "log list with no logs says so" "$CODE|${OUT##*$NL}" "0|  no logs yet"
+run CLI_PLAIN=1 -- 'log open last'
+same "log open with no logs fails" "$CODE" "1"
+
+# unknown subcommand
+run CLI_PLAIN=1 -- 'log lst'
+same "unknown subcommand suggests" "$CODE|$ERR" "2|${I_ERR}  log: no subcommand called lst; did you mean list?"
+run CLI_PLAIN=1 -- 'log zzz'
+same "unknown subcommand without a near match" "$CODE|$ERR" "2|${I_ERR}  log: no subcommand called zzz; use list or open"
+
+exit $failed

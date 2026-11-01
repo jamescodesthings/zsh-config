@@ -3,6 +3,10 @@ private.zsh
 projects/*
 !projects/.gitkeep
 
+# Runtime data: the repo is linked as ~/.custom, so these live in it and must never be committed
+/logs/
+/config/
+
 docs/
 
 # General

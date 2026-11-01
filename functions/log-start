@@ -1,0 +1,35 @@
+#!/usr/bin/env zsh
+
+# log-start <command>: opens this run's log, commands/<yyyy-MM-dd-HHmmss>-<command>.log
+# under ${CLI_LOG_DIR:-$HOME/.custom/logs}, sets and exports LOG_FILE and
+# LOG_COMMAND, writes a first line, and keeps the newest 50 logs in each of
+# commands/ and children/. `log-line` appends to it; `log` reads it back.
+function log-start() {
+  emulate -L zsh
+  setopt extended_glob
+  zmodload -F zsh/datetime b:strftime 2>/dev/null
+  local name="$1"
+  if [[ -z "$name" ]]; then
+    say fail "log-start: name the command"
+    return 2
+  fi
+  local base="${CLI_LOG_DIR:-$HOME/.custom/logs}" safe stamp
+  safe="${name//[^A-Za-z0-9._-]##/-}"
+  strftime -s stamp '%Y-%m-%d-%H%M%S' $EPOCHSECONDS
+  mkdir -p "$base/commands" "$base/children" || return 1
+
+  typeset -gx LOG_COMMAND="$name"
+  typeset -gx LOG_FILE="$base/commands/$stamp-$safe.log"
+  : >> "$LOG_FILE" || return 1
+  log-line "$name started"
+
+  local dir
+  local -a files
+  for dir in commands children; do
+    files=("$base/$dir"/*.log(N))
+    (( $#files > 50 )) && rm -f -- "${(@)files[1,-51]}"
+  done
+  return 0
+}
+
+log-start "$@"
