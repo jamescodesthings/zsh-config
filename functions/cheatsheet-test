@@ -49,7 +49,8 @@ function cheatsheet-test() {
   fi
 
   local sheet line out name parent height first_section last_section candidate warning word
-  local -i vars_at=0 i
+  local -i vars_at=0 i j rank last_rank
+  local -a standard
   local -a sections warnings
   local -i failed=0 number bad
   for sheet in $sheets; do
@@ -122,10 +123,29 @@ function cheatsheet-test() {
     if (( vars_at && vars_at != ${#sections} - 1 )); then
       warnings+=("\"Variables\" should come just before the last section")
     fi
+    # The standard headings are spelled exactly and keep this order; other
+    # headings may sit between them
+    standard=("Getting started" Usage Options Examples Variables "See also")
+    last_rank=0
+    for (( i = 1; i <= ${#sections}; i++ )); do
+      rank=${standard[(I)${(b)sections[i]}]}
+      if (( ! rank )); then
+        for (( j = 1; j <= ${#standard}; j++ )); do
+          if [[ "${(L)sections[i]}" == "${(L)standard[j]}" ]]; then
+            warnings+=("spell the heading \"${sections[i]}\" exactly \"${standard[j]}\"")
+            rank=$j
+          fi
+        done
+      fi
+      if (( rank )); then
+        (( rank < last_rank )) && warnings+=("\"${sections[i]}\" is out of order; the standard order is ${(j:, :)standard}")
+        last_rank=$rank
+      fi
+    done
     # Rows: `command` - explanation. The renderer aligns the second column, so
     # the source never pads it, and flag alternatives sit in [ ].
-    local row_pat='(#b)- `([^`]##)`( - |: )*' colon_pat='- `[^`]##`: *'
-    local pad_pat='- `[^`]##`(  ## - *|:  ##*)'
+    local row_pat='(#b)- (`[^`]##`(, `[^`]##`)#)( - |: )*' colon_pat='- `[^`]##`(, `[^`]##`)#: *'
+    local pad_pat='- `[^`]##`(, `[^`]##`)#(  ## - *|:  ##*)'
     number=0
     while IFS= read -r line || is not empty "$line"; do
       number+=1
@@ -135,7 +155,7 @@ function cheatsheet-test() {
         warnings+=("line $number: a row separates its command from the explanation with \" - \", not \": \"")
       fi
       if [[ "$line" == ${~row_pat} ]]; then
-        for word in ${=match[1]}; do
+        for word in ${=${match[1]//\`/}}; do
           if [[ "$word" == -*\|* ]]; then
             warnings+=("line $number: put flag alternatives in [ ]: [$word]")
           fi

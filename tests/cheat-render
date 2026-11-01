@@ -53,8 +53,8 @@ same "both separators render, aligned together" "$OUT" "# t${NL}${NL}- t a   the
 
 long="t $(printf 'x%.0s' {1..45})"
 render CLI_PLAIN=1 -- "# t${NL}${NL}- \`t a\` - short${NL}- \`$long\` - drops to the next line"
-same "a command over the cap of 40 drops its explanation to the next line" "$OUT" \
-"# t${NL}${NL}$(printf -- '- %-40s  %s' 't a' 'short')${NL}- ${long}${NL}$(printf '%44s' '')drops to the next line"
+same "a command over the cap of 40 drops its explanation to the next line, lined up with the column" "$OUT" \
+"# t${NL}${NL}$(printf -- '- %-3s  %s' 't a' 'short')${NL}- ${long}${NL}$(printf '%7s' '')drops to the next line"
 
 render CLI_PLAIN=1 -- "# t${NL}${NL}- Run it:${NL}${NL}\`t --go\`"
 same "a description line and an example line" "$OUT" "# t${NL}${NL}- Run it:${NL}${NL}  t --go"
@@ -91,5 +91,44 @@ fi
 
 render CLI_PLAIN=1 -- "# t${NL}${NL}- [x]{.nosuch} y"
 same "an unknown class renders the text and complains on stderr" "$OUT|${ERR:+err}" "# t${NL}${NL}- x y|err"
+
+# hexesc <role>: the truecolor escape a role resolves to
+function hexesc() {
+  local hex=$(CUSTOM_DIR="$REPO_DIR" zsh -f -c 'fpath=("$1/functions" $fpath); autoload -Uz col; col --hex "$2"' _ "$REPO_DIR" "$1")
+  print -rn -- "${E}[38;2;$(( 16#${hex[2,3]} ));$(( 16#${hex[4,5]} ));$(( 16#${hex[6,7]} ))m"
+}
+
+# A word is a subcommand only when the tool has a sheet for it: hub-join.md
+# beside the sheet makes join a command, and robot after it a target
+print -r -- '# hub join' > "$TMP/hub-join.md"
+render COLORTERM=truecolor -- "# t${NL}${NL}\`hub join robot\`"
+if [[ "$OUT" == *"$(hexesc cmd)${E}[1mjoin"* && "$OUT" == *"$(hexesc target)robot"* ]]; then
+  echo "ok: a bare argument after a known subcommand is a target"
+else
+  echo "FAIL: a bare argument after a known subcommand is a target: ${(q+)OUT}"
+  failed=1
+fi
+rm "$TMP/hub-join.md"
+
+render COLORTERM=truecolor -- "# t${NL}${NL}- \`t a\` - runs \`t b\` first"
+row="${${(f)OUT}[-1]}"
+if [[ "$row" != *'`'* && "$row" == *"$(hexesc cmd)t b"* ]]; then
+  echo "ok: backticks in an explanation render as inline code, not literal backticks"
+else
+  echo "FAIL: backticks in an explanation render as inline code, not literal backticks: ${(q+)row}"
+  failed=1
+fi
+
+render COLORTERM=truecolor -- "# t${NL}${NL}- \`FOO_BAR\` - a variable"
+if [[ "$OUT" == *"$(hexesc var)FOO_BAR"* ]]; then
+  echo "ok: a variable row's name takes the var colour"
+else
+  echo "FAIL: a variable row's name takes the var colour: ${(q+)OUT}"
+  failed=1
+fi
+
+render CLI_PLAIN=1 -- "# t${NL}${NL}- \`a\`, \`bb\` - two commands${NL}- \`ccc\` - one"
+same "a row with several commands aligns with the others" "$OUT" \
+"# t${NL}${NL}$(printf -- '- %-5s  %s' 'a, bb' 'two commands')${NL}$(printf -- '- %-5s  %s' 'ccc' 'one')"
 
 exit $failed

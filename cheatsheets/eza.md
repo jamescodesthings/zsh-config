@@ -17,7 +17,7 @@
 - `-h` - human-readable sizes (long format)
 - `--git` - git status column (with `-l`)
 - `--icons` - file icons
-- `--sort=modified`, `--sort=size`: sort by that
+- `--sort=modified`, `--sort=size` - sort by that
 - `--tree` - tree view
 - `--level=<n>` - limit the tree depth
 

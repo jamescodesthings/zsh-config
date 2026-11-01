@@ -11,7 +11,7 @@
 
 # Clean up
 
-- `dsa`, `docker-stop-all`: stop every running container
+- `dsa`, `docker-stop-all` - stop every running container
 - `dsp [args]` - stop all, `docker system prune -f`, remove dangling volumes; args go to `docker system prune`
 - Destructive: `dsp` removes stopped containers, unused images, networks and build cache
 

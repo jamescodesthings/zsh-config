@@ -11,7 +11,7 @@
 
 # Launchers
 
-- `pico`, `pico-8`, `pico8`: aliases for the same launch
+- `pico`, `pico-8`, `pico8` - aliases for the same launch
 - `picoh [--help]` - background launch, `--help` shows usage
 - Not on `zerocalc`: `pico` and `picoh` add `-width 512 -height 512 -window_x 0 -window_y 0`
 

@@ -5,7 +5,7 @@
 
 # Options
 
-- `-o`, `--output <file>`: write one file elsewhere (ends in .html or .htm, not the input)
+- `-o`, `--output <file>` - write one file elsewhere (ends in .html or .htm, not the input)
 - `--help` - show usage
 
 # Examples

@@ -36,7 +36,7 @@
 
 # Repo overview: repo.md
 
-- `cheat zsh-config`, `cheat agent-forge`, `cheat pkms`: the repo as a whole, its tools grouped by job
+- `cheat zsh-config`, `cheat agent-forge`, `cheat pkms` - the repo as a whole, its tools grouped by job
 - Every top sheet of a repo's tools points back to it under `# See also`, as an ordinary aligned row
 
 # Lines
@@ -44,6 +44,9 @@
 - A line starts with `# `, `> `, `- ` or a backtick; an example line is one command ending in a backtick
 - No `##`, no code fences, no indenting, no wrapped lines
 - Headings are plain words; the renderer colours them, so no icons
+- Standard headings, spelled exactly and in this order, others allowed between: Getting started, Usage, Options, Examples, Variables, See also
+- A row may list several commands, each in its own backticks, joined by commas; a long list reads better as a prose item that starts with words, such as Git helpers, then the sheets
+- A word after the tool is a subcommand only when its sheet exists (`hub-join.md`); other words colour as targets
 - Colour off:
 
 `NO_COLOR=1 cheat hub`

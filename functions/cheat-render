@@ -23,8 +23,21 @@
 # _cr_command <text>: a command typed by part, into REPLY
 function _cr_command() {
   local -a words=(${=1})
-  local word out=""
-  local -i i=0 plain_words=1
+  local word out="" tool="${words[1]}" dir
+  local -i i=0 plain_words=1 known=0
+
+  # A lone variable (FOO_BAR, FOO=1, $FOO) is a variable, not a tool
+  if (( ${#words} == 1 )) && [[ "$tool" == ([A-Z_][A-Z0-9_]#(=*|)|\$*) ]]; then
+    REPLY="${_cr[var]}${tool}${_cr[reset]}"
+    return
+  fi
+
+  # When the tool has sheets for its subcommands (hub-join.md), a word is a
+  # subcommand only if a sheet names it; any other bare word is a target
+  for dir in "$_cr_dir" "$CHEATSHEET_DIR"; do
+    [[ -n "$dir" ]] && [[ -n "$(print -l "$dir/$tool"-*.md(N))" ]] && known=1
+  done
+
   for word in $words; do
     (( i++ ))
     if (( i == 1 )); then
@@ -40,13 +53,52 @@ function _cr_command() {
       plain_words=0
     elif [[ "$word" == <->(|[smhd%x]) || "$word" == <->-<-> ]]; then
       out+="${_cr[num]}${word}${_cr[reset]}"
-    elif (( plain_words )); then
+    elif (( plain_words )) && { (( ! known )) || _cr_has_sheet "$tool" "${(@)words[2,i]}"; }; then
       out+="${_cr[cmd]}${_cr[bold]}${word}${_cr[reset]}"
     else
       out+="${_cr[target]}${word}${_cr[reset]}"
+      plain_words=0
     fi
   done
   REPLY="$out"
+}
+
+# _cr_has_sheet <tool> <words...>: is there a sheet for `tool words` (either
+# the whole word or each part of an a|b alternative)?
+function _cr_has_sheet() {
+  local tool="$1" dir part
+  shift
+  local last="${@[-1]}" prefix="${(j:-:)@[1,-2]}"
+  [[ -n "$prefix" ]] && prefix="-$prefix"
+  for part in ${(s:|:)last}; do
+    for dir in "$_cr_dir" "$CHEATSHEET_DIR"; do
+      [[ -n "$dir" && -r "$dir/$tool$prefix-$part.md" ]] && return 0
+    done
+  done
+  return 1
+}
+
+# _cr_row <line>: a row, `- ` then one or more `command`s joined by ", ",
+# then " - " (or the old ": ") and the explanation. Sets _cr_cmds and
+# _cr_text, returns 1 for any other line.
+function _cr_row() {
+  local rest="${1#- }"
+  _cr_cmds=()
+  _cr_text=""
+  [[ "$1" == "- "* ]] || return 1
+  while [[ "$rest" == (#b)\`([^\`]##)\`(*) ]]; do
+    _cr_cmds+=("${match[1]}")
+    rest="${match[2]}"
+    if [[ "$rest" == ", \`"* ]]; then
+      rest="${rest#, }"
+    elif [[ "$rest" == " - "* || "$rest" == ": "* ]]; then
+      _cr_text="${rest#(: | - )}"
+      return 0
+    else
+      return 1
+    fi
+  done
+  return 1
 }
 
 # _cr_prose <text> [base role]: prose with inline code and styled spans, into
@@ -58,7 +110,7 @@ function _cr_prose() {
     if [[ "$text" == (#b)([^\`\[]#)\`([^\`]##)\`(*) ]]; then
       # inline code comes first only when no span starts before it
       if [[ "${match[1]}" != *\[* ]]; then
-        out+="${base}${match[1]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}${_cr[cmd]}${match[2]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}"
+        out+="${base}${match[1]}${_cr[reset]}${_cr[tick]}${_cr[cmd]}${match[2]}${_cr[reset]}${_cr[tick]}"
         text="${match[3]}"
         continue
       fi
@@ -88,7 +140,7 @@ function _cr_prose() {
       fi
     fi
     if [[ "$text" == (#b)([^\`]#)\`([^\`]##)\`(*) ]]; then
-      out+="${base}${match[1]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}${_cr[cmd]}${match[2]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}"
+      out+="${base}${match[1]}${_cr[reset]}${_cr[tick]}${_cr[cmd]}${match[2]}${_cr[reset]}${_cr[tick]}"
       text="${match[3]}"
       continue
     fi
@@ -111,14 +163,20 @@ function cheat-render() {
   # Colours once per render; all empty in plain mode
   local -A _cr
   local role
-  for role in marker heading tool cmd target flag num prose dim; do
+  for role in marker heading tool cmd target flag num prose dim var; do
     col -v "_cr_tmp" "$role" || return 1
     _cr[$role]="$_cr_tmp"
   done
   if [[ -n "${_cr[cmd]}" ]]; then
     _cr[bold]=$'\e[1m'
     _cr[reset]=$'\e[0m'
+  else
+    # plain text keeps the backticks around inline code; colour shows it
+    _cr[tick]='`'
   fi
+  local _cr_dir="${sheet:A:h}"
+  local -a _cr_cmds
+  local _cr_text
   unset _cr_tmp
 
   local -a lines=("${(@f)$(< "$sheet")}")
@@ -126,15 +184,15 @@ function cheat-render() {
   while (( ${#lines} )) && [[ -z "${lines[-1]//[[:space:]]/}" ]]; do
     lines[-1]=()
   done
-  local line command text
+  local line command text styled one
   local -i width=0 cap=40 len
 
-  # The second column: the longest row command, capped
+  # The second column: the longest row command within the cap; a longer one
+  # drops its explanation to the next line, lined up with the column
   for line in "${lines[@]}"; do
-    if [[ "$line" == (#b)-\ \`([^\`]##)\`(\ -\ |:\ )* ]]; then
-      len=${#match[1]}
+    if _cr_row "$line"; then
+      len=$(( ${#${(j:, :)_cr_cmds}} ))
       (( len > width && len <= cap )) && width=$len
-      (( len > cap )) && width=$cap
     fi
   done
 
@@ -147,11 +205,15 @@ function cheat-render() {
     elif [[ "$line" == (#b)\>\ (*) ]]; then
       _cr_prose "${match[1]}"
       print -r -- "${_cr[marker]}> ${_cr[reset]}${REPLY}"
-    elif [[ "$line" == (#b)-\ \`([^\`]##)\`(\ -\ |:\ )(*) ]]; then
-      command="${match[1]}"
-      text="${match[3]}"
-      _cr_command "$command"
-      local styled="$REPLY"
+    elif _cr_row "$line"; then
+      command="${(j:, :)_cr_cmds}"
+      text="$_cr_text"
+      styled=""
+      for one in "${_cr_cmds[@]}"; do
+        [[ -n "$styled" ]] && styled+="${_cr[marker]}, ${_cr[reset]}"
+        _cr_command "$one"
+        styled+="$REPLY"
+      done
       _cr_prose "$text"
       if (( ${#command} > width )); then
         print -r -- "${_cr[marker]}- ${_cr[reset]}${styled}"

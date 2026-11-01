@@ -81,5 +81,16 @@ printf '# m\n\n> M.\n\n# Getting started\n\n- `m` - start\n\n# More\n\n- `cheat 
 expect 1 "a top sheet ending in More, not See also, fails --strict" '' --strict "$MORE/m.md"
 printf '# m\n\n> M.\n\n# Getting started\n\n- `m` - start\n\n# See Also\n\n- `cheat x` - x\n' > "$MORE/m.md"
 expect 1 "the last heading is exactly See also" '' --strict "$MORE/m.md"
+HEADS="$TMP/heads"
+mkdir -p "$HEADS"
+cp "$SHAPED/t.md" "$HEADS/"
+printf '# t h\n\n> H.\n\n# Getting Started\n\n- `t h` - go\n\n# See also\n\n- `cheat t` - the t command\n' > "$HEADS/t-h.md"
+expect 1 "a standard heading spelled differently fails --strict" '' --strict "$HEADS/t-h.md"
+printf '# t i\n\n> I.\n\n# Examples\n\n- `t i` - go\n\n# Options\n\n- `[-f]` - far\n\n# See also\n\n- `cheat t` - the t command\n' > "$HEADS/t-i.md"
+expect 1 "standard headings out of order fail --strict" '' --strict "$HEADS/t-i.md"
+printf '# t j\n\n> J.\n\n# Usage\n\n- `t j` - go\n\n# Shortcuts\n\n- `t j -q` - quietly\n\n# Options\n\n- `[-q]` - quiet\n\n# Examples\n\n- `t j x` - on x\n\n# Variables\n\n- `T_J` - j\n\n# See also\n\n- `cheat t` - the t command\n' > "$HEADS/t-j.md"
+expect 0 "standard headings in order, with a custom one between, pass --strict" '' --strict "$HEADS/t-j.md"
+printf '# t k\n\n> K.\n\n- `t k`, `t kk`: two commands, old separator\n\n# See also\n\n- `cheat t` - the t command\n' > "$HEADS/t-k.md"
+expect 1 "a row with several commands and the old separator fails --strict" '' --strict "$HEADS/t-k.md"
 
 exit $failed

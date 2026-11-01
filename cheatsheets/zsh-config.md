@@ -11,25 +11,25 @@
 
 # Our tools
 
-- `cheat j`, `cheat hist`: jump to folders; search and tidy history
-- `cheat oh` - open a folder in the file manager
-- `cheat cheat`, `cheat cheatsheet-test`, `cheat link-cheatsheets`: show, check and link sheets
-- `cheat md-to-html`, `cheat md-to-pdf`: convert markdown
+- `cheat j`, `cheat hist` - jump to folders; search and tidy history
+- `cheat oh`, `cheat md` - open a folder; make one and cd into it
+- `cheat md-to-html`, `cheat md-to-pdf` - convert markdown
 - `cheat update` - pull and run every updater
-- `cheat install-link`, `cheat install-box-config`, `cheat install-release`: installer helpers
-- `cheat is`, `cheat confirm`, `cheat reload`, `cheat deps`, `cheat md`: predicates, prompts, reload, checks, mkdir and cd
-- `cheat touch-sudo`, `cheat start-workstation`: Touch ID sudo; start the cloud workstation
-- `cheat git-cleanup-branch`, `cheat git-prune-local`, `cheat git-i-really-fucked-up`: git helpers
-- `cheat gnome-bin`, `cheat kitty`: GNOME window scripts; terminal keys
-- `cheat log`, `cheat config`, `cheat cli`: run logs, tool settings, helpers for writing tools
+- `cheat log`, `cheat config` - run logs; a tool's settings
+- `cheat kitty`, `cheat gnome-bin` - terminal keys; GNOME window scripts
+- Sheets: `cheat cheat`, `cheat cheatsheet-test`, `cheat link-cheatsheets`
+- Shell helpers: `cheat is`, `cheat confirm`, `cheat reload`, `cheat deps`, `cheat touch-sudo`, `cheat start-workstation`
+- Installer helpers: `cheat install-link`, `cheat install-box-config`, `cheat install-release`
+- Git helpers: `cheat git-cleanup-branch`, `cheat git-prune-local`, `cheat git-i-really-fucked-up`
+- Writing a tool: `cheat cli`
 
 # Quick references
 
-- `cheat git`, `cheat docker`, `cheat fzf`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat npm`, `cheat apt`: third-party tools
-- `cheat asdf`, `cheat zinit`, `cheat terminal-colors`, `cheat pico-8`, `cheat raspi`, `cheat zerocalc`
+- Third-party tools: `cheat git`, `cheat docker`, `cheat fzf`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat npm`, `cheat apt`, `cheat asdf`, `cheat zinit`
+- Notes: `cheat terminal-colors`, `cheat pico-8`, `cheat raspi`, `cheat zerocalc`
 
 # See also
 
-- `cheat cheat format` - the sheet format
-- `CLAUDE.md` - how agents work in the repo
+- `cheat cheat format` - the sheet format every repo follows
 - `cheat zshconfig` - jump to or edit the config
+- `CLAUDE.md` - how agents work in the repo

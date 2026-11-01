@@ -56,10 +56,10 @@
 - `ceil(x)` - ceiling
 - `rnd(x)` - random number 0..x
 - `abs(x)` - absolute value
-- `min(x,y)`, `max(x,y)`: min, max
+- `min(x,y)`, `max(x,y)` - min, max
 - `sgn(x)` - sign, -1, 0 or 1
 - `sqrt(x)` - square root
-- `cos(x)`, `sin(x)`: input is 0..1 turns, not radians
+- `cos(x)`, `sin(x)` - input is 0..1 turns, not radians
 - `atan2(dx,dy)` - angle as 0..1 turns
 
 # Tables
@@ -81,9 +81,9 @@
 
 # Memory
 
-- `peek(addr)`, `poke(addr,v)`: byte read, write
-- `peek2`, `poke2`, `peek4`, `poke4`: 16-bit and 32-bit fixed-point read, write
-- `@addr`, `%addr`, `$addr`: short-form byte, 16-bit, fixed-point read
+- `peek(addr)`, `poke(addr,v)` - byte read, write
+- `peek2`, `poke2`, `peek4`, `poke4` - 16-bit and 32-bit fixed-point read, write
+- `@addr`, `%addr`, `$addr` - short-form byte, 16-bit, fixed-point read
 - `memcpy(dest,src,len)` - copy memory region
 - `stat(n)` - query system state (index in the full manual)
 
@@ -91,8 +91,8 @@
 
 - `menuitem(i,[label,fn])` - add pause menu item, i=1..5
 - `poke(0x5F2D, 1)` - enable devkit input (mouse and raw keyboard)
-- `stat(30)`, `stat(31)`: keypress available, last key char
-- `stat(32)`, `stat(33)`: mouse X, Y
+- `stat(30)`, `stat(31)` - keypress available, last key char
+- `stat(32)`, `stat(33)` - mouse X, Y
 - `stat(34)` - mouse buttons, bit0=L, bit1=R, bit2=M
 
 # See also

@@ -30,5 +30,5 @@
 
 # See also
 
-- `cheat confirm`, `cheat deps`: other shell helpers
+- `cheat confirm`, `cheat deps` - other shell helpers
 - `cheat zsh-config` - everything zsh-config gives you

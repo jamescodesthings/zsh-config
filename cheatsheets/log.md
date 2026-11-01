@@ -29,6 +29,6 @@
 
 # See also
 
-- `cheat log list`, `cheat log open`: one sheet each
+- `cheat log list`, `cheat log open` - one sheet each
 - `cheat cli` - the helper library
 - `cheat zsh-config` - everything zsh-config gives you

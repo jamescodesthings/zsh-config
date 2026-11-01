@@ -10,6 +10,11 @@
 
 - Next: convert markdown with `md-to-html` or `md-to-pdf`.
 
+# Options
+
+- `--no-follow` - create the directory without changing into it
+- `--help` - show usage
+
 # Examples
 
 - Make and enter:
@@ -19,11 +24,6 @@
 - Make without entering:
 
 `md --no-follow dist/assets`
-
-# Options
-
-- `--no-follow` - create the directory without changing into it
-- `--help` - show usage
 
 # See also
 
