@@ -1,0 +1,85 @@
+#!/usr/bin/env zsh
+# Tests functions/cheat-render, the sheet renderer behind cheat, from a plain
+# `zsh -f -c`. Plain mode (CLI_PLAIN=1) checks the layout, truecolor checks
+# that colours come from the palette roles. Run: tests/cheat-render.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+NL=$'\n' E=$'\e'
+
+# render <env...> -- <sheet text>: sets OUT, ERR, CODE
+function render() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  print -r -- "$1" > "$TMP/sheet.md"
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-icon cheat-render
+    export CUSTOM_DIR="$1"
+    cheat-render "$2"
+  ' _ "$REPO_DIR" "$TMP/sheet.md" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+# same <description> <got> <wanted>
+function same() {
+  if [[ "$2" == "$3" ]]; then
+    echo "ok: $1"
+  else
+    echo "FAIL: $1 (exit $CODE${ERR:+, stderr $ERR}):"
+    print -r -- "  got:    ${(q+)2}"
+    print -r -- "  wanted: ${(q+)3}"
+    failed=1
+  fi
+}
+
+render CLI_PLAIN=1 -- "# hub${NL}${NL}> Steers sessions.${NL}${NL}# Status${NL}${NL}- \`hub status [target] [-v|--verbose]\` - what every session is doing${NL}- \`hub trees\` - git worktrees"
+same "headings, description and rows with the second column aligned to the longest command" "$OUT" \
+"# hub${NL}${NL}> Steers sessions.${NL}${NL}# Status${NL}${NL}$(printf -- '- %-34s  %s' 'hub status [target] [-v|--verbose]' 'what every session is doing')${NL}$(printf -- '- %-34s  %s' 'hub trees' 'git worktrees')"
+
+render CLI_PLAIN=1 -- "# t${NL}${NL}- \`t a\`: the old colon separator still renders${NL}- \`t bb\` - the new one"
+same "both separators render, aligned together" "$OUT" "# t${NL}${NL}- t a   the old colon separator still renders${NL}- t bb  the new one"
+
+long="t $(printf 'x%.0s' {1..45})"
+render CLI_PLAIN=1 -- "# t${NL}${NL}- \`t a\` - short${NL}- \`$long\` - drops to the next line"
+same "a command over the cap of 40 drops its explanation to the next line" "$OUT" \
+"# t${NL}${NL}$(printf -- '- %-40s  %s' 't a' 'short')${NL}- ${long}${NL}$(printf '%44s' '')drops to the next line"
+
+render CLI_PLAIN=1 -- "# t${NL}${NL}- Run it:${NL}${NL}\`t --go\`"
+same "a description line and an example line" "$OUT" "# t${NL}${NL}- Run it:${NL}${NL}  t --go"
+
+render CLI_PLAIN=1 -- "# t${NL}${NL}- uses \`t x\` and [this]{.warn .bold} inline"
+same "inline code and a styled span lose their markup in plain mode" "$OUT" "# t${NL}${NL}- uses \`t x\` and this inline"
+
+render CLI_PLAIN=1 -- "# t${NL}${NL}${NL}- a"
+same "blank lines are kept" "$OUT" "# t${NL}${NL}${NL}- a"
+
+render COLORTERM=truecolor -- "# t${NL}${NL}- \`hub join [target] [-v|--verbose]\` - be ready"
+for role in marker heading tool cmd target flag prose; do
+  hex=$(CUSTOM_DIR="$REPO_DIR" zsh -f -c 'fpath=("$1/functions" $fpath); autoload -Uz col; col --hex "$2"' _ "$REPO_DIR" $role)
+  esc="${E}[38;2;$(( 16#${hex[2,3]} ));$(( 16#${hex[4,5]} ));$(( 16#${hex[6,7]} ))m"
+  if [[ "$OUT" == *"$esc"* ]]; then
+    echo "ok: colour mode uses the $role role"
+  else
+    echo "FAIL: colour mode uses the $role role ($hex): ${(q+)OUT}"
+    failed=1
+  fi
+done
+
+render COLORTERM=truecolor -- "# t${NL}${NL}- a [hot]{.warn .bold} word"
+warn_hex=$(CUSTOM_DIR="$REPO_DIR" zsh -f -c 'fpath=("$1/functions" $fpath); autoload -Uz col; col --hex warn' _ "$REPO_DIR")
+if [[ "$OUT" == *"${E}[38;2;$(( 16#${warn_hex[2,3]} ));$(( 16#${warn_hex[4,5]} ));$(( 16#${warn_hex[6,7]} ))m${E}[1mhot"* ]]; then
+  echo "ok: a span takes every class it names"
+else
+  echo "FAIL: a span takes every class it names: ${(q+)OUT}"
+  failed=1
+fi
+
+render CLI_PLAIN=1 -- "# t${NL}${NL}- [x]{.nosuch} y"
+same "an unknown class renders the text and complains on stderr" "$OUT|${ERR:+err}" "# t${NL}${NL}- x y|err"
+
+exit $failed

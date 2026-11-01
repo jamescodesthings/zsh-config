@@ -39,22 +39,10 @@ function cheat() {
     return 1
   fi
 
-  # Renderer: tldr → glow → bat → cat
-  local render_cmd render_args=()
-  if is available tldr; then
-    render_cmd="tldr"; render_args=("--render")
-    # cheat's own tlrc settings (compact, heading styles); tldr's pages and
-    # the user's tlrc config are left alone
-    if is file "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml"; then
-      render_args=("--config" "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml" "--render")
-    fi
-  elif is available glow; then
-    render_cmd="glow"; render_args=("-w" "120")
-  elif is available bat; then
-    render_cmd="bat"; render_args=("-p" "--color=always")
-  else
-    render_cmd="cat"
-  fi
+  # Local sheets render through cheat-render in the shared palette; plain
+  # when stdout is not a terminal. Local, so the caller's shell is untouched.
+  local CLI_PLAIN="$CLI_PLAIN"
+  [[ -t 1 && -z "$NO_COLOR" ]] || CLI_PLAIN=1
 
   # Auto-update tldr cache (silent, background, every 7 days)
   if is available tldr; then
@@ -263,7 +251,7 @@ TEMPLATE
         else
           local _cheat_tmp; _cheat_tmp=$(mktemp)
           _cheat_expand_vars "$sheet" > "$_cheat_tmp"
-          $render_cmd "${render_args[@]}" "$_cheat_tmp"
+          cheat-render "$_cheat_tmp"
           rm -f "$_cheat_tmp"
         fi
         return 0

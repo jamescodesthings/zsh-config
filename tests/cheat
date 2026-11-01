@@ -21,7 +21,7 @@ function run() {
   shift
   OUT="$(zsh -f -c '
     fpath=("$1/functions" $fpath)
-    autoload -Uz is cheat cheat-help
+    autoload -Uz is cheat cheat-help cheat-render col
     export CHEATSHEET_DIR="$2" CUSTOM_DIR="$1"
     path=(/usr/bin /bin)
     fn="$3"
@@ -67,7 +67,7 @@ chmod +x "$TMP/bin/tldr"
 function run_with_tldr() {
   OUT="$(zsh -f -c '
     fpath=("$1/functions" $fpath)
-    autoload -Uz is cheat
+    autoload -Uz is cheat cheat-render col
     export CHEATSHEET_DIR="$2" CUSTOM_DIR="$1"
     path=("$3" /usr/bin /bin)
     shift 3

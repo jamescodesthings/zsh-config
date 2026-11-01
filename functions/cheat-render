@@ -1,0 +1,171 @@
+#!/usr/bin/env zsh
+
+# cheat-render <sheet.md>: renders a cheat sheet in the shared look, the
+# renderer behind cheat (it replaced tlrc for local sheets). Colours are the
+# palette roles (configs/palette/palette.conf); plain mode (CLI_PLAIN=1 or
+# NO_COLOR) keeps the layout and drops the colour.
+#
+# The sheet subset it reads, one construct per line:
+#   # heading             marker dimmed, text in the heading colour
+#   > description         prose
+#   - `command` - text    a row: the command typed by part (tool, command
+#                         words, [target], [-f|--flag], numbers), then the
+#                         explanation in a second column aligned for the whole
+#                         sheet: its width is the longest row command, capped
+#                         at 40; a longer command drops its explanation to the
+#                         next line. `command`: text is read the same way.
+#   - text                a prose item
+#   `example`             an example command, indented
+#   blank lines           kept
+# Inline, anywhere in prose: `code`, and [text]{.role .bold}, pandoc style,
+# whose classes are palette roles, hues, hue-NN or bold, combined in order.
+
+# _cr_command <text>: a command typed by part, into REPLY
+function _cr_command() {
+  local -a words=(${=1})
+  local word out=""
+  local -i i=0 plain_words=1
+  for word in $words; do
+    (( i++ ))
+    if (( i == 1 )); then
+      out+="${_cr[tool]}${word}${_cr[reset]}"
+      continue
+    fi
+    out+=" "
+    if [[ "$word" == (\[-*|-*) ]]; then
+      out+="${_cr[flag]}${word}${_cr[reset]}"
+      plain_words=0
+    elif [[ "$word" == (\[*|\<*|*/*|~*|\"*|\'*|\$*) ]]; then
+      out+="${_cr[target]}${word}${_cr[reset]}"
+      plain_words=0
+    elif [[ "$word" == <->(|[smhd%x]) || "$word" == <->-<-> ]]; then
+      out+="${_cr[num]}${word}${_cr[reset]}"
+    elif (( plain_words )); then
+      out+="${_cr[cmd]}${_cr[bold]}${word}${_cr[reset]}"
+    else
+      out+="${_cr[target]}${word}${_cr[reset]}"
+    fi
+  done
+  REPLY="$out"
+}
+
+# _cr_prose <text> [base role]: prose with inline code and styled spans, into
+# REPLY; text outside them is in the base role's colour (prose by default)
+function _cr_prose() {
+  local text="$1" base="${_cr[${2:-prose}]}" out="" class esc span
+  local -a classes
+  while [[ -n "$text" ]]; do
+    if [[ "$text" == (#b)([^\`\[]#)\`([^\`]##)\`(*) ]]; then
+      # inline code comes first only when no span starts before it
+      if [[ "${match[1]}" != *\[* ]]; then
+        out+="${base}${match[1]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}${_cr[cmd]}${match[2]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}"
+        text="${match[3]}"
+        continue
+      fi
+    fi
+    if [[ "$text" == (#b)([^\[]#)\[([^\]]##)\]\{([^\}]#)\}(*) ]]; then
+      local before="${match[1]}" inner="${match[2]}" spec="${match[3]}" rest="${match[4]}"
+      if [[ "$before" == *\`* ]]; then
+        # a code span starts before this styled span: let the code loop take it
+        :
+      else
+        esc=""
+        classes=(${=spec})
+        for class in $classes; do
+          class="${class#.}"
+          if [[ "$class" == bold ]]; then
+            esc+="${_cr[bold]}"
+          elif col --hex "$class" > /dev/null 2>&1; then
+            col -v span "$class"
+            esc+="$span"
+          else
+            print -u2 -- "cheat-render: no colour or style called $class"
+          fi
+        done
+        out+="${base}${before}${_cr[reset]}${esc}${inner}${_cr[reset]}"
+        text="$rest"
+        continue
+      fi
+    fi
+    if [[ "$text" == (#b)([^\`]#)\`([^\`]##)\`(*) ]]; then
+      out+="${base}${match[1]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}${_cr[cmd]}${match[2]}${_cr[reset]}${_cr[marker]}\`${_cr[reset]}"
+      text="${match[3]}"
+      continue
+    fi
+    out+="${base}${text}${_cr[reset]}"
+    break
+  done
+  REPLY="$out"
+}
+
+function cheat-render() {
+  emulate -L zsh
+  setopt extended_glob
+
+  local sheet="$1"
+  if [[ ! -r "$sheet" ]]; then
+    print -u2 -- "cheat-render: cannot read ${sheet:-a sheet}"
+    return 1
+  fi
+
+  # Colours once per render; all empty in plain mode
+  local -A _cr
+  local role
+  for role in marker heading tool cmd target flag num prose dim; do
+    col -v "_cr_tmp" "$role" || return 1
+    _cr[$role]="$_cr_tmp"
+  done
+  if [[ -n "${_cr[cmd]}" ]]; then
+    _cr[bold]=$'\e[1m'
+    _cr[reset]=$'\e[0m'
+  fi
+  unset _cr_tmp
+
+  local -a lines=("${(@f)$(< "$sheet")}")
+  local line command text
+  local -i width=0 cap=40 len
+
+  # The second column: the longest row command, capped
+  for line in "${lines[@]}"; do
+    if [[ "$line" == (#b)-\ \`([^\`]##)\`(\ -\ |:\ )* ]]; then
+      len=${#match[1]}
+      (( len > width && len <= cap )) && width=$len
+      (( len > cap )) && width=$cap
+    fi
+  done
+
+  for line in "${lines[@]}"; do
+    line="${line%%[[:space:]]#}"
+    if [[ -z "$line" ]]; then
+      print
+    elif [[ "$line" == (#b)\#\ (*) ]]; then
+      print -r -- "${_cr[marker]}# ${_cr[reset]}${_cr[heading]}${_cr[bold]}${match[1]}${_cr[reset]}"
+    elif [[ "$line" == (#b)\>\ (*) ]]; then
+      _cr_prose "${match[1]}"
+      print -r -- "${_cr[marker]}> ${_cr[reset]}${REPLY}"
+    elif [[ "$line" == (#b)-\ \`([^\`]##)\`(\ -\ |:\ )(*) ]]; then
+      command="${match[1]}"
+      text="${match[3]}"
+      _cr_command "$command"
+      local styled="$REPLY"
+      _cr_prose "$text"
+      if (( ${#command} > width )); then
+        print -r -- "${_cr[marker]}- ${_cr[reset]}${styled}"
+        print -r -- "${(l:$(( width + 4 )):: :)}${REPLY}"
+      else
+        print -r -- "${_cr[marker]}- ${_cr[reset]}${styled}${(l:$(( width - ${#command} + 2 )):: :)}${REPLY}"
+      fi
+    elif [[ "$line" == (#b)-\ (*) ]]; then
+      _cr_prose "${match[1]}"
+      print -r -- "${_cr[marker]}- ${_cr[reset]}${REPLY}"
+    elif [[ "$line" == (#b)\`(*)\` ]]; then
+      _cr_command "${match[1]}"
+      print -r -- "  ${REPLY}"
+    else
+      _cr_prose "$line"
+      print -r -- "$REPLY"
+    fi
+  done
+}
+
+cheat-render "$@"
