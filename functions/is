@@ -8,7 +8,7 @@
 #
 function is() {
     # Only a lone --help or -h shows the sheet; is takes arbitrary words.
-    (( $# == 1 )) && cheat-help is "$@" && return 0
+    [[ $# == 1 && ( "$1" == --help || "$1" == -h ) ]] && cheat-help is "$@" && return 0
 
     if [[ "$1" == "--version" ]]; then
         echo "is.sh 1.1.0"

@@ -17,6 +17,9 @@ function check-or-load() {
 }
 
 check-or-load is
+# tools with a sheet answer --help through cheat-help, which needs cheat
+check-or-load cheat-help
+check-or-load cheat
 
 if is empty "$c"; then
   source "$REPO_DIR/zpm-zsh-colors"
