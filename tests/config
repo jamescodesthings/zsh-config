@@ -1,0 +1,95 @@
+#!/usr/bin/env zsh
+# Tests functions/config from a plain `zsh -f -c`. Run: tests/config.
+# Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+mkdir -p "$TMP/cfg"
+cat > "$TMP/schema.json" <<'JSON'
+{
+  "clear-timeout": { "default": 300, "meaning": "seconds before a retry" },
+  "verbose": { "default": false, "meaning": "print more" },
+  "root": { "default": "~/projects", "meaning": "where projects live" }
+}
+JSON
+
+I_ERR=$'\U000f0159'
+
+# run <code>: sets OUT, ERR, CODE
+function run() {
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin CLI_PLAIN=1 CLI_CONFIG_DIR="$TMP/cfg" ${=EXTRA_ENV} zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-init cli-icon say cheat-help config
+    export CUSTOM_DIR="$1"
+    eval "$2"
+  ' _ "$REPO_DIR" "$1" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+function same() {
+  if [[ "$2" == "$3" ]]; then echo "ok: $1"
+  else echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"; failed=1; fi
+}
+
+S="--schema $TMP/schema.json demo"
+
+run "config $S get clear-timeout"
+same "get returns the default" "$OUT|$CODE" "300|0"
+
+run "config $S list"
+same "list shows key, value and meaning, defaults marked" "$OUT" \
+"clear-timeout  300         (default)  seconds before a retry
+verbose        false       (default)  print more
+root           ~/projects  (default)  where projects live"
+
+run "config $S set clear-timeout 600; config $S get clear-timeout"
+same "set then get" "$OUT|$CODE" "600|0"
+same "file written as a number" "$(jq -c '.["clear-timeout"]|type' $TMP/cfg/demo.json)" '"number"'
+
+run "config $S list"
+same "list shows a set value without the default mark" "${${(f)OUT}[1]}" \
+"clear-timeout  600                    seconds before a retry"
+
+run "config $S set nope 1"
+same "set unknown key fails" "$CODE|$ERR" "1|${I_ERR}  demo has no setting called nope"
+
+run "config $S get nope"
+same "get unknown key exits 1" "$CODE" "1"
+
+run "config $S set verbose true; config $S set root 42x; config $S set clear-timeout 1.5"
+same "coercion: true, string, number" \
+  "$(jq -c '[.verbose,.root,.["clear-timeout"]]' $TMP/cfg/demo.json)" '[true,"42x",1.5]'
+
+same "write leaves valid JSON and no temp files" \
+  "$(jq empty $TMP/cfg/demo.json && echo valid) $(ls $TMP/cfg | tr '\n' ' ')" "valid demo.json "
+
+run "config $S unset clear-timeout; config $S get clear-timeout"
+same "unset returns to default" "$OUT" "300"
+
+print -r -- '#!/bin/sh
+echo "{ broken" > "$1"' > $TMP/badedit
+chmod +x $TMP/badedit
+EXTRA_ENV="EDITOR=$TMP/badedit" run "config $S edit"
+same "edit with broken JSON reports it" "$CODE|${ERR%% \(*}" "1|${I_ERR}  demo.json is not valid JSON"
+
+print -r -- '#!/bin/sh
+echo "{\"verbose\": true}" > "$1"' > $TMP/goodedit
+chmod +x $TMP/goodedit
+EXTRA_ENV="EDITOR=$TMP/goodedit" run "config $S edit; config $S get verbose"
+same "edit with valid JSON passes" "$CODE|$OUT" "0|true"
+
+run "config demo get verbose"
+same "no schema fails" "$CODE" "1"
+
+run "config $S"
+same "no key in plain mode falls back to list" "${${(f)OUT}[1]}" \
+"clear-timeout  300         (default)  seconds before a retry"
+
+run "cp $TMP/schema.json $TMP/cfg/linked.schema.json; config linked get root"
+same "linked schema file found without --schema" "$OUT" "~/projects"
+
+exit $failed

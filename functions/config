@@ -1,0 +1,201 @@
+#!/usr/bin/env zsh
+
+# config [--schema|-s FILE] <tool> [list | get KEY | set KEY VALUE | unset KEY
+# | edit]: a tool's settings, kept in ${CLI_CONFIG_DIR:-$CUSTOM_DIR/config}/
+# <tool>.json and written atomically with jq (temp file beside it, then mv).
+#
+# The tool describes its settings in a schema it ships, a JSON file of
+# { "key": { "default": <value>, "meaning": "one line" } }. The tool passes it
+# as `config --schema <file> <tool> ...`; or links it once to
+# <config dir>/<tool>.schema.json and calls plain `config <tool> ...`. A flag
+# on each call needs no install step and no state, so it comes first; the
+# linked file is the fallback for a tool that registers once.
+#
+# Values are strings, numbers or booleans: set turns true/false and numbers
+# into JSON booleans and numbers, anything else stays a string.
+# With no subcommand, an fzf picker over the settings (plain mode or no fzf:
+# list), then a prompt for the new value.
+function config() {
+  cheat-help config "$@" && return 0
+  emulate -L zsh
+  setopt extended_glob
+  cli-init "$@"
+  set -- "${@:#--plain}"
+
+  local schema=""
+  while [[ "$1" == -* ]]; do
+    case "$1" in
+      --schema|-s) schema="$2"; shift 2 || { say fail "config: $1 needs a file"; return 2; } ;;
+      --schema=*) schema="${1#--schema=}"; shift ;;
+      *) say fail "config: unknown option $1"; return 2 ;;
+    esac
+  done
+
+  local tool="$1"
+  if [[ -z "$tool" ]]; then
+    say fail "config: usage: config [--schema FILE] <tool> [list|get|set|unset|edit]"
+    return 2
+  fi
+  shift
+
+  if ! (( $+commands[jq] )); then
+    say fail "config needs jq, and it is not installed"
+    return 1
+  fi
+
+  local dir="${CLI_CONFIG_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config}"
+  local file="$dir/$tool.json"
+  [[ -z "$schema" ]] && schema="$dir/$tool.schema.json"
+  if [[ ! -r "$schema" ]]; then
+    say fail "$tool has no settings schema (looked for $schema)"
+    return 1
+  fi
+  if ! jq -e 'type == "object"' "$schema" > /dev/null 2>&1; then
+    say fail "${schema:t} is not a JSON object of settings"
+    return 1
+  fi
+
+  local sub="${1:-pick}"
+  (( $# )) && shift
+  case "$sub" in
+    list) _config_list "$tool" "$file" "$schema" ;;
+    get)
+      [[ -n "$1" ]] || { say fail "config: get needs a key"; return 2; }
+      _config_known "$tool" "$schema" "$1" || return 1
+      _config_value "$file" "$schema" "$1"
+      print -r -- "$REPLY"
+      ;;
+    set)
+      [[ -n "$1" && $# -ge 2 ]] || { say fail "config: set needs a key and a value"; return 2; }
+      _config_known "$tool" "$schema" "$1" || return 1
+      _config_write "$dir" "$file" --arg k "$1" --argjson v "$(_config_json "$2")" '.[$k] = $v'
+      ;;
+    unset)
+      [[ -n "$1" ]] || { say fail "config: unset needs a key"; return 2; }
+      _config_known "$tool" "$schema" "$1" || return 1
+      [[ -e "$file" ]] || return 0
+      _config_write "$dir" "$file" --arg k "$1" 'del(.[$k])'
+      ;;
+    edit) _config_edit "$dir" "$file" ;;
+    pick) _config_pick "$tool" "$dir" "$file" "$schema" ;;
+    *)
+      say fail "config: no subcommand called $sub"
+      return 2
+      ;;
+  esac
+}
+
+# _config_known tool schema key: fails with a say line when the key is not in the schema.
+function _config_known() {
+  if ! jq -e --arg k "$3" 'has($k)' "$2" > /dev/null 2>&1; then
+    say fail "$1 has no setting called $3"
+    return 1
+  fi
+}
+
+# _config_json value: the value as a JSON literal (booleans and numbers kept).
+function _config_json() {
+  if [[ "$1" == (true|false) || "$1" == -#<->(.<->|)([eE][+-]#<->|) ]]; then
+    print -r -- "$1"
+  else
+    jq -n --arg v "$1" '$v'
+  fi
+}
+
+# _config_value file schema key: sets REPLY to the current value or the default
+# and _CONFIG_SET to 1 when the file holds the key.
+function _config_value() {
+  _CONFIG_SET=0
+  if [[ -r "$1" ]] && jq -e --arg k "$3" 'has($k)' "$1" > /dev/null 2>&1; then
+    _CONFIG_SET=1
+    REPLY="$(jq -r --arg k "$3" '.[$k]' "$1")"
+  else
+    REPLY="$(jq -r --arg k "$3" '.[$k].default' "$2")"
+  fi
+}
+
+# _config_write dir file <jq args and filter>: applies the filter to the file
+# (or {}) into a temp file beside it, then moves it over the file.
+function _config_write() {
+  local dir="$1" file="$2" tmp
+  shift 2
+  mkdir -p "$dir" || return 1
+  tmp="$(mktemp "$file.XXXXXX")" || return 1
+  if [[ -s "$file" ]] && ! jq empty "$file" > /dev/null 2>&1; then
+    rm -f "$tmp"
+    say fail "${file:t} is not valid JSON; fix it with: config ${file:t:r} edit"
+    return 1
+  fi
+  local -a src=(-n)
+  [[ -s "$file" ]] && src=("$file")
+  if jq "$@" "${src[@]}" > "$tmp" 2> /dev/null; then
+    mv -f "$tmp" "$file"
+  else
+    rm -f "$tmp"
+    say fail "could not write ${file:t}"
+    return 1
+  fi
+}
+
+# _config_rows tool file schema: tab-separated key, value, mark, meaning per setting.
+function _config_rows() {
+  local key
+  local -a keys
+  keys=("${(@f)$(jq -r 'keys_unsorted[]' "$3")}")
+  for key in "${keys[@]}"; do
+    _config_value "$2" "$3" "$key"
+    print -r -- "$key"$'\t'"$REPLY"$'\t'"$( (( _CONFIG_SET )) || print -r '(default)' )"$'\t'"$(jq -r --arg k "$key" '.[$k].meaning // ""' "$3")"
+  done
+}
+
+function _config_list() {
+  local -a rows fields
+  local row kw=0 vw=0 mw=0 key val mark meaning
+  local kc vc dc pc off
+  rows=("${(@f)$(_config_rows "$1" "$2" "$3")}")
+  for row in "${rows[@]}"; do
+    fields=("${(@s:	:)row}")
+    (( ${#fields[1]} > kw )) && kw=${#fields[1]}
+    (( ${#fields[2]} > vw )) && vw=${#fields[2]}
+    (( ${#fields[3]} > mw )) && mw=${#fields[3]}
+  done
+  col -v kc cmd; col -v vc num; col -v dc num-60; col -v pc prose
+  [[ -n "$kc" ]] && off=$'\e[0m'
+  for row in "${rows[@]}"; do
+    fields=("${(@s:	:)row}")
+    key="${(r:kw:)fields[1]}" val="${(r:vw:)fields[2]}" mark="${(r:mw:)fields[3]}" meaning="${fields[4]}"
+    # an unset setting shows its default dimmed; plain mode has no dimming, so the mark says it
+    if [[ -n "${fields[3]}" ]]; then
+      print -r -- "${kc}${key}${off}  ${dc}${val}${off}  ${dc}${mark}${off}  ${pc}${meaning}${off}"
+    else
+      print -r -- "${kc}${key}${off}  ${vc}${val}${off}  ${mark}  ${pc}${meaning}${off}"
+    fi
+  done
+}
+
+function _config_edit() {
+  local dir="$1" file="$2"
+  mkdir -p "$dir" || return 1
+  [[ -e "$file" ]] || print -r -- '{}' > "$file"
+  ${=EDITOR:-vi} "$file"
+  if ! jq empty "$file" > /dev/null 2>&1; then
+    say fail "${file:t} is not valid JSON ($(jq empty "$file" 2>&1 | head -1)); fix it in $file"
+    return 1
+  fi
+}
+
+function _config_pick() {
+  local tool="$1" dir="$2" file="$3" schema="$4" line key new
+  if [[ -n "$CLI_PLAIN" ]] || ! (( $+commands[fzf] )) || [[ ! -t 0 ]]; then
+    _config_list "$tool" "$file" "$schema"
+    return
+  fi
+  line="$(_config_rows "$tool" "$file" "$schema" | column -t -s $'\t' | fzf --prompt "$tool setting> " --no-sort)" || return 0
+  key="${line%% *}"
+  read -r "new?$key (${tool}): " < /dev/tty || return 0
+  [[ -n "$new" ]] || return 0
+  _config_known "$tool" "$schema" "$key" || return 1
+  _config_write "$dir" "$file" --arg k "$key" --argjson v "$(_config_json "$new")" '.[$k] = $v'
+}
+
+config "$@"
