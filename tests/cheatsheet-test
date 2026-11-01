@@ -20,8 +20,8 @@ printf '# c\n\n## not a tldr heading\n' > "$BAD/c.md"
 SHAPED="$TMP/shaped"
 UNSHAPED="$TMP/unshaped"
 mkdir -p "$SHAPED" "$UNSHAPED"
-printf '# t\n\n> A tool.\n\n# Getting started\n\n- Start:\n\n`t`\n\n# More\n\n- `cheat t go`: go\n' > "$SHAPED/t.md"
-printf '# t go\n\n> Go.\n\n# Options\n\n- `--far`: further\n\n# See also\n\n- `cheat t`\n' > "$SHAPED/t-go.md"
+printf '# t\n\n> A tool.\n\n# Getting started\n\n- Start:\n\n`t`\n\n# See also\n\n- `cheat t go [-f|--far]` - go\n' > "$SHAPED/t.md"
+printf '# t go\n\n> Go.\n\n# Options\n\n- `--far` - further\n\n# Variables\n\n- `T_FAR` - how far\n\n# See also\n\n- `cheat t`\n' > "$SHAPED/t-go.md"
 printf '# u\n\n> A tool.\n\n# Usage\n\n- Start:\n\n`u`\n' > "$UNSHAPED/u.md"
 printf '# u go\n\n> Go.\n\n# Options\n\n- `--far`: further\n' > "$UNSHAPED/u-go.md"
 
@@ -34,7 +34,7 @@ function expect() {
   local out code
   out="$(zsh -f -c '
     fpath=("$1/functions" $fpath)
-    autoload -Uz is cheat cheat-help cheatsheet-test
+    autoload -Uz is cheat cheat-help cheatsheet-test cheat-render col
     eval "$2"
     shift 2
     cheatsheet-test "$@"
@@ -59,5 +59,27 @@ expect 1 "an empty folder fails" '' "$TMP"
 expect 0 "sheets in the shared structure pass --strict" '' --strict "$SHAPED"
 expect 0 "sheets out of the structure only warn without --strict" '' "$UNSHAPED"
 expect 1 "sheets out of the structure fail --strict" '' --strict "$UNSHAPED"
+
+# The row rules, one broken sheet each (all children of the shaped t.md)
+ROWS="$TMP/rows"
+mkdir -p "$ROWS"
+cp "$SHAPED/t.md" "$ROWS/"
+printf '# t a\n\n> A.\n\n- `t a`: the old separator\n\n# See also\n\n- `cheat t`\n' > "$ROWS/t-a.md"
+expect 0 "a colon row only warns without --strict" '' "$ROWS/t-a.md"
+expect 1 "a colon row fails --strict" '' --strict "$ROWS/t-a.md"
+printf '# t b\n\n> B.\n\n- `t b -v|--verbose` - says more\n\n# See also\n\n- `cheat t`\n' > "$ROWS/t-b.md"
+expect 1 "flag alternatives outside [ ] fail --strict" '' --strict "$ROWS/t-b.md"
+printf '# t c\n\n> C.\n\n- `t c`     - padded by hand\n\n# See also\n\n- `cheat t`\n' > "$ROWS/t-c.md"
+expect 1 "a row padded by hand fails --strict" '' --strict "$ROWS/t-c.md"
+printf '# t d\n\n> D.\n\n# Variables\n\n- `T_D` - d\n\n# Examples\n\n- `t d` - run\n\n# See also\n\n- `cheat t`\n' > "$ROWS/t-d.md"
+expect 1 "Variables away from just before the last section fails --strict" '' --strict "$ROWS/t-d.md"
+printf '# t e\n\n> E.\n\n- a [word]{.nosuch} here\n\n# See also\n\n- `cheat t`\n' > "$ROWS/t-e.md"
+expect 1 "a span with an unknown colour fails, strict or not" '' "$ROWS/t-e.md"
+MORE="$TMP/more"
+mkdir -p "$MORE"
+printf '# m\n\n> M.\n\n# Getting started\n\n- `m` - start\n\n# More\n\n- `cheat x` - x\n' > "$MORE/m.md"
+expect 1 "a top sheet ending in More, not See also, fails --strict" '' --strict "$MORE/m.md"
+printf '# m\n\n> M.\n\n# Getting started\n\n- `m` - start\n\n# See Also\n\n- `cheat x` - x\n' > "$MORE/m.md"
+expect 1 "the last heading is exactly See also" '' --strict "$MORE/m.md"
 
 exit $failed

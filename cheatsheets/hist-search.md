@@ -5,7 +5,7 @@
 
 # Options
 
-- `-q`: commands only, no directory headers
+- `-q` - commands only, no directory headers
 
 # Examples
 
@@ -19,5 +19,5 @@
 
 # See also
 
-- `cheat hist`: the top sheet
+- `cheat hist` - the top sheet
 - `cheat hist delete`

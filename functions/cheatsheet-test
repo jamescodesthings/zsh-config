@@ -48,7 +48,8 @@ function cheatsheet-test() {
     return 1
   fi
 
-  local sheet line out name parent height first_section last_section candidate warning
+  local sheet line out name parent height first_section last_section candidate warning word
+  local -i vars_at=0 i
   local -a sections warnings
   local -i failed=0 number bad
   for sheet in $sheets; do
@@ -76,32 +77,23 @@ function cheatsheet-test() {
       fi
     done < "$sheet"
 
-    # stdin is closed because both can wait on a terminal that is not there.
-    if is available tldr; then
-      if ! out="$(tldr --render "$sheet" < /dev/null 2>&1 > /dev/null)"; then
-        # tlrc's first line repeats the path; keep only its "(line N)"
-        out="${${(f)out}[1]##*valid tldr page. }"
-        echo "$c[error]error:$c[reset] $sheet: tldr cannot render it ${out%:}"
-        bad=1
-      fi
-    fi
-    if is available glow; then
-      if ! out="$(glow -s dark -w 120 "$sheet" < /dev/null 2>&1 > /dev/null)"; then
-        echo "$c[error]error:$c[reset] $sheet: glow cannot render it: ${${(f)out}[1]}"
-        bad=1
-      fi
+    # cheat-render is what cheat shows a sheet with; it must render cleanly
+    # (an unknown colour in a [text]{.class} span is an error).
+    if ! out="$(CLI_PLAIN=1 cheat-render "$sheet" 2>&1 > /dev/null)" || is not empty "$out"; then
+      echo "$c[error]error:$c[reset] $sheet: cheat-render: ${${(f)out}[1]:-failed}"
+      bad=1
     fi
 
     # The shared structure (cheat cheat-format). A top sheet is one with no
     # parent sheet beside it: it opens with "Getting started", ends with
-    # "More" and fits half a kitty window. A child sheet (hub-join.md beside
+    # "See also" and fits half a kitty window. A child sheet (hub-join.md beside
     # hub.md) ends with "See also". Warnings, unless --strict.
     name="${sheet:t:r}"
     parent=""
     sections=(${(f)"$(grep -E '^# ' "$sheet" | sed -e 's/^# //' -e 's/[[:space:]]*$//')"})
     shift sections 2> /dev/null
     first_section="${(L)sections[1]}"
-    last_section="${(L)sections[-1]}"
+    last_section="${sections[-1]}"
     warnings=()
     candidate="$name"
     while [[ "$candidate" == *-* ]]; do
@@ -113,16 +105,43 @@ function cheatsheet-test() {
     done
     if is empty "$parent"; then
       [[ "$first_section" != "getting started" ]] && warnings+=("a top sheet's first section should be \"Getting started\"")
-      [[ "$last_section" != "more" ]] && warnings+=("a top sheet's last section should be \"More\"")
-      if is available tldr && is file "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml"; then
-        height=$(tldr --config "${CUSTOM_DIR:-$HOME/.custom}/configs/tlrc/cheat.toml" --color never --render "$sheet" < /dev/null 2> /dev/null | wc -l)
-      else
-        height=$(grep -c . "$sheet")
-      fi
-      (( height > 35 )) && warnings+=("a top sheet should fit half a kitty window: $height lines, aim for 35")
+      [[ "$last_section" != "See also" ]] && warnings+=("the last section should be exactly \"See also\"")
+      height=$(CLI_PLAIN=1 cheat-render "$sheet" 2> /dev/null | wc -l)
+      height="${height//[[:space:]]/}"
+      height=$(( height - 1 )) # the blank line every render ends with
+      (( height > 35 )) && warnings+=("a top sheet should fit half a kitty window: $height rendered lines, aim for 35")
     else
-      [[ "$last_section" != "see also" ]] && warnings+=("a sheet under $parent should end with \"See also\"")
+      [[ "$last_section" != "See also" ]] && warnings+=("the last section should be exactly \"See also\"")
     fi
+    # A Variables section, when there is one, sits just before the last.
+    # The patterns live in strings so the file still parses under sh_glob.
+    vars_at=0
+    for (( i = 1; i <= ${#sections}; i++ )); do
+      [[ "${(L)sections[i]}" == variables ]] && vars_at=$i
+    done
+    if (( vars_at && vars_at != ${#sections} - 1 )); then
+      warnings+=("\"Variables\" should come just before the last section")
+    fi
+    # Rows: `command` - explanation. The renderer aligns the second column, so
+    # the source never pads it, and flag alternatives sit in [ ].
+    local row_pat='(#b)- `([^`]##)`( - |: )*' colon_pat='- `[^`]##`: *'
+    local pad_pat='- `[^`]##`(  ## - *|:  ##*)'
+    number=0
+    while IFS= read -r line || is not empty "$line"; do
+      number+=1
+      if [[ "$line" == ${~pad_pat} ]]; then
+        warnings+=("line $number: do not pad a row by hand; the renderer aligns the second column")
+      elif [[ "$line" == ${~colon_pat} ]]; then
+        warnings+=("line $number: a row separates its command from the explanation with \" - \", not \": \"")
+      fi
+      if [[ "$line" == ${~row_pat} ]]; then
+        for word in ${=match[1]}; do
+          if [[ "$word" == -*\|* ]]; then
+            warnings+=("line $number: put flag alternatives in [ ]: [$word]")
+          fi
+        done
+      fi
+    done < "$sheet"
     for warning in $warnings; do
       if (( strict )); then
         echo "$c[error]error:$c[reset] $sheet: $warning"

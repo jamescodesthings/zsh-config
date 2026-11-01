@@ -5,46 +5,30 @@
 
 # Getting started
 
-- `asdf plugin add <name>`: add a plugin
-- `asdf install <name> latest`: install the newest release
-- `asdf set -u <name> <version>`: make it your default (`~/.tool-versions`)
+- `asdf plugin add <name>` - add a plugin
+- `asdf install <name> latest` - install the newest release
+- `asdf set -u <name> <version>` - make it your default (`~/.tool-versions`)
 
-- Next: `asdf current` shows what is active.
+# Everyday
 
-# Install and set
-
-- `asdf install`: versions from `.tool-versions`
-- `asdf install <name> <version>`: one version; `latest:3` is the newest matching a prefix
-- `asdf set <name> <version>`: this directory's `.tool-versions`
-- `asdf set -p <name> <version>`: the parent directory's
-
-# Inspect
-
-- `asdf current [name]`: current versions
-- `asdf list [name]`: installed versions; `asdf list all <name>` for available
-- `asdf latest <name>`: newest version; `asdf latest --all` for every installed tool
-- `asdf where <name> <version>`: install path
-- `asdf info`: OS, shell and asdf debug info
-
-# Plugins and maintain
-
-- `asdf plugin list [all]`: installed, or available
-- `asdf plugin update <name>`: update one; `--all` for every plugin
-- `asdf plugin remove <name>`: remove a plugin and its versions
-- `asdf uninstall <name> <version>`: remove a version
-- `asdf reshim <name> <version>`: rebuild shims
+- `asdf install [<name> <version>]` - versions from `.tool-versions`, or one version; `latest:3` matches a prefix
+- `asdf set [-p] <name> <version>` - this directory's `.tool-versions`; `-p` for the parent's
+- `asdf [current|list [all]] [<name>]` - current versions, installed versions, or available
+- `asdf latest <name>` - newest version; `asdf latest --all` for every installed tool
+- `asdf where <name> <version>` - install path
+- `asdf uninstall <name> <version>` - remove a version
+- `asdf reshim <name> <version>` - rebuild shims
+- `asdf plugin list [all]` - installed plugins, or available
+- `asdf plugin [update|remove] <name>` - update (`--all` for every plugin), or remove with its versions
 
 # zsh-config
 
-- `update asdf`: install and upgrade the policy tools, set them globally, remove old versions no project pins
-- `asdf-cleanup`: remove every version that is not the global one, pinned or not
-- Policies in `configs/asdf/update-policy`: `latest`, `stable`, `remove`; `update-policy.<hostname>` adds one machine's tools
-- Add a tool for this machine, then run `update asdf`:
+- `update asdf` - install and upgrade the policy tools, remove old versions no project pins
+- `asdf-cleanup` - remove every version that is not the global one
+- `echo "golang latest" >> ~/.custom/configs/asdf/update-policy.$(get-hostname)` - add a tool for this machine (`latest`, `stable`, `remove`)
 
-`echo "golang latest" >> ~/.custom/configs/asdf/update-policy.$(get-hostname)`
+# See also
 
-# More
-
-- `tldr asdf`: asdf itself
-- `cheat update`: update the whole machine
-- `cheat zsh-config`: everything zsh-config gives you
+- `tldr asdf` - asdf itself; `asdf info` for debug info
+- `cheat update` - update the whole machine
+- `cheat zsh-config` - everything zsh-config gives you

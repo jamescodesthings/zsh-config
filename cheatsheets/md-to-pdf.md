@@ -16,5 +16,5 @@
 # See also
 
 - `cheat md-to-html`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you
 - Exit: 1 if any file failed, 130 on ctrl-c, which also stops a batch

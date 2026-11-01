@@ -174,7 +174,7 @@ function cheat() {
 
 - \`$new_name <command> [target] [--flag]\`: what it does
 
-# More
+# See also
 
 - \`cheat $new_name <command>\`: every option of a command
 - \`cheat zsh-config\`: everything zsh-config gives you

@@ -19,7 +19,7 @@
 
 # See also
 
-- `cheat cheat format`: the structure a sheet should follow
+- `cheat cheat format` - the structure a sheet should follow
 - `cheat cheat edit`
 - `cheat cheatsheet-test`
 - `cheat link-cheatsheets`

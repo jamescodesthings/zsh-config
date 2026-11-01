@@ -11,5 +11,5 @@
 
 # See also
 
-- `cheat hist`: the top sheet
+- `cheat hist` - the top sheet
 - `cheat hist search`

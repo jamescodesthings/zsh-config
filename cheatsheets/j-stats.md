@@ -10,5 +10,5 @@
 
 # See also
 
-- `cheat j`: the top sheet
+- `cheat j` - the top sheet
 - `cheat j list`

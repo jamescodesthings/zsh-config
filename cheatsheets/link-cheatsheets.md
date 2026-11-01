@@ -5,12 +5,12 @@
 
 # Getting started
 
-- `link-cheatsheets <folder>`: link a project's sheets, e.g. `link-cheatsheets ~/projects/personal/pkms/cheatsheets`
+- `link-cheatsheets <folder>` - link a project's sheets, e.g. `link-cheatsheets <repo>/cheatsheets`
 - Next: `cheat <name>` shows them
 
 # From an installer
 
-- `whence link-cheatsheets && link-cheatsheets "$REPO_DIR/cheatsheets"`: only when it exists
+- `whence link-cheatsheets && link-cheatsheets "$REPO_DIR/cheatsheets"` - only when it exists
 
 # Edge cases
 
@@ -19,8 +19,8 @@
 - `$CHEATSHEET_DIR` inside the folder: error; open a new shell
 - `$CHEATSHEET_DIR` unset: skips
 
-# More
+# See also
 
-- `cheat cheat`: the viewer
-- `cheat cheatsheet-test`: check sheets render
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat cheat` - the viewer
+- `cheat cheatsheet-test` - check sheets render
+- `cheat zsh-config` - everything zsh-config gives you

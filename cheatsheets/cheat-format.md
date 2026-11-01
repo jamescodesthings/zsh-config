@@ -1,23 +1,33 @@
 # cheat format
 
 > The shared shape of every repo's cheat sheets: get a first-time user working, then serve as the reference.
-> Check it with `cheatsheet-test --strict <dir>`; every line keeps the tldr shape.
+> Rendered by cheat-render; check with `cheatsheet-test --strict <dir>`.
 
 # Top sheet: tool.md
 
 - First line: `# tool`, then one `>` line saying what it is for, and at most one more for what it needs
-- `# Getting started`: the 2 or 3 commands that get you working, then one line on what to do next
+- `# Getting started` - the 2 or 3 commands that get you working
 - Then the everyday groups, in the order a user works, then maintenance
-- Command lines show their options and targets: `` `tool join [target] [--all]` ``: what it does
-- `# More`: `cheat tool <command>`, the topic sheets, and `see cheat <repo>`
+- A row is `- `, the command in backticks, ` - `, then what it does; options and targets show in the command
+- Flag alternatives go in brackets: `[-n|--lines N]`
+- `# Variables` - when present, just before the last section
+- `# See also` last, exactly - `cheat tool <command>`, the topic sheets, and the repo as an ordinary row
 - Fits half a kitty window split horizontally: 35 rendered lines
+
+# Rows and spans
+
+- The renderer aligns the second column: its width is the longest command, capped at 40
+- A command longer than 40 drops its explanation to the next line
+- Never pad by hand
+- Inline spans: `[text]{.warn .bold}`, with palette roles, hues, `hue-NN` and `bold`
+- `cheat cli sheets` has the details
 
 # Command sheet: tool-command.md
 
 - `# tool command`, then what it does and why in 2 `>` lines at most
-- `# Options`: every option and flag, one line each
-- `# Examples`: a description line, then the command in backticks
-- `# See also`: related sheets, then any quirks, one line each
+- `# Options` - every option and flag, one line each
+- `# Examples` - a description line, then the command in backticks
+- `# See also` - related sheets, then any quirks, one line each
 
 # Topic sheet: tool-topic.md
 
@@ -27,7 +37,7 @@
 # Repo overview: repo.md
 
 - `cheat zsh-config`, `cheat agent-forge`, `cheat pkms`: the repo as a whole, its tools grouped by job
-- Every top sheet of a repo's tools points back to it under `# More`
+- Every top sheet of a repo's tools points back to it under `# See also`, as an ordinary aligned row
 
 # Lines
 
@@ -48,6 +58,7 @@
 
 # See also
 
-- `cheat cheatsheet-test`: the line and structure checks
-- `cheat cheat new`: start a sheet from the template
-- `cheat zsh-config`: the repo overview
+- `cheat cli sheets` - writing for the renderer
+- `cheat cheatsheet-test` - the line and structure checks
+- `cheat cheat new` - start a sheet from the template
+- `cheat zsh-config` - the repo overview

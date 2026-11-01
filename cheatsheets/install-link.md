@@ -5,7 +5,7 @@
 
 # Getting started
 
-- `install-link <from> <to>`: e.g. `install-link ./configs/asdf/.asdfrc ~/.asdfrc`
+- `install-link <from> <to>` - e.g. `install-link ./configs/asdf/.asdfrc ~/.asdfrc`
 - Next: `install-box-config` picks a per-machine `<from>` for you
 
 # Existing target
@@ -14,7 +14,7 @@
 - A file: moved to `<to>.bak`
 - A directory: moved to `<to>_bak`
 
-# More
+# See also
 
 - `cheat install-box-config`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you

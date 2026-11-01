@@ -10,6 +10,6 @@
 
 # See also
 
-- `cheat j`: the top sheet
+- `cheat j` - the top sheet
 - `cheat j search`
 - `cheat j stats`

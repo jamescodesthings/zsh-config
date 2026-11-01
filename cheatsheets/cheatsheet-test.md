@@ -5,9 +5,9 @@
 
 # Getting started
 
-- `cheatsheet-test`: check zsh-config's own sheets
-- `cheatsheet-test <sheet> [<folder>...]`: check sheets or whole folders
-- Next: add `--strict` to make the structure warnings fail
+- `cheatsheet-test` - check zsh-config's own sheets
+- `cheatsheet-test <sheet> [<folder>...]` - check sheets or whole folders
+- `cheatsheet-test --strict <sheet>` - make the structure warnings fail
 
 # Line rules (always failures)
 
@@ -20,21 +20,13 @@
 - Top sheet (no parent sheet beside it): first section `Getting started`, last section `More`
 - Top sheet: at most 35 rendered lines
 - Child sheet (`hub-join.md` beside `hub.md`): last section `See also`
-- `--strict`: turn these warnings into failures
+- `--strict` - turn these warnings into failures
 
-# Examples
+# See also
 
-- Check one sheet:
-
-`cheatsheet-test cheatsheets/git.md`
-
-- Check a project's sheets strictly:
-
-`cheatsheet-test --strict ~/projects/personal/pkms/cheatsheets`
-
-# More
-
-- `cheat cheat format`: the structure it checks
-- `cheat cheat new`: start a sheet from the template
+- `cheatsheet-test cheatsheets/git.md` - check one sheet
+- `cheatsheet-test --strict <repo>/cheatsheets` - check a project's sheets strictly
+- `cheat cheat format` - the structure it checks
+- `cheat cheat new` - start a sheet from the template
 - `cheat link-cheatsheets`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you

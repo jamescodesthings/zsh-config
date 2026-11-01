@@ -6,10 +6,10 @@
 
 # Getting started
 
-- `deps <command>...`: e.g. `deps git gh jq`
+- `deps <command>...` - e.g. `deps git gh jq`
 - Next: `is available <command>` tests one command quietly
 
-# More
+# See also
 
 - `cheat is`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you

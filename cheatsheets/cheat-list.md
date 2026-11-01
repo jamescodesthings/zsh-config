@@ -14,4 +14,4 @@
 
 # See also
 
-- `cheat cheat search`: find a sheet by name
+- `cheat cheat search` - find a sheet by name

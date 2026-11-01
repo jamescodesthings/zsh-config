@@ -4,11 +4,11 @@
 
 # Getting started
 
-- `confirm`: ask with the default message
-- `confirm "Delete this?"`: ask with your own message
-- `if confirm "Continue?"; then rm -rf /tmp/myapp; fi`: guard a command
+- `confirm` - ask with the default message
+- `confirm "Delete this?"` - ask with your own message
+- `if confirm "Continue?"; then rm -rf /tmp/myapp; fi` - guard a command
 
-# More
+# See also
 
 - `cheat is`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you

@@ -16,7 +16,7 @@
 #                         next line. `command`: text is read the same way.
 #   - text                a prose item
 #   `example`             an example command, indented
-#   blank lines           kept
+#   blank lines           kept; the output ends with exactly one
 # Inline, anywhere in prose: `code`, and [text]{.role .bold}, pandoc style,
 # whose classes are palette roles, hues, hue-NN or bold, combined in order.
 
@@ -122,6 +122,10 @@ function cheat-render() {
   unset _cr_tmp
 
   local -a lines=("${(@f)$(< "$sheet")}")
+  # The output always ends with exactly one blank line, whatever the file has
+  while (( ${#lines} )) && [[ -z "${lines[-1]//[[:space:]]/}" ]]; do
+    lines[-1]=()
+  done
   local line command text
   local -i width=0 cap=40 len
 
@@ -166,6 +170,7 @@ function cheat-render() {
       print -r -- "$REPLY"
     fi
   done
+  print
 }
 
 cheat-render "$@"

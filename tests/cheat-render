@@ -20,7 +20,14 @@ function render() {
     autoload -Uz col cli-icon cheat-render
     export CUSTOM_DIR="$1"
     cheat-render "$2"
+    print -rn -- "|end"
   ' _ "$REPO_DIR" "$TMP/sheet.md" 2> "$TMP/err")"
+  # every render ends with exactly one blank line: strip and check it here
+  if [[ "$OUT" == *$'\n\n|end' ]]; then
+    OUT="${OUT%$'\n\n|end'}"
+  else
+    OUT="${OUT%|end} (no single trailing blank line)"
+  fi
   CODE=$?
   ERR="$(< "$TMP/err")"
 }
@@ -57,6 +64,9 @@ same "inline code and a styled span lose their markup in plain mode" "$OUT" "# t
 
 render CLI_PLAIN=1 -- "# t${NL}${NL}${NL}- a"
 same "blank lines are kept" "$OUT" "# t${NL}${NL}${NL}- a"
+
+render CLI_PLAIN=1 -- "# t${NL}${NL}- a${NL}${NL}${NL}"
+same "trailing blank lines in the source collapse to the one at the end" "$OUT" "# t${NL}${NL}- a"
 
 render COLORTERM=truecolor -- "# t${NL}${NL}- \`hub join [target] [-v|--verbose]\` - be ready"
 for role in marker heading tool cmd target flag prose; do

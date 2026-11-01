@@ -12,6 +12,6 @@
 # See also
 
 - `cheat git`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you
 - `cheat git-prune-local`
 - Exit 1 on refusal or failure

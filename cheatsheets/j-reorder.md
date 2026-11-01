@@ -5,7 +5,7 @@
 
 # Options
 
-- `--count N`: how many top entries to edit (default 10)
+- `--count N` - how many top entries to edit (default 10)
 
 # Examples
 
@@ -19,5 +19,5 @@
 
 # See also
 
-- `cheat j`: the top sheet
+- `cheat j` - the top sheet
 - `cheat j bump`

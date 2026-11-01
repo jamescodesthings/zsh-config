@@ -4,10 +4,10 @@
 
 # Getting started
 
-- `reload <function>`: reload one, e.g. `reload cheat`
-- `reload all`: reload every function in `functions/`
+- `reload <function>` - reload one, e.g. `reload cheat`
+- `reload all` - reload every function in `functions/`
 
-# More
+# See also
 
-- `cheat zshconfig`: edit the config
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zshconfig` - edit the config
+- `cheat zsh-config` - everything zsh-config gives you

@@ -11,4 +11,4 @@
 
 # See also
 
-- `cheat cheat search`: searches the cache
+- `cheat cheat search` - searches the cache

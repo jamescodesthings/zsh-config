@@ -6,7 +6,7 @@
 # Options
 
 - `-o`, `--output <file>`: write one file elsewhere (ends in .html or .htm, not the input)
-- `--help`: show usage
+- `--help` - show usage
 
 # Examples
 
@@ -25,5 +25,5 @@
 # See also
 
 - `cheat md-to-pdf`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you
 - Exit: 1 if any file failed, 130 on ctrl-c, which also stops a batch

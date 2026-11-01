@@ -5,17 +5,17 @@
 
 # Getting started
 
-- `start-workstation`: start it
+- `start-workstation` - start it
 - Next: set the variables below to point it at another org or workstation
 
 # Environment
 
-- `ORG`: GitHub org (default `7digital`)
-- `PROJECT_DIR`: clone folder (default `~/projects/$ORG`)
-- `USER_NAME`: workstation name passed to the workflow (default `jamesm`)
-- `GH_REPO`: repo holding the workflow (default `developer-cloud-workstation`)
-- `WORKFLOW_ID`: workflow name (default `Start Workstation`)
+- `ORG` - GitHub org (default `7digital`)
+- `PROJECT_DIR` - clone folder (default `~/projects/$ORG`)
+- `USER_NAME` - workstation name passed to the workflow (default `jamesm`)
+- `GH_REPO` - repo holding the workflow (default `developer-cloud-workstation`)
+- `WORKFLOW_ID` - workflow name (default `Start Workstation`)
 
-# More
+# See also
 
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you

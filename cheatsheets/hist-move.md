@@ -5,7 +5,7 @@
 
 # Options
 
-- `--dry-run`: show what would move, change nothing
+- `--dry-run` - show what would move, change nothing
 
 # Examples
 
@@ -19,7 +19,7 @@
 
 # See also
 
-- `cheat hist`: the top sheet
+- `cheat hist` - the top sheet
 - `cheat hist clean`
 - `cheat j move`
 - Exit: 0 done, 1 bad arguments or nothing to move

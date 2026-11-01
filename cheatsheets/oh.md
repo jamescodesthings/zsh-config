@@ -5,11 +5,11 @@
 
 # Getting started
 
-- `oh`: open the current folder
-- `oh <folder>`: open another, e.g. `oh ~/Downloads`
-- `oh <file>`: open the folder the file is in, e.g. `oh notes.md`
+- `oh` - open the current folder
+- `oh <folder>` - open another, e.g. `oh ~/Downloads`
+- `oh <file>` - open the folder the file is in, e.g. `oh notes.md`
 
-# More
+# See also
 
-- `cheat j`: jump to a folder
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat j` - jump to a folder
+- `cheat zsh-config` - everything zsh-config gives you

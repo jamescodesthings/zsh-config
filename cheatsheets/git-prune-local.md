@@ -12,6 +12,6 @@
 # See also
 
 - `cheat git`
-- `cheat zsh-config`: everything zsh-config gives you
+- `cheat zsh-config` - everything zsh-config gives you
 - `cheat git-cleanup-branch`
 - Run git fetch --prune first so gone branches show

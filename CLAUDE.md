@@ -107,7 +107,12 @@ The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, pro
 - `cli-icon [-v VAR] <name>` is the one place for the nf-md glyphs (ok, info, warn, err, step, log, ask, run, done, fail), written as UTF-8 bytes so they work under any locale. info is nf-md-circle_medium.
 - `say ok|info|warn|fail <text>` prints one status line: icon, two spaces, text, all in the role colour; `fail` goes to stderr.
 - `problem <text>` and `fix <command> [reason]` collect while a tool runs; `problems` prints the block at the end on stderr and returns 1 (0 when there were none): the count with the error icon, each problem dimmed in the error colour, a blank line, then each fix as one command in the `cmd` colour with its reason dimmed, plus `log open last` when the run has a log (`LOG_FILE`). Call `problem` and `fix` in the tool's own shell, never inside `$(...)`.
-- `tests/col` and `tests/say` cover them.
+- `pick <header> <items...> [-v VAR]` asks for a missing argument with fzf, the first item the default; in plain mode, without fzf or without a terminal it fails naming the argument, exit 2.
+- `progress start <title> <total>`, `progress step <label>`, `progress done|fail` draw on stderr: a spinner, `step X/Y`, the label dimmed, elapsed time, and kitty's tab progress after 2 seconds; one line per step in plain mode. `run-quiet <label> <command...>` runs a command into a child log, advancing progress, and records a problem and a `log open child` fix when it fails. Call both in the tool's own shell.
+- Logs live in `~/.custom/logs/commands/` and `children/` (this repo's `logs/`, gitignored), newest 50 per folder. `log-start <command>` opens a run's log (`LOG_FILE`, `LOG_COMMAND`), `log-line <text>` appends a stamped line, `log list` and `log open` read them (`cheat log`).
+- `config [--schema FILE] <tool> list|get|set|unset|edit` keeps a tool's settings in `~/.custom/config/<tool>.json` (gitignored), written atomically with jq; the tool ships a schema of `{key: {default, meaning}}` (`cheat config`).
+- `installers/fonts` (and `updaters/125-fonts`, and the Brewfile cask) installs the Nerd Font kitty names, DejaVuSansM Nerd Font Mono, so the icons render.
+- `cheat cli` is the helper library's sheet. `tests/col`, `tests/say`, `tests/pick`, `tests/progress`, `tests/run-quiet`, `tests/log` and `tests/config` cover it.
 
 ### `cheatsheets/` directory
 
@@ -122,12 +127,12 @@ The `--help` convention for every repo's tools: `<tool> [words...] --help` shows
 Completions shipped by other repos go into `~/.local/share/zsh/site-functions/` (their installer links `_<tool>` there, as agent-forge does with `_hub`). `completions.zsh` puts that directory on `fpath` before its one `compinit`, which rescans on every shell start, so nothing in zsh-config changes per tool. `completions/_cheat` completes cheat's subcommands and sheet names a word at a time (`cheat hub <tab>` offers the words after `hub-` in the sheet names).
 
 Every repo's sheets share one structure, written down in `cheatsheets/cheat-format.md` (`cheat cheat format`), which is the reference for other repos too. In short:
-- A top sheet (`tool.md`): `# tool`, one `>` purpose line, `# Getting started` with the 2 or 3 commands that get someone working, the everyday groups in the order a user works, maintenance, and `# More` last, pointing at the command and topic sheets and at the repo overview (`cheat zsh-config` here). It fits half a kitty window: 35 rendered lines.
+- A top sheet (`tool.md`): `# tool`, one `>` purpose line, `# Getting started` with the 2 or 3 commands that get someone working, the everyday groups in the order a user works, maintenance, and `# See also` last, exactly, pointing at the command and topic sheets and at the repo overview as an ordinary row (`cheat zsh-config` here). It fits half a kitty window: 35 rendered lines.
 - A child sheet (`tool-command.md` or `tool-topic.md`, any sheet whose `-` prefix names a sheet beside it): what it does and why in 2 lines, `# Options`, `# Examples`, and `# See also` last, with quirks.
 - Headings are plain words; the renderer colours them. No prose, notes or history.
 - `cheatsheets/zsh-config.md` is this repo's overview. Third-party tools stay one top sheet each.
 
-tlrc refuses a whole sheet over one line it does not accept: every non-empty line must start with `# `, `> `, `- ` or a backtick, and a backtick line is one example that ends in a backtick. So no `##` headings, code fences, plain paragraphs or wrapped bullets. **Whenever a cheatsheet is made or changed, run `cheatsheet-test --strict <sheet>` on it and fix every failure before finishing.** `cheatsheet-test` (`functions/cheatsheet-test`) takes sheets or folders, defaults to this repo's `cheatsheets/`, checks each line, renders with tldr and glow when installed (stdin closed), prints `file:line` for each failure and returns 1 if any sheet fails. It also checks the shared structure (first and last sections, the 35-line height of a top sheet); those are warnings unless `--strict`, so another repo can move over at its own pace. `installers/00-zshconfig` runs it as a warning. Other projects run it on their own sheets.
+Every non-empty line starts with `# `, `> `, `- ` or a backtick, and a backtick line is one example that ends in a backtick: no `##` headings, code fences, plain paragraphs or wrapped bullets. A row is `- \`command\` - explanation`; the renderer aligns the second column, so the source never pads it, and flag alternatives sit in brackets (`[-v|--verbose]`). A `# Variables` section, when there is one, sits just before the last. **Whenever a cheatsheet is made or changed, run `cheatsheet-test --strict <sheet>` on it and fix every failure before finishing.** `cheatsheet-test` (`functions/cheatsheet-test`) takes sheets or folders, defaults to this repo's `cheatsheets/`, checks each line, renders each sheet with `cheat-render` (an unknown colour in a span fails), prints `file:line` for each failure and returns 1 if any sheet fails. The structure and row rules (Getting started first, `See also` exactly as the last section, the 35 rendered lines of a top sheet, the ` - ` separator, flags in brackets, no padding, Variables) are warnings unless `--strict`, so another repo can move over at its own pace. `installers/00-zshconfig` runs it as a warning. Other projects run it on their own sheets.
 
 ### `installers/` directory
 
@@ -197,7 +202,7 @@ GNOME-specific config and tools. Only installed on machines running GNOME on Way
 
 ## Testing/Running
 
-There is no automated test suite beyond `cheatsheet-test` and the scripts in `tests/` (`tests/cheatsheet-test`, `tests/hist-j-move`). Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
+There is no automated test suite beyond `cheatsheet-test` and the scripts in `tests/`, one per tool (`for t in tests/*; do $t || echo "$t failed"; done` runs them all). Verify a change by syntax-checking the files it touched and then loading the config in a fresh shell:
 
 ```zsh
 # Syntax check without executing (prints nothing on success)
