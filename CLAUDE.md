@@ -97,6 +97,15 @@ is not empty "$var"  # -z test (negated)
 
 `md-to-html` and `md-to-pdf` convert markdown with pandoc and WeasyPrint, styled by `configs/md/md.css`. Both take any number of files and convert each through a per-file helper (`_md-to-html-one`, `_md-to-pdf-one`), carrying on past a failure and stopping on an interrupt. `md-to-html -o <out.html>` names the output for a single file. `md-to-pdf` calls `md-to-html -o <tmp>.html -- <input>` with the dynamically scoped `MD_CALLER=md-to-pdf`, which makes `md-to-html` label its errors as `md-to-pdf` and skip its own success line.
 
+### CLI helper library
+
+The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, project-manager, readerr), autoloaded from `functions/` like everything else, so a zsh tool uses it with no sourcing. The interface is agent-forge's `docs/cli-spec/helpers-interface.md`; the look is its `docs/cli-spec/demos/`.
+
+- `configs/palette/palette.conf` is the one palette: `key = value` lines, a value being `#rrggbb`, another key, or `key-NN` (NN per cent of that colour over `background`). It holds the background, 15 hues and the roles (`cmd`, `tool`, `target`, `flag`, `num`, `heading`, `marker`, `prose`, `dim`, `ok`, `info`, `warn`, `err`, `tag-cmd`, `tag-child`), each role an alias of a hue. `~/.config/zsh-config/palette.conf` is read after it and wins per key. Rust and Swift tools parse the same file themselves.
+- `col <name|name-NN|role|bold|reset>` prints the escape: truecolor when `COLORTERM` is `truecolor` or `24bit`, the nearest of the 256 colours otherwise, nothing when `NO_COLOR` is set or `CLI_PLAIN=1`. `col -v VAR name` sets a variable instead (no subshell), `col --hex name` prints the resolved hex, `col --list` shows every hue and role.
+- `cli-init "$@"` is a tool's first line: it sets `CLI_PLAIN=1` for `--plain`, `NO_COLOR` or a stdout that is not a terminal, and loads the palette once into the shell. Plain mode keeps the icons and drops colour, animation and kitty escapes.
+- `tests/col` covers resolution, mixing, the user override, both escape forms and plain mode.
+
 ### `cheatsheets/` directory
 
 The sheets here are this repo's own. `link-cheatsheets` links each one into `$CHEATSHEET_DIR` (`~/cheatsheets`, set in `.zshenv`), which is where `cheat` reads; `installers/00-zshconfig` and `updaters/_self` call it, and other projects call it from their own installers for their sheets. A name already taken in `~/cheatsheets` by a real file or another project's link is a clash: it is never overwritten, `link-cheatsheets` prints a `warning:` line and returns 1. `cheat new` creates sheets here and links them.

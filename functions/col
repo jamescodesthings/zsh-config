@@ -1,0 +1,192 @@
+#!/usr/bin/env zsh
+
+# col <name|name-NN|role|bold|reset>: prints the colour's escape from
+# configs/palette/palette.conf. Truecolor when COLORTERM says so, the nearest
+# of the 256 colours otherwise, and nothing at all when NO_COLOR is set or
+# CLI_PLAIN=1 (cli-init sets that from --plain or a stdout that is no tty).
+#
+#   col -v VAR <name>   set VAR instead of printing, saving a subshell
+#   col --hex <name>    print the resolved #rrggbb, colour or not
+#
+# The palette loads once per shell into _CLI_PALETTE; ~/.config/zsh-config/
+# palette.conf is read after it and wins per key. CLI_PALETTE names another
+# base file (tests use it).
+
+# Reads one palette file into _CLI_PALETTE: the first token after `=` is the
+# value, anything after it is a comment.
+function _col_read() {
+  local line key value
+  [[ -r "$1" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" == [[:space:]]#\#* || "$line" != *=* ]] && continue
+    key="${${line%%=*}//[[:space:]]/}"
+    value="${${=${line#*=}}[1]}"
+    [[ -n "$key" && -n "$value" ]] && _CLI_PALETTE[$key]="$value"
+  done < "$1"
+}
+
+function _col_load() {
+  (( ${+_CLI_PALETTE} )) && (( ${#_CLI_PALETTE} )) && return 0
+  typeset -gA _CLI_PALETTE _CLI_HEX
+  _col_read "${CLI_PALETTE:-${CUSTOM_DIR:-$HOME/.custom}/configs/palette/palette.conf}"
+  _col_read "${XDG_CONFIG_HOME:-$HOME/.config}/zsh-config/palette.conf"
+}
+
+# Resolves a name to #rrggbb into REPLY, following aliases and name-NN mixes.
+function _col_hex() {
+  local name="$1"
+  local -i depth=0 pct=100 a b i
+  local seen="" value out
+
+  if [[ -n "${_CLI_HEX[$name]}" ]]; then
+    REPLY="${_CLI_HEX[$name]}"
+    return 0
+  fi
+
+  value="$name"
+  while [[ "$value" != \#[[:xdigit:]](#c6) ]]; do
+    if (( ++depth > 32 )) || [[ " $seen " == *" $value "* ]]; then
+      print -u2 -- "col: the palette has an alias loop at $name"
+      return 1
+    fi
+    seen+=" $value"
+    if [[ -n "${_CLI_PALETTE[$value]}" ]]; then
+      value="${_CLI_PALETTE[$value]}"
+    elif [[ "$value" == *-<-> && -n "${_CLI_PALETTE[${value%-*}]}" ]]; then
+      pct=$(( pct * ${value##*-} / 100 ))
+      if (( ${value##*-} > 100 )); then
+        print -u2 -- "col: ${value##*-} is over 100 in $name"
+        return 1
+      fi
+      value="${value%-*}"
+    else
+      print -u2 -- "col: no colour called $name in the palette"
+      return 1
+    fi
+  done
+
+  if (( pct < 100 )); then
+    local bg="${_CLI_PALETTE[background]:-#000000}"
+    out='#'
+    for i in 2 4 6; do
+      a=$(( 16#${value[i,i+1]} ))
+      b=$(( 16#${bg[i,i+1]} ))
+      out+=$(printf '%02x' $(( b + (a - b) * pct / 100 )))
+    done
+    value="$out"
+  fi
+  _CLI_HEX[$name]="${(L)value}"
+  REPLY="${(L)value}"
+}
+
+# The nearest xterm 256-colour index for #rrggbb, into REPLY: the 6x6x6 cube
+# or the grey ramp, whichever is closer.
+function _col_256() {
+  local hex="$1"
+  local -i r g b i best=0 bestd=1000000 d level
+  local -a levels=(0 95 135 175 215 255) idx
+  r=$(( 16#${hex[2,3]} )) g=$(( 16#${hex[4,5]} )) b=$(( 16#${hex[6,7]} ))
+  idx=()
+  for level in $r $g $b; do
+    best=0 bestd=1000000
+    for i in {1..6}; do
+      d=$(( (level - levels[i]) ** 2 ))
+      (( d < bestd )) && { bestd=$d; best=$(( i - 1 )); }
+    done
+    idx+=($best)
+  done
+  local -i cube=$(( 16 + 36 * idx[1] + 6 * idx[2] + idx[3] ))
+  local -i cd=$(( (r - levels[idx[1]+1]) ** 2 + (g - levels[idx[2]+1]) ** 2 + (b - levels[idx[3]+1]) ** 2 ))
+  local -i avg=$(( (r + g + b) / 3 )) gi gv gd
+  gi=$(( (avg - 8) / 10 ))
+  (( gi < 0 )) && gi=0
+  (( gi > 23 )) && gi=23
+  gv=$(( 8 + 10 * gi ))
+  gd=$(( (r - gv) ** 2 + (g - gv) ** 2 + (b - gv) ** 2 ))
+  if (( gd < cd )); then
+    REPLY=$(( 232 + gi ))
+  else
+    REPLY=$cube
+  fi
+}
+
+# col --list: every hue at the steps the sheets use, then each role and what
+# it resolves to, so a palette change can be seen at a glance.
+function _col_list() {
+  local -a hues roles steps=(5 10 25 50 60 75 80 90 100)
+  local key value step
+  for key in ${(k)_CLI_PALETTE}; do
+    value="${_CLI_PALETTE[$key]}"
+    [[ "$key" == background ]] && continue
+    if [[ "$value" == \#* ]]; then hues+=("$key"); else roles+=("$key"); fi
+  done
+  print -r -- "$(col heading)hues$(col reset)  $(col dim)name, then name-NN: NN per cent over the background$(col reset)"
+  printf '  %-9s' ''
+  for step in $steps; do printf '%-5s' "$step"; done
+  print
+  for key in ${(o)hues}; do
+    printf '  %s%-9s%s' "$(col $key)" "$key" "$(col reset)"
+    for step in $steps; do printf '%s%-5s%s' "$(col $key-$step)" '███' "$(col reset)"; done
+    print
+  done
+  print
+  print -r -- "$(col heading)roles$(col reset)  $(col dim)aliases of the hues; change one line and every tool follows$(col reset)"
+  for key in ${(o)roles}; do
+    printf '  %s%-10s%s %s%s\n' "$(col $key)" "$key" "$(col reset)" "$(col dim)" "${_CLI_PALETTE[$key]} $(col --hex $key)$(col reset)"
+  done
+}
+
+function col() {
+  # The caller's options must not matter; the helpers above run under these
+  emulate -L zsh
+  setopt extended_glob
+  local var="" hex_only=0 name esc
+  while [[ "$1" == -* ]]; do
+    case "$1" in
+      -v) var="$2"; shift 2 ;;
+      --hex) hex_only=1; shift ;;
+      --list) _col_load; _col_list; return $? ;;
+      *) print -u2 -- "col: unknown option $1"; return 2 ;;
+    esac
+  done
+  name="$1"
+  if [[ -z "$name" ]]; then
+    print -u2 -- "col: name a colour, a role, bold or reset"
+    return 2
+  fi
+
+  _col_load
+
+  if (( hex_only )); then
+    _col_hex "$name" || return 1
+    print -r -- "$REPLY"
+    return 0
+  fi
+
+  if [[ -n "$NO_COLOR" || "$CLI_PLAIN" == 1 ]]; then
+    esc=""
+  else
+    case "$name" in
+      reset) esc=$'\e[0m' ;;
+      bold) esc=$'\e[1m' ;;
+      *)
+        _col_hex "$name" || return 1
+        local hex="$REPLY"
+        if [[ "$COLORTERM" == (truecolor|24bit) ]]; then
+          esc=$'\e[38;2;'"$(( 16#${hex[2,3]} ));$(( 16#${hex[4,5]} ));$(( 16#${hex[6,7]} ))m"
+        else
+          _col_256 "$hex"
+          esc=$'\e[38;5;'"${REPLY}m"
+        fi
+        ;;
+    esac
+  fi
+
+  if [[ -n "$var" ]]; then
+    typeset -g "$var=$esc"
+  else
+    print -rn -- "$esc"
+  fi
+}
+
+col "$@"

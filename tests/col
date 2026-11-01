@@ -1,0 +1,107 @@
+#!/usr/bin/env zsh
+# Tests functions/col and configs/palette/palette.conf from a plain
+# `zsh -f -c`. Run: tests/col. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+# run <env assignments...> -- <col args...>: sets OUT, ERR and CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP/home" PATH=/usr/bin:/bin "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col
+    export CUSTOM_DIR="$1"
+    shift
+    col "$@"
+  ' _ "$REPO_DIR" "$@" 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+# expect <description> <wanted output> <env...> -- <col args...>
+function expect() {
+  local what="$1" want="$2"
+  shift 2
+  run "$@"
+  if [[ "$CODE" == 0 && "$OUT" == "$want" ]]; then
+    echo "ok: $what"
+  else
+    echo "FAIL: $what: exit $CODE, got ${(q+)OUT}, wanted ${(q+)want}${ERR:+, stderr: $ERR}"
+    failed=1
+  fi
+}
+
+# expect_error <description> <env...> -- <col args...>
+function expect_error() {
+  local what="$1"
+  shift
+  run "$@"
+  if [[ "$CODE" != 0 && -z "$OUT" && -n "$ERR" ]]; then
+    echo "ok: $what"
+  else
+    echo "FAIL: $what: exit $CODE, output ${(q+)OUT}, stderr ${(q+)ERR}"
+    failed=1
+  fi
+}
+
+E=$'\e'
+
+expect "a hue resolves to its hex" '#ef5350' -- --hex red
+expect "name-NN mixes NN per cent over the background" '#78343b' -- --hex red-50
+expect "a role is an alias of a hue" '#ef5350' -- --hex err
+expect "a role can alias a mixed hue" "$(run -- --hex cyan-50; print -r -- $OUT)" -- --hex tool
+expect "role-NN mixes the role's colour" '#78343b' -- --hex err-50
+expect "the background has a key" '#011627' -- --hex background
+
+mkdir -p "$TMP/home/.config/zsh-config"
+print -r -- 'red = #ff0000' > "$TMP/home/.config/zsh-config/palette.conf"
+expect "the user's palette wins per key" '#ff0000' -- --hex err
+rm "$TMP/home/.config/zsh-config/palette.conf"
+
+expect "truecolor escape" "${E}[38;2;239;83;80m" COLORTERM=truecolor -- red
+expect "256-colour nearest without truecolor" "${E}[38;5;203m" -- red
+expect "NO_COLOR prints nothing" '' NO_COLOR=1 COLORTERM=truecolor -- red
+expect "CLI_PLAIN=1 prints nothing" '' CLI_PLAIN=1 COLORTERM=truecolor -- red
+expect "reset" "${E}[0m" COLORTERM=truecolor -- reset
+expect "bold" "${E}[1m" COLORTERM=truecolor -- bold
+OUT="$(env -i HOME="$TMP/home" PATH=/usr/bin:/bin COLORTERM=truecolor zsh -f -c '
+  fpath=("$1/functions" $fpath); autoload -Uz col; export CUSTOM_DIR="$1"
+  col -v X red; print -rn -- "[$X]"' _ "$REPO_DIR")"
+if [[ "$OUT" == "[${E}[38;2;239;83;80m]" ]]; then
+  echo "ok: -v sets a variable instead of printing"
+else
+  echo "FAIL: -v sets a variable instead of printing: got ${(q+)OUT}"
+  failed=1
+fi
+
+expect_error "an unknown name fails" -- nosuch
+expect_error "a percentage over 100 fails" -- red-150
+
+print -r -- $'a = b\nb = a' > "$TMP/loop.conf"
+expect_error "an alias loop fails" CLI_PALETTE="$TMP/loop.conf" -- --hex a
+
+# cli-init: a stdout that is no terminal (as here) means plain
+OUT="$(env -i HOME="$TMP/home" PATH=/usr/bin:/bin COLORTERM=truecolor zsh -f -c '
+  fpath=("$1/functions" $fpath); autoload -Uz col cli-init; export CUSTOM_DIR="$1"
+  cli-init; print -rn -- "[$CLI_PLAIN][$(col red)][${#_CLI_PALETTE}]"' _ "$REPO_DIR")"
+if [[ "$OUT" == "[1][]["<1->"]" ]]; then
+  echo "ok: cli-init turns plain mode on without a terminal and loads the palette"
+else
+  echo "FAIL: cli-init turns plain mode on without a terminal and loads the palette: got ${(q+)OUT}"
+  failed=1
+fi
+
+run COLORTERM=truecolor -- --list
+if [[ "$CODE" == 0 && "$OUT" == *roles* && "$OUT" == *cmd* && -z "$ERR" ]]; then
+  echo "ok: --list shows the hues and the roles"
+else
+  echo "FAIL: --list shows the hues and the roles: exit $CODE, stderr $ERR"
+  failed=1
+fi
+
+exit $failed

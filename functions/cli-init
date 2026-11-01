@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+# cli-init "$@": the first line of a tool that prints with col, say and the
+# rest. Sets CLI_PLAIN=1 (no colour, no animation, no kitty escapes; icons
+# stay) when --plain is among the arguments, NO_COLOR is set, or stdout is not
+# a terminal, and loads the palette into this shell so later $(col ...) calls
+# do not each read the file. A tool still drops --plain from its own
+# arguments: `set -- "${@:#--plain}"`.
+function cli-init() {
+  if (( ${@[(Ie)--plain]} )) || [[ -n "$NO_COLOR" || ! -t 1 ]]; then
+    typeset -g CLI_PLAIN=1
+  fi
+  col -v _ reset
+}
+
+cli-init "$@"
