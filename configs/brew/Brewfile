@@ -28,6 +28,10 @@ brew "httpie"
 brew "progress"
 brew "direnv"
 
+# The Nerd Font kitty asks for, so the CLI helpers' icons render
+# (installers/fonts does the same on Debian)
+cask "font-dejavu-sans-mono-nerd-font"
+
 # md-to-html and md-to-pdf
 brew "pandoc"
 brew "weasyprint"

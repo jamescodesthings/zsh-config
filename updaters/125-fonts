@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+# The Nerd Font kitty asks for. installers/fonts skips when it is installed,
+# so this is a no-op on a machine that has it. On macOS the Brewfile also
+# lists the cask, so 010-brew usually installs it first.
+"$REPO_DIR/installers/fonts" < /dev/null
+exit $?
+}
