@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-10-30 00:12 GMT
-- **Current Task Status:** Cheat v4 (hub brief 2026-10-29-cheat-v4) done for zsh-config: parent fallback and --help convention (232f452), shared sheet structure, cheatsheet-test --strict, cheat zsh-config overview, `cheat refresh` (e2972a3). Earlier: the 2026-10-29 burn-down.
+- **Date/Time Stamp:** 2026-11-01 18:06 GMT
+- **Current Task Status:** CLI helper library done (agent-forge docs/cli-spec/helpers-interface.md): palette and col, say and problems, cheat-render replacing tlrc in cheat, logs, pick, progress, run-quiet, config, the Nerd Font step, and every sheet on the new cheatsheet-test rules (See also last, ` - ` rows, 35 lines). Earlier: cheat v4.
 
 ## Milestone & Phase Progress
 
@@ -105,3 +105,13 @@
 - Structure checks in cheatsheet-test are warnings unless --strict, so other repos can move over gradually; zsh-config's own sheets pass --strict. A sheet is a child when a `-` prefix of its name is a sheet beside it, which makes md-to-html a child of md (a name coincidence, harmless).
 - `cheat update` now shows the update sheet; the tldr cache refresh became `cheat refresh`. Alternative: rename the update sheet, but `cheat update` is what CLAUDE.md and every other sheet already point at.
 - Completions from other repos go in ~/.local/share/zsh/site-functions/, already on fpath before compinit; no per-tool change in zsh-config.
+
+## Decisions 2026-11-01 (CLI helper library)
+
+- col cannot see the caller's tty from inside $(...), so plain mode for a non-tty stdout comes from cli-init (CLI_PLAIN), and cheat sets a local CLI_PLAIN itself. Alternative: col testing stderr, which is wrong when only stdout is redirected.
+- Icons live in cli-icon as UTF-8 byte escapes, since $'\U...' fails in a C locale (fresh machines, env -i). Alternative: \U escapes, which broke every test under env -i.
+- The palette value is the first token after `=`; anything after is a comment, so `#rrggbb` needs no quoting. Rust and Swift parse the same way.
+- cheat-render accepts both `: ` and ` - ` rows so other repos keep rendering; cheatsheet-test only warns on `: ` unless --strict.
+- The 35-line top-sheet budget excludes the blank line every render now ends with (James's ask, 2026-11-01).
+- config's schema is passed with --schema or linked as <tool>.schema.json. Alternative: link-only, which needs an install step in every tool.
+- log accepts a bare number for ~N because zsh expands an unquoted ~1.
