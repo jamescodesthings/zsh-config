@@ -1,7 +1,7 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-11-01 18:06 GMT
+- **Date/Time Stamp:** 2026-11-02 16:05 GMT
 - **Current Task Status:** CLI helper library done (agent-forge docs/cli-spec/helpers-interface.md): palette and col, say and problems, cheat-render replacing tlrc in cheat, logs, pick, progress, run-quiet, config, the Nerd Font step, and every sheet on the new cheatsheet-test rules (See also last, ` - ` rows, 35 lines). Earlier: cheat v4.
 
 ## Milestone & Phase Progress
@@ -115,3 +115,9 @@
 - The 35-line top-sheet budget excludes the blank line every render now ends with (James's ask, 2026-11-01).
 - config's schema is passed with --schema or linked as <tool>.schema.json. Alternative: link-only, which needs an install step in every tool.
 - log accepts a bare number for ~N because zsh expands an unquoted ~1.
+
+## Since 2026-11-01
+
+- 404c7fb: agent-forge's six cheat-render/cheatsheet-test gaps (subcommands known from sheets, inline code without backticks, column width within the cap, `var` role, standard headings checked, multi-command rows).
+- 8c9399c: CLICOLOR_FORCE keeps colour without a tty in cli-init and cheat; --plain and NO_COLOR still win.
+- Nothing open in zsh-config; other repos' sheets move to ` - ` rows and See also through their own sessions.
