@@ -42,7 +42,12 @@ function cheat() {
   # Local sheets render through cheat-render in the shared palette; plain
   # when stdout is not a terminal. Local, so the caller's shell is untouched.
   local CLI_PLAIN="$CLI_PLAIN"
-  [[ -t 1 && -z "$NO_COLOR" ]] || CLI_PLAIN=1
+  # CLICOLOR_FORCE (set, not 0) keeps colour for a parent capturing the output
+  if [[ -n "$NO_COLOR" ]]; then
+    CLI_PLAIN=1
+  elif [[ ! -t 1 ]] && [[ -z "$CLICOLOR_FORCE" || "$CLICOLOR_FORCE" == 0 ]]; then
+    CLI_PLAIN=1
+  fi
 
   # Auto-update tldr cache (silent, background, every 7 days)
   if is available tldr; then

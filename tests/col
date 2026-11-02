@@ -96,6 +96,27 @@ else
   failed=1
 fi
 
+# CLICOLOR_FORCE: colour without a terminal (a parent capturing the output to
+# reprint it); NO_COLOR and --plain still win, and 0 does not force
+# force_case <description> <wanted [plain]> <cli-init args> <env...>
+function force_case() {
+  local what="$1" want="$2" args="$3"
+  shift 3
+  OUT="$(env -i HOME="$TMP/home" PATH=/usr/bin:/bin COLORTERM=truecolor "$@" zsh -f -c '
+    fpath=("$1/functions" $fpath); autoload -Uz col cli-init; export CUSTOM_DIR="$1"
+    cli-init ${=2}; print -rn -- "[$CLI_PLAIN][$(col red)]"' _ "$REPO_DIR" "$args")"
+  if [[ "$OUT" == "$want" ]]; then
+    echo "ok: $what"
+  else
+    echo "FAIL: $what: got ${(q+)OUT}, wanted ${(q+)want}"
+    failed=1
+  fi
+}
+force_case "CLICOLOR_FORCE=1 colours without a terminal" "[][${E}[38;2;239;83;80m]" '' CLICOLOR_FORCE=1
+force_case "NO_COLOR beats CLICOLOR_FORCE" "[1][]" '' CLICOLOR_FORCE=1 NO_COLOR=1
+force_case "--plain beats CLICOLOR_FORCE" "[1][]" '--plain' CLICOLOR_FORCE=1
+force_case "CLICOLOR_FORCE=0 does not force" "[1][]" '' CLICOLOR_FORCE=0
+
 run COLORTERM=truecolor -- --list
 if [[ "$CODE" == 0 && "$OUT" == *roles* && "$OUT" == *cmd* && -z "$ERR" ]]; then
   echo "ok: --list shows the hues and the roles"

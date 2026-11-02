@@ -26,7 +26,7 @@
 
 # Plain mode and palette
 
-- `--plain`, `NO_COLOR` or a stdout that is no tty: no colour, no animation; icons stay (`progress` draws on stderr, so it also goes plain when stderr is no tty)
+- `--plain`, `NO_COLOR` or a stdout that is no tty: no colour, no animation; icons stay (`progress` draws on stderr, so it also goes plain when stderr is no tty). `CLICOLOR_FORCE=1` keeps colour without a tty, for a parent that reprints the output; `--plain` and `NO_COLOR` still win
 - `configs/palette/palette.conf` - hues and roles; `~/.config/zsh-config/palette.conf` overrides
 
 # See also

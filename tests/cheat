@@ -90,6 +90,19 @@ else
   failed=1
 fi
 
+OUT="$(zsh -f -c '
+  fpath=("$1/functions" $fpath)
+  autoload -Uz is cheat cheat-render col
+  export CHEATSHEET_DIR="$2" CUSTOM_DIR="$1" CLICOLOR_FORCE=1 COLORTERM=truecolor
+  path=(/usr/bin /bin)
+  cheat a' _ "$REPO_DIR" "$SHEETS" 2> /dev/null)"
+if [[ "$OUT" == *$'\e['* ]]; then
+  echo "ok: CLICOLOR_FORCE=1 keeps colour when the output is captured"
+else
+  echo "FAIL: CLICOLOR_FORCE=1 keeps colour when the output is captured: ${(q+)OUT}"
+  failed=1
+fi
+
 run cheat a b c
 if [[ "$ERR" == *"a b c"* && "$ERR" == *"a b"* ]]; then
   echo "ok: a fallback says which sheet it showed"
