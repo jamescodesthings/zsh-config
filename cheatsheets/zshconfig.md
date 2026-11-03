@@ -21,6 +21,12 @@
 - `ssh -t host NO_ZSH=1 bash -i` - over ssh
 - `bash --norc` - skip the startup file
 
+# Options
+
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
+
 # See also
 
 - `cheat reload`

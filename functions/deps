@@ -11,17 +11,21 @@ steps[python]="asdf plugin add python && asdf install python latest && asdf set 
 function deps-command() {
   local inst="${steps[$1]}"
   if is not empty "$inst"; then
-    echo "$c[info]install:$c[reset] $inst"
+    say info "install: $inst"
   fi
 }
 
 function deps() {
   cheat-help deps "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local missing=0
 
   for dependency in "$@"; do
     if is not available "$dependency"; then
-      echo "$c[error]missing dependency:$c[reset] $dependency"
+      say fail "missing dependency: $dependency"
       deps-command "${dependency}"
       missing=1
     fi

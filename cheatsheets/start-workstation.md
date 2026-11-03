@@ -16,6 +16,12 @@
 - `GH_REPO` - repo holding the workflow (default `developer-cloud-workstation`)
 - `WORKFLOW_ID` - workflow name (default `Start Workstation`)
 
+# Options
+
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
+
 # See also
 
 - `cheat zsh-config` - everything zsh-config gives you

@@ -9,8 +9,12 @@ function confirm() {
     return 0
   fi
 
-  local MESSAGE=${1:="$c[warn]are you sure?$c[reset]"}
-  read "confirmed?$MESSAGE $c[sub][y/n]$c[reset] "
+  autoload -Uz col
+  local warn dim off MESSAGE=${1:-are you sure?}
+  col -v warn warn
+  col -v dim dim
+  [[ -n "$warn" ]] && off=$'\e[0m'
+  read "confirmed?${warn}${MESSAGE}${off} ${dim}[y/n]${off} "
   if [[ "$confirmed" =~ ^[Yy]$ ]]; then
     return 0
   else

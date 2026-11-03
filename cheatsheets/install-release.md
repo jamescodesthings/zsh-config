@@ -14,6 +14,12 @@
 - `installed:` - new release placed, completion linked when the tool has one
 - `current:` - already on the latest tag
 
+# Options
+
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
+
 # See also
 
 - `cheat update`

@@ -6,19 +6,25 @@ function git-prune-local_list() {
 
 function git-prune-local() {
   cheat-help git-prune-local "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local DEPS=(git grep awk xargs confirm)
   if ! deps $DEPS; then
     return 1
   fi
 
-
-  echo "$c[info]the following branches will be deleted:$c[reset]"
+  say info "the following branches will be deleted:"
   git-prune-local_list
 
-  if confirm "$c[warn]are you sure you want to delete these branches?$c[reset]"; then
-    echo "$c[info]deleting:$c[reset] stale branches"
-    git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D
-    echo "$c[success]success:$c[reset] stale branches deleted"
+  if confirm "are you sure you want to delete these branches?"; then
+    say info "deleting stale branches"
+    if ! git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -D; then
+      say fail "could not delete every stale branch"
+      return 1
+    fi
+    say ok "stale branches deleted"
   fi
 }
 

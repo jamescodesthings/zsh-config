@@ -1,0 +1,10 @@
+#compdef confirm
+
+_confirm() {
+  _arguments \
+    '(-y --yes)'{-y,--yes}'[answer yes without asking]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    ':prompt text: '
+}
+
+_confirm "$@"

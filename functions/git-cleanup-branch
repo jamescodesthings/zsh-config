@@ -2,40 +2,43 @@
 
 function git-cleanup-branch() {
   cheat-help git-cleanup-branch "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local DEPS=(git)
   if ! deps $DEPS; then
     return 1
   fi
 
   if is empty "$1"; then
-    echo "$c[error]error:$c[reset] git-cleanup-branch needs a branch name"
-    echo "see: cheat git-cleanup-branch"
-    return 1
+    problem "git-cleanup-branch needs a branch name"
+    fix "cheat git-cleanup-branch" "how to use it"
+    problems
+    return 2
   fi
 
   if is equal "$1" "main" || is equal "$1" "master"; then
-    echo "$c[error]error:$c[reset] cannot delete main branches"
+    say fail "cannot delete main branches"
     return 1
   fi
 
   if is equal "$1" "$(git-branch)"; then
-    echo "$c[error]error:$c[reset] cannot delete the current branch"
+    say fail "cannot delete the current branch"
     return 1
   fi
 
-  git branch -D "$1"
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not delete branch $1 locally"
+  if ! git branch -D "$1"; then
+    say fail "could not delete branch $1 locally"
     return 1
   fi
 
-  git push origin --delete "$1"
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not delete branch $1 from origin"
+  if ! git push origin --delete "$1"; then
+    say fail "could not delete branch $1 from origin"
     return 1
   fi
 
-  echo "$c[success]success:$c[reset] deleted $1 locally and from origin"
+  say ok "deleted $1 locally and from origin"
 }
 
 git-cleanup-branch "$@"

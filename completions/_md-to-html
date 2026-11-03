@@ -1,0 +1,12 @@
+#compdef md-to-html
+
+_md-to-html() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '(-o --output)'{-o,--output}'[write one file elsewhere]:output file:_files -g "*.htm(l)#"' \
+    '*:markdown file:_files'
+}
+
+_md-to-html "$@"

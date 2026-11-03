@@ -13,6 +13,12 @@
 
 - `TOUCH_SUDO_FILE` - PAM file to write (default `/etc/pam.d/sudo`)
 
+# Options
+
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
+
 # See also
 
 - `cheat zsh-config` - everything zsh-config gives you

@@ -1,7 +1,7 @@
 # link-cheatsheets
 
 > Link every `*.md` in a folder into `$CHEATSHEET_DIR` so `cheat` finds it.
-> Prints `linked N, already linked N, clashes N`. Exit 0 when nothing clashed; 1 on a clash, an error or bad usage.
+> Prints `linked N, already linked N, clashes N`. Exit 0 when nothing clashed; 1 on a clash or an error; 2 on bad usage.
 
 # Getting started
 
@@ -18,6 +18,12 @@
 - A name taken by a real file or another folder's link: warns, never overwritten, exit 1
 - `$CHEATSHEET_DIR` inside the folder: error; open a new shell
 - `$CHEATSHEET_DIR` unset: skips
+
+# Options
+
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
 
 # See also
 

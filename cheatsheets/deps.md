@@ -9,6 +9,12 @@
 - `deps <command>...` - e.g. `deps git gh jq`
 - Next: `is available <command>` tests one command quietly
 
+# Options
+
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
+
 # See also
 
 - `cheat is`

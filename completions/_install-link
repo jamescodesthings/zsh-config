@@ -1,0 +1,12 @@
+#compdef install-link
+
+_install-link() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    ':source:_files' \
+    ':target:_files'
+}
+
+_install-link "$@"

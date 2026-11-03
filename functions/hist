@@ -47,7 +47,7 @@ function _hist_print_deduped() {
       display="$cmd"
     fi
     if (( n > 1 )); then
-      printf '%s%s %s(%d)%s\n' "$indent" "$display" "${c[info]}" "$n" "${c[reset]}"
+      printf '%s%s %s(%d)%s\n' "$indent" "$display" "${_N}" "$n" "${_R}"
     else
       printf '%s%s\n' "$indent" "$display"
     fi
@@ -79,11 +79,11 @@ function _hist_header() {
   local file="$1" is_global="$2"
   if [[ -n "$is_global" ]]; then
     local display="${file/#$HOME/~}"
-    echo "${c[h2]}${display} (global):${c[reset]}"
+    print -r -- "${_H}${display} (global):${_R}"
   else
     local dir
     dir=$(_hist_file_to_dir "$file")
-    echo "${c[h2]}${dir}:${c[reset]}"
+    print -r -- "${_H}${dir}:${_R}"
   fi
 }
 
@@ -126,17 +126,17 @@ function _hist_move() {
     if [[ "$a" == --dry-run ]]; then dry=1; else args+=("$a"); fi
   done
   if (( ${#args[@]} != 2 )) || [[ -z "${args[1]}" || -z "${args[2]}" ]]; then
-    echo "${c[error]}error:${c[reset]} hist move requires <old> and <new>"
+    say fail "hist move requires <old> and <new>"
     return 1
   fi
   local old="${args[1]:a}" new="${args[2]:a}"
   old="${old%/}"; new="${new%/}"
   if [[ -z "$old" || "$new" == "$old" ]]; then
-    echo "${c[error]}error:${c[reset]} <old> and <new> must be different folders"
+    say fail "<old> and <new> must be different folders"
     return 1
   fi
   if [[ -z "$new" || "$new" == "$old"/* ]]; then
-    echo "${c[error]}error:${c[reset]} <new> must not be inside <old>"
+    say fail "<new> must not be inside <old>"
     return 1
   fi
 
@@ -144,7 +144,7 @@ function _hist_move() {
   [[ -d "$base$old" ]] && files=("${(@f)$(find "$base$old" -type f -name "$hist_file" 2>/dev/null | sort)}")
   files=("${files[@]:#}")
   if (( ${#files[@]} == 0 )); then
-    echo "${c[error]}error:${c[reset]} no history found under $old"
+    say fail "no history found under $old"
     return 1
   fi
 
@@ -173,7 +173,7 @@ function _hist_move() {
     else
       command mv "$f" "$dest" || { failed=1; continue; }
     fi
-    echo "${c[success]}${verb}d${c[reset]} ${old}${suffix%/$hist_file} -> ${new}${suffix%/$hist_file}"
+    print -r -- "${_O}${verb}d${_R} ${old}${suffix%/$hist_file} -> ${new}${suffix%/$hist_file}"
     (( moved++ ))
   done
 
@@ -182,15 +182,23 @@ function _hist_move() {
   local note=""
   (( merged )) && note=" (${merged} merged)"
   if (( dry )); then
-    echo "${c[info]}dry run: would move ${moved} file(s)${note}${c[reset]}"
+    say info "dry run: would move ${moved} file(s)${note}"
   else
-    echo "${c[success]}moved ${moved} file(s)${note}${c[reset]}"
+    say ok "moved ${moved} file(s)${note}"
   fi
   return $failed
 }
 
 function hist() {
   cheat-help hist "$@" && return 0
+  autoload -Uz cli-init say problem fix problems col
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#--plain}"
+  local _H _F _T _N _W _O _P _D _R
+  col -v _H heading; col -v _F flag; col -v _T target; col -v _N num
+  col -v _W warn; col -v _O ok; col -v _P prose; col -v _D dim
+  [[ -n "$_H" ]] && _R=$'\e[0m'
   unset "history[$HISTCMD]"
   local DEPS=(grep sed confirm)
   if ! deps "${DEPS[@]}"; then
@@ -228,12 +236,12 @@ function hist() {
         shift
       done
       if [[ -z "$query" ]]; then
-        echo "${c[error]}error:${c[reset]} hist search requires a query"
+        say fail "hist search requires a query"
         return 1
       fi
       printf '' | grep -qE -- "$query" 2>/dev/null
       if (( $? == 2 )); then
-        echo "${c[error]}error:${c[reset]} invalid regex: $query"
+        say fail "invalid regex: $query"
         return 1
       fi
       if grep -qE -- "$query" "$global_file" 2>/dev/null; then
@@ -251,15 +259,15 @@ function hist() {
     delete)
       local query="$1"
       if [[ -z "$query" ]]; then
-        echo "${c[error]}error:${c[reset]} hist delete requires a query"
+        say fail "hist delete requires a query"
         return 1
       fi
       printf '' | grep -qE -- "$query" 2>/dev/null
       if (( $? == 2 )); then
-        echo "${c[error]}error:${c[reset]} invalid regex: $query"
+        say fail "invalid regex: $query"
         return 1
       fi
-      echo "${c[h2]}Matches for '${query}':${c[reset]}"
+      print -r -- "${_H}Matches for '${query}':${_R}"
       local -a affected=()
       local total=0
       local n
@@ -280,18 +288,18 @@ function hist() {
         affected+=("$f")
       done < <(_hist_files)
       if (( total == 0 )); then
-        echo "${c[info]}no matches found${c[reset]}"
+        say info "no matches found"
         return 0
       fi
       echo ""
-      if confirm "${c[warn]}Delete ${total} line(s) across ${#affected[@]} file(s)?${c[reset]}"; then
+      if confirm "Delete ${total} line(s) across ${#affected[@]} file(s)?"; then
         local query_escaped="${query//\//\\/}"
         for f in "${affected[@]}"; do
           LC_ALL=C sed -i -E "/$query_escaped/d" "$f"
         done
-        echo "${c[success]}deleted ${total} lines${c[reset]}"
+        say ok "deleted ${total} lines"
       else
-        echo "${c[warn]}cancelled${c[reset]}"
+        say warn "cancelled"
       fi
       ;;
 
@@ -313,20 +321,20 @@ function hist() {
         is not existing "$dir" && stale+=("$f")
       done < <(_hist_files)
       if (( ${#stale[@]} == 0 )); then
-        echo "${c[success]}no stale history files${c[reset]}"
+        say ok "no stale history files"
         return 0
       fi
-      echo "${c[h2]}Stale files (directory no longer exists):${c[reset]}"
+      print -r -- "${_H}Stale files (directory no longer exists):${_R}"
       for f in "${stale[@]}"; do
         local dir; dir=$(_hist_file_to_dir "$f")
-        echo "  ${c[warn]}${dir}${c[reset]}"
+        print -r -- "  ${_W}${dir}${_R}"
       done
       echo ""
       if confirm "Delete ${#stale[@]} stale file(s)?"; then
         for f in "${stale[@]}"; do rm "$f"; done
-        echo "${c[success]}cleaned ${#stale[@]} files${c[reset]}"
+        say ok "cleaned ${#stale[@]} files"
       else
-        echo "${c[warn]}cancelled${c[reset]}"
+        say warn "cancelled"
       fi
       ;;
 
@@ -336,7 +344,7 @@ function hist() {
       ;;
 
     stats)
-      echo "${c[h1]}History stats:${c[reset]}"
+      print -r -- "${_H}History stats:${_R}"
       local -a rows=()
       local global_count
       global_count=$(wc -l < "$global_file" 2>/dev/null | tr -d ' ' || echo 0)
@@ -349,7 +357,7 @@ function hist() {
         rows+=("${count} ${dir}")
       done < <(_hist_files)
       printf '%s\n' "${rows[@]}" | sort -rn | while IFS=" " read -r count rest; do
-        printf '  %s%6d%s  %s\n' "${c[info]}" "$count" "${c[reset]}" "$rest"
+        printf '  %s%6d%s  %s\n' "${_N}" "$count" "${_R}" "$rest"
       done
       ;;
 
@@ -358,7 +366,7 @@ function hist() {
       ;;
 
     *)
-      echo "${c[error]}error:${c[reset]} unknown subcommand: $subcmd"
+      say fail "unknown subcommand: $subcmd"
       echo "see: cheat hist"
       return 1
       ;;

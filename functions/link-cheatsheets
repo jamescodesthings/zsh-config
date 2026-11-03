@@ -2,34 +2,39 @@
 
 function link-cheatsheets() {
   cheat-help link-cheatsheets "$@" && return 0
-  if is empty "$c"; then
-    source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
-  fi
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   if is not equal "$#" "1"; then
-    echo "$c[error]error:$c[reset] link-cheatsheets needs one folder"
-    echo "see: cheat link-cheatsheets"
-    return 1
+    problem "link-cheatsheets needs one folder"
+    fix "cheat link-cheatsheets" "how to use it"
+    problems
+    return 2
   elif is not dir "$1"; then
-    echo "$c[error]error:$c[reset] not a folder: $1"
-    echo "see: cheat link-cheatsheets"
-    return 1
+    problem "not a folder: $1"
+    fix "cheat link-cheatsheets" "how to use it"
+    problems
+    return 2
   fi
 
   local dir="${1:A}"
 
   if is empty "$CHEATSHEET_DIR"; then
-    echo "$c[info]skipping:$c[reset] CHEATSHEET_DIR is not set"
+    say info "skipping: CHEATSHEET_DIR is not set"
     return 0
   fi
 
   if [[ "${CHEATSHEET_DIR:A}" == "$dir" || "${CHEATSHEET_DIR:A}" == "$dir"/* || "${CHEATSHEET_DIR:A}" == "${CUSTOM_DIR:A}/cheatsheets" ]]; then
-    echo "$c[error]error:$c[reset] CHEATSHEET_DIR ($CHEATSHEET_DIR) points inside $dir; open a new shell so it picks up ~/cheatsheets"
+    problem "CHEATSHEET_DIR ($CHEATSHEET_DIR) points inside $dir"
+    fix "exec zsh" "open a new shell so it picks up ~/cheatsheets"
+    problems
     return 1
   fi
 
   if ! command mkdir -p "$CHEATSHEET_DIR"; then
-    echo "$c[error]error:$c[reset] cannot create $CHEATSHEET_DIR"
+    say fail "cannot create $CHEATSHEET_DIR"
     return 1
   fi
 
@@ -51,11 +56,11 @@ function link-cheatsheets() {
       already+=1
     elif [[ ! -e "$dest" ]]; then
       # no dest, or a dangling link
-      echo "$c[info]linking:$c[reset] $src → $dest"
+      say info "linking $src → $dest"
       if command ln -sfn "$src" "$dest"; then
         linked+=1
       else
-        echo "$c[warn]warning:$c[reset] could not link $name"
+        say warn "warning: could not link $name"
         clashes+=1
       fi
     else
@@ -64,13 +69,16 @@ function link-cheatsheets() {
       else
         target="a real file"
       fi
-      echo "$c[warn]warning:$c[reset] $name taken by $target"
+      say warn "warning: $name taken by $target"
       clashes+=1
     fi
   done
 
-  echo "linked $linked, already linked $already, clashes $clashes"
-  (( clashes == 0 ))
+  if (( clashes )); then
+    say warn "linked $linked, already linked $already, clashes $clashes"
+    return 1
+  fi
+  say ok "linked $linked, already linked $already, clashes $clashes"
 }
 
 link-cheatsheets "$@"

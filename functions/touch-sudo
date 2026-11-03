@@ -5,7 +5,7 @@ TOUCH_SUDO_FILE=${TOUCH_SUDO_FILE:=/etc/pam.d/sudo}
 function _touch-sudo-update-sudo() {
   sudo chown $(whoami) $TOUCH_SUDO_FILE
   sudo chmod +w $TOUCH_SUDO_FILE
-  cat > $TOUCH_SUDO_FILE << EOF
+  cat > $TOUCH_SUDO_FILE << EOT
 # sudo: auth account password session
 auth       sufficient     pam_tid.so
 auth       sufficient     pam_smartcard.so
@@ -13,31 +13,34 @@ auth       required       pam_opendirectory.so
 account    required       pam_permit.so
 password   required       pam_deny.so
 session    required       pam_permit.so
-EOF
+EOT
   sudo chmod -w $TOUCH_SUDO_FILE
   sudo chown root $TOUCH_SUDO_FILE
-  echo "$c[success]success:$c[reset] touch sudo enabled"
-  echo "run $c[em]cat $TOUCH_SUDO_FILE$c[reset] to verify"
+  say ok "touch sudo enabled"
+  say info "verify with: cat $TOUCH_SUDO_FILE"
 }
 
 function touch-sudo() {
   cheat-help touch-sudo "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local DEPS=(is confirm)
   if ! deps $DEPS; then
     return 1
   fi
 
-
   if is not osx; then
-    echo "$c[error]error:$c[reset] touch-sudo is macos only"
+    say fail "touch-sudo is macos only"
     return 1
   fi
 
-  if confirm "$c[warn]enable touch sudo?$c[reset]"; then
-    echo "$c[info]enabling:$c[reset] touch sudo"
+  if confirm "enable touch sudo?"; then
+    say info "enabling touch sudo"
     _touch-sudo-update-sudo
   else
-    echo "$c[warn]warning:$c[reset] cancelled"
+    say warn "cancelled"
   fi
 }
 

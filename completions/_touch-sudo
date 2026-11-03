@@ -1,7 +1,11 @@
 #compdef touch-sudo
 
 _touch-sudo() {
-  _arguments '(-h --help)'{-h,--help}'[show help]'
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '*: :'
 }
 
-_touch-sudo
+_touch-sudo "$@"

@@ -42,7 +42,7 @@ want: $3"; fi
 function expect_error() {
   local what="$1"; shift
   run "$@"
-  if [[ "$CODE" == 1 && "$OUT" == *"error:"* ]]; then pass "$what"; else fail "$what: exit $CODE" "$OUT"; fi
+  if [[ "$CODE" == 1 && "$OUT" == *$'\U000f0159'* ]]; then pass "$what"; else fail "$what: exit $CODE" "$OUT"; fi
 }
 
 function hfile() { echo "$HB$1/$HF"; }

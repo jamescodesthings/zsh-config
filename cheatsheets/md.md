@@ -14,6 +14,9 @@
 
 - `--no-follow` - create the directory without changing into it
 - `--help` - show usage
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
 
 # Examples
 

@@ -1,7 +1,7 @@
 # install-box-config
 
 > Install a per-machine config by symlink, picking the best variant for this machine.
-> Exit 1 on no arguments, no hostname or an unsupported OS.
+> Exit 2 on no arguments; 1 on no hostname or an unsupported OS.
 
 # Getting started
 
@@ -19,6 +19,12 @@
 - Links with `install-link`: an existing target is backed up
 - No variant and no default: warns, exit 0
 - No variant, file at destination: moved to the host variant name, then linked
+
+# Options
+
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
 
 # See also
 

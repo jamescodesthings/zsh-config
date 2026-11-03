@@ -2,8 +2,11 @@
 
 _md() {
   _arguments \
-    '(--no-follow)--no-follow[create directory without cd-ing into it]' \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '(--no-follow)--no-follow[create the directory without cd-ing into it]' \
     ':directory:_files -/'
 }
 
-_md
+_md "$@"

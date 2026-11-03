@@ -35,8 +35,16 @@ function _cheat_expand_vars() {
 
 function cheat() {
   autoload -Uz is cheat-render link-cheatsheets
+  autoload -Uz cli-init say problem fix problems col
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
+  local _H _F _T _N _W _O _P _D _R
+  col -v _H heading; col -v _F flag; col -v _T target; col -v _N num
+  col -v _W warn; col -v _O ok; col -v _P prose; col -v _D dim
+  [[ -n "$_H" ]] && _R=$'\e[0m'
   if is empty "$CHEATSHEET_DIR"; then
-    echo "${c[error]}error:${c[reset]} CHEATSHEET_DIR not set, run zsh-config/install to install it"
+    say fail "CHEATSHEET_DIR not set, run zsh-config/install to install it"
     return 1
   fi
 
@@ -64,7 +72,7 @@ function cheat() {
 
   # No args → list
   if [[ $# -eq 0 ]]; then
-    echo "${c[h1]}Local Cheatsheets:${c[reset]}"
+    print -r -- "${_H}Local Cheatsheets:${_R}"
     for f in "$CHEATSHEET_DIR"/*.md(N-.); do
       echo "  $(basename "$f" .md)"
     done | sort
@@ -81,28 +89,28 @@ function cheat() {
         cheat cheat
         return $?
       fi
-      echo "${c[h1]}cheat${c[reset]}"
+      print -r -- "${_H}cheat${_R}"
       echo ""
-      echo "${c[lead]}Personal cheatsheet viewer with tldr fallback. Cheatsheets are links in \$CHEATSHEET_DIR.${c[reset]}"
+      echo "${_P}Personal cheatsheet viewer with tldr fallback. Cheatsheets are links in \$CHEATSHEET_DIR.${_R}"
       echo ""
-      echo "${c[h2]}Usage:${c[reset]}"
+      print -r -- "${_H}Usage:${_R}"
       echo "  cheat                          list all local cheatsheets"
-      echo "  cheat ${c[param]}<name>${c[reset]}                   show a cheatsheet"
-      echo "  cheat ${c[param]}<word> <word>${c[reset]}             multi-word: 'cheat git commit' → git-commit.md"
-      echo "  cheat ${c[param]}<name>${c[reset]} ${c[flag]}--raw${c[reset]}              print raw markdown"
+      echo "  cheat ${_T}<name>${_R}                   show a cheatsheet"
+      echo "  cheat ${_T}<word> <word>${_R}             multi-word: 'cheat git commit' → git-commit.md"
+      echo "  cheat ${_T}<name>${_R} ${_F}--raw${_R}              print raw markdown"
       echo ""
-      echo "${c[h2]}Subcommands:${c[reset]}"
-      echo "  ${c[flag]}list${c[reset]}                           list local cheatsheets"
-      echo "  ${c[flag]}search${c[reset]} ${c[param]}<query>${c[reset]}                search local + tldr by name"
-      echo "  ${c[flag]}edit${c[reset]} ${c[param]}<name>${c[reset]}                  open in \$EDITOR"
-      echo "  ${c[flag]}new${c[reset]} ${c[param]}<name>${c[reset]}                   create from template"
-      echo "  ${c[flag]}refresh${c[reset]}                        refresh the tldr cache"
-      echo "  ${c[flag]}raw${c[reset]} ${c[param]}<name>${c[reset]}                   print raw markdown"
-      echo "  ${c[flag]}help${c[reset]}, ${c[flag]}-h${c[reset]}, ${c[flag]}--help${c[reset]}             show this help"
+      print -r -- "${_H}Subcommands:${_R}"
+      echo "  ${_F}list${_R}                           list local cheatsheets"
+      echo "  ${_F}search${_R} ${_T}<query>${_R}                search local + tldr by name"
+      echo "  ${_F}edit${_R} ${_T}<name>${_R}                  open in \$EDITOR"
+      echo "  ${_F}new${_R} ${_T}<name>${_R}                   create from template"
+      echo "  ${_F}refresh${_R}                        refresh the tldr cache"
+      echo "  ${_F}raw${_R} ${_T}<name>${_R}                   print raw markdown"
+      echo "  ${_F}help${_R}, ${_F}-h${_R}, ${_F}--help${_R}             show this help"
       ;;
 
     list)
-      echo "${c[h1]}Local Cheatsheets:${c[reset]}"
+      print -r -- "${_H}Local Cheatsheets:${_R}"
       for f in "$CHEATSHEET_DIR"/*.md(N-.); do
         echo "  $(basename "$f" .md)"
       done | sort
@@ -111,7 +119,7 @@ function cheat() {
     search)
       local query="$1"
       if is empty "$query"; then
-        echo "${c[error]}error:${c[reset]} search requires a query"
+        say fail "search requires a query"
         return 1
       fi
       local -a local_results=() tldr_only=()
@@ -127,26 +135,26 @@ function cheat() {
       fi
       if (( ${#local_results[@]} + ${#tldr_only[@]} > 0 )); then
         for r in "${local_results[@]}"; do
-          printf "  %-30s %s\n" "$r" "${c[success]}[cheatsheet]${c[reset]}"
+          printf "  %-30s %s\n" "$r" "${_O}[cheatsheet]${_R}"
         done
         for r in "${tldr_only[@]}"; do
-          printf "  %-30s %s\n" "$r" "${c[info]}[tldr]${c[reset]}"
+          printf "  %-30s %s\n" "$r" "${_N}[tldr]${_R}"
         done
       else
-        echo "${c[warn]}nothing found for \"$query\"${c[reset]}"
+        say warn "nothing found for \"$query\""
       fi
       ;;
 
     edit)
       if is empty "$1"; then
-        echo "${c[error]}error:${c[reset]} edit requires a sheet name"
+        say fail "edit requires a sheet name"
         return 1
       fi
       local sheet_name="${(j:-:)@}"
       sheet_name="${sheet_name%.md}"
       local edit_file="$CHEATSHEET_DIR/$sheet_name.md"
       if ! is file "$edit_file"; then
-        echo "${c[error]}error:${c[reset]} '$sheet_name' not found — use ${c[flag]}cheat new $sheet_name${c[reset]} to create it"
+        say fail "'$sheet_name' not found — use cheat new $sheet_name to create it"
         return 1
       fi
       ${EDITOR:-micro} "$edit_file"
@@ -154,13 +162,13 @@ function cheat() {
 
     new)
       if is empty "$1"; then
-        echo "${c[error]}error:${c[reset]} new requires a name"
+        say fail "new requires a name"
         return 1
       fi
       local new_name="${1%.md}"
       local new_file="$CUSTOM_DIR/cheatsheets/$new_name.md"
       if is existing "$new_file" || is existing "$CHEATSHEET_DIR/$new_name.md" || [[ -L "$CHEATSHEET_DIR/$new_name.md" ]]; then
-        echo "${c[error]}error:${c[reset]} '$new_name' already exists — use ${c[flag]}cheat edit $new_name${c[reset]} to edit it"
+        say fail "'$new_name' already exists — use cheat edit $new_name to edit it"
         return 1
       fi
       cat >| "$new_file" <<TEMPLATE
@@ -185,16 +193,16 @@ function cheat() {
 - \`cheat $new_name <command>\`: every option of a command
 - \`cheat zsh-config\`: everything zsh-config gives you
 TEMPLATE
-      echo "${c[success]}created:${c[reset]} $new_file"
+      say ok "created $new_file"
       if ! link-cheatsheets "$CUSTOM_DIR/cheatsheets"; then
-        echo "${c[warn]}warning:${c[reset]} $new_name was created but not linked into $CHEATSHEET_DIR"
+        say warn "$new_name was created but not linked into $CHEATSHEET_DIR"
       fi
-      echo "run ${c[flag]}cheat edit $new_name${c[reset]} to fill it in, then ${c[flag]}cheatsheet-test $new_file${c[reset]}"
+      echo "run ${_F}cheat edit $new_name${_R} to fill it in, then ${_F}cheatsheet-test $new_file${_R}"
       ;;
 
     refresh)
       if ! is available tldr; then
-        echo "${c[warn]}warn:${c[reset]} tldr not available"
+        say warn "tldr not available"
         return 1
       fi
       tldr --update
@@ -203,7 +211,7 @@ TEMPLATE
 
     raw)
       if is empty "$1"; then
-        echo "${c[error]}error:${c[reset]} raw requires a sheet name" >&2
+        say fail "raw requires a sheet name"
         return 1
       fi
       cheat "$@" --raw
@@ -250,7 +258,7 @@ TEMPLATE
 
       if is not empty "$sheet"; then
         if (( n < $#words )); then
-          echo "${c[info-small]}no sheet for \"${words[*]}\", showing \"${words[1,n]}\"${c[reset]}" >&2
+          print -r -u2 -- "${_D}no sheet for \"${words[*]}\", showing \"${words[1,n]}\"${_R}"
         fi
         if (( raw_mode )); then
           cat "$sheet"
@@ -273,7 +281,7 @@ TEMPLATE
           fi
         done
       fi
-      echo "${c[error]}error:${c[reset]} no sheet for \"${words[*]}\"" >&2
+      say fail "no sheet for \"${words[*]}\""
       return 1
       ;;
   esac

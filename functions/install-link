@@ -2,46 +2,48 @@
 
 function install-link() {
   cheat-help install-link "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
+
   if is not equal "$#" "2"; then
-    echo "$c[error]error:$c[reset] install-link needs a source and a target"
-    echo "see: cheat install-link"
-    return 1
+    problem "install-link needs a source and a target"
+    fix "cheat install-link" "how to use it"
+    problems
+    return 2
   fi
 
   local FROM="$1"
   local TO="$2"
 
   if is link "$TO"; then
-    echo "$c[info]removing:$c[reset] existing link $TO"
-    sudo rm "$TO"
-    if is not equal "$?" "0"; then
-      echo "$c[error]error:$c[reset] could not remove existing link $TO"
+    say info "removing existing link $TO"
+    if ! sudo rm "$TO"; then
+      say fail "could not remove existing link $TO"
       return 1
     fi
   fi
 
   if is file "$TO"; then
-    echo "$c[info]backing up:$c[reset] $TO → $TO.bak"
-    sudo mv "$TO" "$TO.bak"
-    if is not equal "$?" "0"; then
-      echo "$c[error]error:$c[reset] could not back up existing file $TO"
+    say info "backing up $TO → $TO.bak"
+    if ! sudo mv "$TO" "$TO.bak"; then
+      say fail "could not back up existing file $TO"
       return 1
     fi
   fi
 
   if is dir "$TO"; then
-    echo "$c[info]backing up:$c[reset] $TO → ${TO}_bak"
-    sudo mv "$TO" "${TO}_bak"
-    if is not equal "$?" "0"; then
-      echo "$c[error]error:$c[reset] could not back up existing directory $TO"
+    say info "backing up $TO → ${TO}_bak"
+    if ! sudo mv "$TO" "${TO}_bak"; then
+      say fail "could not back up existing directory $TO"
       return 1
     fi
   fi
 
-  echo "$c[info]linking:$c[reset] $FROM → $TO"
-  sudo ln -s "$FROM" "$TO"
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not create link $FROM → $TO"
+  say info "linking $FROM → $TO"
+  if ! sudo ln -s "$FROM" "$TO"; then
+    say fail "could not create link $FROM → $TO"
     return 1
   fi
 }

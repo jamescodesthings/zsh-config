@@ -4,11 +4,15 @@
 # otherwise Finder on macOS and the desktop's default on Linux.
 function oh() {
   cheat-help oh "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   local target="${1:-$PWD}"
 
   if is not existing "$target"; then
-    echo "${c[error]}error:${c[reset]} oh: $target does not exist" >&2
+    say fail "oh: $target does not exist"
     return 1
   fi
 
@@ -32,8 +36,9 @@ function oh() {
     return 0
   fi
 
-  echo "${c[error]}error:${c[reset]} oh: no file manager opener found" >&2
-  echo "${c[info]}try:${c[reset]} sudo apt install xdg-utils" >&2
+  problem "oh: no file manager opener found"
+  fix "sudo apt install xdg-utils" "install an opener"
+  problems
   return 1
 }
 

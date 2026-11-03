@@ -1,0 +1,11 @@
+#compdef git-prune-local
+
+_git-prune-local() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '*: :'
+}
+
+_git-prune-local "$@"

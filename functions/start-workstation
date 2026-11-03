@@ -8,54 +8,59 @@ WORKFLOW_ID="${WORKFLOW_ID:-Start Workstation}"
 
 function _start_workstation_local_dir() {
   if is not existing "$PROJECT_DIR"; then
-    echo "$c[info]creating:$c[reset] $PROJECT_DIR"
+    say info "creating $PROJECT_DIR"
     mkdir -p "$PROJECT_DIR"
   fi
 }
 
 function _start_workstation_gh_logged_in() {
-  local STATUS=$(gh auth status 2>&1)
-  if is not equal "$?" "0"; then
-    echo "$c[warn]warning:$c[reset] github cli needs auth."
-    echo "run $c[em]gh auth login$c[reset] then try again"
-    echo "$STATUS"
+  local STATUS
+  if ! STATUS=$(gh auth status 2>&1); then
+    say warn "github cli needs auth"
+    print -r -- "$STATUS"
+    problem "github cli is not logged in"
+    fix "gh auth login" "then run start-workstation again"
     return 1
   fi
 }
 
 function _start_workstation_repo() {
   if is not existing "$PROJECT_DIR/$GH_REPO"; then
-    local OUTPUT=$(cd "$PROJECT_DIR" && gh repo clone "$ORG/$GH_REPO" 2>&1)
-    if is not equal "$?" "0"; then
-      echo "$c[error]error:$c[reset] could not clone $GH_REPO"
-      echo "$OUTPUT"
+    local OUTPUT
+    if ! OUTPUT=$(cd "$PROJECT_DIR" && gh repo clone "$ORG/$GH_REPO" 2>&1); then
+      problem "could not clone $GH_REPO"
+      print -r -- "$OUTPUT"
       return 1
     fi
   fi
 }
 
 function _start_workstation_run_action() {
-  local OUTPUT=$(cd "$PROJECT_DIR/$GH_REPO" && gh workflow run "$WORKFLOW_ID" -f name=$USER_NAME 2>&1)
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not run workflow"
-    echo "$OUTPUT"
+  local OUTPUT
+  if ! OUTPUT=$(cd "$PROJECT_DIR/$GH_REPO" && gh workflow run "$WORKFLOW_ID" -f name=$USER_NAME 2>&1); then
+    problem "could not run workflow $WORKFLOW_ID"
+    print -r -- "$OUTPUT"
     return 1
   fi
 }
 
 function start-workstation() {
   cheat-help start-workstation "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local DEPS=(is gh)
   if ! deps "${DEPS[@]}"; then
     return 1
   fi
 
-  _start_workstation_gh_logged_in || return 1
+  _start_workstation_gh_logged_in || { problems; return 1 }
   _start_workstation_local_dir
-  _start_workstation_repo || return 1
-  _start_workstation_run_action || return 1
+  _start_workstation_repo || { problems; return 1 }
+  _start_workstation_run_action || { problems; return 1 }
 
-  echo "$c[success]success:$c[reset] workstation started"
+  say ok "workstation started"
 }
 
 start-workstation "$@"

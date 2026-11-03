@@ -1,0 +1,96 @@
+#!/usr/bin/env zsh
+# Tests the CLI sweep for the function tools: --help exits 0, plain output has
+# no escape codes, -q silences ok lines, usage errors exit 2, failures exit 1.
+# Run: tests/sweep-c. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+E=$'\e'
+
+SHEETS="$TMP/sheets"
+mkdir -p "$SHEETS"
+for name in install-release md-to-pdf md-to-html install-link cheatsheet-test link-cheatsheets touch-sudo start-workstation install-box-config git-cleanup-branch md git-prune-local confirm deps reload zshconfig git-i-really-fucked-up oh; do
+  printf '# %s\n\n> sheet %s\n' "$name" "$name" > "$SHEETS/$name.md"
+done
+mkdir -p "$TMP/good" "$TMP/links"
+printf '# t\n\n> A tool.\n\n# Getting started\n\n- `t` - go\n\n# See also\n\n- `cheat t`\n' > "$TMP/good/t.md"
+printf '# notes\n\nhello\n' > "$TMP/n.md"
+
+# run <env...> -- <tool> <args...>: sets OUT, ERR, CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is deps confirm cheat cheat-help cheat-render col cheatsheet-test install-link "$2"
+    export CUSTOM_DIR="$1"
+    tool=$2; shift 2
+    "$tool" "$@"
+  ' _ "$REPO_DIR" "$@" 2> "$TMP/err" < /dev/null)"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+function ok() { echo "ok: $1"; }
+function bad() { echo "FAIL: $1"; [[ -n "$2" ]] && echo "$2" | sed 's/^/    /'; failed=1; }
+# check <description> <[[ condition ]]> [detail]
+function check() { if eval "$2"; then ok "$1"; else bad "$1" "$3"; fi }
+
+# --help shows the sheet and exits 0 for every tool
+for t in install-release md-to-pdf md-to-html install-link cheatsheet-test link-cheatsheets touch-sudo start-workstation install-box-config git-cleanup-branch md git-prune-local deps reload zshconfig git-i-really-fucked-up oh; do
+  run CHEATSHEET_DIR="$SHEETS" -- $t --help
+  check "$t --help exits 0 and shows its sheet" '[[ $CODE == 0 && $OUT == *"sheet $t"* ]]' "code $CODE: $OUT $ERR"
+done
+
+# usage errors exit 2 and print no escape codes in plain mode
+for t in install-release install-link link-cheatsheets git-cleanup-branch md reload install-box-config; do
+  run CHEATSHEET_DIR="$TMP/links" -- $t
+  check "$t with no arguments exits 2" '[[ $CODE == 2 ]]' "code $CODE: $OUT $ERR"
+  check "$t usage error is plain" '[[ $ERR != *$E* ]]' "$ERR"
+done
+run -- md-to-html
+check "md-to-html with no file exits 2" '[[ $CODE == 2 ]]' "code $CODE: $ERR"
+run -- md-to-pdf
+check "md-to-pdf with no file exits 2" '[[ $CODE == 2 ]]' "code $CODE: $ERR"
+
+# md-to-html failure: exit 1 and a problems block
+run -- md-to-html "$TMP/missing.md"
+check "md-to-html on a missing file exits 1 with a problems block" '[[ $CODE == 1 && $ERR == *"1 problem"* && $ERR != *$E* ]]' "code $CODE: $ERR"
+
+# cheatsheet-test: ok line, -q silences it, colour only when forced
+run -- cheatsheet-test --strict "$TMP/good"
+check "cheatsheet-test passes and says so" '[[ $CODE == 0 && $OUT == *"1 cheatsheets render"* && $OUT != *$E* ]]' "code $CODE: $OUT $ERR"
+run -- cheatsheet-test -q --strict "$TMP/good"
+check "cheatsheet-test -q prints nothing on success" '[[ $CODE == 0 && -z $OUT ]]' "code $CODE: $OUT"
+run CLICOLOR_FORCE=1 COLORTERM=truecolor -- cheatsheet-test "$TMP/good"
+check "cheatsheet-test keeps colour under CLICOLOR_FORCE" '[[ $OUT == *$E* ]]' "$OUT"
+run -- cheatsheet-test "$TMP/nosuch"
+check "cheatsheet-test on a missing path exits 1" '[[ $CODE == 1 ]]' "code $CODE: $OUT $ERR"
+
+# link-cheatsheets: links, then a clash keeps the word warning
+run CHEATSHEET_DIR="$TMP/links" -- link-cheatsheets "$TMP/good"
+check "link-cheatsheets links a sheet" '[[ $CODE == 0 && -L $TMP/links/t.md && $OUT != *$E* ]]' "code $CODE: $OUT $ERR"
+rm "$TMP/links/t.md"; print real > "$TMP/links/t.md"
+run CHEATSHEET_DIR="$TMP/links" -- link-cheatsheets "$TMP/good"
+check "link-cheatsheets clash exits 1 and says warning:" '[[ $CODE == 1 && $OUT == *"warning: t.md taken by a real file"* ]]' "code $CODE: $OUT $ERR"
+
+# install-release on macOS-style OS: info, no failure
+run INSTALL_RELEASE_OS=darwin -- install-release bat
+check "install-release says brew owns it on macOS" '[[ $CODE == 0 && $OUT == *"comes from brew"* && $OUT != *$E* ]]' "code $CODE: $OUT $ERR"
+run INSTALL_RELEASE_OS=darwin -- install-release nosuchtool
+check "install-release on an unknown tool exits 1" '[[ $CODE == 1 && $ERR == *"unknown release tool"* ]]' "code $CODE: $ERR"
+
+# deps names the missing command
+run -- deps nosuchcommand
+check "deps names a missing command and exits 1" '[[ $CODE == 1 && $ERR == *"missing dependency: nosuchcommand"* ]]' "code $CODE: $ERR"
+
+# md makes a directory without following when asked; -q hides the ok line
+run -- md --no-follow "$TMP/made/deep"
+check "md --no-follow creates the directory" '[[ $CODE == 0 && -d $TMP/made/deep && $OUT == *"created"* ]]' "code $CODE: $OUT $ERR"
+run -- md -q --no-follow "$TMP/made/deep2"
+check "md -q creates the directory silently" '[[ $CODE == 0 && -d $TMP/made/deep2 && -z $OUT ]]' "code $CODE: $OUT"
+
+exit $failed

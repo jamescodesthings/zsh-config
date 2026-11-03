@@ -1,14 +1,16 @@
 #!/usr/bin/env zsh
 
-# Prints an error or warning block to stderr: what happened, how to fix it,
-# and where this tool lives.
+# Records a failure for the problems block, or says a warning at once.
+# _md-to-pdf-report <error|warning> <text> [fix command] [reason]
 function _md-to-pdf-report() {
-  local level="$1" colour="$2"
-  print -u2 -r -- "${colour}${level}:${c[reset]} md-to-pdf: $3"
-  if is not empty "$4"; then
-    print -u2 -r -- "${c[info]}try:${c[reset]} $4"
+  if [[ "$1" == warning ]]; then
+    say warn "md-to-pdf: $2"
+    return 0
   fi
-  print -u2 -r -- "${c[info]}source:${c[reset]} ${CUSTOM_DIR:-$HOME/.custom}/functions/md-to-pdf"
+  problem "md-to-pdf: $2"
+  if is not empty "$3"; then
+    fix "$3" "$4"
+  fi
 }
 
 function _md-to-pdf-install() {
@@ -21,33 +23,38 @@ function _md-to-pdf-install() {
 
 function md-to-pdf() {
   cheat-help md-to-pdf "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   if is equal "$1" "--"; then
     shift
   fi
 
   if (( $# == 0 )); then
-    _md-to-pdf-report error "$c[error]" "no input file given" "md-to-pdf path/to/file.md"
-    return 1
+    _md-to-pdf-report error "no input file given" "md-to-pdf path/to/file.md" "convert a file"
+    problems
+    return 2
   fi
 
   # A start line so a long run is visibly working.
   if (( $# == 1 )); then
-    echo "${c[info]}converting:${c[reset]} $1"
+    say info "converting $1"
   else
-    echo "${c[info]}converting:${c[reset]} $# files"
+    say info "converting $# files"
   fi
 
   local file result failed=() count=0
   for file in "$@"; do
     (( count += 1 ))
     if (( $# > 1 )); then
-      echo "${c[info-small]}[$count/$#]${c[reset]} $file"
+      say info "[$count/$#] $file"
     fi
     # An empty argument usually means an unset variable; name it in the
     # summary rather than leaving a blank.
     if is empty "$file"; then
-      _md-to-pdf-report error "$c[error]" "an empty file name was given" "check the variable or quotes that produced it"
+      _md-to-pdf-report error "an empty file name was given; check the variable or quotes that produced it"
       failed+=("(empty name)")
       continue
     fi
@@ -62,15 +69,14 @@ function md-to-pdf() {
     fi
   done
 
-  if (( $# > 1 )); then
-    if (( ${#failed} == 0 )); then
-      echo "${c[success]}success:${c[reset]} md-to-pdf converted all $# files"
-    else
-      print -u2 -r -- "${c[error]}error:${c[reset]} md-to-pdf: ${#failed} of $# files failed: ${(j:, :)failed}"
-    fi
+  if (( $# > 1 && ${#failed} == 0 )); then
+    say ok "md-to-pdf converted all $# files"
   fi
 
-  (( ${#failed} == 0 ))
+  local -i rc=0
+  (( ${#failed} )) && rc=1
+  problems || rc=1
+  return $rc
 }
 
 # Converts one file to a pdf beside it.
@@ -78,13 +84,13 @@ function _md-to-pdf-one() {
   local input="$1"
 
   if is empty "$input"; then
-    _md-to-pdf-report error "$c[error]" "an empty file name was given" "md-to-pdf path/to/file.md"
+    _md-to-pdf-report error "an empty file name was given" "md-to-pdf path/to/file.md" "convert a file"
     return 1
   fi
 
   # A folder that does not exist is left to md-to-html, which says so.
   if is dir "${input:h}" && is not writeable "${input:h}"; then
-    _md-to-pdf-report error "$c[error]" "could not write to ${input:h}" "ls -ld ${(q)${input:h}}"
+    _md-to-pdf-report error "could not write to ${input:h}" "ls -ld ${(q)${input:h}}" "check the folder"
     return 1
   fi
 
@@ -96,7 +102,7 @@ function _md-to-pdf-one() {
   local workdir
   workdir="$(mktemp -d "${${TMPDIR:-/tmp}%/}/md-to-pdf.XXXXXX")"
   if (( $? != 0 )) || is empty "$workdir"; then
-    _md-to-pdf-report error "$c[error]" "could not create a temp dir under ${TMPDIR:-/tmp}" "check free space and permissions: df -h ${(q)${TMPDIR:-/tmp}}"
+    _md-to-pdf-report error "could not create a temp dir under ${TMPDIR:-/tmp}" "df -h ${(q)${TMPDIR:-/tmp}}" "check free space and permissions"
     return 1
   fi
 
@@ -122,7 +128,7 @@ function _md-to-pdf-one() {
     fi
 
     if is not available weasyprint; then
-      _md-to-pdf-report error "$c[error]" "weasyprint is not installed" "$(_md-to-pdf-install weasyprint weasyprint)"
+      _md-to-pdf-report error "weasyprint is not installed" "$(_md-to-pdf-install weasyprint weasyprint)" "install it"
       return 1
     fi
 
@@ -133,7 +139,7 @@ function _md-to-pdf-one() {
     if (( interrupted )); then
       return 130
     elif (( weasyprint_status != 0 )); then
-      _md-to-pdf-report error "$c[error]" "weasyprint could not print $input" "read weasyprint's output below; run it by hand with: weasyprint --verbose file.html out.pdf"
+      _md-to-pdf-report error "weasyprint could not print $input" "weasyprint --verbose file.html out.pdf" "run it by hand to see why"
       print -u2 -r -- "$messages"
       return 1
     fi
@@ -151,10 +157,10 @@ function _md-to-pdf-one() {
       elif (( scrub == 0 || scrub == 3 )) && is file "$workdir/clean.pdf"; then
         pdf="$workdir/clean.pdf"
       else
-        _md-to-pdf-report warning "$c[warn]" "the metadata scrub failed, so the pdf keeps its producer tags" "run exiftool and qpdf on the pdf by hand to see why"
+        _md-to-pdf-report warning "the metadata scrub failed, so the pdf keeps its producer tags; run exiftool and qpdf on the pdf by hand to see why"
       fi
     else
-      _md-to-pdf-report warning "$c[warn]" "exiftool or qpdf is missing, so the pdf keeps its producer tags" "$(_md-to-pdf-install 'exiftool qpdf' 'libimage-exiftool-perl qpdf')"
+      _md-to-pdf-report warning "exiftool or qpdf is missing, so the pdf keeps its producer tags; install with $(_md-to-pdf-install 'exiftool qpdf' 'libimage-exiftool-perl qpdf')"
     fi
 
     if (( interrupted )); then
@@ -162,7 +168,7 @@ function _md-to-pdf-one() {
     fi
 
     if ! command mv -f -- "$pdf" "$output" 2>/dev/null; then
-      _md-to-pdf-report error "$c[error]" "could not write $output" "check that the folder is writable: ls -ld ${(q)${output:h}}"
+      _md-to-pdf-report error "could not write $output" "ls -ld ${(q)${output:h}}" "check that the folder is writable"
       return 1
     fi
 
@@ -170,7 +176,7 @@ function _md-to-pdf-one() {
       return 130
     fi
 
-    echo "${c[success]}success:${c[reset]} wrote $output"
+    say ok "wrote $output"
   } always {
     rm -rf -- "$workdir"
   }

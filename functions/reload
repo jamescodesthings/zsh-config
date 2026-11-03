@@ -6,20 +6,25 @@ function _reload_do() {
   local FN="$1"
   unfunction "$FN" 2>/dev/null
   autoload -Uz "$FN"
-  echo "$c[success]reloaded:$c[reset] $FN"
+  say ok "reloaded $FN"
 }
 
 function reload() {
   cheat-help reload "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local DEPS=(is)
   if ! deps $DEPS; then
     return 1
   fi
 
   if is empty "$1"; then
-    echo "$c[error]error:$c[reset] reload needs a function name or all"
-    echo "see: cheat reload"
-    return 0
+    problem "reload needs a function name or all"
+    fix "cheat reload" "how to use it"
+    problems
+    return 2
   fi
 
   local FN="$1"

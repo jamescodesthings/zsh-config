@@ -9,11 +9,11 @@ function cheatsheet-test() {
   emulate -L zsh
   setopt extended_glob
 
-  if is empty "$c"; then
-    source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
-  fi
-
   cheat-help cheatsheet-test "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   # --strict turns the structure warnings below into failures
   local -i strict=0
@@ -38,13 +38,13 @@ function cheatsheet-test() {
     elif is file "$target"; then
       sheets+=("$target")
     else
-      echo "$c[error]error:$c[reset] $target is not a sheet or a folder"
+      say fail "$target is not a sheet or a folder"
       return 1
     fi
   done
 
   if (( ! $#sheets )); then
-    echo "$c[warn]warning:$c[reset] no *.md sheets in $targets"
+    say fail "no *.md sheets in $targets"
     return 1
   fi
 
@@ -69,11 +69,11 @@ function cheatsheet-test() {
       fi
       if [[ "$line" == '`'* ]]; then
         if [[ "$line" != *'`' ]] || (( $#line < 2 )); then
-          echo "$c[error]error:$c[reset] $sheet:$number: an example line must end with a backtick"
+          say fail "$sheet:$number: an example line must end with a backtick"
           bad=1
         fi
       elif [[ "$line" != '# '* && "$line" != '> '* && "$line" != '- '* ]]; then
-        echo "$c[error]error:$c[reset] $sheet:$number: a line must start with \"# \", \"> \", \"- \" or a backtick"
+        say fail "$sheet:$number: a line must start with \"# \", \"> \", \"- \" or a backtick"
         bad=1
       fi
     done < "$sheet"
@@ -81,7 +81,7 @@ function cheatsheet-test() {
     # cheat-render is what cheat shows a sheet with; it must render cleanly
     # (an unknown colour in a [text]{.class} span is an error).
     if ! out="$(CLI_PLAIN=1 cheat-render "$sheet" 2>&1 > /dev/null)" || is not empty "$out"; then
-      echo "$c[error]error:$c[reset] $sheet: cheat-render: ${${(f)out}[1]:-failed}"
+      say fail "$sheet: cheat-render: ${${(f)out}[1]:-failed}"
       bad=1
     fi
 
@@ -164,10 +164,10 @@ function cheatsheet-test() {
     done < "$sheet"
     for warning in $warnings; do
       if (( strict )); then
-        echo "$c[error]error:$c[reset] $sheet: $warning"
+        say fail "$sheet: $warning"
         bad=1
       else
-        echo "$c[warn]warning:$c[reset] $sheet: $warning"
+        say warn "$sheet: $warning"
       fi
     done
 
@@ -175,10 +175,10 @@ function cheatsheet-test() {
   done
 
   if (( failed )); then
-    echo "$c[error]$failed of $#sheets cheatsheets failed$c[reset]"
+    say fail "$failed of $#sheets cheatsheets failed"
     return 1
   fi
-  echo "$c[success]$#sheets cheatsheets render$c[reset]"
+  say ok "$#sheets cheatsheets render"
 }
 
 cheatsheet-test "$@"

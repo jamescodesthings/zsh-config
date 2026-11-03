@@ -1,6 +1,6 @@
 # cheatsheet-test
 
-> Check that sheets render with `cheat`: the line shape, then tldr and glow when installed, then the shared structure.
+> Check that sheets render with `cheat`: the line shape, then the shared structure.
 > Exit 1 when any sheet fails; each failure prints the file and line.
 
 # Getting started
@@ -9,23 +9,21 @@
 - `cheatsheet-test <sheet> [<folder>...]` - check sheets or whole folders
 - `cheatsheet-test --strict <sheet>` - make the structure warnings fail
 
-# Line rules (always failures)
+# Line rules
 
 - Every non-empty line starts with `# `, `> `, `- ` or a backtick
 - A backtick line is one example ending in a backtick
 - No indenting
 
-# Structure warnings
+# Options
 
-- Top sheet (no parent sheet beside it): first section `Getting started`, last section `More`
-- Top sheet: at most 35 rendered lines
-- Child sheet (`hub-join.md` beside `hub.md`): last section `See also`
-- `--strict` - turn these warnings into failures
+- `--strict` - turn the structure warnings into failures
+- `--plain` - no colour or animation
+- `-q`, `--quiet` - print only warnings and errors
+- Exit: 0 done, 1 failed, 2 wrong usage
 
 # See also
 
-- `cheatsheet-test cheatsheets/git.md` - check one sheet
-- `cheatsheet-test --strict <repo>/cheatsheets` - check a project's sheets strictly
 - `cheat cheat format` - the structure it checks
 - `cheat cheat new` - start a sheet from the template
 - `cheat link-cheatsheets`

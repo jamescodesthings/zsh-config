@@ -1,10 +1,8 @@
 #compdef git-cleanup-branch
 
-_git-cleanup-branch() {
+_git_cleanup_branches() {
   local -a branches
-  branches=("${(@f)$(git branch --format='%(refname:short)' 2>/dev/null \
-    | grep -vE '^(main|master)$')}")
-
+  branches=("${(@f)$(git branch --format='%(refname:short)' 2>/dev/null | grep -vE '^(main|master)$')}")
   if (( ${#branches} > 0 )); then
     _describe 'branch' branches
   else
@@ -12,4 +10,12 @@ _git-cleanup-branch() {
   fi
 }
 
-_git-cleanup-branch
+_git-cleanup-branch() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    ':branch:_git_cleanup_branches'
+}
+
+_git-cleanup-branch "$@"

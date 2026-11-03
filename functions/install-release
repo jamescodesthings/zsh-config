@@ -2,14 +2,16 @@
 
 function install-release() {
   cheat-help install-release "$@" && return 0
-  if is empty "$c"; then
-    source "${CUSTOM_DIR:-$HOME/.custom}/zpm-zsh-colors"
-  fi
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   if is not equal "$#" "1"; then
-    echo "$c[error]error:$c[reset] install-release needs one binary name"
-    echo "see: cheat install-release"
-    return 1
+    problem "install-release needs one binary name"
+    fix "cheat install-release" "how to use it"
+    problems
+    return 2
   fi
 
   local name="$1"
@@ -34,17 +36,17 @@ function install-release() {
   fi
 
   if (( ! row_found )); then
-    echo "$c[error]error:$c[reset] unknown release tool '$name' (see $table)"
+    say fail "unknown release tool '$name' (see $table)"
     return 1
   fi
 
   if [[ "$os" != "linux" ]]; then
-    echo "$c[info]info:$c[reset] $name comes from brew on macOS"
+    say info "$name comes from brew on macOS"
     return 0
   fi
 
   if (( ${#f} < 6 )); then
-    echo "$c[error]error:$c[reset] malformed row for $name in $table"
+    say fail "malformed row for $name in $table"
     return 1
   fi
 
@@ -53,7 +55,7 @@ function install-release() {
     x86_64) token="${f[4]}" ;;
     aarch64|arm64) token="${f[5]}" ;;
     *)
-      echo "$c[error]error:$c[reset] unsupported architecture '$arch' for $name"
+      say fail "unsupported architecture '$arch' for $name"
       return 1
       ;;
   esac
@@ -61,7 +63,7 @@ function install-release() {
   local tool
   for tool in curl tar; do
     if ! is available "$tool"; then
-      echo "$c[error]error:$c[reset] $tool is required to install $name"
+      say fail "$tool is required to install $name"
       return 1
     fi
   done
@@ -70,7 +72,7 @@ function install-release() {
   local url tag version
   if ! url="$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/$repo/releases/latest")" \
     || [[ "$url" != */releases/tag/* ]]; then
-    echo "$c[error]error:$c[reset] could not find the latest release of $repo"
+    say fail "could not find the latest release of $repo"
     return 1
   fi
   tag="${url##*/}"
@@ -82,7 +84,7 @@ function install-release() {
   local state="$statedir/$name"
 
   if [[ -f "$state" && "$(<"$state")" == "$tag" && -e "$bindir/$name" ]]; then
-    echo "$c[info]current:$c[reset] $name $tag"
+    say info "$name $tag is current"
     return 0
   fi
 
@@ -100,29 +102,29 @@ function install-release() {
 
   local tmp
   if ! tmp="$(mktemp -d)"; then
-    echo "$c[error]error:$c[reset] could not make a temp dir for $name"
+    say fail "could not make a temp dir for $name"
     return 1
   fi
 
   {
     if ! curl -fsSL -o "$tmp/$asset" "https://github.com/$repo/releases/download/$tag/$asset"; then
-      echo "$c[error]error:$c[reset] download of $asset failed"
+      say fail "download of $asset failed"
       return 1
     fi
 
     mkdir -p "$tmp/x"
     if ! command tar -xzf "$tmp/$asset" -C "$tmp/x"; then
-      echo "$c[error]error:$c[reset] extract of $asset failed"
+      say fail "extract of $asset failed"
       return 1
     fi
 
     if [[ ! -s "$tmp/x/$binpath" ]]; then
-      echo "$c[error]error:$c[reset] $binpath not found in $asset"
+      say fail "$binpath not found in $asset"
       return 1
     fi
 
     if ! mkdir -p "$bindir" "$statedir"; then
-      echo "$c[error]error:$c[reset] cannot create $bindir"
+      say fail "cannot create $bindir"
       return 1
     fi
     if ! command cp "$tmp/x/$binpath" "$bindir/.$name.new" \
@@ -130,27 +132,27 @@ function install-release() {
       || ! rm -f "$bindir/$name" \
       || ! command mv "$bindir/.$name.new" "$bindir/$name"; then
       rm -f "$bindir/.$name.new"
-      echo "$c[error]error:$c[reset] could not place $bindir/$name"
+      say fail "could not place $bindir/$name"
       return 1
     fi
 
     if is not empty "$comppath"; then
       if [[ ! -f "$tmp/x/$comppath" ]]; then
-        echo "$c[error]error:$c[reset] completion $comppath not found in $asset"
+        say fail "completion $comppath not found in $asset"
         return 1
       fi
       if ! command mkdir -p "$compdir" || ! command cp "$tmp/x/$comppath" "$compdir/_$name"; then
-        echo "$c[error]error:$c[reset] could not place the completion for $name"
+        say fail "could not place the completion for $name"
         return 1
       fi
     fi
 
     if ! print -r -- "$tag" > "$state"; then
-      echo "$c[error]error:$c[reset] could not write $state"
+      say fail "could not write $state"
       return 1
     fi
 
-    echo "$c[success]installed:$c[reset] $name $tag"
+    say ok "installed $name $tag"
     return 0
   } always {
     rm -rf "$tmp"

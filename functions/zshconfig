@@ -2,6 +2,10 @@
 
 function zshconfig() {
   cheat-help zshconfig "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   if is empty "$1"; then
     if is available realpath; then
@@ -23,8 +27,9 @@ function zshconfig() {
       return 0
     fi
 
-    echo "$c[warn]warning:$c[reset] no editor found"
-    echo "run $c[em]$CUSTOM_DIR/installers/micro$c[reset] to install micro"
+    problem "no editor found"
+    fix "$CUSTOM_DIR/installers/micro" "install micro"
+    problems
     return 1
   fi
 }

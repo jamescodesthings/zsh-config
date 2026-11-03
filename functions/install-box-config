@@ -2,10 +2,15 @@
 
 function install-box-config() {
   cheat-help install-box-config "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   if is empty "$@"; then
-    echo "$c[error]error:$c[reset] install-box-config needs a source and a destination"
-    echo "see: cheat install-box-config"
-    return 1
+    problem "install-box-config needs a source and a destination"
+    fix "cheat install-box-config" "how to use it"
+    problems
+    return 2
   fi
 
   local config_source="$1"
@@ -17,13 +22,13 @@ function install-box-config() {
 
   local hostname="$(get-hostname)"
   if is empty "$hostname"; then
-    echo "$c[error]Could not determine hostname$c[reset]"
+    say fail "could not determine the hostname"
     return 1
   fi
 
   local host_overridden_config="$config_dir/$config_name.$hostname.$config_extension"
   if is file "$host_overridden_config"; then
-    echo "Installing host specific config: $host_overridden_config"
+    say info "installing host specific config: $host_overridden_config"
     install-link "$host_overridden_config" "$config_destination"
     return 0
   fi
@@ -34,32 +39,32 @@ function install-box-config() {
   elif is linux; then
     os="linux"
   else
-    echo "$c[error]Unsupported OS$c[reset]"
+    say fail "unsupported OS"
     return 1
   fi
 
   local os_overridden_config="$config_dir/$config_name.$os.$config_extension"
   if is file "$os_overridden_config"; then
-    echo "Installing OS specific config: $os_overridden_config"
+    say info "installing OS specific config: $os_overridden_config"
     install-link "$os_overridden_config" "$config_destination"
     return 0
   fi
 
   if is file "$config_source"; then
-    echo "Installing default config: $config_source"
+    say info "installing default config: $config_source"
     install-link "$config_source" "$config_destination"
     return 0
   fi
 
   if is file "$config_destination"; then
-    echo "$c[warn]No config file found for $config_destination.\nBut, a config file already exists at the destination.$c[reset]"
-    echo "$c[info]moving config into $host_overridden_config and symlinking it to the destination$c[reset]"
+    say warn "no config file found for $config_destination, but one already exists at the destination"
+    say info "moving config into $host_overridden_config and symlinking it to the destination"
     command mv "$config_destination" "$host_overridden_config"
     install-link "$host_overridden_config" "$config_destination"
     return 0
   fi
 
-  echo "$c[warn]No config file found for $config_destination$c[reset]"
+  say warn "no config file found for $config_destination"
   return 0
 }
 

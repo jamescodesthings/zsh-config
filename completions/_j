@@ -1,0 +1,31 @@
+#compdef j
+
+_j() {
+  local -a subcommands
+  subcommands=(
+    'list:list every entry by rank'
+    'search:filter entries by regex'
+    'add:add a path or raise its rank'
+    'bump:put one entry at the top'
+    'reorder:reorder the top entries in your editor'
+    'edit:open the z data file'
+    'delete:remove entries matching a regex'
+    'clean:remove entries for missing directories'
+    'move:carry a moved folder'"'"'s ranks over'
+    'stats:totals, top 5, oldest and newest'
+    'help:show the sheet'
+  )
+  if (( CURRENT == 2 )); then
+    _describe -t subcommands 'subcommand' subcommands
+    _z 2>/dev/null
+    return
+  fi
+  case "$words[2]" in
+    add) _arguments ':path:_files -/' ;;
+    move) _arguments '--dry-run[show the plan only]' '*:folder:_files -/' ;;
+    reorder) _arguments '--count[how many entries]:count: ' ;;
+    *) _message 'no more arguments' ;;
+  esac
+}
+
+_j "$@"

@@ -1,14 +1,14 @@
 #!/usr/bin/env zsh
 
-# Prints an error block to stderr: what failed, how to fix it, and where this
-# tool lives. md-to-pdf sets MD_CALLER so its own name appears instead.
+# Records a failure for the problems block: what failed, then the command that
+# fixes or explains it. md-to-pdf sets MD_CALLER so its own name appears
+# instead, and prints the block itself.
 function _md-to-html-fail() {
   local caller="${MD_CALLER:-md-to-html}"
-  print -u2 -r -- "${c[error]}error:${c[reset]} $caller: $1"
+  problem "$caller: $1"
   if is not empty "$2"; then
-    print -u2 -r -- "${c[info]}try:${c[reset]} $2"
+    fix "$2" "$3"
   fi
-  print -u2 -r -- "${c[info]}source:${c[reset]} ${CUSTOM_DIR:-$HOME/.custom}/functions/$caller"
 }
 
 # The command that installs a tool on this machine.
@@ -39,6 +39,10 @@ function _md-to-html-embed-flag() {
 
 function md-to-html() {
   cheat-help md-to-html "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   local caller="${MD_CALLER:-md-to-html}"
   local output="" files=()
@@ -46,8 +50,9 @@ function md-to-html() {
     case "$1" in
       -o|--output)
         if (( $# < 2 )) || is empty "$2"; then
-          _md-to-html-fail "-o needs an output path" "$caller file.md -o out.html"
-          return 1
+          _md-to-html-fail "-o needs an output path" "$caller file.md -o out.html" "name the output"
+          is empty "$MD_CALLER" && problems
+          return 2
         fi
         output="$2"
         shift 2
@@ -65,21 +70,23 @@ function md-to-html() {
   done
 
   if (( ${#files} == 0 )); then
-    _md-to-html-fail "no input file given" "$caller path/to/file.md"
-    return 1
+    _md-to-html-fail "no input file given" "$caller path/to/file.md" "convert a file"
+    is empty "$MD_CALLER" && problems
+    return 2
   fi
 
   if is not empty "$output" && (( ${#files} > 1 )); then
-    _md-to-html-fail "-o names one output, but ${#files} files were given" "drop -o to write each file beside its input"
-    return 1
+    _md-to-html-fail "-o names one output, but ${#files} files were given; drop -o to write each file beside its input"
+    is empty "$MD_CALLER" && problems
+    return 2
   fi
 
   # A start line so a long run is visibly working. md-to-pdf prints its own.
   if is empty "$MD_CALLER"; then
     if (( ${#files} == 1 )); then
-      echo "${c[info]}converting:${c[reset]} ${files[1]}"
+      say info "converting ${files[1]}"
     else
-      echo "${c[info]}converting:${c[reset]} ${#files} files"
+      say info "converting ${#files} files"
     fi
   fi
 
@@ -87,12 +94,12 @@ function md-to-html() {
   for file in "${files[@]}"; do
     (( count += 1 ))
     if (( ${#files} > 1 )); then
-      echo "${c[info-small]}[$count/${#files}]${c[reset]} $file"
+      say info "[$count/${#files}] $file"
     fi
     # An empty argument usually means an unset variable; name it in the
     # summary rather than leaving a blank.
     if is empty "$file"; then
-      _md-to-html-fail "an empty file name was given" "check the variable or quotes that produced it"
+      _md-to-html-fail "an empty file name was given; check the variable or quotes that produced it"
       failed+=("(empty name)")
       continue
     fi
@@ -107,15 +114,17 @@ function md-to-html() {
     fi
   done
 
-  if (( ${#files} > 1 )); then
-    if (( ${#failed} == 0 )); then
-      echo "${c[success]}success:${c[reset]} $caller converted all ${#files} files"
-    else
-      print -u2 -r -- "${c[error]}error:${c[reset]} $caller: ${#failed} of ${#files} files failed: ${(j:, :)failed}"
-    fi
+  if (( ${#files} > 1 && ${#failed} == 0 )); then
+    say ok "$caller converted all ${#files} files"
   fi
 
-  (( ${#failed} == 0 ))
+  local -i rc=0
+  (( ${#failed} )) && rc=1
+  # md-to-pdf prints the block for its own run.
+  if is empty "$MD_CALLER"; then
+    problems || rc=1
+  fi
+  return $rc
 }
 
 # Converts one file. The output path is optional; without it the html is
@@ -130,62 +139,62 @@ function _md-to-html-one() {
   fi
 
   if is empty "$input"; then
-    _md-to-html-fail "no input file given" "$caller path/to/file.md"
+    _md-to-html-fail "no input file given" "$caller path/to/file.md" "convert a file"
     return 1
   fi
 
   if [[ -d "$input" ]]; then
-    _md-to-html-fail "$input is a folder, not a file" "pass the markdown file inside it"
+    _md-to-html-fail "$input is a folder, not a file; pass the markdown file inside it"
     return 1
   fi
 
   if is not file "$input"; then
-    _md-to-html-fail "$input does not exist" "check the path; ls -la ${(q)${input:h}}"
+    _md-to-html-fail "$input does not exist" "ls -la ${(q)${input:h}}" "check the path"
     return 1
   fi
 
   if is not readable "$input"; then
-    _md-to-html-fail "$input is not readable" "chmod u+r ${(q)input}"
+    _md-to-html-fail "$input is not readable" "chmod u+r ${(q)input}" "make it readable"
     return 1
   fi
 
   if is not empty "$2"; then
     if [[ "${2:a}" == "${input:a}" ]]; then
-      _md-to-html-fail "the output would overwrite the input" "$caller file.md -o out.html"
+      _md-to-html-fail "the output would overwrite the input" "$caller file.md -o out.html" "name a different output"
       return 1
     fi
     if [[ "$2" != *.html && "$2" != *.htm ]]; then
-      _md-to-html-fail "the output $2 does not end in .html or .htm" "$caller file.md -o out.html"
+      _md-to-html-fail "the output $2 does not end in .html or .htm" "$caller file.md -o out.html" "name an .html output"
       return 1
     fi
   fi
 
   if [[ ! -s "$input" ]]; then
-    _md-to-html-fail "$input is empty" "add some markdown to it first"
+    _md-to-html-fail "$input is empty; add some markdown to it first"
     return 1
   fi
 
   if is not available file; then
-    _md-to-html-fail "the file command is not installed, so the input type cannot be checked" "$(_md-to-html-install file file)"
+    _md-to-html-fail "the file command is not installed, so the input type cannot be checked" "$(_md-to-html-install file file)" "install it"
     return 1
   fi
 
   local mime
   mime="$(command file --mime-type -b -- "$input")"
   if [[ "$mime" != text/* ]]; then
-    _md-to-html-fail "$input is $mime, not markdown or plain text" "pass a .md or .txt file; check it with: file ${(q)input}"
+    _md-to-html-fail "$input is $mime, not markdown or plain text" "file ${(q)input}" "pass a .md or .txt file"
     return 1
   fi
 
   if is not available pandoc; then
-    _md-to-html-fail "pandoc is not installed" "$(_md-to-html-install pandoc pandoc)"
+    _md-to-html-fail "pandoc is not installed" "$(_md-to-html-install pandoc pandoc)" "install it"
     return 1
   fi
 
   local repo="${CUSTOM_DIR:-$HOME/.custom}"
   local stylesheet="$repo/configs/md/md.css"
   if is not file "$stylesheet"; then
-    _md-to-html-fail "the stylesheet is missing: $stylesheet" "restore it with: git -C ${(q)repo} checkout -- configs/md/md.css"
+    _md-to-html-fail "the stylesheet is missing: $stylesheet" "git -C ${(q)repo} checkout -- configs/md/md.css" "restore it"
     return 1
   fi
 
@@ -219,23 +228,23 @@ function _md-to-html-one() {
     return $pandoc_status
   fi
   if (( pandoc_status > 128 )); then
-    _md-to-html-fail "pandoc crashed (exit status $pandoc_status) while converting $input" "run it by hand to see the crash: pandoc ${(q)input} -o /tmp/test.html; update it with: $(_md-to-html-install pandoc pandoc)"
+    _md-to-html-fail "pandoc crashed (exit status $pandoc_status) while converting $input" "pandoc ${(q)input} -o /tmp/test.html" "run it by hand to see the crash"
     print -u2 -r -- "$messages"
     return 1
   fi
   if (( pandoc_status != 0 )); then
-    _md-to-html-fail "pandoc could not convert $input" "read pandoc's message below; check that the folder is writable: ls -ld ${(q)${output:h}}"
+    _md-to-html-fail "pandoc could not convert $input" "ls -ld ${(q)${output:h}}" "check that the folder is writable"
     print -u2 -r -- "$messages"
     return 1
   fi
 
   if is not empty "$messages"; then
-    print -u2 -r -- "${c[warn]}warning:${c[reset]} $caller: pandoc reported problems with $input"
+    say warn "$caller: pandoc reported problems with $input"
     print -u2 -r -- "$messages"
   fi
 
   if is empty "$MD_CALLER"; then
-    echo "${c[success]}success:${c[reset]} wrote $output"
+    say ok "wrote $output"
   fi
 }
 

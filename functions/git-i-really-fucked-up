@@ -2,6 +2,10 @@
 
 function git-i-really-fucked-up() {
   cheat-help git-i-really-fucked-up "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local DEPS=(
     confirm
     git
@@ -12,10 +16,9 @@ function git-i-really-fucked-up() {
   fi
 
   local BRANCH="origin/$(git-branch)"
-  echo "$c[success]Success:$c[reset] reset to $BRANCH"
-
-  if confirm "$c[warning]Are you sure you want to reset to $BRANCH?$c[reset]"; then
-    git reset --hard $BRANCH
+  if confirm "are you sure you want to reset to $BRANCH?"; then
+    git reset --hard $BRANCH || { say fail "could not reset to $BRANCH"; return 1 }
+    say ok "reset to $BRANCH"
   fi
 }
 

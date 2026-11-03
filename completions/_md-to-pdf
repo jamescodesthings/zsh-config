@@ -1,0 +1,11 @@
+#compdef md-to-pdf
+
+_md-to-pdf() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '*:markdown file:_files'
+}
+
+_md-to-pdf "$@"

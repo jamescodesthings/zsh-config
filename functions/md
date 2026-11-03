@@ -2,15 +2,20 @@
 
 function md() {
   cheat-help md "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
   local DEPS=(is)
   if ! deps $DEPS; then
     return 1
   fi
 
   if is empty "$1"; then
-    echo "$c[error]error:$c[reset] md needs a path"
-    echo "see: cheat md"
-    return 0
+    problem "md needs a path"
+    fix "cheat md" "how to use it"
+    problems
+    return 2
   fi
 
   local NO_FOLLOW=0
@@ -24,21 +29,22 @@ function md() {
   fi
 
   if is empty "$DIRPATH"; then
-    echo "$c[error]error:$c[reset] no path provided"
-    return 1
+    problem "no path provided"
+    fix "cheat md" "how to use it"
+    problems
+    return 2
   fi
 
-  mkdir -p "$DIRPATH"
-  if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not create $DIRPATH"
+  if ! mkdir -p "$DIRPATH"; then
+    say fail "could not create $DIRPATH"
     return 1
   fi
 
   if is equal $NO_FOLLOW 0; then
     cd "$DIRPATH"
-    echo "$c[success]success:$c[reset] created $DIRPATH"
+    say ok "created $DIRPATH"
   else
-    echo "$c[success]success:$c[reset] created $DIRPATH (no follow)"
+    say ok "created $DIRPATH (no follow)"
   fi
 }
 

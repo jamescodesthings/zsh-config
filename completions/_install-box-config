@@ -1,0 +1,12 @@
+#compdef install-box-config
+
+_install-box-config() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    ':source:_files' \
+    ':destination:_files'
+}
+
+_install-box-config "$@"

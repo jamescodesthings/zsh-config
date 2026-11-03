@@ -1,0 +1,11 @@
+#compdef zshconfig
+
+_zshconfig() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '(-e --edit)'{-e,--edit}'[open the config in an editor]'
+}
+
+_zshconfig "$@"

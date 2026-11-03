@@ -1,0 +1,11 @@
+#compdef deps
+
+_deps() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '*:command:_command_names'
+}
+
+_deps "$@"
