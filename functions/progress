@@ -178,6 +178,10 @@ function progress() {
         print -rn -- $'\e[?25l' >&2
         ( _progress_anim "$_PROGRESS_FILE" "$_PROGRESS_TITLE" $_PROGRESS_TOTAL $_PROGRESS_START $$ $_PROGRESS_KITTY ) &!
         _PROGRESS_PID=$!
+        if [[ -o interactive ]]; then
+          autoload -Uz add-zsh-hook
+          add-zsh-hook precmd _progress_hook
+        fi
       fi
       ;;
     done|fail)

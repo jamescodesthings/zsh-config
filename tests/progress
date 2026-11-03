@@ -138,4 +138,16 @@ has "pause then resume: spinner back, count kept" "$OUT" "resumed alive=yes n=2"
 run -- 'progress start t 2; progress pause; progress resume; progress done'
 same "pause and resume in plain mode are quiet" "$?" 0
 
+# An interactive caller: the precmd hook is set by start, survives pause/resume,
+# and is gone after done
+HOOKOUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin TMPDIR="$TMP" CLI_PROGRESS_FORCE=1 zsh -f -i -c '
+  fpath=("$1/functions" $fpath)
+  autoload -Uz col cli-init cli-icon say progress cheat-help
+  export CUSTOM_DIR="$1"
+  h() { print -r -- "$1=${precmd_functions[(Ie)_progress_hook]:-0}"; }
+  progress start t 2; progress step a; h start
+  progress pause; progress resume; h resume
+  progress done; h done' _ "$REPO_DIR" 2>/dev/null </dev/null)"
+same "resume restores the precmd hook, done removes it" "${(j: :)${(M)${(f)HOOKOUT}:#(start|resume|done)=*}}" "start=1 resume=1 done=0"
+
 exit $failed

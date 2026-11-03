@@ -11,7 +11,7 @@ trap 'rm -rf "$TMP"' EXIT
 # Every external command the tools could run is a stub that does nothing, the
 # shell runs in an empty HOME and folder: nothing real is touched.
 mkdir -p "$TMP/bin" "$TMP/home" "$TMP/work"
-for c in docker git npm asdf apt apt-get brew sudo python3 pico8 gs convert jpegoptim; do
+for c in docker git npm asdf apt apt-get brew sudo python3 pico8 gs convert jpegoptim micro; do
   printf '#!/bin/sh\nexit 0\n' > "$TMP/bin/$c"
   chmod +x "$TMP/bin/$c"
 done
