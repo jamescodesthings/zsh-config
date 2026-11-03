@@ -15,6 +15,13 @@ function cheatsheet-test() {
   cli-init "$@"
   set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
+  # --skill treats every sheet in the run as a skill sheet
+  local -i force_skill=0
+  if (( ${@[(Ie)--skill]} || ${@[(Ie)-s]} )); then
+    force_skill=1
+    set -- "${@:#(--skill|-s)}"
+  fi
+
   # --strict turns the structure warnings below into failures
   local -i strict=0
   if (( ${@[(Ie)--strict]} )); then
@@ -30,10 +37,14 @@ function cheatsheet-test() {
 
   # The glob sits in a string so the file still parses when it is autoloaded
   # under sh_glob, which reads "(N-.)" as a syntax error.
-  local target pattern
+  local target pattern skills_pat='(skills|skills-*)'
   for target in $targets; do
     if is dir "$target"; then
       pattern="${(b)target}/*.md(N-.)"
+      # A skills folder holds <name>/cheatsheet.md, one level down
+      if [[ "${target:A:t}" == ${~skills_pat} ]]; then
+        pattern="${(b)target}/*/cheatsheet.md(N-.)"
+      fi
       sheets+=(${~pattern})
     elif is file "$target"; then
       sheets+=("$target")
@@ -52,9 +63,19 @@ function cheatsheet-test() {
   local -i vars_at=0 i j rank last_rank
   local -a standard
   local -a sections warnings
-  local -i failed=0 number bad
+  local -i failed=0 number bad skill
+  local skill_dir title_line purpose_line
   for sheet in $sheets; do
     bad=0
+
+    # A skill sheet is <skills|skills-*>/<name>/cheatsheet.md, or any sheet
+    # under --skill. It keeps the line and row rules and drops the top/child
+    # structure. The patterns live in strings so the file parses under sh_glob.
+    skill=$force_skill
+    skill_dir="${sheet:A:h:h:t}"
+    if [[ "${sheet:t}" == cheatsheet.md ]] && [[ "$skill_dir" == ${~skills_pat} ]]; then
+      skill=1
+    fi
 
     # The shape tlrc accepts, checked here too so the test means the same on
     # a machine without tlrc: every non-empty line starts with "# ", "> ",
@@ -96,23 +117,37 @@ function cheatsheet-test() {
     first_section="${(L)sections[1]}"
     last_section="${sections[-1]}"
     warnings=()
-    candidate="$name"
-    while [[ "$candidate" == *-* ]]; do
-      candidate="${candidate%-*}"
-      if is file "${sheet:h}/$candidate.md"; then
-        parent="$candidate"
-        break
-      fi
-    done
-    if is empty "$parent"; then
-      [[ "$first_section" != "getting started" ]] && warnings+=("a top sheet's first section should be \"Getting started\"")
-      [[ "$last_section" != "See also" ]] && warnings+=("the last section should be exactly \"See also\"")
-      height=$(CLI_PLAIN=1 cheat-render "$sheet" 2> /dev/null | wc -l)
-      height="${height//[[:space:]]/}"
-      height=$(( height - 1 )) # the blank line every render ends with
-      (( height > 35 )) && warnings+=("a top sheet should fit half a kitty window: $height rendered lines, aim for 35")
+    if (( skill )); then
+      # Lighter: a title, then a purpose line; See also is optional but last
+      title_line="$(grep -m1 -E '[^[:space:]]' "$sheet")"
+      [[ "$title_line" != '# '* ]] && warnings+=("a skill sheet starts with a \"# \" title")
+      purpose_line="$(grep -E '[^[:space:]]' "$sheet" | sed -n 2p)"
+      [[ "$purpose_line" != '> '* ]] && warnings+=("a skill sheet has a \"> \" purpose line right after the title")
+      for (( i = 1; i <= ${#sections}; i++ )); do
+        if [[ "${(L)sections[i]}" == "see also" ]]; then
+          [[ "${sections[i]}" != "See also" ]] && warnings+=("spell the heading \"${sections[i]}\" exactly \"See also\"")
+          (( i != ${#sections} )) && warnings+=("\"See also\" should be the last section")
+        fi
+      done
     else
-      [[ "$last_section" != "See also" ]] && warnings+=("the last section should be exactly \"See also\"")
+      candidate="$name"
+      while [[ "$candidate" == *-* ]]; do
+        candidate="${candidate%-*}"
+        if is file "${sheet:h}/$candidate.md"; then
+          parent="$candidate"
+          break
+        fi
+      done
+      if is empty "$parent"; then
+        [[ "$first_section" != "getting started" ]] && warnings+=("a top sheet's first section should be \"Getting started\"")
+        [[ "$last_section" != "See also" ]] && warnings+=("the last section should be exactly \"See also\"")
+        height=$(CLI_PLAIN=1 cheat-render "$sheet" 2> /dev/null | wc -l)
+        height="${height//[[:space:]]/}"
+        height=$(( height - 1 )) # the blank line every render ends with
+        (( height > 35 )) && warnings+=("a top sheet should fit half a kitty window: $height rendered lines, aim for 35")
+      else
+        [[ "$last_section" != "See also" ]] && warnings+=("the last section should be exactly \"See also\"")
+      fi
     fi
     # A Variables section, when there is one, sits just before the last.
     # The patterns live in strings so the file still parses under sh_glob.
@@ -128,6 +163,7 @@ function cheatsheet-test() {
     standard=("Getting started" Usage Options Examples Variables "See also")
     last_rank=0
     for (( i = 1; i <= ${#sections}; i++ )); do
+      (( skill )) && break
       rank=${standard[(I)${(b)sections[i]}]}
       if (( ! rank )); then
         for (( j = 1; j <= ${#standard}; j++ )); do

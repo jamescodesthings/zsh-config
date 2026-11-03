@@ -5,6 +5,7 @@ _cheatsheet-test() {
     '--plain[no colour or animation]' \
     '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
     '(-h --help)'{-h,--help}'[show the sheet]' \
+    '(-s --skill)'{-s,--skill}'[treat every sheet as a skill sheet]' \
     '--strict[make the structure warnings fail]' \
     '*:sheet or folder:_files'
 }

@@ -8,16 +8,19 @@
 - `cheatsheet-test` - check zsh-config's own sheets
 - `cheatsheet-test <sheet> [<folder>...]` - check sheets or whole folders
 - `cheatsheet-test --strict <sheet>` - make the structure warnings fail
+- `cheatsheet-test <skills folder>` - check each `<name>/cheatsheet.md` in it
 
 # Line rules
 
 - Every non-empty line starts with `# `, `> `, `- ` or a backtick
 - A backtick line is one example ending in a backtick
 - No indenting
+- A `cheatsheet.md` in a `skills` or `skills-*` folder is a skill sheet: title, purpose line, See also optional but last
 
 # Options
 
 - `--strict` - turn the structure warnings into failures
+- `--skill` - treat every sheet in the run as a skill sheet
 - `--plain` - no colour or animation
 - `-q`, `--quiet` - print only warnings and errors
 - Exit: 0 done, 1 failed, 2 wrong usage
