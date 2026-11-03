@@ -1,0 +1,44 @@
+#compdef key
+
+_key_names() {
+  local dir="${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys}" f
+  local -a names
+  for f in "$dir"/*.key(N); do names+=("${${f:t}%.key}"); done
+  _describe -t keys 'key name' names
+}
+
+_key() {
+  local -a subs common
+  subs=(
+    'create:make a new key'
+    'cycle:replace a key, keeping the old one'
+    'sync:pull the key from 1Password, or push it'
+    'list:list the stored keys'
+    'path:print where a key is stored'
+  )
+  common=('-v[say more]' '--verbose[say more]' '-q[say less]' '--quiet[say less]' '--plain[no colour]')
+
+  if (( CURRENT == 2 )); then
+    _describe -t commands 'key command' subs
+    return
+  fi
+
+  case "$words[2]" in
+    create)
+      _arguments $common '--to[also write the key into a file]:file:_files' '--var[variable name in that file]:variable' \
+        '--op[1Password reference]:op reference' '1:key name:' ;;
+    cycle)
+      _arguments $common '--to[also write the key into a file]:file:_files' '--var[variable name in that file]:variable' \
+        '(-n --dry-run)'{-n,--dry-run}'[say what would change]' '(-y --yes)'{-y,--yes}'[do not ask]' '1:key name:_key_names' ;;
+    sync)
+      _arguments $common '--push[push the stored key to 1Password]' '(-l --local)'{-l,--local}'[skip 1Password, only write --to]' \
+        '--to[also write the key into a file]:file:_files' '--var[variable name in that file]:variable' \
+        '--op[1Password reference]:op reference' '(-y --yes)'{-y,--yes}'[do not ask]' '1:key name:_key_names' ;;
+    list)
+      _arguments $common '--json[machine readable]' ;;
+    path)
+      _arguments $common '(-p --previous)'{-p,--previous}'[the newest older key]' '1:key name:_key_names' ;;
+  esac
+}
+
+_key "$@"

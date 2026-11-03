@@ -1,0 +1,471 @@
+#!/usr/bin/env zsh
+
+# key create|cycle|sync|list|path <name> [...]: per-project named keys, kept
+# in the store ${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys} (folder
+# 700, files 600). Per key: <name>.key (the key on one line), <name>.key.<n>
+# (older keys, n counting up from 1), <name>.conf (`op = REF`, `var = VAR`)
+# and <name>.users (reserved for wipcrypt).
+#
+#   key create <name> [--to FILE] [--var VAR] [--op REF]
+#   key cycle  <name> [--to FILE] [--var VAR] [-n|--dry-run] [-y|--yes]
+#   key sync   <name> [--push] [-l|--local] [--to FILE] [--var VAR] [--op REF] [-y|--yes]
+#   key list   [--json]
+#   key path   <name> [-p|--previous]
+#
+# Every subcommand also takes -v|--verbose, -q|--quiet and --plain. Exit 0
+# ok, 1 failed, 2 usage. A key is never put on any command's argv or printed:
+# openssl output and `op read` land in a shell variable, FILE is rewritten
+# with builtins only, and `op` gets a pushed key through a 600 template file.
+# Environment: KEY_DIR, KEY_OP_BIN (default op), KEY_FORCE_TTY (tests only).
+#
+# Run as a script (`zsh functions/key ...`) it puts its own folder on fpath and
+# autoloads the helpers it uses, so it works from any shell, even with an
+# empty ZDOTDIR.
+if [[ "$0" == */* ]]; then
+  fpath=("${0:a:h}" $fpath)
+  autoload -Uz col cli-init cli-icon say cheat-help
+  [[ -n "$CUSTOM_DIR" ]] || export CUSTOM_DIR="${0:a:h:h}"
+fi
+
+function key() {
+  cheat-help key "$@" && return 0
+  emulate -L zsh
+  setopt extended_glob
+  cli-init "$@"
+  set -- "${@:#--plain}"
+
+  local sub="$1"
+  if [[ -z "$sub" ]]; then
+    _key_say fail "key: usage: key create|cycle|sync|list|path <name> (key --help)"
+    return 2
+  fi
+  shift
+
+  # option state shared by the helpers below
+  typeset -g _KEY_QUIET="" _KEY_VERBOSE=""
+  local name="" to="" var_opt="" op_opt="" dry="" yes="" push="" local_only="" json="" prev=""
+  local -a rest
+  while (( $# )); do
+    case "$1" in
+      --to) (( $# >= 2 )) || { _key_say fail "key: --to needs a file"; return 2; }; to="$2"; shift 2 ;;
+      --to=*) to="${1#--to=}"; shift ;;
+      --var) (( $# >= 2 )) || { _key_say fail "key: --var needs a name"; return 2; }; var_opt="$2"; shift 2 ;;
+      --var=*) var_opt="${1#--var=}"; shift ;;
+      --op) (( $# >= 2 )) || { _key_say fail "key: --op needs a reference"; return 2; }; op_opt="$2"; shift 2 ;;
+      --op=*) op_opt="${1#--op=}"; shift ;;
+      -n|--dry-run) dry=1; shift ;;
+      -y|--yes) yes=1; shift ;;
+      --push) push=1; shift ;;
+      -l|--local) local_only=1; shift ;;
+      --json) json=1; shift ;;
+      -p|--previous) prev=1; shift ;;
+      -v|--verbose) _KEY_VERBOSE=1; shift ;;
+      -q|--quiet) _KEY_QUIET=1; shift ;;
+      -*) _key_say fail "key: no option called $1"; return 2 ;;
+      *) rest+=("$1"); shift ;;
+    esac
+  done
+
+  local dir="${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys}"
+
+  case "$sub" in
+    list)
+      (( ${#rest} == 0 )) || { _key_say fail "key: list takes no name"; return 2; }
+      _key_list "$dir" "$json"
+      return $?
+      ;;
+    create|cycle|sync|path) ;;
+    *)
+      _key_say fail "key: no subcommand called $sub"
+      return 2
+      ;;
+  esac
+
+  name="${rest[1]}"
+  if [[ -z "$name" ]]; then
+    _key_say fail "key: $sub needs a name"
+    return 2
+  fi
+  if (( ${#rest} > 1 )); then
+    _key_say fail "key: $sub takes one name, not ${#rest}"
+    return 2
+  fi
+  if [[ ! "$name" =~ '^[a-z0-9][a-z0-9._-]*$' ]]; then
+    _key_say fail "key: $name is not a valid key name (use a-z, 0-9, . _ -)"
+    return 2
+  fi
+  if [[ -n "$push" && -n "$local_only" ]]; then
+    _key_say fail "key: --push and --local cannot be combined"
+    return 2
+  fi
+  if [[ -n "$op_opt" && ! "$op_opt" =~ '^op://[^/]+/[^/]+/[^/]+$' ]]; then
+    _key_say fail "key: $op_opt is not an op://vault/item/field reference"
+    return 2
+  fi
+  if [[ -n "$var_opt" && ! "$var_opt" =~ '^[A-Za-z_][A-Za-z0-9_]*$' ]]; then
+    _key_say fail "key: $var_opt is not a valid variable name"
+    return 2
+  fi
+
+  if [[ "$sub" == path ]]; then
+    if [[ -n "$prev" ]]; then
+      local n newest=0 f
+      for f in "$dir/$name.key."<->(N); do
+        n="${f##*.}"
+        (( n > newest )) && newest=$n
+      done
+      if (( newest == 0 )); then
+        _key_say fail "key: $name has no older key"
+        return 1
+      fi
+      print -r -- "$dir/$name.key.$newest"
+    else
+      print -r -- "$dir/$name.key"
+    fi
+    return 0
+  fi
+
+  local kfile="$dir/$name.key" cfile="$dir/$name.conf"
+  local op var
+  _key_conf "$cfile" "$name"
+  [[ -n "$op_opt" ]] && op="$op_opt"
+  [[ -n "$var_opt" ]] && var="$var_opt"
+  local save_conf=""
+  [[ -n "$op_opt$var_opt" ]] && save_conf=1
+
+  case "$sub" in
+    create) _key_create "$dir" "$name" "$to" ;;
+    cycle) _key_cycle "$dir" "$name" "$to" "$dry" "$yes" ;;
+    sync) _key_sync "$dir" "$name" "$to" "$push" "$local_only" "$yes" ;;
+  esac
+}
+
+# _key_say ok|info|warn|fail text: say, minus ok and info lines under -q.
+function _key_say() {
+  if [[ -n "$_KEY_QUIET" && ( "$1" == ok || "$1" == info ) ]]; then
+    return 0
+  fi
+  say "$@"
+}
+
+# _key_conf conf-file name: sets op and var (in the caller) from the file,
+# else the defaults.
+function _key_conf() {
+  local line
+  op="op://Private/$2-key/password"
+  var="${${(U)2}//[-.]/_}_KEY"
+  [[ -r "$1" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" == (#b)(op|var)[[:space:]]#=[[:space:]]#(*[^[:space:]])[[:space:]]# ]]; then
+      if [[ "$match[1]" == op ]]; then
+        [[ "$match[2]" =~ '^op://[^/]+/[^/]+/[^/]+$' ]] && op="$match[2]"
+      else
+        [[ "$match[2]" =~ '^[A-Za-z_][A-Za-z0-9_]*$' ]] && var="$match[2]"
+      fi
+    fi
+  done < "$1"
+}
+
+# _key_dir_ready dir: makes the store, 700.
+function _key_dir_ready() {
+  [[ -d "$1" ]] || { mkdir -p "${1:h}" && mkdir -m 700 "$1"; } || {
+    _key_say fail "key: could not make $1"
+    return 1
+  }
+  chmod 700 "$1"
+}
+
+# _key_save_conf: writes the caller's op and var to its cfile when options set them.
+function _key_save_conf() {
+  [[ -n "$save_conf" ]] || return 0
+  _key_atomic_write "$cfile" "op = $op"$'\n'"var = $var" || return 1
+}
+
+# _key_atomic_write file text: temp file beside it (600), then mv.
+function _key_atomic_write() {
+  local file="$1" tmp
+  tmp="$(umask 077; mktemp "${file:h}/.${file:t}.XXXXXX")" || {
+    _key_say fail "key: could not write ${file:t}"
+    return 1
+  }
+  print -r -- "$2" > "$tmp" && chmod 600 "$tmp" && mv -f "$tmp" "$file" || {
+    rm -f "$tmp"
+    _key_say fail "key: could not write ${file:t}"
+    return 1
+  }
+}
+
+# _key_backup file: copies it to file.<n>, n the next free integer from 1,
+# mode 600; sets REPLY to the copy.
+function _key_backup() {
+  local n=1
+  while [[ -e "$1.$n" ]]; do (( n++ )); done
+  ( umask 077; cp -p "$1" "$1.$n" ) && chmod 600 "$1.$n" || {
+    _key_say fail "key: could not back up ${1:t}"
+    return 1
+  }
+  REPLY="$1.$n"
+}
+
+# _key_write_to file var key always: replaces the var= line in file (every
+# other line kept, duplicates collapsed) or appends one. Builtins only, so the
+# key never reaches another process's argv; temp file beside file, then mv,
+# 600. The file is backed up first when it exists and always is 1 or its var
+# line holds another value.
+function _key_write_to() {
+  local file="$1" v="$2" k="$3" always="$4" line cur="" has=0 tmp done=0
+  if [[ -f "$file" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      if [[ "$line" == "$v="* ]]; then has=1; cur="${line#$v=}"; fi
+    done < "$file"
+    if [[ -n "$always" ]] || { (( has )) && [[ "$cur" != "$k" ]]; }; then
+      _key_backup "$file" || return 1
+      _key_say info "saved ${file:t} as ${REPLY:t}"
+    fi
+  fi
+  tmp="$(umask 077; mktemp "${file:h}/.${file:t}.XXXXXX")" || {
+    _key_say fail "key: could not write ${file:t}"
+    return 1
+  }
+  {
+    if [[ -f "$file" ]]; then
+      while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ "$line" == "$v="* ]]; then
+          (( done )) || print -r -- "$v=$k"
+          done=1
+        else
+          print -r -- "$line"
+        fi
+      done < "$file"
+    fi
+    (( done )) || print -r -- "$v=$k"
+  } > "$tmp" && chmod 600 "$tmp" && mv -f "$tmp" "$file" || {
+    rm -f "$tmp"
+    _key_say fail "key: could not write $file"
+    return 1
+  }
+  _key_say ok "wrote $v into $file"
+}
+
+# _key_to_ok file: fails when file's folder does not exist.
+function _key_to_ok() {
+  [[ -z "$1" || -d "${1:a:h}" ]] && return 0
+  _key_say fail "key: ${1:a:h} does not exist, so $1 cannot be written"
+  return 1
+}
+
+function _key_have_tty() {
+  [[ -n "$KEY_FORCE_TTY" && "$KEY_FORCE_TTY" != 0 ]] && return 0
+  [[ -t 0 ]]
+}
+
+# _key_ask text: one y/N question on stdin.
+function _key_ask() {
+  local ans
+  read -r "ans?$1 [y/N] " || return 1
+  [[ "$ans" == [yY]* ]]
+}
+
+function _key_create() {
+  local dir="$1" name="$2" to="$3" k
+  _key_dir_ready "$dir" || return 1
+  if [[ -e "$kfile" ]]; then
+    _key_say fail "key: $name already has a key; replace it with: key cycle $name"
+    return 1
+  fi
+  _key_to_ok "$to" || return 1
+  k="$(openssl rand -base64 32)"
+  if [[ -z "$k" ]]; then
+    _key_say fail "key: openssl could not make a key"
+    return 1
+  fi
+  _key_atomic_write "$kfile" "$k" || return 1
+  _key_save_conf || return 1
+  _key_say ok "made key $name"
+  [[ -n "$_KEY_VERBOSE" ]] && _key_say info "stored at $kfile"
+  [[ -n "$to" ]] && { _key_write_to "$to" "$var" "$k" "" || return 1; }
+  return 0
+}
+
+function _key_cycle() {
+  local dir="$1" name="$2" to="$3" dry="$4" yes="$5" k
+  if [[ ! -f "$kfile" ]]; then
+    _key_say fail "key: $name has no key to cycle; make one with: key create $name"
+    return 1
+  fi
+  _key_to_ok "$to" || return 1
+  if [[ -n "$dry" ]]; then
+    _key_say info "would save the current $name key as $name.key.<n>, store a new one"
+    [[ -n "$to" ]] && _key_say info "would back up $to and rewrite $var in it"
+    return 0
+  fi
+  if [[ -z "$yes" ]]; then
+    if ! _key_have_tty; then
+      _key_say fail "key: cycle needs a terminal to ask, or -y"
+      return 1
+    fi
+    _key_ask "Replace the $name key with a new one? The old one is kept as $name.key.<n>." || {
+      _key_say info "left $name alone"
+      return 1
+    }
+  fi
+  k="$(openssl rand -base64 32)"
+  if [[ -z "$k" ]]; then
+    _key_say fail "key: openssl could not make a key"
+    return 1
+  fi
+  _key_backup "$kfile" || return 1
+  _key_say info "kept the old key as ${REPLY:t}"
+  _key_atomic_write "$kfile" "$k" || return 1
+  _key_save_conf || return 1
+  _key_say ok "cycled key $name"
+  [[ -n "$to" ]] && { _key_write_to "$to" "$var" "$k" 1 || return 1; }
+  return 0
+}
+
+function _key_sync() {
+  local dir="$1" name="$2" to="$3" push="$4" local_only="$5" yes="$6" k
+  local bin="${KEY_OP_BIN:-op}"
+
+  if [[ -n "$local_only" ]]; then
+    if [[ -z "$to" ]]; then
+      _key_say fail "key: sync --local needs --to FILE"
+      return 2
+    fi
+    if [[ ! -f "$kfile" ]]; then
+      _key_say fail "key: $name has no key; pull it with: key sync $name"
+      return 1
+    fi
+    _key_to_ok "$to" || return 1
+    _key_save_conf || return 1
+    k="$(< "$kfile")"
+    _key_write_to "$to" "$var" "$k" ""
+    return $?
+  fi
+
+  if [[ ! -x "$bin" ]] && ! (( $+commands[$bin] )); then
+    _key_say fail "key: $bin is not installed, so there is no 1Password to talk to"
+    return 1
+  fi
+  local tty_msg="key: sync needs a terminal, op waits on the 1Password app prompt (-y skips it for a push)"
+
+  if [[ -n "$push" ]]; then
+    if [[ ! -f "$kfile" ]]; then
+      _key_say fail "key: $name has no key to push; make one with: key create $name"
+      return 1
+    fi
+    if [[ -z "$yes" ]]; then
+      _key_have_tty || { _key_say fail "$tty_msg"; return 1; }
+      _key_ask "Push the $name key to 1Password at $op?" || {
+        _key_say info "pushed nothing"
+        return 1
+      }
+    fi
+    _key_save_conf || return 1
+    _key_push "$dir" "$name" "$bin" "$op"
+    return $?
+  fi
+
+  _key_have_tty || { _key_say fail "$tty_msg"; return 1; }
+  _key_to_ok "$to" || return 1
+  _key_dir_ready "$dir" || return 1
+  _key_say info "asking 1Password: approve the prompt in the 1Password app"
+  k="$("$bin" read "$op")"
+  if (( $? != 0 )) || [[ -z "$k" ]]; then
+    _key_say fail "key: op gave no key for $op"
+    return 1
+  fi
+  if [[ -f "$kfile" && "$(< "$kfile")" == "$k" ]]; then
+    _key_say info "$name is already current"
+  else
+    if [[ -f "$kfile" ]]; then
+      _key_backup "$kfile" || return 1
+      _key_say info "kept the old key as ${REPLY:t}"
+    fi
+    _key_atomic_write "$kfile" "$k" || return 1
+    _key_say ok "pulled key $name from 1Password"
+  fi
+  _key_save_conf || return 1
+  [[ -n "$to" ]] && { _key_write_to "$to" "$var" "$k" "" || return 1; }
+  return 0
+}
+
+# _key_push dir name bin ref: create or edit the 1Password item through a 600
+# template file (op takes a sensitive value from a file, not argv).
+function _key_push() {
+  local dir="$1" name="$2" bin="$3" ref="$4" tmp k
+  local rest="${ref#op://}" vault title field
+  vault="${rest%%/*}"; rest="${rest#*/}"
+  title="${rest%%/*}"; field="${rest#*/}"
+  vault="$(_key_json "$vault")"; title="$(_key_json "$title")"; field="$(_key_json "$field")"
+  k="$(< "$kfile")"
+  tmp="$(umask 077; mktemp "$dir/.push.XXXXXX")" || {
+    _key_say fail "key: could not make a template file"
+    return 1
+  }
+  local rc=0 exists=0
+  {
+    "$bin" item get --vault "${vault}" "${title}" > /dev/null 2>&1 && exists=1
+    if (( exists )); then
+      print -r -- "{\"fields\":[{\"id\":\"$field\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
+      "$bin" item edit --vault "$vault" "$title" --template="$tmp" > /dev/null || rc=1
+    else
+      print -r -- "{\"title\":\"$title\",\"category\":\"PASSWORD\",\"vault\":{\"name\":\"$vault\"},\"fields\":[{\"id\":\"$field\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
+      "$bin" item create --template="$tmp" > /dev/null || rc=1
+    fi
+  } always {
+    rm -f "$tmp"
+  }
+  if (( rc )); then
+    _key_say fail "key: op could not $( (( exists )) && print update || print create ) the item $ref"
+    return 1
+  fi
+  _key_say ok "pushed key $name to 1Password ($ref)"
+}
+
+# _key_json text: text with \ and " escaped for a JSON string.
+function _key_json() {
+  local s="${1//\\/\\\\}"
+  print -r -- "${s//\"/\\\"}"
+}
+
+function _key_list() {
+  local dir="$1" json="$2" f n name
+  local -a names rows
+  local -aU seen
+  for f in "$dir"/*.key(N) "$dir"/*.conf(N); do
+    name="${${f:t}%.*}"
+    seen+=("$name")
+  done
+  names=("${(@o)seen}")
+  if [[ -n "$json" ]]; then
+    local -a objs
+    for name in "${names[@]}"; do
+      _key_list_row "$dir" "$name"
+      objs+=("{\"name\":\"$name\",\"stored\":$_L_STORED,\"backups\":$_L_BACKUPS,\"op\":\"$(_key_json "$_L_OP")\",\"var\":\"$(_key_json "$_L_VAR")\"}")
+    done
+    print -r -- "[${(j:,:)objs}]"
+    return 0
+  fi
+  local w=0 stored
+  for name in "${names[@]}"; do (( ${#name} > w )) && w=${#name}; done
+  for name in "${names[@]}"; do
+    _key_list_row "$dir" "$name"
+    stored=missing; [[ "$_L_STORED" == true ]] && stored=stored
+    print -r -- "${(r:w:)name}  ${(r:7:)stored}  ${_L_BACKUPS} older  $_L_OP  $_L_VAR"
+  done
+  return 0
+}
+
+# _key_list_row dir name: sets _L_STORED, _L_BACKUPS, _L_OP, _L_VAR.
+function _key_list_row() {
+  local op var
+  _key_conf "$1/$2.conf" "$2"
+  typeset -g _L_OP="$op" _L_VAR="$var" _L_STORED=false
+  [[ -f "$1/$2.key" ]] && _L_STORED=true
+  local -a bk
+  bk=("$1/$2.key."<->(N))
+  typeset -g _L_BACKUPS=${#bk}
+}
+
+key "$@"

@@ -1,0 +1,232 @@
+#!/usr/bin/env zsh
+# Tests functions/key against a stub `op` and a scratch store. Run: tests/key.
+# Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+mkdir -p "$TMP/bin" "$TMP/zd" "$TMP/work"
+KD="$TMP/store"
+OPLOG="$TMP/oplog"
+
+# The stub op: logs its argv; `read` prints $STUBDIR/stubkey (exit 1 when
+# $STUBDIR/failread exists); `item get` succeeds when $STUBDIR/exists does;
+# `item create|edit` copies the --template file to $STUBDIR/template.cap.
+cat > "$TMP/bin/op" <<'STUB'
+#!/bin/sh
+echo "$*" >> "$OPLOG"
+case "$1" in
+  read)
+    [ -e "$STUBDIR/failread" ] && exit 1
+    cat "$STUBDIR/stubkey"
+    exit 0 ;;
+  item)
+    case "$2" in
+      get) [ -e "$STUBDIR/exists" ] && exit 0; exit 1 ;;
+      create|edit)
+        for a in "$@"; do
+          case "$a" in --template=*) cp "${a#--template=}" "$STUBDIR/template.cap" ;; esac
+        done
+        exit 0 ;;
+    esac ;;
+esac
+exit 1
+STUB
+chmod +x "$TMP/bin/op"
+
+I_ERR=$'\U000f0159'
+
+# run <code>: sets OUT, ERR, CODE. STDIN names a file fed to stdin.
+function run() {
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin ZDOTDIR="$TMP/zd" CLI_PLAIN=1 KEY_DIR="$KD" \
+    KEY_OP_BIN="$TMP/bin/op" STUBDIR="$TMP" OPLOG="$OPLOG" ${=EXTRA_ENV} zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz col cli-init cli-icon say cheat-help key
+    export CUSTOM_DIR="$1"
+    eval "$2"
+  ' _ "$REPO_DIR" "$1" 2> "$TMP/err" < "${STDIN:-/dev/null}")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+function same() {
+  if [[ "$2" == "$3" ]]; then echo "ok: $1"
+  else echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"; failed=1; fi
+}
+function mode() { stat -f %Lp "$1" 2>/dev/null || stat -c %a "$1"; }
+function fresh() { rm -rf "$KD" "$TMP/work"/*(N) "$TMP"/{oplog,exists,failread,template.cap}(N); print -r -- "stub-key-from-op" > "$TMP/stubkey"; }
+print -r -- y > "$TMP/yes"; print -r -- n > "$TMP/no"
+
+# --- create
+fresh
+run "key create demo"
+K="$(< $KD/demo.key)"
+same "create exits 0" "$CODE" "0"
+same "key is a 44 char base64 line" "${#K}|$(wc -l < $KD/demo.key | tr -d ' ')" "44|1"
+same "key file 600, folder 700" "$(mode $KD/demo.key)|$(mode $KD)" "600|700"
+same "key never on stdout or stderr" "$([[ $OUT$ERR == *$K* ]] && echo leak)" ""
+run "key create demo"
+same "second create exits 1, key unchanged" "$CODE|$(< $KD/demo.key)" "1|$K"
+
+run "key create ../x"
+same "bad name exits 2" "$CODE|${ERR%% *}" "2|$I_ERR"
+run "key create Bad"
+same "uppercase name exits 2" "$CODE" "2"
+run "key create"
+same "missing name exits 2" "$CODE" "2"
+run "key frob demo"
+same "unknown subcommand exits 2" "$CODE" "2"
+run "key create demo --bogus"
+same "unknown option exits 2" "$CODE" "2"
+
+fresh
+print -r -- $'A=1\nV=old\nB=2\nV=dup' > "$TMP/work/env"
+run "key create demo --to $TMP/work/env --var V"
+K="$(< $KD/demo.key)"
+same "--to writes V once, keeps other lines" "$(< $TMP/work/env)" $'A=1\nV='"$K"$'\nB=2'
+same "--to file mode 600" "$(mode $TMP/work/env)" "600"
+same "differing V line backs the file up" "$(< $TMP/work/env.1)" $'A=1\nV=old\nB=2\nV=dup'
+same "var saved to conf" "$(< $KD/demo.conf)" $'op = op://Private/demo-key/password\nvar = V'
+run "key list --json"
+same "conf var shows in list" "$OUT" '[{"name":"demo","stored":true,"backups":0,"op":"op://Private/demo-key/password","var":"V"}]'
+
+fresh
+printf 'A=1' > "$TMP/work/env"
+run "key create demo --to $TMP/work/env"
+K="$(< $KD/demo.key)"
+same "no trailing newline: default var appended" "$(< $TMP/work/env)" $'A=1\nDEMO_KEY='"$K"
+same "no V line: no backup" "$(ls $TMP/work)" "env"
+run "key create my-proj.x --to $TMP/work/e2"
+same "default var from name" "${$(< $TMP/work/e2)%%=*}" "MY_PROJ_X_KEY"
+
+fresh
+run "key create demo --to $TMP/nodir/env"
+same "missing folder for --to fails, nothing created" "$CODE|$(ls $KD 2>&1 | tr '\n' ' ')" "1|"
+
+# --- cycle
+fresh
+run "key create demo"; K1="$(< $KD/demo.key)"
+run "key cycle demo -y"
+K2="$(< $KD/demo.key)"
+same "cycle exits 0 with a different key" "$CODE|$([[ $K1 != $K2 ]] && echo diff)" "0|diff"
+same "old key in .key.1" "$(< $KD/demo.key.1)|$(mode $KD/demo.key.1)" "$K1|600"
+run "key path demo -p"
+same "path -p prints newest backup" "$OUT" "$KD/demo.key.1"
+run "key cycle demo -y"
+run "key path demo --previous"
+same "second cycle makes .2" "$OUT|$(< $KD/demo.key.2)" "$KD/demo.key.2|$K2"
+run "key path demo"
+same "path prints store path" "$OUT" "$KD/demo.key"
+run "key path nope -p"
+same "path -p with no backup exits 1" "$CODE|$OUT" "1|"
+
+fresh
+run "key create demo"; K1="$(< $KD/demo.key)"
+print -r -- 'X=1' > "$TMP/work/env"; print -r -- "V=$K1" >> "$TMP/work/env"
+run "key cycle demo -y --to $TMP/work/env --var V"
+K2="$(< $KD/demo.key)"
+same "cycle --to rewrites line, keeps others" "$(< $TMP/work/env)" $'X=1\nV='"$K2"
+same "cycle --to backs file up" "$(< $TMP/work/env.1)" $'X=1\nV='"$K1"
+
+run "key cycle demo -n --to $TMP/work/env"
+same "dry run changes nothing" "$CODE|$(< $KD/demo.key)|$(ls $KD | tr '\n' ' ')" "0|$K2|demo.conf demo.key demo.key.1 "
+run "key cycle missing -y"
+same "cycle with no key exits 1" "$CODE" "1"
+run "key cycle demo"
+same "cycle with no tty and no -y exits 1" "$CODE|$(< $KD/demo.key)" "1|$K2"
+STDIN="$TMP/no" EXTRA_ENV="KEY_FORCE_TTY=1" run "key cycle demo"
+same "answering n changes nothing" "$CODE|$(< $KD/demo.key)" "1|$K2"
+STDIN="$TMP/yes" EXTRA_ENV="KEY_FORCE_TTY=1" run "key cycle demo"
+same "answering y cycles" "$CODE|$([[ $(< $KD/demo.key) != $K2 ]] && echo diff)" "0|diff"
+unset STDIN
+
+# --- sync pull
+fresh
+run "key sync demo"
+same "pull without a terminal exits 1 naming it" "$CODE|${ERR##*needs a terminal*}" "1|"
+same "no op call made without a terminal" "$(cat $OPLOG 2>/dev/null)" ""
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+same "pull stores the stub key" "$CODE|$(< $KD/demo.key)|$(mode $KD/demo.key)" "0|stub-key-from-op|600"
+same "pull used default ref" "$(< $OPLOG)" "read op://Private/demo-key/password"
+print -r -- other-key > "$KD/demo.key"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo --to $TMP/work/env --var V"
+same "pull backs a different key up" "$(< $KD/demo.key.1)|$(< $KD/demo.key)" "other-key|stub-key-from-op"
+same "pull writes --to" "$(< $TMP/work/env)" "V=stub-key-from-op"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+same "same key: no new backup" "$(ls $KD | grep -c 'key\.')" "1"
+: > "$TMP/stubkey"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+same "empty op output exits 1, key kept" "$CODE|$(< $KD/demo.key)" "1|stub-key-from-op"
+touch "$TMP/failread"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+same "op read failure exits 1" "$CODE" "1"
+
+# --- sync push
+fresh
+run "key create demo"; K="$(< $KD/demo.key)"; : > $OPLOG
+run "key sync demo --push -y"
+same "push with item absent creates" "$CODE|$(grep -c 'item create' $OPLOG)" "0|1"
+same "template holds the key, ref parts" "$([[ $(< $TMP/template.cap) == *\"$K\"* && $(< $TMP/template.cap) == *'"title":"demo-key"'* && $(< $TMP/template.cap) == *'"name":"Private"'* ]] && echo yes)" "yes"
+same "key never in op argv" "$(grep -cF "$K" $OPLOG)" "0"
+same "no template left behind" "$(ls -A $KD | grep -c tmp\\.\|XXXX)" "0"
+touch "$TMP/exists"; : > $OPLOG
+run "key sync demo --push -y"
+same "push with item present edits" "$(grep -c 'item edit' $OPLOG)" "1"
+same "key never in oplog (edit)" "$(grep -cF "$K" $OPLOG)" "0"
+run "key sync demo --push"
+same "push without -y and no tty exits 1" "$CODE" "1"
+STDIN="$TMP/no" EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo --push"
+same "push answered n exits 1" "$CODE" "1"
+run "key sync nokey --push -y"
+same "push with no stored key exits 1" "$CODE" "1"
+run "key sync demo --push --local -y"
+same "push and local together exits 2" "$CODE" "2"
+
+# --- sync local
+fresh
+run "key create demo"; K="$(< $KD/demo.key)"; : > $OPLOG
+run "key sync demo -l --to $TMP/work/env --var V"
+same "local writes --to, no op call" "$(< $TMP/work/env)|$(cat $OPLOG)" "V=$K|"
+run "key sync demo -l"
+same "local without --to exits 2" "$CODE" "2"
+
+# --- conf
+fresh
+run "key create demo --op op://Vault/thing/field --var MYV"
+same "conf holds op and var" "$(< $KD/demo.conf)" $'op = op://Vault/thing/field\nvar = MYV'
+same "conf mode 600" "$(mode $KD/demo.conf)" "600"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+same "saved op ref used on next call" "$(< $OPLOG)" "read op://Vault/thing/field"
+run "key cycle demo -y --to $TMP/work/e3"
+same "saved var used on next call" "${$(< $TMP/work/e3)%%=*}" "MYV"
+run "key create other --op notaref"
+same "bad op ref exits 2" "$CODE" "2"
+run "key create other --var 'a b'"
+same "bad var exits 2" "$CODE" "2"
+
+# --- list
+fresh
+run "key create one"; run "key create two --to $TMP/work/e"; run "key cycle two -y"
+K="$(< $KD/two.key)"
+run "key list"
+same "list names both, never the key" "$CODE|$(print -r -- $OUT | grep -c .)|$([[ $OUT == *$K* ]] && echo leak)" "0|2|"
+same "list shows backups and var" "$([[ ${${(f)OUT}[2]} == *two*1*TWO_KEY* ]] && echo yes)" "yes"
+run "key list --json"
+same "json names each key, stored true" "$OUT" '[{"name":"one","stored":true,"backups":0,"op":"op://Private/one-key/password","var":"ONE_KEY"},{"name":"two","stored":true,"backups":1,"op":"op://Private/two-key/password","var":"TWO_KEY"}]'
+same "json has no key text" "$([[ $OUT == *$K* ]] && echo leak)" ""
+same "list never called op" "$(cat $OPLOG 2>/dev/null)" ""
+fresh
+run "key list --json"
+same "empty store lists []" "$CODE|$OUT" "0|[]"
+
+# --- usable as a script and as a function with an empty ZDOTDIR
+fresh
+OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin ZDOTDIR="$TMP/zd" KEY_DIR="$KD" zsh -f "$REPO_DIR/functions/key" --plain create bad/name 2>&1)"; CODE=$?
+same "runs as a script, usage exit 2" "$CODE|${OUT#*  }" "2|key: bad/name is not a valid key name (use a-z, 0-9, . _ -)"
+OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin ZDOTDIR="$TMP/zd" KEY_DIR="$KD" zsh -f "$REPO_DIR/functions/key" --plain create ok1 2>&1)"; CODE=$?
+same "script creates a key" "$CODE|$(wc -c < $KD/ok1.key | tr -d ' ')" "0|45"
+OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin ZDOTDIR="$TMP/zd" zsh -f -c "fpath=($REPO_DIR/functions \$fpath); autoload -Uz key; key create bad/name; print alive" 2>/dev/null)"
+same "function call leaves the shell alive" "$OUT" "alive"
+
+exit $failed
