@@ -103,6 +103,7 @@ run encrypt --root "$t" --key n
 run encrypt --root "$u" --key n
 
 run cycle-key --root "$t" --key n
+cyc_out="$OUT"
 check "cycle-key --key n exits zero" "0" "$CODE"
 new=$(<"$KD/n.key")
 check "the store holds a new key" "differs" "$([[ $new != $old ]] && print differs || print same)"
@@ -119,6 +120,8 @@ done
 check "registered tree re-encrypted under the new key" "yes" "$ok"
 run status --root "$t" --key n
 check "status --key n after rotation is in sync" "x-wip: in sync" "$OUT"
+check "cycle-key --key ends with key sync NAME --push" "yes" \
+  "$([[ -n "$(print -r -- "$cyc_out" | grep -F 'with: key sync n --push')" && "$cyc_out" != *'key-sync --push'* ]] && print yes || print no)"
 
 # --env as well: the env file gets the new key through key cycle --to.
 KD=$(mkt); export KEY_DIR="$KD"
@@ -144,6 +147,31 @@ run encrypt --root "$t" --key n
 run cycle-key --root "$t" --key n --env "$e/.env"
 check "--env outside the root is accepted with --key" "0" "$CODE"
 check "that env file holds the new key" "$(<$KD/n.key)" "$(key_of "$e/.env")"
+
+# A root listed only in the legacy <env dir>/.cache/key-users is rotated too
+# with --key --env; a root in both files is rotated once.
+KD=$(mkt); export KEY_DIR="$KD"
+t=$(new_root); lg=$(new_root); both=$(new_root); e=$(mkt)
+old=$(newkey)
+print -r -- "$old" > "$KD/n.key"; chmod 600 "$KD/n.key"
+print -r -- "SKILLS_ENCRYPTION_KEY=$old" > "$e/.env"
+mkdir -p "$e/.cache"
+print -r -- "$lg" > "$e/.cache/key-users"
+print -r -- "$both" >> "$e/.cache/key-users"
+print -r -- "$both" > "$KD/n.users"
+run encrypt --root "$t" --key n
+run encrypt --root "$lg" --key n
+run encrypt --root "$both" --key n
+run cycle-key --root "$t" --key n --env "$e/.env"
+check "legacy registry cycle exits zero" "0" "$CODE"
+new=$(<"$KD/n.key")
+ok=yes
+for r in "$lg" "$both"; do
+  for f in "$r"/.claude/x-encrypted/**/*(N.); do
+    [[ -n "$(decrypts_with "$new" "$f")" ]] || ok=no
+  done
+done
+check "legacy-only and shared roots re-encrypted under the new key" "yes" "$ok"
 
 # A stale store key aborts before anything is touched.
 t=$(new_root)

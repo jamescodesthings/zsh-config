@@ -118,6 +118,10 @@ function key() {
     _key_say fail "key: --from belongs to sync"
     return 2
   fi
+  if [[ "$op_opt" == *[[:cntrl:]]* ]]; then
+    _key_say fail "key: --op must not contain control characters"
+    return 2
+  fi
   if [[ -n "$op_opt" && ! "$op_opt" =~ '^op://[^/]+/[^/]+/[^/]+$' ]]; then
     _key_say fail "key: $op_opt is not an op://vault/item/field reference"
     return 2
@@ -232,11 +236,13 @@ function _key_publish_new() {
   return 1
 }
 
-# _key_backup file: copies it to file.<n>, n the next free integer from 1,
-# mode 600; sets REPLY to the copy.
+# _key_backup file: copies it to file.<n>, n one above the highest existing
+# backup (1 when none), so the highest number is always the newest; mode 600;
+# sets REPLY to the copy.
 function _key_backup() {
-  local n=1
-  while [[ -e "$1.$n" ]]; do (( n++ )); done
+  local n=0 f
+  for f in "$1."<->(N); do (( ${f##*.} > n )) && n=${f##*.}; done
+  (( n++ ))
   ( umask 077; command cp -p "$1" "$1.$n" ) && command chmod 600 "$1.$n" || {
     _key_say fail "key: could not back up ${1:t}"
     return 1
@@ -253,7 +259,7 @@ function _key_write_to() {
   local file="${1:A}" v="$2" k="$3" always="$4" line cur="" has=0 tmp done=0
   if [[ -f "$file" ]]; then
     while IFS= read -r line || [[ -n "$line" ]]; do
-      if [[ "$line" == "$v="* ]]; then has=1; cur="${line#$v=}"; fi
+      if [[ "$line" == ("export "[[:space:]]#|)"$v="* ]]; then has=1; cur="${line#*$v=}"; fi
     done < "$file"
     if [[ -n "$always" ]] || { (( has )) && [[ "$cur" != "$k" ]]; }; then
       _key_backup "$file" || return 1
@@ -267,8 +273,10 @@ function _key_write_to() {
   {
     if [[ -f "$file" ]]; then
       while IFS= read -r line || [[ -n "$line" ]]; do
-        if [[ "$line" == "$v="* ]]; then
-          (( done )) || print -r -- "$v=$k"
+        if [[ "$line" == ("export "[[:space:]]#|)"$v="* ]]; then
+          if (( ! done )); then
+            if [[ "$line" == export* ]]; then print -r -- "export $v=$k"; else print -r -- "$v=$k"; fi
+          fi
           done=1
         else
           print -r -- "$line"
@@ -459,7 +467,7 @@ function _key_import() {
     return 1
   fi
   while IFS= read -r line || [[ -n "$line" ]]; do
-    [[ "$line" == "$var="* ]] && k="${line#$var=}"
+    [[ "$line" == ("export "[[:space:]]#|)"$var="* ]] && k="${line#*$var=}"
   done < "$src"
   if (( ${#k} >= 2 )) && [[ ( "${k[1]}" == '"' || "${k[1]}" == "'" ) && "${k[1]}" == "${k[-1]}" ]]; then
     k="${k[2,-2]}"
@@ -500,17 +508,28 @@ function _key_push() {
   }
   local rc=0 exists=0
   {
-    "$bin" item get --vault "${vault}" "${title}" > /dev/null 2>&1 && exists=1
-    if (( exists )); then
+    local gerr
+    if gerr="$("$bin" item get --vault "${vault}" "${title}" 2>&1 > /dev/null)"; then
+      exists=1
+    elif [[ "${(L)gerr}" != *("isn't an item"|"not found")* ]]; then
+      rc=2
+    fi
+    if (( rc == 2 )); then
+      :
+    elif (( exists )); then
       print -r -- "{\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
       "$bin" item edit --vault "$vault" "$title" --template="$tmp" > /dev/null || rc=1
     else
       print -r -- "{\"title\":\"$jtitle\",\"category\":\"PASSWORD\",\"vault\":{\"name\":\"$jvault\"},\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
-      "$bin" item create --template="$tmp" > /dev/null || rc=1
+      "$bin" item create --vault "$vault" --template="$tmp" > /dev/null || rc=1
     fi
   } always {
     command rm -f "$tmp"
   }
+  if (( rc == 2 )); then
+    _key_say fail "key: could not tell whether the item $ref exists (op get failed); nothing was created"
+    return 1
+  fi
   if (( rc )); then
     _key_say fail "key: op could not $( (( exists )) && print update || print create ) the item $ref"
     return 1
@@ -530,6 +549,7 @@ function _key_list() {
   local -aU seen
   for f in "$dir"/*.key(N) "$dir"/*.conf(N); do
     name="${${f:t}%.*}"
+    [[ "$name" =~ '^[a-z0-9][a-z0-9._-]*$' ]] || continue
     seen+=("$name")
   done
   names=("${(@o)seen}")

@@ -1049,37 +1049,48 @@ run_cycle_key() {
   ROTATION_ROOTS=("$ROOT_DIR")
   ROTATION_PAIRS_FILES=("$PAIRS_FILE")
 
-  if [[ -n "$KEY_NAME" ]]; then
-    key_users_file="${AGENT_FORGE_KEY_USERS:-$KEY_STORE/$KEY_NAME.users}"
+  # Under --key the registry is the store's NAME.users; with --env the legacy
+  # <env dir>/.cache/key-users is read too when it exists. Both are read and
+  # deduplicated. AGENT_FORGE_KEY_USERS overrides both.
+  local -a key_users_files
+  if [[ -n "$AGENT_FORGE_KEY_USERS" ]]; then
+    key_users_files=("$AGENT_FORGE_KEY_USERS")
+  elif [[ -n "$KEY_NAME" ]]; then
+    key_users_files=("$KEY_STORE/$KEY_NAME.users")
+    (( ENV_GIVEN )) && [[ -e "${ENV_FILE:h}/.cache/key-users" ]] \
+      && key_users_files+=("${ENV_FILE:h}/.cache/key-users")
   else
-    key_users_file="${AGENT_FORGE_KEY_USERS:-${ENV_FILE:h}/.cache/key-users}"
+    key_users_files=("${ENV_FILE:h}/.cache/key-users")
   fi
-  if [[ -e "$key_users_file" ]]; then
-    [[ -r "$key_users_file" ]] \
-      || error "Refusing to rotate: the key-users registry at $key_users_file exists but cannot be read, so there is no way to tell which other trees this key protects. Nothing was changed."
-    while IFS= read -r entry || [[ -n "$entry" ]]; do
-      [[ -z "$entry" || "$entry" == "#"* ]] && continue
-      [[ "$entry" == /* ]] \
-        || error "Refusing to rotate: the key-users registry at $key_users_file lists '$entry', which is not an absolute path. Entries are absolute project roots, one per line. Nothing was changed."
-      # The rotating root is already first in the list; a registry that names
-      # it too must not make every loop below run over it twice.
-      [[ "$entry" == "$ROOT_DIR" ]] && continue
-      [[ -d "$entry" ]] \
-        || error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which is not a directory. Rotation has to re-encrypt every tree this key protects, so a listed root that has moved or gone must be fixed or removed from the registry first. Nothing was changed."
-      entry_pairs=""
-      if [[ -f "$entry/.claude/wip-pairs" ]]; then
-        entry_pairs="$entry/.claude/wip-pairs"
-      elif [[ -f "$entry/zsh/lib/wip-pairs" ]]; then
-        entry_pairs="$entry/zsh/lib/wip-pairs"
-      else
-        error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which has neither .claude/wip-pairs nor zsh/lib/wip-pairs. Nothing was changed."
-      fi
-      [[ -r "$entry_pairs" ]] \
-        || error "Refusing to rotate: $entry_pairs exists but cannot be read, so the trees it registers cannot be re-encrypted. Nothing was changed."
-      ROTATION_ROOTS+=("$entry")
-      ROTATION_PAIRS_FILES+=("$entry_pairs")
-    done < "$key_users_file"
-  fi
+  for key_users_file in "${key_users_files[@]}"; do
+    if [[ -e "$key_users_file" ]]; then
+      [[ -r "$key_users_file" ]] \
+        || error "Refusing to rotate: the key-users registry at $key_users_file exists but cannot be read, so there is no way to tell which other trees this key protects. Nothing was changed."
+      while IFS= read -r entry || [[ -n "$entry" ]]; do
+        [[ -z "$entry" || "$entry" == "#"* ]] && continue
+        [[ "$entry" == /* ]] \
+          || error "Refusing to rotate: the key-users registry at $key_users_file lists '$entry', which is not an absolute path. Entries are absolute project roots, one per line. Nothing was changed."
+        # The rotating root is already first in the list; a registry that names
+        # it too must not make every loop below run over it twice.
+        [[ "$entry" == "$ROOT_DIR" ]] && continue
+        [[ -d "$entry" ]] \
+          || error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which is not a directory. Rotation has to re-encrypt every tree this key protects, so a listed root that has moved or gone must be fixed or removed from the registry first. Nothing was changed."
+        entry_pairs=""
+        if [[ -f "$entry/.claude/wip-pairs" ]]; then
+          entry_pairs="$entry/.claude/wip-pairs"
+        elif [[ -f "$entry/zsh/lib/wip-pairs" ]]; then
+          entry_pairs="$entry/zsh/lib/wip-pairs"
+        else
+          error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which has neither .claude/wip-pairs nor zsh/lib/wip-pairs. Nothing was changed."
+        fi
+        [[ -r "$entry_pairs" ]] \
+          || error "Refusing to rotate: $entry_pairs exists but cannot be read, so the trees it registers cannot be re-encrypted. Nothing was changed."
+        (( ${ROTATION_ROOTS[(Ie)$entry]} )) && continue
+        ROTATION_ROOTS+=("$entry")
+        ROTATION_PAIRS_FILES+=("$entry_pairs")
+      done < "$key_users_file"
+    fi
+  done
 
   trap wipcrypt_cycle_cleanup EXIT
 
@@ -1229,7 +1240,11 @@ run_cycle_key() {
   trap - EXIT
 
   success "Key rotation complete"
-  info "push the new key to 1Password with: key-sync --push"
+  if [[ -n "$KEY_NAME" ]]; then
+    info "push the new key to 1Password with: key sync $KEY_NAME --push"
+  else
+    info "push the new key to 1Password with: key-sync --push"
+  fi
 }
 
 # ---------------------------------------------------------------------------

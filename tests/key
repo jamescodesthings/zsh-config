@@ -23,7 +23,9 @@ case "$1" in
     exit 0 ;;
   item)
     case "$2" in
-      get) [ -e "$STUBDIR/exists" ] && exit 0; exit 1 ;;
+      get) [ -e "$STUBDIR/exists" ] && exit 0
+           if [ -e "$STUBDIR/getfail" ]; then echo "network unreachable" >&2; exit 1; fi
+           echo "\"x\" isn't an item in the \"V\" vault" >&2; exit 1 ;;
       create|edit)
         for a in "$@"; do
           case "$a" in --template=*) cp "${a#--template=}" "$STUBDIR/template.cap" ;; esac
@@ -55,7 +57,7 @@ function same() {
   else echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3} (exit $CODE)"; failed=1; fi
 }
 function mode() { stat -f %Lp "$1" 2>/dev/null || stat -c %a "$1"; }
-function fresh() { rm -rf "$KD" "$TMP/work"/*(N) "$TMP"/{oplog,exists,failread,template.cap}(N); print -r -- "stub-key-from-op" > "$TMP/stubkey"; }
+function fresh() { rm -rf "$KD" "$TMP/work"/*(N) "$TMP"/{oplog,exists,failread,getfail,template.cap}(N); print -r -- "stub-key-from-op" > "$TMP/stubkey"; }
 print -r -- y > "$TMP/yes"; print -r -- n > "$TMP/no"
 
 # --- create
@@ -105,6 +107,16 @@ run "key create demo --to $TMP/nodir/env"
 same "missing folder for --to fails, nothing created" "$CODE|$(ls $KD 2>&1 | tr '\n' ' ')" "1|"
 
 # --- cycle
+# backups number from the highest, so -p is always the newest
+fresh
+run "key create demo"; run "key cycle demo -y"; run "key cycle demo -y"
+rm -f $KD/demo.key.1
+K3="$(< $KD/demo.key)"
+run "key cycle demo -y"
+run "key path demo -p"
+same "after a gap, -p names .key.3" "$OUT" "$KD/demo.key.3"
+same ".key.3 holds the previous key" "$(< $KD/demo.key.3)" "$K3"
+
 fresh
 run "key create demo"; K1="$(< $KD/demo.key)"
 run "key cycle demo -y"
@@ -182,6 +194,13 @@ run "key sync nokey --push -y"
 same "push with no stored key exits 1" "$CODE" "1"
 run "key sync demo --push --local -y"
 same "push and local together exits 2" "$CODE" "2"
+
+touch "$TMP/getfail"; rm -f "$TMP/exists"; : > $OPLOG; rm -f "$TMP/template.cap"
+run "key sync demo --push -y"
+same "get failing for another reason: exit 1, no create" "$CODE|$(grep -c 'item create' $OPLOG)|$([[ -e $TMP/template.cap ]] && echo cap)" "1|0|"
+rm -f "$TMP/getfail"; : > $OPLOG
+run "key sync demo --push -y"
+same "create argv holds --vault" "$(grep 'item create' $OPLOG | grep -c -- '--vault Personal')" "1"
 
 # --- sync local
 fresh
@@ -314,5 +333,25 @@ same "KEY_OP_VAULT changes the default" "${${OUT##*\"op\":\"}%%\"*}" "op://Work/
 run "key create other --op op://Vault/x/password"
 EXTRA_ENV="KEY_OP_VAULT=Work" run "key list --json"
 same "a conf ref wins over KEY_OP_VAULT" "$([[ $OUT == *'"op":"op://Vault/x/password"'* ]] && echo yes)" "yes"
+
+# --- export lines
+fresh
+run "key create demo"; K="$(< $KD/demo.key)"
+print -r -- $'A=1\nexport V=oldvalue\nB=2' > "$TMP/work/exp"
+run "key sync demo -l --to $TMP/work/exp --var V"
+same "--to replaces an export line, keeps the prefix" "$(< $TMP/work/exp)" $'A=1\nexport V='"$K"$'\nB=2'
+fresh
+print -r -- $'A=1\nexport V=fromexport' > "$TMP/work/src"
+run "key sync demo --from $TMP/work/src --var V"
+same "--from reads an export line" "$CODE|$(< $KD/demo.key)" "0|fromexport"
+
+# --- --op control characters, list --json names
+fresh
+run "key create demo --op $'op://V/i\ntem/f'"
+same "--op with a control character exits 2" "$CODE" "2"
+fresh
+run "key create demo"; print -r -- x > "$KD/Bad\"name.key"
+run "key list --json"
+same "list --json skips bad store names" "$OUT" '[{"name":"demo","stored":true,"backups":0,"op":"op://Personal/demo-key/password","var":"DEMO_KEY"}]'
 
 exit $failed

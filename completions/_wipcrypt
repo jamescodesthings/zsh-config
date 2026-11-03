@@ -16,12 +16,16 @@ _wipcrypt() {
     'cycle-key:re-key every registered pair'
   )
 
+  local -a dryspec
+  [[ "${words[2,-1]}" == *cycle-key* ]] \
+    || dryspec=('--dry-run[encrypt and status only: write nothing]')
+
   _arguments \
     '--root[directory the pairs file resolves against]:directory:_files -/' \
     '--pairs[the wip-pairs file]:file:_files' \
     '--key[named key from the key store]:key name:_wipcrypt_key_names' \
     '--env[env file holding SKILLS_ENCRYPTION_KEY]:file:_files' \
-    '--dry-run[encrypt and status only: write nothing]' \
+    "${dryspec[@]}" \
     '(-h --help)'{-h,--help}'[show usage]' \
     '1:subcommand:_describe -t commands subcommand subs' \
     '*::source and destination:_files -/'

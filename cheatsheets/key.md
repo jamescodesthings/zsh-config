@@ -12,7 +12,7 @@
 
 - `key create <name> [--to FILE]` - new key; `--to` also writes it into FILE
 - `key cycle <name> [--to FILE] [-n|--dry-run] [-y|--yes]` - replace the key, keep the old as a backup
-- `key sync <name> [--push] [-l|--local] [--to FILE] [-y|--yes]` - 1Password to the store; `--push` the other way
+- `key sync <name> [--push] [-l|--local] [--from FILE] [--to FILE] [-y|--yes]` - 1Password to the store; `--push` the other way; `--from` reads a file
 
 # Inspect
 
