@@ -4,7 +4,7 @@
 source "${0:a:h}/_stub"
 
 if is not osx; then
-  echo "$c[info]skipping:$c[reset] homebrew is macos only"
+  say info "skipping: homebrew is macos only"
   exit 0
 fi
 
@@ -12,7 +12,7 @@ fi
 # this terminal, because it needs the sudo session, and homebrew ends that
 # session on its way out; expect one more password prompt later in such a run.
 if is not available brew; then
-  echo "$c[info]installing:$c[reset] homebrew"
+  say info "installing homebrew"
   "$REPO_DIR/installers/01-homebrew"
   for prefix in /opt/homebrew /usr/local; do
     if is executable "$prefix/bin/brew"; then
@@ -20,45 +20,45 @@ if is not available brew; then
     fi
   done
   if is not available brew; then
-    echo "$c[error]error:$c[reset] homebrew is not installed and could not be installed"
+    say fail "homebrew is not installed and could not be installed"
     exit 1
   fi
 fi
 
-echo "$c[info]updating:$c[reset] homebrew"
+say info "updating homebrew"
 brew-isolated update
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] brew update failed"
+  say fail "brew update failed"
   exit 1
 fi
 
 # The base stack comes first, so that a tool a later updater needs is there by
 # the time it runs. --no-upgrade leaves upgrading to the step after this one.
 FAILED=0
-echo "$c[info]installing:$c[reset] anything missing from the Brewfile"
+say info "installing anything missing from the Brewfile"
 brew-isolated bundle install --no-upgrade --file="$REPO_DIR/configs/brew/Brewfile"
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] brew bundle could not install everything in configs/brew/Brewfile"
+  say fail "brew bundle could not install everything in configs/brew/Brewfile"
   FAILED=1
 fi
 
 brew-isolated upgrade --yes
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] brew upgrade failed"
-  echo "$c[warn]warning:$c[reset] if a cask needed root, upgrade it by hand: brew upgrade --cask <name>"
+  say fail "brew upgrade failed"
+  say warn "if a cask needed root, upgrade it by hand: brew upgrade --cask <name>"
   exit 1
 fi
 
 brew-isolated cleanup
 if is not equal "$?" "0"; then
-  echo "$c[warn]warning:$c[reset] brew cleanup failed"
+  say warn "brew cleanup failed"
 fi
 
 if is equal "$FAILED" "1"; then
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] homebrew updated"
+say ok "homebrew updated"
 
 exit 0
 }

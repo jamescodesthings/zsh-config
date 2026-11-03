@@ -1,6 +1,6 @@
 # update
 
-> Pull zsh-config, then run every script in `updaters/` in number order.
+> Pull zsh-config, then run every script in `updaters/` in number order, quietly, with a step counter.
 > Asks for sudo once; a failed updater is listed at the end and the exit code is 1.
 
 # Getting started
@@ -13,20 +13,18 @@
 
 - `update <name>...` - only the named updaters, e.g. `update brew tldr`
 - `update projects` - pull and reinstall every installed project, agent-forge included
-- `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log` - `error:` and `warning:` lines, plus the last 30 lines of a failed updater; a clean run leaves none, the newest 20 are kept
+- `update [-v|--verbose]` - show each updater's output as it runs instead of the step counter
+- `update [-q|--quiet]` - print only warnings, failures and the log
+- `update --plain` - no colour or animation
 
-# Language versions and fixes
+# Logs
 
-- `configs/asdf/update-policy[.<hostname>]` - `<tool> latest`, `stable` or `remove` per line; the hostname file is that machine's extras
-- `UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf` - preview the asdf updater
-- `ASDF_PIN_ROOTS="$HOME/projects:$HOME/work" update asdf` - look elsewhere for pinning projects
-- Never run `bun upgrade`: asdf owns bun
-- `could not work out the ... version` - GitHub API limit; run `gh auth login`
-- `xcodes install --latest` - Xcode download with an expired Apple ID session
-- `brew upgrade --cask <name>` - a cask that needs root fails inside `010-brew`
+- `log open last` - this run's log; `log open child` opens a failed updater's output
+- `~/.custom/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log` - warning and failure lines per updater, plus the last 30 lines of a failed one; a clean run leaves none, the newest 20 are kept
 
 # See also
 
+- `cheat update asdf` - language versions, the update policy and common fixes
 - `cheat install-release` - Debian release tools
 - `cheat zshconfig`
 - `cheat zsh-config` - everything zsh-config gives you

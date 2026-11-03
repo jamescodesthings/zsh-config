@@ -3,16 +3,16 @@
 {
 source "${0:a:h}/_stub"
 
-echo "$c[info]updating:$c[reset] zsh-config"
+say info "updating zsh-config"
 OUTPUT=$(git -C "$REPO_DIR" pull --ff-only 2>&1)
 
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] git pull failed"
+  say fail "git pull failed"
   echo "$OUTPUT"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] zsh-config updated"
+say ok "zsh-config updated"
 
 check-or-load link-cheatsheets
 # Stale-shell migration shim: a shell opened before the move still exports the old CHEATSHEET_DIR.
@@ -20,7 +20,7 @@ if is empty "$CHEATSHEET_DIR" || [[ "${CHEATSHEET_DIR:A}" == "${REPO_DIR:A}"/* ]
   export CHEATSHEET_DIR="$HOME/cheatsheets"
 fi
 if ! link-cheatsheets "$REPO_DIR/cheatsheets"; then
-  echo "$c[warn]warning:$c[reset] link-cheatsheets reported a problem, see above"
+  say warn "link-cheatsheets reported a problem, see above"
 fi
 
 exit 0

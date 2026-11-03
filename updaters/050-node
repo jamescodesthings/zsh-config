@@ -6,28 +6,28 @@ source "${0:a:h}/_stub"
 # 040-asdf installs node itself and makes it the global version; this looks
 # after npm and the global packages that live inside that node.
 if is not available npm; then
-  echo "$c[info]skipping:$c[reset] npm not installed"
+  say info "skipping: npm not installed"
   exit 0
 fi
 
-echo "$c[info]updating:$c[reset] npm"
+say info "updating npm"
 npm install -g npm
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] npm self-update failed"
+  say fail "npm self-update failed"
   exit 1
 fi
 
-echo "$c[info]updating:$c[reset] global npm packages"
+say info "updating global npm packages"
 npm update -g
 if is not equal "$?" "0"; then
-  echo "$c[warn]warning:$c[reset] could not update global npm packages"
+  say warn "could not update global npm packages"
 fi
 
 if is available asdf; then
   asdf reshim nodejs
 fi
 
-echo "$c[success]success:$c[reset] npm and global packages updated"
+say ok "npm and global packages updated"
 
 exit 0
 }

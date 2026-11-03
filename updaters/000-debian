@@ -4,12 +4,12 @@
 source "${0:a:h}/_stub"
 
 if is osx; then
-  echo "$c[info]skipping:$c[reset] debian updater is linux only"
+  say info "skipping: debian updater is linux only"
   exit 0
 fi
 
 if is not available apt-get; then
-  echo "$c[info]skipping:$c[reset] apt not available"
+  say info "skipping: apt not available"
   exit 0
 fi
 
@@ -18,16 +18,16 @@ fi
 # APT=(sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold)
 APT=(sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold")
 
-echo "$c[info]updating:$c[reset] apt packages"
+say info "updating apt packages"
 # One broken third-party source makes apt-get update exit non-zero even
 # though every other list refreshed, so that is a warning and the upgrade
 # still runs on what it did fetch.
 if ! "${APT[@]}" update; then
-  echo "$c[warn]warning:$c[reset] apt-get update reported errors, a third-party apt source may be broken; upgrading from the lists it did fetch"
+  say warn "apt-get update reported errors, a third-party apt source may be broken; upgrading from the lists it did fetch"
 fi
 "${APT[@]}" upgrade && "${APT[@]}" autoremove
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] apt upgrade failed"
+  say fail "apt upgrade failed"
   exit 1
 fi
 
@@ -35,15 +35,15 @@ fi
 # reach machines that were installed earlier.
 BASE_PACKAGES=(${(f)"$(sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' "$REPO_DIR/configs/apt/base")"})
 if is not empty "$BASE_PACKAGES"; then
-  echo "$c[info]installing:$c[reset] base packages"
+  say info "installing base packages"
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${BASE_PACKAGES[@]}"
   if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] apt base package install failed"
+    say fail "apt base package install failed"
     exit 1
   fi
 fi
 
-echo "$c[success]success:$c[reset] apt packages updated"
+say ok "apt packages updated"
 
 exit 0
 }

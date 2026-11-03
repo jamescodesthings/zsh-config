@@ -4,18 +4,18 @@
 source "${0:a:h}/_stub"
 
 if is not available flatpak; then
-  echo "$c[info]skipping:$c[reset] flatpak not installed"
+  say info "skipping: flatpak not installed"
   exit 0
 fi
 
-echo "$c[info]updating:$c[reset] flatpak apps"
+say info "updating flatpak apps"
 flatpak update -y --noninteractive
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] flatpak update failed"
+  say fail "flatpak update failed"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] flatpak apps updated"
+say ok "flatpak apps updated"
 
 exit 0
 }

@@ -4,18 +4,18 @@
 source "${0:a:h}/_stub"
 
 if is not available code; then
-  echo "$c[info]skipping:$c[reset] vscode cli not installed"
+  say info "skipping: vscode cli not installed"
   exit 0
 fi
 
-echo "$c[info]updating:$c[reset] vscode extensions"
+say info "updating vscode extensions"
 code --update-extensions
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] vscode extension update failed"
+  say fail "vscode extension update failed"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] vscode extensions updated"
+say ok "vscode extensions updated"
 
 exit 0
 }

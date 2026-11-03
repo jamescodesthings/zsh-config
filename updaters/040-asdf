@@ -14,19 +14,19 @@ PIN_ROOTS=(${(s.:.)${ASDF_PIN_ROOTS:-$HOME/projects}})
 # instead of running it.
 function run() {
   if is not empty "$UPDATE_ASDF_DRY_RUN"; then
-    echo "$c[flag]would run:$c[reset] $*"
+    say info "would run: $*"
     return 0
   fi
   "$@"
 }
 
 if is not available asdf; then
-  echo "$c[info]skipping:$c[reset] asdf not installed (configs/brew/Brewfile has it on macos, installers/asdf elsewhere)"
+  say info "skipping: asdf not installed (configs/brew/Brewfile has it on macos, installers/asdf elsewhere)"
   exit 0
 fi
 
 if is not file "$POLICY_FILE"; then
-  echo "$c[error]error:$c[reset] no policy file at $POLICY_FILE"
+  say fail "no policy file at $POLICY_FILE"
   exit 1
 fi
 
@@ -41,10 +41,10 @@ if is linux && is available apt-get; then
     autoconf patch libyaml-dev libgmp-dev libgdbm-dev libdb-dev uuid-dev libzstd-dev
     python3 g++ make
   )
-  echo "$c[info]installing:$c[reset] build dependencies for python, ruby and node"
+  say info "installing build dependencies for python, ruby and node"
   run sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $BUILD_DEPS
   if is not equal "$?" "0"; then
-    echo "$c[warn]warning:$c[reset] could not install every build dependency, a language build may fail"
+    say warn "could not install every build dependency, a language build may fail"
   fi
 fi
 
@@ -60,13 +60,13 @@ if is empty "$GITHUB_API_TOKEN" && is available gh; then
   fi
 fi
 if is empty "$GITHUB_API_TOKEN"; then
-  echo "$c[info]note:$c[reset] no GitHub token (install gh and run gh auth login for one), so plugins share the 60 an hour GitHub API limit"
+  say info "note: no GitHub token (install gh and run gh auth login for one), so plugins share the 60 an hour GitHub API limit"
 fi
 
-echo "$c[info]updating:$c[reset] asdf plugins"
+say info "updating asdf plugins"
 run asdf plugin update --all
 if is not equal "$?" "0"; then
-  echo "$c[warn]warning:$c[reset] asdf plugin update failed"
+  say warn "asdf plugin update failed"
 fi
 
 # Plain release versions of a tool, oldest first. This is what keeps out
@@ -165,10 +165,10 @@ function update-tool() {
   local tool="$1" policy="$2" target version pin
 
   if ! asdf plugin list 2> /dev/null | grep -qx "$tool"; then
-    echo "$c[info]adding:$c[reset] asdf plugin $tool"
+    say info "adding asdf plugin $tool"
     run asdf plugin add "$tool"
     if is not equal "$?" "0"; then
-      echo "$c[error]error:$c[reset] could not add the asdf plugin for $tool"
+      say fail "could not add the asdf plugin for $tool"
       FAILED+=($tool)
       return
     fi
@@ -181,18 +181,18 @@ function update-tool() {
   fi
 
   if is empty "$target"; then
-    echo "$c[error]error:$c[reset] could not work out the $policy version of $tool: asdf list all $tool gave no plain release, often the GitHub API rate limit"
+    say fail "could not work out the $policy version of $tool: asdf list all $tool gave no plain release, often the GitHub API rate limit"
     FAILED+=($tool)
     return
   fi
 
   if installed-versions "$tool" | grep -qx "$target"; then
-    echo "$c[info]current:$c[reset] $tool $target"
+    say info "current $tool $target"
   else
-    echo "$c[info]installing:$c[reset] $tool $target"
+    say info "installing $tool $target"
     run asdf install "$tool" "$target"
     if is not equal "$?" "0"; then
-      echo "$c[error]error:$c[reset] could not install $tool $target"
+      say fail "could not install $tool $target"
       FAILED+=($tool)
       return
     fi
@@ -202,7 +202,7 @@ function update-tool() {
   # without being the one in use.
   run asdf set -u "$tool" "$target"
   if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not make $tool $target the global version"
+    say fail "could not make $tool $target the global version"
     FAILED+=($tool)
     return
   fi
@@ -213,13 +213,13 @@ function update-tool() {
     fi
     pin="$(pinned-by "$tool" "$version")"
     if is not empty "$pin"; then
-      echo "$c[info]keeping:$c[reset] $tool $version, pinned by $pin"
+      say info "keeping $tool $version, pinned by $pin"
       continue
     fi
-    echo "$c[info]removing:$c[reset] $tool $version"
+    say info "removing $tool $version"
     run asdf uninstall "$tool" "$version"
     if is not equal "$?" "0"; then
-      echo "$c[warn]warning:$c[reset] could not remove $tool $version"
+      say warn "could not remove $tool $version"
     fi
   done
 }
@@ -229,7 +229,7 @@ function forget-tool() {
   if is not file "$TOOL_VERSIONS" || ! grep -q "^$1 " "$TOOL_VERSIONS"; then
     return
   fi
-  echo "$c[info]removing:$c[reset] the $1 line in ~/.tool-versions"
+  say info "removing the $1 line in ~/.tool-versions"
   if is not empty "$UPDATE_ASDF_DRY_RUN"; then
     return
   fi
@@ -242,13 +242,13 @@ function remove-tool() {
 
   if asdf plugin list 2> /dev/null | grep -qx "$tool"; then
     for version in ${(f)"$(installed-versions "$tool")"}; do
-      echo "$c[info]removing:$c[reset] $tool $version"
+      say info "removing $tool $version"
       run asdf uninstall "$tool" "$version"
     done
-    echo "$c[info]removing:$c[reset] asdf plugin $tool"
+    say info "removing asdf plugin $tool"
     run asdf plugin remove "$tool"
     if is not equal "$?" "0"; then
-      echo "$c[warn]warning:$c[reset] could not remove the asdf plugin for $tool"
+      say warn "could not remove the asdf plugin for $tool"
     fi
   fi
 
@@ -283,7 +283,7 @@ for tool in $TOOL_ORDER; do
   case "$policy" in
     latest|stable) update-tool "$tool" "$policy" ;;
     remove)        remove-tool "$tool" ;;
-    *)             echo "$c[warn]warning:$c[reset] $tool has the unknown policy \"$policy\" in the asdf policy files" ;;
+    *)             say warn "$tool has the unknown policy \"$policy\" in the asdf policy files" ;;
   esac
 done
 
@@ -292,7 +292,7 @@ done
 if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
   BUN_COMPLETION="$HOME/.local/share/zsh/site-functions/_bun"
   if is not empty "$UPDATE_ASDF_DRY_RUN"; then
-    echo "$c[flag]would run:$c[reset] SHELL=zsh bun completions > $BUN_COMPLETION"
+    say info "would run: SHELL=zsh bun completions > $BUN_COMPLETION"
   else
     mkdir -p "${BUN_COMPLETION:h}"
     BUN_TMP="$(mktemp)"
@@ -303,7 +303,7 @@ if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
       chmod 644 "$BUN_COMPLETION"
     else
       rm -f "$BUN_TMP"
-      echo "$c[warn]warning:$c[reset] bun completions produced nothing, _bun not written"
+      say warn "bun completions produced nothing, _bun not written"
     fi
   fi
 fi
@@ -313,15 +313,15 @@ fi
 if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
   for old in "$HOME/.bun/bin/bun" "$HOME/.bun/bin/bunx" "$HOME/.bun/_bun"; do
     if is existing "$old" || [[ -L "$old" ]]; then
-      echo "$c[info]removing:$c[reset] $old, the standalone bun"
+      say info "removing $old, the standalone bun"
       run rm -f "$old"
     fi
   done
   if is osx && is available brew && { brew list bun > /dev/null 2>&1 || brew list oven-sh/bun/bun > /dev/null 2>&1 }; then
-    echo "$c[info]removing:$c[reset] the homebrew bun"
+    say info "removing the homebrew bun"
     run brew-isolated uninstall bun
     if is not equal "$?" "0"; then
-      echo "$c[warn]warning:$c[reset] could not uninstall the homebrew bun"
+      say warn "could not uninstall the homebrew bun"
     fi
   fi
 fi
@@ -343,11 +343,11 @@ fi
 run asdf reshim
 
 if is not empty "$FAILED"; then
-  echo "$c[error]error:$c[reset] asdf could not update: $FAILED"
+  say fail "asdf could not update: $FAILED"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] asdf tools updated"
+say ok "asdf tools updated"
 
 exit 0
 }

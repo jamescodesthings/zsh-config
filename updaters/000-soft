@@ -4,22 +4,22 @@
 source "${0:a:h}/_stub"
 
 if is not osx; then
-  echo "$c[info]skipping:$c[reset] software update is macos only"
+  say info "skipping: software update is macos only"
   exit 0
 fi
 
 if is not available softwareupdate; then
-  echo "$c[info]skipping:$c[reset] softwareupdate not available"
+  say info "skipping: softwareupdate not available"
   exit 0
 fi
 
 # Updates that need a restart are listed, not installed. On Apple silicon they
 # stop to ask for the account password, which no flag skips, and the list can
 # include a whole new macOS version that nobody wants installed unattended.
-echo "$c[info]checking:$c[reset] macos software"
+say info "checking macos software"
 LISTING=$(softwareupdate --list 2>&1)
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] could not list software updates"
+  say fail "could not list software updates"
   echo "$LISTING"
   exit 1
 fi
@@ -43,22 +43,22 @@ for line in ${(f)LISTING}; do
 done
 
 for label in $NEEDS_RESTART; do
-  echo "$c[warn]warning:$c[reset] $label needs a restart, install it from System Settings"
+  say warn "$label needs a restart, install it from System Settings"
 done
 
 if is empty "$INSTALLABLE"; then
-  echo "$c[success]success:$c[reset] nothing to install without a restart"
+  say ok "nothing to install without a restart"
   exit 0
 fi
 
-echo "$c[info]updating:$c[reset] $INSTALLABLE"
+say info "updating $INSTALLABLE"
 sudo softwareupdate --install --agree-to-license $INSTALLABLE
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] software update failed"
+  say fail "software update failed"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] software updates installed"
+say ok "software updates installed"
 
 exit 0
 }

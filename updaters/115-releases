@@ -4,7 +4,7 @@
 source "${0:a:h}/_stub"
 
 if is not debian; then
-  echo "$c[info]skipping:$c[reset] releases are only installed this way on Debian"
+  say info "skipping: releases are only installed this way on Debian"
   exit 0
 fi
 
@@ -23,7 +23,7 @@ for line in "${(@f)$(<"$REPO_DIR/configs/releases")}"; do
   rc=$?
   [[ -n "$out" ]] && print -r -- "$out"
   if (( rc != 0 )); then
-    echo "$c[error]error:$c[reset] could not update $bin"
+    say fail "could not update $bin"
     failed+=("$bin")
     continue
   fi
@@ -36,7 +36,7 @@ for line in "${(@f)$(<"$REPO_DIR/configs/releases")}"; do
       *) continue ;;
     esac
     if ! { mkdir -p "$site" && "$HOME/.local/bin/$bin" "${gen[@]}" > "$site/_$bin" } then
-      echo "$c[error]error:$c[reset] could not write the $bin zsh completion"
+      say fail "could not write the $bin zsh completion"
       failed+=("$bin completion")
     fi
   fi
@@ -46,6 +46,6 @@ if (( ${#failed} > 0 )); then
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] release tools are current"
+say ok "release tools are current"
 exit 0
 }

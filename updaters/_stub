@@ -4,6 +4,15 @@ REPO_DIR=${UPDATER_DIR:h}
 
 source "$REPO_DIR/installers/_stub"
 
+# The house helpers: say, cli-init and the rest autoload their own deps by
+# name, so the repo's functions/ goes on fpath for the length of the script.
+fpath=("$REPO_DIR/functions" $fpath)
+autoload -Uz cli-init cli-icon col say
+# An updater prints through say. update runs it with its output in a log, so
+# cli-init sees a pipe or file and keeps the output plain unless update asked
+# for colour (CLICOLOR_FORCE, from update -v).
+cli-init
+
 # Nothing an updater runs may stop to ask a question. These cover the tools
 # that read an environment variable; each updater passes its own --yes style
 # flag as well. sudo drops the environment, so an updater that needs one of
@@ -13,8 +22,8 @@ export DEBIAN_FRONTEND=noninteractive
 export GIT_TERMINAL_PROMPT=0
 export HOMEBREW_NO_ENV_HINTS=1
 
-# update pipes every updater through tee to keep a copy of its output, so
-# tools that only colour a terminal need telling to carry on doing it.
+# update keeps every updater's output in a log, so tools that only colour a
+# terminal need telling to carry on doing it.
 export HOMEBREW_COLOR=1
 
 # Every brew command starts by running "sudo --reset-timestamp" (brew.sh),

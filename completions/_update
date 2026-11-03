@@ -1,0 +1,20 @@
+#compdef update
+
+# Completes update's flags and the updater names (010-brew as brew).
+_update() {
+  local -a updaters
+  local dir="${CUSTOM_DIR:-$HOME/.custom}/updaters"
+  updaters=(${${(f)"$(print -l "$dir"/[0-9][0-9][0-9]-*(N:t))"}#<->-})
+
+  _arguments -s \
+    '(-h --help)'{-h,--help}'[show the cheat sheet]' \
+    '(-v --verbose -q --quiet)'{-v,--verbose}'[show each updater'"'"'s output live]' \
+    '(-q --quiet -v --verbose)'{-q,--quiet}'[print only warnings, failures and the log]' \
+    '--plain[no colour or animation]' \
+    '--list[list the updaters in run order]' \
+    '--errors[show the last run'"'"'s errors and warnings]' \
+    '--previous[with --errors: the newest log whichever run wrote it]' \
+    '*:updater:(${updaters})'
+}
+
+_update "$@"

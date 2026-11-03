@@ -4,7 +4,7 @@
 source "${0:a:h}/_stub"
 
 if is not available mas; then
-  echo "$c[info]skipping:$c[reset] mas not installed (brew install mas)"
+  say info "skipping: mas not installed (brew install mas)"
   exit 0
 fi
 
@@ -24,13 +24,13 @@ UNINDEXED_APPS=(${(f)"$(mas list 2>&1 | grep -F "$SPOTLIGHT_WARNING")"})
 UNINDEXED_APPS=(${UNINDEXED_APPS#$SPOTLIGHT_WARNING})
 
 if is not empty "$UNINDEXED_APPS" && is available mdimport; then
-  echo "$c[info]indexing:$c[reset] ${#UNINDEXED_APPS} apps that spotlight had lost track of"
+  say info "indexing ${#UNINDEXED_APPS} apps that spotlight had lost track of"
   mdimport $UNINDEXED_APPS
 fi
 
 # Anything still not indexed after that is counted and reported once, rather
 # than once per app.
-echo "$c[info]updating:$c[reset] mac app store apps"
+say info "updating mac app store apps"
 MAS_OUTPUT=$(mktemp)
 $MAS upgrade 2>&1 | tee "$MAS_OUTPUT" | grep -v "$SPOTLIGHT_PHRASE"
 RESULT=${pipestatus[1]}
@@ -38,15 +38,15 @@ UNINDEXED=$(grep -c "$SPOTLIGHT_PHRASE" "$MAS_OUTPUT")
 rm -f "$MAS_OUTPUT"
 
 if is gt "$UNINDEXED" "0"; then
-  echo "$c[warn]warning:$c[reset] mas could not check $UNINDEXED apps because Spotlight has not indexed them yet; it clears once indexing finishes"
+  say warn "mas could not check $UNINDEXED apps because Spotlight has not indexed them yet; it clears once indexing finishes"
 fi
 
 if is not equal "$RESULT" "0"; then
-  echo "$c[error]error:$c[reset] mas upgrade failed"
+  say fail "mas upgrade failed"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] mac app store apps updated"
+say ok "mac app store apps updated"
 
 exit 0
 }

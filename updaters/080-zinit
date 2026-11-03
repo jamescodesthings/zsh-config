@@ -8,27 +8,27 @@ source "${0:a:h}/_stub"
 ZINIT_SCRIPT="$HOME/.zinit/zinit.git/zinit.zsh"
 
 if is not file "$ZINIT_SCRIPT"; then
-  echo "$c[info]skipping:$c[reset] zinit not installed"
+  say info "skipping: zinit not installed"
   exit 0
 fi
 
 source "$ZINIT_SCRIPT"
 
-echo "$c[info]updating:$c[reset] zinit"
+say info "updating zinit"
 zinit self-update
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] zinit self-update failed"
+  say fail "zinit self-update failed"
   exit 1
 fi
 
-echo "$c[info]updating:$c[reset] zinit plugins"
+say info "updating zinit plugins"
 zinit update --all --parallel
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] zinit plugin update failed"
+  say fail "zinit plugin update failed"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] zinit updated"
+say ok "zinit updated"
 
 exit 0
 }

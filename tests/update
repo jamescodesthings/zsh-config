@@ -1,0 +1,148 @@
+#!/usr/bin/env zsh
+# Tests the update script against a temp copy of the repo with stub updaters
+# and a stub sudo: no real updater, sudo, brew or network runs.
+# Run: tests/update. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+# --- a throwaway repo: the real update, helpers and stubs, plus stub updaters
+R="$TMP/repo"
+mkdir -p "$R/updaters" "$R/installers" "$TMP/bin" "$TMP/custom"
+cp "$REPO_DIR/update" "$R/update"
+cp "$REPO_DIR/installers/_stub" "$R/installers/_stub"
+cp "$REPO_DIR/updaters/_stub" "$R/updaters/_stub"
+ln -s "$REPO_DIR/functions" "$R/functions"
+[[ -e "$REPO_DIR/zpm-zsh-colors" ]] && ln -s "$REPO_DIR/zpm-zsh-colors" "$R/zpm-zsh-colors"
+chmod +x "$R/update"
+
+# sudo succeeds without asking
+printf '#!/bin/sh\nexit 0\n' > "$TMP/bin/sudo"
+chmod +x "$TMP/bin/sudo"
+
+# stub <name> <body>: an updater that sources _stub and runs the body
+function stub() {
+  printf '#!/usr/bin/env zsh\n{\nsource "${0:a:h}/_stub"\n%s\nexit 0\n}\n' "$2" > "$R/updaters/$1"
+  chmod +x "$R/updaters/$1"
+}
+stub 010-ok 'say info "doing ok"; say ok "fine"'
+stub 020-warn 'say info "checking"; say warn "careful now"'
+stub 030-fail 'say info "starting"; echo "some output line"; say fail "broke it"; exit 1'
+stub 040-err 'echo "error: x"'
+printf '#!/usr/bin/env zsh\n{\nsource "${0:a:h}/_stub"\nsay fail "pull failed"\nexit 1\n}\n' > "$R/updaters/_self"
+chmod +x "$R/updaters/_self"
+
+LOGS="$TMP/custom/logs"
+
+# run <env...> -- <args...>: sets OUT, ERR, ALL, CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  local -a runner=()
+  (( $+commands[timeout] )) && runner=(timeout 300)
+  OUT="$(env -i HOME="$TMP" PATH="$TMP/bin:/usr/bin:/bin:/usr/sbin:/sbin" TMPDIR="$TMP" \
+    CUSTOM_DIR="$TMP/custom" ZDOTDIR="$TMP/zdot" UPDATE_SELF_UPDATED=1 "${envs[@]}" \
+    $runner zsh -f "$R/update" "$@" < /dev/null 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+  ALL="$OUT"$'\n'"$ERR"
+}
+
+function same() {
+  if [[ "$2" == "$3" ]]; then echo "ok: $1"; else echo "FAIL: $1: got ${(q+)2}, wanted ${(q+)3}"; failed=1; fi
+}
+function has() {
+  if [[ "$2" == *"$3"* ]]; then echo "ok: $1"; else echo "FAIL: $1: ${(q+)3} not in ${(q+)2}"; failed=1; fi
+}
+function lacks() {
+  if [[ "$2" != *"$3"* ]]; then echo "ok: $1"; else echo "FAIL: $1: ${(q+)3} found in ${(q+)2}"; failed=1; fi
+}
+
+mkdir -p "$TMP/zdot"
+
+# --- --list
+run -- --list
+same "--list exit" "$CODE" 0
+same "--list names" "$OUT" $'010-ok\n020-warn\n030-fail\n040-err'
+
+# --- a full run: one updater fails
+run -- 
+same "full run exits 1 when one failed" "$CODE" 1
+has "progress counts steps" "$ALL" "step 1/4 010-ok"
+has "progress reaches the last step" "$ALL" "step 4/4 040-err"
+lacks "updater chatter stays out of the terminal" "$ALL" "doing ok"
+has "the problems block names the failure" "$ERR" "030-fail failed (exit 1)"
+has "the problems block offers the child log" "$ERR" "log open child"
+has "the tagged log is printed" "$ALL" "[020-warn]"
+lacks "plain output has no escape codes" "$ALL" $'\e'
+LOGFILE=("$LOGS"/update/*.error.log(N))
+same "one error log" "$#LOGFILE" 1
+LOGTEXT="$(< "${LOGFILE[1]}" 2> /dev/null)"
+has "log has the warn line" "$LOGTEXT" "[020-warn] "
+has "log has the warn text" "$LOGTEXT" "careful now"
+has "log has the fail line" "$LOGTEXT" "broke it"
+has "log has the failure summary" "$LOGTEXT" "[030-fail] failed with exit code 1"
+has "log has the tail of the output" "$LOGTEXT" "some output line"
+has "log has error: lines" "$LOGTEXT" "[040-err] error: x"
+lacks "log leaves clean updaters out" "$LOGTEXT" "[010-ok]"
+CHILD=("$LOGS"/children/*-update-010-ok.log(N))
+same "a child log per updater" "$#CHILD" 1
+same "last-run says logged" "${$(< "$LOGS/update/last-run")##* }" logged
+COMMANDLOG=("$LOGS"/commands/*-update.log(N))
+same "the run has a command log" "$#COMMANDLOG" 1
+
+# --- --errors
+run -- --errors
+same "--errors exit" "$CODE" 0
+has "--errors prints the log" "$OUT" "careful now"
+run -- --errors --previous
+has "--errors --previous prints the log" "$OUT" "broke it"
+
+# --- a named updater alone, clean
+rm -rf "$LOGS/update"
+run -- 010-ok
+same "named updater exits 0" "$CODE" 0
+lacks "named updater is the only step" "$ALL" "step 2/"
+LEFT=("$LOGS"/update/*.error.log(N))
+same "a clean run leaves no error log" "$#LEFT" 0
+same "last-run says clean" "${$(< "$LOGS/update/last-run")##* }" clean
+run -- --errors
+has "--errors says the last run was clean" "$OUT" "had no errors or warnings"
+
+# --- --errors falls back to the old .cache folder when the new one is empty
+rm -rf "$LOGS/update"
+mkdir -p "$R/.cache/logs/update"
+print -r -- "[old-tool] warning: from the old folder" > "$R/.cache/logs/update/2026-01-01-00-00-00.error.log"
+run -- --errors
+has "--errors reads the old folder once" "$OUT" "from the old folder"
+rm -rf "$R/.cache"
+
+# --- -v shows the output live
+run -- -v 010-ok
+same "-v exit" "$CODE" 0
+has "-v shows updater output" "$ALL" "doing ok"
+lacks "-v has no progress steps" "$ALL" "step 1/1"
+
+# --- -q prints nothing for a clean run, still prints warnings
+run -- -q 010-ok
+same "-q clean run prints nothing" "${ALL//[[:space:]]/}" ""
+run -- -q 020-warn
+has "-q still shows the log with warnings" "$ALL" "careful now"
+
+# --- usage errors
+run -- nosuch
+same "unknown updater exits 2" "$CODE" 2
+has "unknown updater is named" "$ERR" "nosuch"
+run -- --bogus
+same "unknown flag exits 2" "$CODE" 2
+
+# --- the self-update failing is a warning, not a stop
+run UPDATE_SELF_UPDATED= -- 010-ok
+same "self-update failure still runs the rest" "$CODE" 0
+has "self-update failure warns" "$ALL" "could not pull zsh-config"
+
+(( failed )) && { echo "tests/update: FAILED"; exit 1; }
+echo "tests/update: all passed"

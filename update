@@ -6,34 +6,66 @@
 # error on a line that looks fine. Every updater is wrapped the same way.
 {
 
-cheat-help update "$@" && exit 0
+REPO_DIR="${0:a:h}"
+fpath=("$REPO_DIR/functions" $fpath)
+autoload -Uz cheat-help cli-init cli-icon col say problem fix problems progress run-quiet log-start log-line
 
-source "${0:a:h}/installers/_stub"
+cheat-help update "$@" && exit 0
+cli-init "$@"
+
+source "$REPO_DIR/installers/_stub"
+zmodload zsh/datetime
 
 UPDATER_DIR="$REPO_DIR/updaters"
-LOG_DIR="$REPO_DIR/.cache/logs/update"
+export CLI_LOG_DIR="${CLI_LOG_DIR:-${CUSTOM_DIR:-$HOME/.custom}/logs}"
+LOG_DIR="$CLI_LOG_DIR/update"
+OLD_LOG_DIR="$REPO_DIR/.cache/logs/update"
 MAX_LOGS=20
 TAIL_LINES=30
 
 # Numbered updaters, in the order they run. Files starting with _ are helpers.
 SCRIPTS=("$UPDATER_DIR"/[0-9][0-9][0-9]-*(N:t))
 
-if is equal "$1" "--list"; then
+# --- arguments: flags, then updater names
+MODE=run PREVIOUS="" NAMES=()
+for arg in "$@"; do
+  case "$arg" in
+    --plain|-q|--quiet|-v|--verbose) ;;
+    --list) MODE=list ;;
+    --errors) MODE=errors ;;
+    --previous) PREVIOUS=1 ;;
+    -*)
+      say fail "update: unknown flag $arg, try update --help"
+      exit 2
+      ;;
+    *) NAMES+=("$arg") ;;
+  esac
+done
+
+if is equal "$MODE" "list"; then
   print -l $SCRIPTS
   exit 0
 fi
 
-# Prints an error log with the colours the run used: the updater tag, then
-# error and warning lines in their own colours, and captured output dimmed.
+# Prints an error log: the updater tag, then warnings and errors in their own
+# colours. Lines are `[tag] text`; the text starts with a say icon or with
+# error: / warning: (tools such as brew print those).
 function print-error-log() {
-  local line tag rest
+  local line tag rest tagc errc warnc dimc off wi ei
+  col -v tagc target
+  col -v errc err
+  col -v warnc warn
+  col -v dimc dim
+  [[ -n "$errc" ]] && off=$'\e[0m'
+  cli-icon -v wi warn
+  cli-icon -v ei err
   for line in "${(@f)$(< "$1")}"; do
     tag="${line%%\] *}]"
     rest="${line#*\] }"
     case "$rest" in
-      error:*|Error:*|failed*) echo "$c[param]$tag$c[reset] $c[error]$rest$c[reset]" ;;
-      warning:*|Warning:*) echo "$c[param]$tag$c[reset] $c[warn]$rest$c[reset]" ;;
-      *)               echo "$c[param]$tag$c[reset] $rest" ;;
+      "$ei  "*|error:*|Error:*|failed*) print -r -- "$tagc$tag$off $errc$rest$off" ;;
+      "$wi  "*|warning:*|Warning:*) print -r -- "$tagc$tag$off $warnc$rest$off" ;;
+      *) print -r -- "$tagc$tag$off $dimc$rest$off" ;;
     esac
   done
 }
@@ -41,30 +73,52 @@ function print-error-log() {
 # A clean run leaves no log, so the newest log file is not always the last
 # run. Each finished run records its start time and outcome in last-run, and
 # --errors answers from that. --errors --previous shows the newest log there
-# is, whichever run wrote it.
-if is equal "$1" "--errors"; then
-  LAST_LOG=("$LOG_DIR"/*.error.log(N.On[1]))
+# is, whichever run wrote it. The old folder under .cache is read once, when
+# the new one has nothing yet.
+if is equal "$MODE" "errors"; then
+  DIR="$LOG_DIR"
+  NEW_LOGS=("$LOG_DIR"/*.error.log(N))
+  OLD_LOGS=("$OLD_LOG_DIR"/*.error.log(N))
+  if is empty "$NEW_LOGS" && is not file "$LOG_DIR/last-run" \
+      && { is not empty "$OLD_LOGS" || is file "$OLD_LOG_DIR/last-run"; }; then
+    DIR="$OLD_LOG_DIR"
+  fi
+  LAST_LOG=("$DIR"/*.error.log(N.On[1]))
 
-  if is not equal "$2" "--previous" && is file "$LOG_DIR/last-run"; then
-    read -r LAST_STARTED LAST_OUTCOME < "$LOG_DIR/last-run"
+  if [[ -z "$PREVIOUS" ]] && is file "$DIR/last-run"; then
+    read -r LAST_STARTED LAST_OUTCOME < "$DIR/last-run"
     # A run that was interrupted after logging something writes no last-run,
     # so a log newer than the recorded run wins over a recorded "clean".
     if is equal "$LAST_OUTCOME" "clean" && [[ ! "${LAST_LOG:t:r:r}" > "$LAST_STARTED" ]]; then
-      echo "$c[success]success:$c[reset] the last run ($LAST_STARTED) had no errors or warnings"
+      say ok "the last run ($LAST_STARTED) had no errors or warnings"
       if is not empty "$LAST_LOG"; then
-        echo "$c[info]older log:$c[reset] $LAST_LOG $c[flag](update --errors --previous)$c[reset]"
+        say info "older log: $LAST_LOG (update --errors --previous)"
       fi
       exit 0
     fi
   fi
 
   if is empty "$LAST_LOG"; then
-    echo "$c[success]success:$c[reset] no error logs in $LOG_DIR"
+    say ok "no error logs in $DIR"
     exit 0
   fi
-  echo "$c[info]error log:$c[reset] $LAST_LOG"
+  say info "error log: $LAST_LOG"
   print-error-log "$LAST_LOG"
   exit 0
+fi
+
+# Named updaters only: "brew" matches 010-brew. Checked before anything runs.
+if is not empty "$NAMES"; then
+  WANTED=()
+  for name in $NAMES; do
+    MATCH=(${(M)SCRIPTS:#(<->-|)$name})
+    if is empty "$MATCH"; then
+      say fail "no updater called $name, try update --list"
+      exit 2
+    fi
+    WANTED+=($MATCH)
+  done
+  SCRIPTS=($WANTED)
 fi
 
 # One error log per run, named for the moment the run started. The name is
@@ -75,9 +129,10 @@ if is empty "$UPDATE_ERROR_LOG"; then
   : > "$UPDATE_ERROR_LOG"
 fi
 
-# Runs however the script ends, ctrl-c included: stops the sudo keepalive and
-# removes the error log if nothing was written to it.
+# Runs however the script ends, ctrl-c included: stops the progress line and
+# the sudo keepalive and removes the error log if nothing was written to it.
 function cleanup() {
+  (( ${_PROGRESS_ACTIVE:-0} )) && progress fail
   if is not empty "$SUDO_KEEPALIVE_PID"; then
     kill $SUDO_KEEPALIVE_PID 2> /dev/null
   fi
@@ -88,72 +143,57 @@ function cleanup() {
 trap cleanup EXIT
 trap 'exit 130' INT TERM
 
-# Runs one updater and records what went wrong. Its output is shown as it
-# happens and kept, with colour codes stripped, so that afterwards:
-# - every line an updater tagged error: or warning: goes in the log
-# - a failed updater also gets the last lines of its output in the log
-# stdin is closed so that a tool which tries to prompt gets an immediate
-# end-of-file instead of hanging the run. sudo reads from the terminal
-# itself, so it is unaffected.
-function run-updater() {
-  local script="$1" tag="$2" result output
-  output=$(mktemp)
-
-  "$UPDATER_DIR/$script" < /dev/null 2>&1 | tee "$output"
-  result=${pipestatus[1]}
-
+# collect-log <tag> <output file> <exit code>: records what went wrong in an
+# updater's output, with colour codes stripped, in the run's error log:
+# - every say warn / say fail line (matched by its icon) and every line that
+#   starts with error: or warning:
+# - for a failed updater, the last lines of its output
+function collect-log() {
+  local tag="$1" file="$2" result="$3" plain wi ei
+  cli-icon -v wi warn
+  cli-icon -v ei err
+  plain="$(mktemp)"
   # Colour codes, carriage returns and the ^D that script(1) echoes all go.
-  sed -E $'s/\x1b\\[[0-9;]*[A-Za-z]//g; s/\r//g; s/\\^D\x08\x08//g' "$output" > "$output.plain"
-  grep -iE '^(error|warning):' "$output.plain" | sed "s/^/[$tag] /" >> "$UPDATE_ERROR_LOG"
+  sed -E $'s/\x1b\\[[0-9;]*[A-Za-z]//g; s/\r//g; s/\\^D\x08\x08//g' "$file" > "$plain"
+  grep -aE "^(${wi}|${ei})  |^([Ee]rror|[Ww]arning):" "$plain" | sed "s/^/[$tag] /" >> "$UPDATE_ERROR_LOG"
 
   if is not equal "$result" "0"; then
     echo "[$tag] failed with exit code $result, last $TAIL_LINES lines of output:" >> "$UPDATE_ERROR_LOG"
-    tail -n "$TAIL_LINES" "$output.plain" | sed "s/^/[$tag] | /" >> "$UPDATE_ERROR_LOG"
+    tail -n "$TAIL_LINES" "$plain" | sed "s/^/[$tag] | /" >> "$UPDATE_ERROR_LOG"
   fi
-
-  rm -f "$output" "$output.plain"
-  return $result
+  rm -f "$plain"
 }
 
 # Pull this repo first, then start again from the top so the rest of the run
-# uses the updaters that were just pulled.
+# uses the updaters that were just pulled. A failed pull is a warning.
 if is empty "$UPDATE_SELF_UPDATED"; then
-  echo "$c[info]running updater:$c[reset] zsh-config"
-  run-updater _self zsh-config
-  if is not equal "$?" "0"; then
-    echo "$c[warn]warning:$c[reset] could not pull zsh-config, carrying on with the local copy"
+  say info "updating zsh-config"
+  SELF_OUT="$(mktemp)"
+  "$UPDATER_DIR/_self" < /dev/null > "$SELF_OUT" 2>&1
+  SELF_RESULT=$?
+  collect-log zsh-config "$SELF_OUT" "$SELF_RESULT"
+  rm -f "$SELF_OUT"
+  if is not equal "$SELF_RESULT" "0"; then
+    say warn "could not pull zsh-config, carrying on with the local copy"
   fi
-  echo ""
   UPDATE_SELF_UPDATED=1 exec "$REPO_DIR/update" "$@"
 fi
 
-# Named updaters only: "brew" matches 010-brew.
-if is not empty "$1"; then
-  WANTED=()
-  for name in "$@"; do
-    MATCH=(${(M)SCRIPTS:#(<->-|)$name})
-    if is empty "$MATCH"; then
-      echo "$c[error]error:$c[reset] no updater called $name, try update --list"
-      rm -f "$UPDATE_ERROR_LOG"
-      exit 1
-    fi
-    WANTED+=($MATCH)
-  done
-  SCRIPTS=($WANTED)
-fi
+log-start update
+log-line "updaters: $SCRIPTS"
 
 # Authenticate once, up front, and keep the timestamp fresh until this script
-# exits. Updaters that need root then go straight through.
+# exits. Updaters that need root then go straight through. This comes before
+# the progress line so that the spinner never covers the password prompt.
 if is available sudo; then
-  echo "$c[info]sudo:$c[reset] authenticating now so that no updater stops to ask later"
+  say info "sudo: authenticating now so that no updater stops to ask later"
   sudo -v
   if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] sudo authentication failed"
+    say fail "sudo authentication failed"
     rm -f "$UPDATE_ERROR_LOG"
     exit 1
   fi
-  echo "$c[success]success:$c[reset] sudo approved"
-  echo ""
+  say ok "sudo approved"
 
   # Output goes nowhere so the loop never holds a pipe open: without that,
   # "update | tee file" would wait for the last sleep before it could finish.
@@ -162,26 +202,62 @@ if is available sudo; then
 fi
 
 FAILED=()
+SHOW_PROGRESS=""
+if [[ -z "$CLI_VERBOSE" && -z "$CLI_QUIET" ]]; then
+  SHOW_PROGRESS=1
+  progress start update $#SCRIPTS
+fi
+
+# The child log of the updater just run through run-quiet.
+function child-log() {
+  local -a found=("$CLI_LOG_DIR"/children/*-update-${1}.log(N.om[1]))
+  print -r -- "${found[1]}"
+}
 
 for script in $SCRIPTS; do
-  echo "$c[info]running updater:$c[reset] $script"
   if is not executable "$UPDATER_DIR/$script"; then
-    echo "$c[warn]warning:$c[reset] $script is not executable, fixing"
+    say warn "$script is not executable, fixing"
     chmod +x "$UPDATER_DIR/$script"
   fi
 
-  run-updater "$script" "$script"
-
-  if is equal "$?" "0"; then
-    echo "$c[success]success:$c[reset] $script complete"
+  # stdin is closed so that a tool which tries to prompt gets an immediate
+  # end-of-file instead of hanging the run. sudo reads from the terminal
+  # itself, so it is unaffected.
+  if [[ -n "$CLI_VERBOSE" ]]; then
+    # -v: the updater's output is shown as it happens, and kept in a child log.
+    say info "running updater: $script"
+    strftime -s STAMP '%Y-%m-%d-%H%M%S' $EPOCHSECONDS
+    OUTPUT="$CLI_LOG_DIR/children/$STAMP-update-$script.log"
+    mkdir -p "${OUTPUT:h}"
+    {
+      [[ -z "$CLI_PLAIN" ]] && export CLICOLOR_FORCE=1 COLORTERM="${COLORTERM:-truecolor}"
+      "$UPDATER_DIR/$script" < /dev/null 2>&1
+    } | tee "$OUTPUT"
+    result=${pipestatus[1]}
+    if is not equal "$result" "0"; then
+      problem "$script failed (exit $result)"
+      fix "log open child" "for its output"
+    fi
   else
-    echo "$c[error]error:$c[reset] $script failed, carrying on"
-    FAILED+=($script)
+    run-quiet "$script" "$UPDATER_DIR/$script"
+    result=$?
+    OUTPUT="$(child-log "$script")"
   fi
 
-  echo ""
-  echo ""
+  if [[ -n "$OUTPUT" && -f "$OUTPUT" ]]; then
+    collect-log "$script" "$OUTPUT" "$result"
+  fi
+  if is equal "$result" "0"; then
+    log-line "$script ok"
+  else
+    log-line "$script failed with exit code $result"
+    FAILED+=($script)
+  fi
 done
+
+if [[ -n "$SHOW_PROGRESS" ]]; then
+  if is empty "$FAILED"; then progress done; else progress fail; fi
+fi
 
 # A run with nothing to report leaves no log behind. Otherwise the log is
 # printed again here, where it cannot scroll past unseen, and only the newest
@@ -189,10 +265,11 @@ done
 RUN_STARTED="${UPDATE_ERROR_LOG:t:r:r}"
 if [[ -s "$UPDATE_ERROR_LOG" ]]; then
   echo "$RUN_STARTED logged" > "$LOG_DIR/last-run"
-  echo "$c[h2]errors and warnings from this run$c[reset]"
+  col -v HEAD heading
+  [[ -n "$HEAD" ]] && HEAD_OFF=$'\e[0m'
+  print -r -- "${HEAD}errors and warnings from this run${HEAD_OFF}"
   print-error-log "$UPDATE_ERROR_LOG"
-  echo ""
-  echo "$c[info]error log:$c[reset] $UPDATE_ERROR_LOG"
+  say info "error log: $UPDATE_ERROR_LOG"
 else
   echo "$RUN_STARTED clean" > "$LOG_DIR/last-run"
   rm -f "$UPDATE_ERROR_LOG"
@@ -203,12 +280,12 @@ if is not empty "$OLD_LOGS"; then
   rm -f $OLD_LOGS
 fi
 
+problems
 if is not empty "$FAILED"; then
-  echo "$c[error]failed:$c[reset] $FAILED"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] everything updated"
+say ok "everything updated"
 exit 0
 
 }

@@ -11,18 +11,18 @@ source "${0:a:h}/_stub"
 # updated: James runs `hub down`, then `update`, then `hub`. Never call
 # `hub update` from here; `update` stays separate from agent-forge's cycle.
 if ! whence hub > /dev/null; then
-  echo "$c[info]skipping:$c[reset] hub not installed (it comes with agent-forge)"
+  say info "skipping: hub not installed (it comes with agent-forge)"
   exit 0
 fi
 
-echo "$c[info]updating:$c[reset] every installed project"
+say info "updating every installed project"
 hub project --update update
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] hub project update failed for at least one project, see the FAIL lines above"
+  say fail "hub project update failed for at least one project, see the FAIL lines above"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] projects updated"
+say ok "projects updated"
 
 exit 0
 }

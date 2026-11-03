@@ -4,12 +4,12 @@
 source "${0:a:h}/_stub"
 
 if is not osx; then
-  echo "$c[info]skipping:$c[reset] xcode is macos only"
+  say info "skipping: xcode is macos only"
   exit 0
 fi
 
 if is not available xcodes; then
-  echo "$c[info]skipping:$c[reset] xcodes not installed (it is in configs/brew/Brewfile)"
+  say info "skipping: xcodes not installed (it is in configs/brew/Brewfile)"
   exit 0
 fi
 
@@ -30,11 +30,11 @@ function installed-releases() {
 # the login in the keychain, and when that session runs out it wants a 2FA
 # code, which it cannot ask for here. --no-superuser stops xcodes showing a
 # password prompt of its own; the steps it skips are run below with sudo.
-echo "$c[info]updating:$c[reset] xcode"
+say info "updating xcode"
 xcodes install --latest --no-superuser --experimental-unxip --empty-trash --no-color
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] xcodes could not install the latest xcode"
-  echo "$c[warn]warning:$c[reset] if it asked to sign in, run this once by hand: xcodes install --latest"
+  say fail "xcodes could not install the latest xcode"
+  say warn "if it asked to sign in, run this once by hand: xcodes install --latest"
   exit 1
 fi
 
@@ -42,7 +42,7 @@ RELEASES=(${(f)"$(installed-releases)"})
 LATEST=$(print -l ${RELEASES%%$'\t'*} | sort -V | tail -n 1)
 
 if is empty "$LATEST"; then
-  echo "$c[error]error:$c[reset] xcodes reports no installed release of xcode"
+  say fail "xcodes reports no installed release of xcode"
   exit 1
 fi
 
@@ -55,25 +55,25 @@ done
 # The newest release becomes the selected one, with its licence accepted and
 # its first-launch packages installed, so command line builds work untouched.
 if is not equal "$(xcode-select -p 2> /dev/null)" "$LATEST_APP/Contents/Developer"; then
-  echo "$c[info]selecting:$c[reset] xcode $LATEST"
+  say info "selecting xcode $LATEST"
   sudo xcode-select -s "$LATEST_APP"
   if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] could not select $LATEST_APP"
+    say fail "could not select $LATEST_APP"
     exit 1
   fi
 fi
 
 sudo xcodebuild -license accept
 if is not equal "$?" "0"; then
-  echo "$c[warn]warning:$c[reset] could not accept the xcode licence"
+  say warn "could not accept the xcode licence"
 fi
 
 xcodebuild -checkFirstLaunchStatus
 if is not equal "$?" "0"; then
-  echo "$c[info]installing:$c[reset] xcode first-launch packages"
+  say info "installing xcode first-launch packages"
   sudo xcodebuild -runFirstLaunch
   if is not equal "$?" "0"; then
-    echo "$c[warn]warning:$c[reset] xcode first-launch setup failed"
+    say warn "xcode first-launch setup failed"
   fi
 fi
 
@@ -83,14 +83,14 @@ for release in $RELEASES; do
   if is equal "$VERSION" "$LATEST"; then
     continue
   fi
-  echo "$c[info]removing:$c[reset] xcode $VERSION"
+  say info "removing xcode $VERSION"
   xcodes uninstall "$VERSION" --empty-trash --no-color
   if is not equal "$?" "0"; then
-    echo "$c[warn]warning:$c[reset] could not remove xcode $VERSION"
+    say warn "could not remove xcode $VERSION"
   fi
 done
 
-echo "$c[success]success:$c[reset] xcode $LATEST is installed and selected"
+say ok "xcode $LATEST is installed and selected"
 
 exit 0
 }
