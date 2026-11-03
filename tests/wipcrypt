@@ -178,10 +178,13 @@ check "AGENT_FORGE_KEY_USERS overrides n.users" "0" "$CODE"
 t=$(new_root)
 print -r -- "$(newkey)" > "$KD/r.key"; chmod 600 "$KD/r.key"
 run encrypt --root "$t" --key r
-printf '#!/bin/sh\nexit 1\n' > "$KD/failkey"
+print -r -- "an older key" > "$KD/r.key.1"
+printf '#!/bin/sh\n[ "$1" = cycle ] && exit 1\nexec zsh "%s" "$@"\n' "$KEYCMD" > "$KD/failkey"
+chmod +x "$KD/failkey"
 WIPCRYPT_KEY_CMD="$KD/failkey" run cycle-key --root "$t" --key r
 check "failing key command aborts" "1" "$CODE"
-check "abort hint names key path r -p" "yes" "$([[ $OUT == *"key path r -p"* ]] && print yes || print no)"
+check "abort hint says the store still holds the original key" "yes" "$([[ $OUT == *"still holds the original key"* ]] && print yes || print no)"
+check "abort hint names no backup" "no" "$([[ $OUT == *"key.1"* || $OUT == *"saved at"* ]] && print yes || print no)"
 
 # ---------------------------------------------------------------------------
 # Called as an autoloaded function, exit never reaches the caller's shell.
@@ -402,7 +405,7 @@ for sub in decrypt cycle-key; do
   rc=$?
   check "$sub rejects --dry-run with exit 2" "2" "$rc"
   check "$sub says why it rejected --dry-run" "1" \
-    "$(print -r -- "$out" | grep -c "^wipcrypt: --dry-run is not supported for $sub\$")"
+    "$(print -r -- "$out" | grep -c "^wipcrypt: .*\(--dry-run is not supported for $sub\|cycle-key has no dry run\)")"
 done
 
 # --- 13: a pair is exactly two paths, so a third positional is a typo or an
@@ -527,6 +530,99 @@ check "the abort names the missing root" "1" "$(print -r -- "$out" | grep -cF "$
 check "the abort leaves the key alone" "$before_key" "$(akey_of "$t")"
 check "the abort never reaches create-key" "0" \
   "$([[ -f "$t/.env.1" ]] && print -r -- 1 || print -r -- 0)"
+
+# ---------------------------------------------------------------------------
+# cycle-key --key: failures after key cycle has replaced the store key. Ported
+# from agent-forge test-cycle-key cases 6-9 (corrupted ciphertext, mktemp
+# failure, reseed failure, swap failure) with --key. In each, the key the
+# trees were left under must be recoverable from the named backup.
+# ---------------------------------------------------------------------------
+KD=$(mkt); export KEY_DIR="$KD"
+REAL_OPENSSL=$(command -v openssl); REAL_MV=$(command -v mv); REAL_MKTEMP=$(command -v mktemp)
+
+# A fixture with two pairs (x and w), one item each, encrypted under key n.
+# Prints the root; the store is in the global KD.
+new_key_fixture() {
+  local t; t=$(mkt)
+  mkdir -p "$t/.claude/x-wip" "$t/.claude/x-encrypted" "$t/.claude/w-wip" "$t/.claude/w-encrypted"
+  { print -r -- ".claude/x-wip:.claude/x-encrypted"; print -r -- ".claude/w-wip:.claude/w-encrypted" } > "$t/.claude/wip-pairs"
+  print -r -- "body of y" > "$t/.claude/x-wip/y.md"
+  print -r -- "body of v" > "$t/.claude/w-wip/v.md"
+  rm -rf "$KD"; mkdir -p "$KD"
+  print -r -- "$(newkey)" > "$KD/n.key"; chmod 600 "$KD/n.key"
+  run encrypt --root "$t" --key n
+  print -r -- "$t"
+}
+cipher_in() { print -r -- "$1"/.claude/$2-encrypted/**/*(N.[1]) }
+snap() { find "$1/.claude/x-encrypted" "$1/.claude/w-encrypted" -type f -exec shasum {} + | sort }
+tmps() { find "$1/.claude" -maxdepth 1 -name '*.tmp.*' | wc -l | tr -d ' ' }
+# stub <dir> <name> <script body>: a command ahead of the real one on PATH.
+stub() { mkdir -p "$1"; printf '#!/bin/sh\n%s\n' "$3" > "$1/$2"; chmod +x "$1/$2" }
+runp() { OUT="$(PATH="$1:$PATH" perl -e 'alarm 120; exec @ARGV' zsh "$WIPCRYPT" "${@:2}" 2>&1 < /dev/null)"; CODE=$? }
+dec_ok() { [[ "$(decrypts_with "$1" "$(cipher_in $2 $3)" | tail -n 1)" == "$4" ]] && print yes || print no }
+
+# Corrupted ciphertext: stops at the first decrypt guard, before key cycle.
+t=$(new_key_fixture); old=$(<"$KD/n.key")
+print -r -- "not valid ciphertext" > "$(cipher_in $t w)"
+before=$(snap $t)
+run cycle-key --root "$t" --key n
+check "corrupt: exits non-zero" "1" "$CODE"
+check "corrupt: store key untouched" "$old" "$(<$KD/n.key)"
+check "corrupt: no backup was taken" "no" "$([[ -e $KD/n.key.1 ]] && print yes || print no)"
+check "corrupt: ciphertext untouched" "$before" "$(snap $t)"
+check "corrupt: no temp tree left" "0" "$(tmps $t)"
+
+# mktemp -d fails on the first pair, after key cycle.
+t=$(new_key_fixture); old=$(<"$KD/n.key"); sd=$(mkt)
+stub $sd mktemp 'for a in "$@"; do [ "$a" = -d ] && exit 1; done; exec "'$REAL_MKTEMP'" "$@"'
+before=$(snap $t)
+runp $sd cycle-key --root "$t" --key n
+check "mktemp: exits non-zero" "1" "$CODE"
+check "mktemp: n.key.1 holds the old key" "$old" "$(<$KD/n.key.1)"
+check "mktemp: store holds a new key" "differs" "$([[ $(<$KD/n.key) != $old ]] && print differs || print same)"
+check "mktemp: ciphertext untouched" "$before" "$(snap $t)"
+check "mktemp: both trees still open with the backup key" "yes yes" \
+  "$(dec_ok "$(<$KD/n.key.1)" $t x 'body of y') $(dec_ok "$(<$KD/n.key.1)" $t w 'body of v')"
+check "mktemp: no temp tree left" "0" "$(tmps $t)"
+check "mktemp: hint names the backup file" "yes" "$([[ $OUT == *"saved at $KD/n.key.1"* ]] && print yes || print no)"
+
+# Reseed failure: the old-key decrypt of an existing entry fails.
+t=$(new_key_fixture); old=$(<"$KD/n.key"); sd=$(mkt)
+stub $sd openssl 'case "$*" in *SKILLS_ENCRYPTION_KEY_OLD*) exit 1;; esac; exec "'$REAL_OPENSSL'" "$@"'
+before=$(snap $t)
+runp $sd cycle-key --root "$t" --key n
+check "reseed: exits non-zero" "1" "$CODE"
+check "reseed: n.key.1 holds the old key" "$old" "$(<$KD/n.key.1)"
+check "reseed: ciphertext untouched" "$before" "$(snap $t)"
+check "reseed: both trees still open with the backup key" "yes yes" \
+  "$(dec_ok "$(<$KD/n.key.1)" $t x 'body of y') $(dec_ok "$(<$KD/n.key.1)" $t w 'body of v')"
+check "reseed: no temp tree left" "0" "$(tmps $t)"
+check "reseed: hint names the backup file" "yes" "$([[ $OUT == *"saved at $KD/n.key.1"* ]] && print yes || print no)"
+
+# Swap failure on the second pair: the first is already under the new key, so
+# the hint must say both keys are needed.
+t=$(new_key_fixture); old=$(<"$KD/n.key"); sd=$(mkt)
+stub $sd mv 'case "$*" in *.tmp.*) n=$(cat "'$sd'/n" 2>/dev/null || echo 0); n=$((n+1)); echo $n > "'$sd'/n"; [ $n -ge 2 ] && exit 1;; esac; exec "'$REAL_MV'" "$@"'
+runp $sd cycle-key --root "$t" --key n
+check "swap: exits non-zero" "1" "$CODE"
+new=$(<$KD/n.key)
+check "swap: n.key.1 holds the old key" "$old" "$(<$KD/n.key.1)"
+check "swap: first pair is under the new key" "yes" "$(dec_ok "$new" $t x 'body of y')"
+check "swap: the old key is no longer enough alone" "no" "$(dec_ok "$old" $t x 'body of y')"
+check "swap: hint says both keys are needed" "yes" \
+  "$([[ $OUT == *"keep both keys"* && $OUT == *"$KD/n.key.1"* && $OUT == *"$KD/n.key"* ]] && print yes || print no)"
+
+# cycle-key has no dry run: exit 2 with a usage error, nothing rotated.
+t=$(new_key_fixture); old=$(<"$KD/n.key"); before=$(snap $t)
+run cycle-key --root "$t" --key n --dry-run
+check "cycle-key --dry-run exits 2" "2" "$CODE"
+check "cycle-key --dry-run points at status" "yes" "$([[ $OUT == *"no dry run"* && $OUT == *"status"* ]] && print yes || print no)"
+check "cycle-key --dry-run leaves the store alone" "no" "$([[ -e $KD/n.key.1 || $(<$KD/n.key) != $old ]] && print yes || print no)"
+check "cycle-key --dry-run leaves the trees alone" "$before" "$(snap $t)"
+
+# FN_DIR unset: the function-call fallback never becomes /wipcrypt.
+check "guard fallback does not use a bare FN_DIR" "0" "$(grep -c '\$FN_DIR/wipcrypt' "$WIPCRYPT")"
+
 print -r -- ""
 print -r -- "$pass passed, $fail failed"
 (( fail == 0 ))

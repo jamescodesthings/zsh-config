@@ -78,7 +78,7 @@
 # synced copy, and the key-users registry defaults to $KEY_DIR/NAME.users
 # (AGENT_FORGE_KEY_USERS still overrides).
 if [[ $ZSH_EVAL_CONTEXT == *shfunc* ]]; then
-  local wc_file="${functions_source[wipcrypt]:-$FN_DIR/wipcrypt}"
+  local wc_file="${functions_source[wipcrypt]:-${FN_DIR:-${CUSTOM_DIR:-$HOME/.custom}/functions}/wipcrypt}"
   zsh "$wc_file" "$@"
   return
 fi
@@ -985,6 +985,7 @@ run_cycle_key() {
   local key_hint="" tmp_root="" enc_file="" enc_rel="" seed_tmp=""
   local entry="" entry_pairs=""
   local -a key_args
+  local stale_hint="" key_swap_hint="" bk_before="" bk_after="" store_after=""
   local KEY_CMD="${WIPCRYPT_KEY_CMD:-$WIPCRYPT_DIR/key}"
   local -i create_key_rc=0
   local -A tmp_for_enc
@@ -1074,6 +1075,10 @@ run_cycle_key() {
 
   load_env "$ENV_FILE"
 
+  stale_hint="Check that .env holds the current key before rotating."
+  [[ -n "$KEY_NAME" ]] \
+    && stale_hint="Check the store key with: key path $KEY_NAME, and the previous key with: key path $KEY_NAME -p; restore the right one with: key sync $KEY_NAME"
+
   # Checked for every registered pair before anything else runs, including
   # before create-key below: a rotation that started decrypting one pair, then
   # discovered a later pair's key was stale, would have already touched the
@@ -1082,7 +1087,7 @@ run_cycle_key() {
   # point, so .env still holds whatever key the operator started with.
   while read -r wip_root enc_root; do
     verify_key_usable "$enc_root" \
-      || error "The encryption key does not match the encrypted tree at ${enc_root}. Nothing was changed. Check that .env holds the current key before rotating."
+      || error "The encryption key does not match the encrypted tree at ${enc_root}. Nothing was changed. ${stale_hint}"
   done < <(rotation_pairs)
 
   info "Decrypting all pairs with current key..."
@@ -1107,6 +1112,7 @@ run_cycle_key() {
   # the operator still sees exactly what create-key reported, just delayed
   # until it finishes instead of arriving live.
   if [[ -n "$KEY_NAME" ]]; then
+    bk_before=$(KEY_DIR="$KEY_STORE" zsh "$KEY_CMD" path "$KEY_NAME" -p 2>/dev/null < /dev/null)
     key_args=(cycle "$KEY_NAME" -y)
     (( ENV_GIVEN )) && key_args+=(--to "$ENV_FILE" --var SKILLS_ENCRYPTION_KEY)
     create_key_output=$(KEY_DIR="$KEY_STORE" zsh "$KEY_CMD" "${key_args[@]}" < /dev/null)
@@ -1131,7 +1137,18 @@ run_cycle_key() {
   # (its own backup step itself failed): a wrong path is worse than no note.
   key_hint=""
   if [[ -n "$KEY_NAME" ]]; then
-    key_hint=" The store may now hold the NEW key for $KEY_NAME: the OLD key is the newest backup, whose path is printed by: key path $KEY_NAME -p"
+    # A backup counts only when key cycle took a new one and the store key
+    # really changed; a cycle that failed earlier leaves the store as it was,
+    # and the newest backup is then an older key that must not be restored.
+    store_after=""
+    [[ -f "$KEY_STORE/$KEY_NAME.key" ]] && IFS= read -r store_after < "$KEY_STORE/$KEY_NAME.key"
+    bk_after=$(KEY_DIR="$KEY_STORE" zsh "$KEY_CMD" path "$KEY_NAME" -p 2>/dev/null < /dev/null)
+    if [[ -n "$bk_after" && "$bk_after" != "$bk_before" && "$store_after" != "$old_key" ]]; then
+      key_hint=" The store now holds the NEW key for $KEY_NAME and the originals are still under the OLD key, saved at $bk_after (key path $KEY_NAME -p): to go back, copy that file over $KEY_STORE/$KEY_NAME.key"
+      key_swap_hint=" Some trees may already be under the NEW key: keep both keys, the new one in $KEY_STORE/$KEY_NAME.key and the old one at $bk_after."
+    else
+      key_hint=" The store still holds the original key for $KEY_NAME; no backup was taken."
+    fi
   elif [[ -n "$backup_path" ]]; then
     key_hint=" .env may now hold the NEW key: to get back to the OLD key, run: cp $backup_path .env"
   fi
@@ -1193,10 +1210,10 @@ run_cycle_key() {
   info "Swapping in re-encrypted trees..."
   while read -r wip_root enc_root; do
     tmp_root="${tmp_for_enc[$enc_root]}"
-    rm -rf "$enc_root" || error "Failed to clear $enc_root: rotation aborted partway; some pairs may already be swapped.${key_hint}"
+    rm -rf "$enc_root" || error "Failed to clear $enc_root: rotation aborted partway; some pairs may already be swapped.${key_hint}${key_swap_hint}"
     if ! mv "$tmp_root" "$enc_root"; then
       trap - EXIT
-      error "Failed to move the re-encrypted tree into place for ${enc_root:t}. Your only copy is at $tmp_root: move it to $enc_root manually before doing anything else.${key_hint}"
+      error "Failed to move the re-encrypted tree into place for ${enc_root:t}. Your only copy is at $tmp_root: move it to $enc_root manually before doing anything else.${key_hint}${key_swap_hint}"
     fi
   done < <(rotation_pairs)
 
@@ -1279,7 +1296,11 @@ esac
 # someone reach for a dry run before a rotation and get a real one.
 case "$SUB" in
   decrypt|cycle-key)
-    (( DRY_RUN )) && usage_error "--dry-run is not supported for $SUB"
+    if (( DRY_RUN )); then
+      [[ "$SUB" == cycle-key ]] \
+        && usage_error "cycle-key has no dry run (it would rotate for real); use status to see the state"
+      usage_error "--dry-run is not supported for $SUB"
+    fi
     ;;
 esac
 
