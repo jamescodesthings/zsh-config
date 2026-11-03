@@ -4,46 +4,37 @@
 
 source "${0:a:h}/installers/_stub"
 
-if is equal "$1" "--help"; then
-  echo "$c[h1]Install Everything$c[reset]"
-  echo "$c[lead]requires zsh, and \$HOME to be set$c[reset]"
-  echo ""
-  echo "$c[info-small]Shell:$c[reset] $SHELL"
-  echo "$c[info-small]HOME:$c[reset] $HOME"
-  echo ""
-  echo "$c[h2]Usage:$c[reset]"
-  echo "install $c[flag][--help]$c[reset]"
-  exit 0
-fi
+autoload -Uz cheat-help
+cheat-help install "$@" && exit 0
 
-SCRIPTS=$(ls -1 $INSTALLER_DIR | grep -v '.DS_Store' | grep -v '^_' 2> /dev/null)
+# -q, -v and --plain were read by cli-init in _stub; the installers it starts
+# inherit them through the environment.
+export CLI_PLAIN CLI_QUIET CLI_VERBOSE
+set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
-failed=()
+# INSTALL_INSTALLERS_DIR points the run at another folder (tests/install)
+dir="${INSTALL_INSTALLERS_DIR:-$INSTALLER_DIR}"
 
-for script in ${(f)SCRIPTS}; do
-  [[ -z "$script" ]] && continue
-  echo "$c[info]running installer$c[reset] $script"
-  if is not executable "$INSTALLER_DIR/$script"; then
-    echo "$c[warn]warning:$c[reset] $script is not executable, making it executable"
-    chmod +x "$INSTALLER_DIR/$script"
+for script in "$dir"/*(N:t); do
+  [[ "$script" == _* || "$script" == .DS_Store ]] && continue
+  [[ -f "$dir/$script" ]] || continue
+  say info "running installer $script"
+  if is not executable "$dir/$script"; then
+    say warn "$script is not executable, making it executable"
+    chmod +x "$dir/$script"
   fi
 
-  "$INSTALLER_DIR/$script"
+  "$dir/$script"
 
   if is equal "$?" "0"; then
-    echo "$c[success]successfully ran$c[reset] $script"
+    say ok "ran $script"
   else
-    echo "$c[error]failed$c[reset] $script"
-    failed+=("$script")
+    say fail "$script failed"
+    problem "$script failed"
+    fix "$dir/$script" "rerun it alone"
   fi
-  echo ""
-  echo ""
+  [[ -z "$CLI_QUIET" ]] && echo ""
 done
 
-if (( ${#failed} > 0 )); then
-  for script in $failed; do
-    echo "$c[error]failed:$c[reset] $script"
-  done
-  exit 1
-fi
+problems || exit 1
 }

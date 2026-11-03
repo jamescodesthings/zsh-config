@@ -5,7 +5,7 @@ INSTALL_SCRIPT_URL=https://raw.githubusercontent.com/Homebrew/install/HEAD/insta
 source "${0:a:h}/_stub"
 
 if is not osx; then
-  echo "$c[info]skipping:$c[reset] homebrew is macos only"
+  say info "skipping homebrew is macos only"
   exit 0
 fi
 
@@ -13,22 +13,22 @@ fi
 # install dialog is graphical and cannot be finished from here.
 if ! xcode-select -p >/dev/null 2>&1; then
   xcode-select --install
-  echo "$c[warn]warning:$c[reset] finish the Xcode command line tools dialog, then run ./install again"
+  say warn "finish the Xcode command line tools dialog, then run ./install again"
   exit 1
 fi
 
 if is available brew; then
-  echo "$c[info]skipping:$c[reset] homebrew already installed"
+  say info "skipping homebrew already installed"
 else
-  echo "$c[info]installing:$c[reset] homebrew"
+  say info "installing homebrew"
   /bin/bash -c "$(curl -fsSL $INSTALL_SCRIPT_URL)"
 
   if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] homebrew install failed"
+    say fail "homebrew install failed"
     exit 1
   fi
 
-  echo "$c[success]success:$c[reset] homebrew installed"
+  say ok "homebrew installed"
 
   # a fresh install is not on PATH yet
   for prefix in /opt/homebrew /usr/local; do
@@ -40,12 +40,12 @@ else
 fi
 
 # installers/asdf compiles python and ruby, which needs the Brewfile libraries
-echo "$c[info]installing:$c[reset] the Brewfile packages"
+say info "installing the Brewfile packages"
 brew bundle install --no-upgrade --file "$REPO_DIR/configs/brew/Brewfile"
 
 if is not equal "$?" "0"; then
-  echo "$c[error]error:$c[reset] brew bundle install failed"
+  say fail "brew bundle install failed"
   exit 1
 fi
 
-echo "$c[success]success:$c[reset] Brewfile packages installed"
+say ok "Brewfile packages installed"

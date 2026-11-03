@@ -20,33 +20,33 @@ function font-installed() {
 }
 
 if font-installed; then
-  echo "$c[info]current:$c[reset] $FONT_NAME"
+  say info "current: $FONT_NAME"
   exit 0
 fi
 
 if is osx; then
   if is not available brew; then
-    echo "$c[error]error:$c[reset] homebrew is needed for the $CASK cask (installers/01-homebrew)"
+    say fail "homebrew is needed for the $CASK cask (installers/01-homebrew)"
     exit 1
   fi
-  echo "$c[info]installing:$c[reset] $FONT_NAME ($CASK)"
+  say info "installing $FONT_NAME ($CASK)"
   if ! brew install --cask "$CASK"; then
-    echo "$c[error]error:$c[reset] could not install the $CASK cask"
+    say fail "could not install the $CASK cask"
     exit 1
   fi
 else
   for tool in curl unzip; do
     if is not available "$tool"; then
-      echo "$c[error]error:$c[reset] $tool is needed to install $FONT_NAME"
+      say fail "$tool is needed to install $FONT_NAME"
       exit 1
     fi
   done
   dest="$HOME/.local/share/fonts/DejaVuSansMNerdFont"
   tmp="$(mktemp -d)"
-  echo "$c[info]installing:$c[reset] $FONT_NAME from the Nerd Fonts release into $dest"
+  say info "installing $FONT_NAME from the Nerd Fonts release into $dest"
   if ! curl -fsSL -o "$tmp/font.zip" "$ZIP_URL" || ! mkdir -p "$dest" || ! unzip -oq "$tmp/font.zip" 'DejaVuSansMNerdFontMono-*.ttf' -d "$dest"; then
     rm -rf "$tmp"
-    echo "$c[error]error:$c[reset] could not download or unpack $ZIP_URL"
+    say fail "could not download or unpack $ZIP_URL"
     exit 1
   fi
   rm -rf "$tmp"
@@ -54,9 +54,9 @@ else
 fi
 
 if font-installed; then
-  echo "$c[success]success:$c[reset] $FONT_NAME installed; restart kitty to use it"
+  say ok "$FONT_NAME installed; restart kitty to use it"
   exit 0
 fi
-echo "$c[error]error:$c[reset] $FONT_NAME still not found after installing"
+say fail "$FONT_NAME still not found after installing"
 exit 1
 }

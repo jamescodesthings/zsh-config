@@ -1,0 +1,51 @@
+#!/usr/bin/env zsh
+# Tests install.zsh against a temp installers dir of stubs (INSTALL_INSTALLERS_DIR),
+# never the real installers. Run: tests/install. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+E=$'\e'
+
+mkdir -p "$TMP/inst" "$TMP/home"
+printf '#!/usr/bin/env zsh\necho "stub one ran"\nexit 0\n' > "$TMP/inst/10-good"
+printf '#!/usr/bin/env zsh\necho "stub two ran"\nexit 1\n' > "$TMP/inst/20-bad"
+printf '#!/usr/bin/env zsh\necho "stub three ran"\nexit 0\n' > "$TMP/inst/30-after"
+printf '#!/usr/bin/env zsh\necho "never"\n' > "$TMP/inst/_skipme"
+chmod +x "$TMP/inst/10-good" "$TMP/inst/20-bad" "$TMP/inst/30-after" "$TMP/inst/_skipme"
+
+function check() {
+  if eval "$2"; then echo "ok: $1"; else echo "FAIL: $1"; failed=1; fi
+}
+
+# run <args...>: sets OUT, ERR, CODE
+function run() {
+  OUT="$(INSTALL_INSTALLERS_DIR="$TMP/inst" HOME="$TMP/home" timeout 300 zsh "$REPO_DIR/install.zsh" "$@" </dev/null 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+run --plain
+check "exit 1 when an installer failed" '(( CODE == 1 ))'
+check "later installers still run" '[[ "$OUT" == *"stub three ran"* ]]'
+check "underscore files are skipped" '[[ "$OUT" != *never* ]]'
+check "live output is shown" '[[ "$OUT" == *"stub one ran"* ]]'
+check "problems block names the failing installer" '[[ "$ERR" == *"20-bad failed"* ]]'
+check "problems block does not name the good one" '[[ "$ERR" != *"10-good failed"* ]]'
+check "fix line gives the installer path" '[[ "$ERR" == *"$TMP/inst/20-bad"* ]]'
+check "plain output has no escape codes" '[[ "$OUT$ERR" != *$E* ]]'
+
+rm "$TMP/inst/20-bad"
+run --plain
+check "exit 0 when all pass" '(( CODE == 0 ))'
+check "no problems block when all pass" '[[ -z "$ERR" ]]'
+
+run --plain -q
+check "-q keeps installer output but exits 0" '(( CODE == 0 )) && [[ "$OUT" == *"stub one ran"* ]]'
+
+run --help
+check "--help exits 0" '(( CODE == 0 ))'
+
+(( failed )) && exit 1
+exit 0

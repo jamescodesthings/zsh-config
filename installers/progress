@@ -3,20 +3,20 @@
 source "${0:a:h}/_stub"
 
 if is debian; then
-  echo "$c[info]skipping:$c[reset] progress is installed by 02-apt-base on Debian"
+  say info "skipping progress is installed by 02-apt-base on Debian"
   exit 0
 fi
 
 if is available progress; then
-  echo "$c[info]skipping:$c[reset] progress already installed"
+  say info "skipping progress already installed"
   exit 0
 fi
 
-echo "$c[info]installing:$c[reset] progress via homebrew"
+say info "installing progress via homebrew"
 if brew install progress; then
-  echo "$c[success]success:$c[reset] progress installed"
+  say ok "progress installed"
   exit 0
 fi
 
-echo "$c[error]error:$c[reset] homebrew install failed"
+say fail "homebrew install failed"
 exit 1

@@ -3,20 +3,20 @@
 source "${0:a:h}/_stub"
 
 if is debian; then
-  echo "$c[info]skipping:$c[reset] httpie is installed by 02-apt-base on Debian"
+  say info "skipping httpie is installed by 02-apt-base on Debian"
   exit 0
 fi
 
 if is available http; then
-  echo "$c[info]skipping:$c[reset] httpie already installed"
+  say info "skipping httpie already installed"
   exit 0
 fi
 
-echo "$c[info]installing:$c[reset] httpie via homebrew"
+say info "installing httpie via homebrew"
 if brew install httpie; then
-  echo "$c[success]success:$c[reset] httpie installed"
+  say ok "httpie installed"
   exit 0
 fi
 
-echo "$c[error]error:$c[reset] homebrew install failed"
+say fail "homebrew install failed"
 exit 1

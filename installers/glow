@@ -10,16 +10,16 @@ if is debian; then
 fi
 
 if is available glow; then
-  echo "$c[info]skipping:$c[reset] glow already installed"
+  say info "skipping glow already installed"
   exit 0
 fi
 
-echo "$c[info]installing:$c[reset] glow via homebrew"
+say info "installing glow via homebrew"
 if brew install glow; then
-  echo "$c[success]success:$c[reset] glow installed"
+  say ok "glow installed"
   exit 0
 fi
 
-echo "$c[error]error:$c[reset] homebrew install failed"
-echo "$c[info]install instructions:$c[reset] https://github.com/charmbracelet/glow"
+say fail "homebrew install failed"
+say info "install instructions: https://github.com/charmbracelet/glow"
 exit 1

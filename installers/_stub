@@ -6,6 +6,10 @@ INSTALLER_DIR=${0:a:h}
 # up one directory
 REPO_DIR=${INSTALLER_DIR:h}
 
+# helpers autoload their own deps (col, cli-icon) by name, so the repo's
+# functions/ must be on fpath on a fresh machine
+fpath=("$REPO_DIR/functions" $fpath)
+
 function check-or-load() {
   if ! command -v "$1" >/dev/null 2>&1; then
     autoload -Uz "$REPO_DIR/functions/$1"
@@ -20,17 +24,27 @@ check-or-load is
 # tools with a sheet answer --help through cheat-help, which needs cheat
 check-or-load cheat-help
 check-or-load cheat
+# the status-line helpers each autoload their own deps (col, cli-icon)
+check-or-load cli-init
+check-or-load say
+check-or-load problem
+check-or-load fix
+check-or-load problems
+
+# a flag-less installer run is plain-aware through cli-init; install.zsh passes
+# its own flags, and the installers it starts inherit CLI_* from the environment
+cli-init "$@"
 
 if is empty "$c"; then
   source "$REPO_DIR/zpm-zsh-colors"
 fi
 
 if is not supported; then
-  echo "$c[error]error:$c[reset] this config is built for macOS and Debian; get the clanker to port it"
+  say fail "this config is built for macOS and Debian; get the clanker to port it"
   exit 1
 fi
 
 if is empty "$HOME"; then
-  echo "\$HOME not set, set it before running this script"
+  say fail "\$HOME not set, set it before running this script"
   exit 1
 fi

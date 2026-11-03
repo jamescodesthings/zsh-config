@@ -9,23 +9,23 @@ if is debian; then
   local site="$HOME/.local/share/zsh/site-functions"
   mkdir -p "$site" || exit 1
   if ! "$HOME/.local/bin/delta" --generate-completion zsh > "$site/_delta"; then
-    echo "$c[error]error:$c[reset] could not write the delta zsh completion"
+    say fail "could not write the delta zsh completion"
     exit 1
   fi
   exit 0
 fi
 
 if is available delta; then
-  echo "$c[info]skipping:$c[reset] delta is already installed"
+  say info "skipping delta is already installed"
   exit 0
 fi
 
-echo "$c[info]installing:$c[reset] delta via homebrew"
+say info "installing delta via homebrew"
 if brew install git-delta; then
-  echo "$c[success]success:$c[reset] delta installed"
+  say ok "delta installed"
   exit 0
 fi
 
-echo "$c[error]error:$c[reset] homebrew install failed"
-echo "$c[info]install instructions:$c[reset] https://github.com/dandavison/delta"
+say fail "homebrew install failed"
+say info "install instructions: https://github.com/dandavison/delta"
 exit 1

@@ -21,7 +21,7 @@ install-link $REPO_DIR/configs/bash/bashrc $HOME/.bashrc
 install-link $REPO_DIR/configs/bash/bash_profile $HOME/.bash_profile
 link-cheatsheets "$REPO_DIR/cheatsheets"
 if ! cheatsheet-test "$REPO_DIR/cheatsheets"; then
-  echo "$c[warn]warning:$c[reset] the cheatsheets above will not render with cheat"
+  say warn "the cheatsheets above will not render with cheat"
 fi
 
-echo "$c[success]zshconfig install complete$c[reset]"
+say ok "zshconfig install complete"

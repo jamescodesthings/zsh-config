@@ -17,33 +17,33 @@ local micro_plugins=(
 )
 
 if is debian; then
-  echo "$c[info]skipping:$c[reset] micro is installed by 02-apt-base on Debian"
+  say info "skipping micro is installed by 02-apt-base on Debian"
 elif is not available micro; then
-  echo "$c[info]installing:$c[reset] micro via homebrew"
-  brew install micro || { echo "$c[error]error:$c[reset] homebrew install failed"; exit 1 }
+  say info "installing micro via homebrew"
+  brew install micro || { say fail "homebrew install failed"; exit 1 }
 else
-  echo "$c[info]skipping:$c[reset] micro is already installed"
+  say info "skipping micro is already installed"
 fi
 
 # install plugins
 for plugin in "${micro_plugins[@]}"; do
   if micro -plugin list | grep -q "$plugin"; then
-    echo "$c[info]skipping:$c[reset] micro plugin $plugin already installed"
+    say info "skipping micro plugin $plugin already installed"
   else
-    echo "$c[info]installing:$c[reset] micro plugin $plugin"
+    say info "installing micro plugin $plugin"
     micro -plugin install "$plugin"
   fi
 done
 
 if is not dir "$CONFIG_DEST"; then
-  echo "$c[info]creating:$c[reset] micro config directory at $CONFIG_DEST"
+  say info "creating micro config directory at $CONFIG_DEST"
   mkdir -p "$CONFIG_DEST"
 else
-  echo "$c[info]skipping:$c[reset] micro config directory already exists at $CONFIG_DEST"
+  say info "skipping micro config directory already exists at $CONFIG_DEST"
 fi
 
 
 install-box-config "$CONFIG_SOURCE/bindings.json" "$CONFIG_DEST/bindings.json"
 install-box-config "$CONFIG_SOURCE/settings.json" "$CONFIG_DEST/settings.json"
 install-link "$CONFIG_SOURCE/themes" "$CONFIG_DEST/colorschemes"
-echo "$c[success]success:$c[reset] micro config installed to $CONFIG_DEST"
+say ok "micro config installed to $CONFIG_DEST"

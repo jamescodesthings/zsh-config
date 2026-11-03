@@ -3,22 +3,22 @@
 source "${0:a:h}/_stub"
 
 if is not debian; then
-  echo "$c[info]skipping:$c[reset] apt base packages are Debian only"
+  say info "skipping apt base packages are Debian only"
   exit 0
 fi
 
 # The list lives in configs/apt/base so updaters/000-debian installs the same one.
 PACKAGES=(${(f)"$(sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' "$REPO_DIR/configs/apt/base")"})
 
-echo "$c[info]installing:$c[reset] base packages via apt"
+say info "installing base packages via apt"
 # One broken third-party source makes apt-get update exit non-zero even
 # though every other list refreshed, so that is a warning; the install below
 # still fails the run if a package cannot be found.
 if ! sudo apt-get update; then
-  echo "$c[warn]warning:$c[reset] apt-get update reported errors, a third-party apt source may be broken; installing from the lists it did fetch"
+  say warn "apt-get update reported errors, a third-party apt source may be broken; installing from the lists it did fetch"
 fi
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${PACKAGES[@]}" || {
-  echo "$c[error]error:$c[reset] apt install failed"
+  say fail "apt install failed"
   exit 1
 }
-echo "$c[success]success:$c[reset] base packages installed"
+say ok "base packages installed"

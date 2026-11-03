@@ -12,4 +12,4 @@ fi
 
 install-link "$REPO_DIR/configs/ssh-config/config" "$SSH_DIR/config"
 
-echo "$c[success]ssh-config install complete$c[reset]"
+say ok "ssh-config install complete"

@@ -10,16 +10,16 @@ if is debian; then
 fi
 
 if is available tldr; then
-  echo "$c[info]skipping:$c[reset] tldr already installed"
+  say info "skipping tldr already installed"
   exit 0
 fi
 
-echo "$c[info]installing:$c[reset] tldr via homebrew"
+say info "installing tldr via homebrew"
 if brew install tlrc; then
-  echo "$c[success]success:$c[reset] tldr installed"
+  say ok "tldr installed"
   exit 0
 fi
 
-echo "$c[error]error:$c[reset] homebrew install failed"
-echo "$c[info]install instructions:$c[reset] https://github.com/tldr-pages/tlrc"
+say fail "homebrew install failed"
+say info "install instructions: https://github.com/tldr-pages/tlrc"
 exit 1

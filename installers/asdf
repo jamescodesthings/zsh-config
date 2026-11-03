@@ -16,25 +16,25 @@ if is debian; then
   local site="$HOME/.local/share/zsh/site-functions"
   mkdir -p "$site" || exit 1
   if ! "$HOME/.local/bin/asdf" completion zsh > "$site/_asdf"; then
-    echo "$c[error]error:$c[reset] could not write the asdf zsh completion"
+    say fail "could not write the asdf zsh completion"
     exit 1
   fi
 elif is available asdf && is not equal "$1" "--force"; then
-  echo "$c[info]skipping:$c[reset] asdf already installed"
+  say info "skipping asdf already installed"
 else
   if is available asdf; then
-    echo "$c[info]reinstalling:$c[reset] asdf (--force)"
+    say info "reinstalling asdf (--force)"
     brew reinstall asdf
   else
-    echo "$c[info]installing:$c[reset] asdf via homebrew"
+    say info "installing asdf via homebrew"
     brew install asdf
   fi
   if is not equal "$?" "0"; then
-    echo "$c[error]error:$c[reset] homebrew install failed"
-    echo "try: $c[em]brew install asdf$c[reset]"
+    say fail "homebrew install failed"
+    say info "try: brew install asdf"
     exit 1
   fi
-  echo "$c[success]success:$c[reset] asdf installed via homebrew"
+  say ok "asdf installed via homebrew"
 fi
 
 # Common tail: asdf is available here. 040-asdf adds the plugins, installs the

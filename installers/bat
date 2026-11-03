@@ -10,16 +10,16 @@ if is debian; then
 fi
 
 if is available bat; then
-  echo "$c[info]skipping:$c[reset] bat already installed"
+  say info "skipping bat already installed"
   exit 0
 fi
 
-echo "$c[info]installing:$c[reset] bat via homebrew"
+say info "installing bat via homebrew"
 if brew install bat; then
-  echo "$c[success]success:$c[reset] bat installed"
+  say ok "bat installed"
   exit 0
 fi
 
-echo "$c[error]error:$c[reset] homebrew install failed"
-echo "$c[info]install instructions:$c[reset] https://github.com/sharkdp/bat"
+say fail "homebrew install failed"
+say info "install instructions: https://github.com/sharkdp/bat"
 exit 1

@@ -6,4 +6,4 @@ check-or-load install-link
 
 install-link "$REPO_DIR/configs/git/.gitconfig" "$HOME/.gitconfig"
 
-echo "$c[success]gitconfig install complete$c[reset]"
+say ok "gitconfig install complete"

@@ -7,7 +7,7 @@ check-or-load install-box-config
 check-or-load confirm
 
 if is tty; then
-  echo "$c[info]skipping:$c[reset] kitty is a terminal emulator and cannot be installed from a terminal session"
+  say info "skipping kitty is a terminal emulator and cannot be installed from a terminal session"
   exit 0
 fi
 
@@ -21,20 +21,20 @@ OSX_CONFIG_DEST="$HOME/Library/Preferences/kitty"
 LINUX_CONFIG_DEST="$HOME/.config/kitty"
 
 if is not available curl; then
-  echo "$c[error]failed:$c[reset] curl is required to install kitty, please install it and try again"
+  say fail "curl is required to install kitty, please install it and try again"
   exit 1
 fi
 
 if is available kitty || is existing "$OSX_INSTALL_LOCATION" || is dir "$LINUX_INSTALL_LOCATION"; then
-  echo "$c[info]info:$c[reset] kitty is already installed"
+  say info "kitty is already installed"
   if confirm "kitty is already installed, do you want to check for updates?"; then
     curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
-    echo "$c[success]success:$c[reset] kitty installed"
+    say ok "kitty installed"
   fi
 else
-  echo "$c[info]installing:$c[reset] kitty from $INSTALL_SCRIPT_SOURCE"
+  say info "installing kitty from $INSTALL_SCRIPT_SOURCE"
   curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
-  echo "$c[success]success:$c[reset] kitty installed"
+  say ok "kitty installed"
 fi
 
 
@@ -54,10 +54,10 @@ else
 fi
 
 if is not dir "$CONFIG_DEST"; then
-  echo "$c[info]creating:$c[reset] kitty config directory at $CONFIG_DEST"
+  say info "creating kitty config directory at $CONFIG_DEST"
   mkdir -p "$CONFIG_DEST"
 else
-  echo "$c[info]skipping:$c[reset] kitty config directory already exists at $CONFIG_DEST"
+  say info "skipping kitty config directory already exists at $CONFIG_DEST"
 fi
 
 install-link "$CONFIG_SOURCE/kitty.conf" "$CONFIG_DEST/kitty.conf"
