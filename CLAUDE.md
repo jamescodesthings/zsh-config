@@ -23,7 +23,7 @@ Personal zsh configuration that installs itself as `~/.custom` via symlink, prov
 ./installers/00-zshconfig
 ```
 
-`./install` is a POSIX sh bootstrap, because a fresh Debian may not have zsh. When zsh is missing it installs it with apt on Debian and refuses on anything else, then `exec`s `install.zsh`, which holds the real installer. Installers run in name order: `00-zshconfig`, `01-homebrew`, `02-apt-base`, then the per-tool ones. A failed installer does not stop the run; failures are listed at the end and the exit code is 1.
+`./install` is a POSIX sh bootstrap, because a fresh Debian may not have zsh. When zsh is missing it installs it with apt on Debian and refuses on anything else, then `exec`s `install.zsh`, which holds the real installer. Installers run in name order: `00-zshconfig`, `01-homebrew`, `02-apt-base`, then the per-tool ones. A failed installer does not stop the run; each failure is collected with `problem` and `fix`, and `install.zsh` prints the `problems` block at the end and exits 1. `INSTALL_INSTALLERS_DIR` points the run at another folder of installers, which `tests/install` uses with stub installers.
 
 The installer symlinks the repo to `~/.custom`, and `.zshrc`, `.zshenv`, `.zprofile` and the bash startup files to `~` so changes to this repo are live immediately.
 
@@ -58,15 +58,14 @@ macOS `/etc/zprofile` runs `path_helper` after `.zshenv` and pushes the system p
 1. p10k instant prompt, when its cache exists
 2. `zsh_options.zsh` — setopt flags
 3. `env.zsh` — interactive exports; its last line sources `load_box_env.zsh` (see below)
-4. `zpm-zsh-colors` — `$c[...]` color variables used everywhere
-5. `load_zinit.zsh` — installs zinit if missing, then sources it
-6. `p10k.prompt.zsh` / `p10k.zsh` — prompt config
-7. `plugins.zsh` — zinit plugin declarations
-8. `completions.zsh` — adds `completions/` and asdf's completions to `fpath` and runs the one `compinit`, which nothing else may call
-9. `aliases.zsh` — conditional aliases (checks `is available <tool>` before defining)
-10. `wrap-progress.zsh` — when `progress` is installed, autoloads the `wrappers/` versions of `cp`, `mv`, `tar` and similar, and aliases the originals as `cpo`, `mvo` and so on
-11. `load-direnv.zsh`, `load-fzf.zsh`, `configs/ls_colors/ls-colors.sh`
-12. `load-projects.zsh` — sources every `projects/*.zsh` except `*.env.zsh`
+4. `load_zinit.zsh` — installs zinit if missing, then sources it
+5. `p10k.prompt.zsh` / `p10k.zsh` — prompt config
+6. `plugins.zsh` — zinit plugin declarations
+7. `completions.zsh` — adds `completions/` and asdf's completions to `fpath` and runs the one `compinit`, which nothing else may call
+8. `aliases.zsh` — conditional aliases (checks `is available <tool>` before defining)
+9. `wrap-progress.zsh` — when `progress` is installed, autoloads the `wrappers/` versions of `cp`, `mv`, `tar` and similar, and aliases the originals as `cpo`, `mvo` and so on
+10. `load-direnv.zsh`, `load-fzf.zsh`, `configs/ls_colors/ls-colors.sh`
+11. `load-projects.zsh` — sources every `projects/*.zsh` except `*.env.zsh`
 
 ### Project drop-ins (`projects/`)
 
@@ -103,7 +102,7 @@ The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, rea
 
 - `configs/palette/palette.conf` is the one palette: `key = value` lines, a value being `#rrggbb`, another key, or `key-NN` (NN per cent of that colour over `background`). It holds the background, 15 hues and the roles (`cmd`, `tool`, `target`, `flag`, `num`, `heading`, `marker`, `prose`, `dim`, `ok`, `info`, `warn`, `err`, `tag-cmd`, `tag-child`), each role an alias of a hue. `~/.config/zsh-config/palette.conf` is read after it and wins per key. Rust and Swift tools parse the same file themselves.
 - `col <name|name-NN|role|bold|reset>` prints the escape: truecolor when `COLORTERM` is `truecolor` or `24bit`, the nearest of the 256 colours otherwise, nothing when `NO_COLOR` is set or `CLI_PLAIN=1`. `col -v VAR name` sets a variable instead (no subshell), `col --hex name` prints the resolved hex, `col --list` shows every hue and role.
-- `cli-init "$@"` is a tool's first line: it sets `CLI_PLAIN=1` for `--plain`, `NO_COLOR` or a stdout that is not a terminal, and loads the palette once into the shell. `CLICOLOR_FORCE` set to anything but `0` keeps colour without a terminal, for a parent (hub) that captures a child's output to reprint it; `--plain` and `NO_COLOR` still win. `cheat` follows the same rule. Plain mode keeps the icons and drops colour, animation and kitty escapes.
+- `cli-init "$@"` is a tool's first line: it sets `CLI_PLAIN=1` for `--plain`, `NO_COLOR` or a stdout that is not a terminal, and loads the palette once into the shell. `CLICOLOR_FORCE` set to anything but `0` keeps colour without a terminal, for a parent (hub) that captures a child's output to reprint it; `--plain` and `NO_COLOR` still win. `cheat` follows the same rule. Plain mode keeps the icons and drops colour, animation and kitty escapes. `-q` and `-v` set `CLI_QUIET` and `CLI_VERBOSE`, and a tool that confirms with `confirm` takes `-y` to answer yes.
 - `cli-icon [-v VAR] <name>` is the one place for the nf-md glyphs (ok, info, warn, err, step, log, ask, run, done, fail), written as UTF-8 bytes so they work under any locale. info is nf-md-circle_medium.
 - `say ok|info|warn|fail <text>` prints one status line: icon, two spaces, text, all in the role colour; `fail` goes to stderr.
 - `problem <text>` and `fix <command> [reason]` collect while a tool runs; `problems` prints the block at the end on stderr and returns 1 (0 when there were none): the count with the error icon, each problem dimmed in the error colour, a blank line, then each fix as one command in the `cmd` colour with its reason dimmed, plus `log open last` when the run has a log (`LOG_FILE`). Call `problem` and `fix` in the tool's own shell, never inside `$(...)`.
@@ -112,7 +111,7 @@ The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, rea
 - Logs live in `~/.custom/logs/commands/` and `children/` (this repo's `logs/`, gitignored), newest 50 per folder. `log-start <command>` opens a run's log (`LOG_FILE`, `LOG_COMMAND`), `log-line <text>` appends a stamped line, `log list` and `log open` read them (`cheat log`).
 - `config [--schema FILE] <tool> list|get|set|unset|edit` keeps a tool's settings in `~/.custom/config/<tool>.json` (gitignored), written atomically with jq; the tool ships a schema of `{key: {default, meaning}}` (`cheat config`).
 - `installers/fonts` (and `updaters/125-fonts`, and the Brewfile cask) installs the Nerd Font kitty names, DejaVuSansM Nerd Font Mono, so the icons render.
-- `cheat cli` is the helper library's sheet. `tests/col`, `tests/say`, `tests/pick`, `tests/progress`, `tests/run-quiet`, `tests/log` and `tests/config` cover it. `tests/helpers-standalone` checks that every helper loads the helpers it calls (`autoload -Uz`), so one autoloaded alone works under `zsh -f`; `tests/wrappers-safe` checks that helpers run file commands through `command` and that the wrappers call `command progress`, so the wrapper functions never recurse or shadow a helper.
+- `cheat cli` is the helper library's sheet. `tests/col`, `tests/say`, `tests/pick`, `tests/progress`, `tests/run-quiet`, `tests/log`, `tests/config` and `tests/confirm` cover it; `tests/flags` checks `--help` and `--plain` on the user tools, `tests/sweep-c` the tools converted in the sweep, `tests/update` the update runner and `tests/install` the install runner. `tests/helpers-standalone` checks that every helper loads the helpers it calls (`autoload -Uz`), so one autoloaded alone works under `zsh -f`; `tests/wrappers-safe` checks that helpers run file commands through `command` and that the wrappers call `command progress`, so the wrapper functions never recurse or shadow a helper.
 
 ### Keys and wipcrypt
 
@@ -142,11 +141,11 @@ Every non-empty line starts with `# `, `> `, `- ` or a backtick, and a backtick 
 
 ### `installers/` directory
 
-Each file is an independent install script. `_stub` must be sourced first — it sets `$INSTALLER_DIR`, `$REPO_DIR`, loads `is`, and loads `$c[...]` colors. `install.zsh` (started by `./install`) runs them in lexicographic order, so the numbered ones come first: `01-homebrew` (macOS) and `02-apt-base` (Debian). The apt list is `configs/apt/base`, one package per line with `#` comments (curl, git, tar, unzip, zsh, micro, httpie, progress, direnv, build-essential); `02-apt-base` and `updaters/000-debian` both install it, so a package added there reaches existing machines through `update`.
+Each file is an independent install script. `_stub` must be sourced first — it sets `$INSTALLER_DIR`, `$REPO_DIR`, loads `is`, runs `cli-init` and the status helpers (`say`, `problem`, `fix`, `problems`), and puts `functions/` on `fpath`. `install.zsh` (started by `./install`) runs them in lexicographic order, so the numbered ones come first: `01-homebrew` (macOS) and `02-apt-base` (Debian). The apt list is `configs/apt/base`, one package per line with `#` comments (curl, git, tar, unzip, zsh, micro, httpie, progress, direnv, build-essential); `02-apt-base` and `updaters/000-debian` both install it, so a package added there reaches existing machines through `update`.
 
 On Debian, tools that apt packages badly come from their latest GitHub release through `install-release <binary>` (`functions/install-release`). `configs/releases` has one row per tool (tlrc as `tldr`, glow, eza, delta, bat, asdf): repo, asset pattern, per-arch tokens and paths inside the archive. It installs to `~/.local/bin`, completions to `~/.local/share/zsh/site-functions`, and records the tag under `~/.local/share/zsh-config/releases`. macOS uses brew for all of them.
 
-New installers should start with:
+New installers should start with the lines below, report with `say`, and use `problem` and `fix` for a failure:
 ```zsh
 #!/usr/bin/env zsh
 source "${0:a:h}/_stub"
@@ -156,7 +155,7 @@ source "${0:a:h}/_stub"
 
 `./update` (also the `update` function) keeps the whole machine current. It pulls this repo through `updaters/_self`, restarts itself so the run uses the scripts it just pulled, authenticates sudo once with a keepalive, then runs every `updaters/NNN-name` script in number order with stdin closed. A failed updater is reported at the end and does not stop the run. `update --list` shows the order, and `update brew tldr` runs only the named ones.
 
-Each run keeps an error log at `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log`: every line an updater starts with `error:` or `warning:`, plus the last 30 lines of output from any updater that failed, each tagged `[NNN-name]` (`[zsh-config]` for the self-update) and stored without colour codes. An interrupted run removes its log if it is still empty. The runner prints the log again, coloured, when the run ends. A run with nothing to report deletes its log, and only the newest 20 are kept. Every finished run also writes its start time and `clean` or `logged` to `.cache/logs/update/last-run`, so `update --errors` can say that the last run was clean instead of showing an older run's log; `update --errors --previous` shows the newest log whichever run wrote it. An updater gets a message into the log by starting the line with `error:` or `warning:`, which the house `$c[error]error:$c[reset]` and `$c[warn]warning:$c[reset]` tags already do.
+`update` runs each updater through `run-quiet` under `progress`, with stdin closed; `-v` streams the output live and `-q` skips the progress line and the ok and info lines. An unknown updater name or flag exits 2 before anything runs. Each run keeps an error log at `~/.custom/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log` (under `$CLI_LOG_DIR` when set): every line an updater starts with `error:` or `warning:` and every line carrying the warn or error icon, plus the last 30 lines of output from any updater that failed, each tagged `[NNN-name]` (`[zsh-config]` for the self-update) and stored without colour codes. An interrupted run removes its log if it is still empty. The runner prints the log again, coloured, when the run ends. A run with nothing to report deletes its log, and only the newest 20 are kept. Every finished run also writes its start time and `clean` or `logged` to `logs/update/last-run` beside it, so `update --errors` can say that the last run was clean instead of showing an older run's log; `update --errors --previous` shows the newest log whichever run wrote it. An updater gets a message into the log with `say warn` or `say fail`; brew-style lines that start with `error:` or `warning:` are picked up too.
 
 Rules for an updater:
 
@@ -195,9 +194,9 @@ GNOME-specific config and tools. Only installed on machines running GNOME on Way
 - `bin/` — Window management scripts. Symlinked to `~/.local/bin/` by `installers/gnome`. Use `cheat gnome-bin` for reference.
 - `quit-all-apps.desktop` — Desktop entry that surfaces `quit-all-apps` in the GNOME Activities/app search.
 
-### Color system (`zpm-zsh-colors`)
+### Color system
 
-`$c[...]` associative array provides semantic colors: `h1`, `h2`, `h3`, `lead`, `info`, `info-small`, `success`, `warn`, `error`, `flag`, `param`, `reset`. Use these for all user-facing output — never raw ANSI codes.
+The palette is the only colour path. `col` prints an escape and `say` prints a status line, both in the palette's roles; never write raw ANSI codes in a tool. The old colour array from `zpm-zsh-colors` is gone, along with the file and the `test-color-names` and `test-color-codes` demos; `col --list` shows every hue and role, and `test-color-24bit` stays for checking truecolor.
 
 ## Required tooling
 

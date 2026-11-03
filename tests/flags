@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 # Tests --help and --plain on the user tools (compress-*, asdf-cleanup,
 # npm-update-latest, steamos-install, picoh, aptr, dsp, gcod, gcom,
-# get-hostname, git-branch, zshenv, test-color-*, wipcrypt) from a plain
+# get-hostname, git-branch, zshenv, test-color-24bit, wipcrypt) from a plain
 # `zsh -f` child with functions/ on fpath. --help must exit 0 and print the
 # sheet title. --plain output must hold no escape codes, but only for runs
 # with no side effect (a bad argument or an empty folder); the rest check
@@ -33,7 +33,7 @@ function bad() { print "FAIL $1"; print -r -- "$2" | head -5 | sed 's/^/     /';
 local tool
 for tool in aptr asdf-cleanup compress-jpg compress-jpg-all compress-pdf compress-pdf-all \
   dsp gcod gcom get-hostname git-branch npm-update-latest picoh steamos-install \
-  test-color-24bit test-color-codes test-color-names zshenv wipcrypt; do
+  test-color-24bit zshenv wipcrypt; do
   run "$TMP/work" "$tool --help"
   if (( CODE == 0 )) && [[ "$OUT" == *"# $tool"* || "$OUT" == *"$tool"$'\n'* ]]; then
     ok "$tool --help"

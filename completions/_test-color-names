@@ -1,8 +1,0 @@
-#compdef test-color-names
-
-_test-color-names() {
-  _arguments \
-    '(-h --help)'{-h,--help}'[show help]'
-}
-
-_test-color-names "$@"

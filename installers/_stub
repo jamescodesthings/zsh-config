@@ -35,10 +35,6 @@ check-or-load problems
 # its own flags, and the installers it starts inherit CLI_* from the environment
 cli-init "$@"
 
-if is empty "$c"; then
-  source "$REPO_DIR/zpm-zsh-colors"
-fi
-
 if is not supported; then
   say fail "this config is built for macOS and Debian; get the clanker to port it"
   exit 1

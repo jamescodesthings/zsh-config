@@ -7,9 +7,6 @@ fi
 source $CUSTOM_DIR/zsh_options.zsh
 source $CUSTOM_DIR/env.zsh
 
-# Echo Color Output
-source $CUSTOM_DIR/zpm-zsh-colors
-
 source $CUSTOM_DIR/load_zinit.zsh
 source $CUSTOM_DIR/p10k.prompt.zsh
 source $CUSTOM_DIR/p10k.zsh

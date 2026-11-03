@@ -8,7 +8,7 @@ export LOAD_METHOD="light"
 export FORCE_REINSTALL=0
 
 if (is not directory "$ZINIT_DIR" || is equal "1" "$FORCE_REINSTALL") && is available git; then
-  echo "$c[success]Installing$c[reset] zinit"
+  say info "Installing zinit"
   if is existing $ZINIT_DIR; then
     mv $ZINIT_DIR "$ZINIT_DIR-old"
   fi
@@ -16,7 +16,7 @@ if (is not directory "$ZINIT_DIR" || is equal "1" "$FORCE_REINSTALL") && is avai
   mkdir -p $ZINIT_HOME
   git clone --depth 1 $ZINIT_URL $ZINIT_DIR
 
-  echo "$c[success]Installed$c[reset] zinit"
+  say ok "Installed zinit"
 fi
 
 [[ -f $ZINIT_DIR/zinit.zsh ]] || return 0

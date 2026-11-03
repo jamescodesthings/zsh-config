@@ -12,6 +12,6 @@
 
 # See also
 
-- `cheat test-color-codes` - the 16 named colours as a grid
+- `cheat cli col` - the palette and `col --list`
 - `cheat terminal-colors` - the terminal colour reference
 - `cheat zsh-config` - everything zsh-config gives you
