@@ -7,8 +7,9 @@ source "${0:a:h}/_stub"
 # "hub project --update update" refreshes the GitHub repo cache, then pulls
 # every installed project with git pull --ff-only and runs that project's
 # installer, printing an ok or FAIL line for each and exiting 1 if any failed.
-# It never prompts without a terminal. Never call `hub update` from here:
-# `hub update` runs zsh-config's `update`, so the two would loop.
+# It never prompts without a terminal. This is how agent-forge itself is
+# updated: James runs `hub down`, then `update`, then `hub`. Never call
+# `hub update` from here; `update` stays separate from agent-forge's cycle.
 if ! whence hub > /dev/null; then
   echo "$c[info]skipping:$c[reset] hub not installed (it comes with agent-forge)"
   exit 0
