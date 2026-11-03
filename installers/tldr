@@ -10,11 +10,11 @@ if is debian; then
 fi
 
 if is available tldr; then
-  say info "skipping tldr already installed"
+  say info "skipping: tldr already installed"
   exit 0
 fi
 
-say info "installing tldr via homebrew"
+say info "installing: tldr via homebrew"
 if brew install tlrc; then
   say ok "tldr installed"
   exit 0

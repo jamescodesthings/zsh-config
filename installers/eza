@@ -10,11 +10,11 @@ if is debian; then
 fi
 
 if is available eza; then
-  say info "skipping eza already installed"
+  say info "skipping: eza already installed"
   exit 0
 fi
 
-say info "installing eza via homebrew"
+say info "installing: eza via homebrew"
 if brew install eza; then
   say ok "eza installed"
   exit 0

@@ -16,11 +16,11 @@ if is debian; then
 fi
 
 if is available delta; then
-  say info "skipping delta is already installed"
+  say info "skipping: delta is already installed"
   exit 0
 fi
 
-say info "installing delta via homebrew"
+say info "installing: delta via homebrew"
 if brew install git-delta; then
   say ok "delta installed"
   exit 0

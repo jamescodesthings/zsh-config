@@ -2,6 +2,7 @@
 
 function compress-pdf() {
   cheat-help compress-pdf "$@" && return 0
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 

@@ -111,6 +111,7 @@ function _steamos_install_subfn() {
 
 function steamos-install() {
   cheat-help steamos-install "$@" && return 0
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 

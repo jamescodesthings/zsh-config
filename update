@@ -107,20 +107,6 @@ if is equal "$MODE" "errors"; then
   exit 0
 fi
 
-# Named updaters only: "brew" matches 010-brew. Checked before anything runs.
-if is not empty "$NAMES"; then
-  WANTED=()
-  for name in $NAMES; do
-    MATCH=(${(M)SCRIPTS:#(<->-|)$name})
-    if is empty "$MATCH"; then
-      say fail "no updater called $name, try update --list"
-      exit 2
-    fi
-    WANTED+=($MATCH)
-  done
-  SCRIPTS=($WANTED)
-fi
-
 # One error log per run, named for the moment the run started. The name is
 # exported so that it survives the restart after the self-update.
 if is empty "$UPDATE_ERROR_LOG"; then
@@ -169,14 +155,33 @@ function collect-log() {
 if is empty "$UPDATE_SELF_UPDATED"; then
   say info "updating zsh-config"
   SELF_OUT="$(mktemp)"
-  "$UPDATER_DIR/_self" < /dev/null > "$SELF_OUT" 2>&1
-  SELF_RESULT=$?
+  if [[ -n "$CLI_VERBOSE" ]]; then
+    "$UPDATER_DIR/_self" < /dev/null 2>&1 | tee "$SELF_OUT"
+    SELF_RESULT=${pipestatus[1]}
+  else
+    "$UPDATER_DIR/_self" < /dev/null > "$SELF_OUT" 2>&1
+    SELF_RESULT=$?
+  fi
   collect-log zsh-config "$SELF_OUT" "$SELF_RESULT"
   rm -f "$SELF_OUT"
   if is not equal "$SELF_RESULT" "0"; then
     say warn "could not pull zsh-config, carrying on with the local copy"
   fi
   UPDATE_SELF_UPDATED=1 exec "$REPO_DIR/update" "$@"
+fi
+
+# Named updaters only: "brew" matches 010-brew. Checked before anything runs.
+if is not empty "$NAMES"; then
+  WANTED=()
+  for name in $NAMES; do
+    MATCH=(${(M)SCRIPTS:#(<->-|)$name})
+    if is empty "$MATCH"; then
+      say fail "no updater called $name, try update --list"
+      exit 2
+    fi
+    WANTED+=($MATCH)
+  done
+  SCRIPTS=($WANTED)
 fi
 
 log-start update
@@ -201,6 +206,14 @@ if is available sudo; then
   SUDO_KEEPALIVE_PID=$!
 fi
 
+# Fix modes before the spinner starts, so the message is not drawn over.
+for script in $SCRIPTS; do
+  if is not executable "$UPDATER_DIR/$script"; then
+    say warn "$script is not executable, fixing"
+    chmod +x "$UPDATER_DIR/$script"
+  fi
+done
+
 FAILED=()
 SHOW_PROGRESS=""
 if [[ -z "$CLI_VERBOSE" && -z "$CLI_QUIET" ]]; then
@@ -215,9 +228,18 @@ function child-log() {
 }
 
 for script in $SCRIPTS; do
-  if is not executable "$UPDATER_DIR/$script"; then
-    say warn "$script is not executable, fixing"
-    chmod +x "$UPDATER_DIR/$script"
+  # The ticket from the up-front sudo -v can lapse (a long updater, a short
+  # timestamp_timeout). The spinner would paint over the password prompt, so
+  # stop it, ask visibly, then carry on.
+  if [[ -n "$SUDO_KEEPALIVE_PID" ]] && ! sudo -n true 2> /dev/null; then
+    [[ -n "$SHOW_PROGRESS" ]] && progress pause
+    say info "sudo: the ticket lapsed, authenticating again"
+    if sudo -v; then
+      say ok "sudo approved"
+    else
+      say warn "sudo authentication failed, updaters that need root will fail"
+    fi
+    [[ -n "$SHOW_PROGRESS" ]] && progress resume
   fi
 
   # stdin is closed so that a tool which tries to prompt gets an immediate
@@ -236,7 +258,7 @@ for script in $SCRIPTS; do
     result=${pipestatus[1]}
     if is not equal "$result" "0"; then
       problem "$script failed (exit $result)"
-      fix "log open child" "for its output"
+      fix "log open ${OUTPUT:t}" "for its output"
     fi
   else
     run-quiet "$script" "$UPDATER_DIR/$script"

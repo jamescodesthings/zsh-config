@@ -29,7 +29,7 @@ if is osx; then
     say fail "homebrew is needed for the $CASK cask (installers/01-homebrew)"
     exit 1
   fi
-  say info "installing $FONT_NAME ($CASK)"
+  say info "installing: $FONT_NAME ($CASK)"
   if ! brew install --cask "$CASK"; then
     say fail "could not install the $CASK cask"
     exit 1
@@ -43,7 +43,7 @@ else
   done
   dest="$HOME/.local/share/fonts/DejaVuSansMNerdFont"
   tmp="$(mktemp -d)"
-  say info "installing $FONT_NAME from the Nerd Fonts release into $dest"
+  say info "installing: $FONT_NAME from the Nerd Fonts release into $dest"
   if ! curl -fsSL -o "$tmp/font.zip" "$ZIP_URL" || ! mkdir -p "$dest" || ! unzip -oq "$tmp/font.zip" 'DejaVuSansMNerdFontMono-*.ttf' -d "$dest"; then
     rm -rf "$tmp"
     say fail "could not download or unpack $ZIP_URL"

@@ -53,10 +53,10 @@ same "success: both streams land in the log" "$(sort "${logs[1]}" 2> /dev/null |
 
 rm -rf "$TMP/logs"
 run -- 'function mytool() { run-quiet "step/two: a b" sh -c "echo oops; exit 7"; print -r -- "rc=$?"; print -r -- "${_CLI_PROBLEMS[*]}"; print -r -- "${_CLI_FIXES[*]//$'"'"'\0'"'"'/|}" }; mytool'
-same "failure: exit code passed through, problem and fix recorded" "$OUT|$ERR" "rc=7
-step/two: a b failed (exit 7)
-log open child|for its output|"
 logs=("$TMP"/logs/children/*-mytool-step-two-a-b.log(N))
+same "failure: exit code passed through, problem and fix (this command's own log) recorded" "$OUT|$ERR" "rc=7
+step/two: a b failed (exit 7)
+log open ${logs[1]:t}|for its output|"
 same "failure: parent is the calling function, label made filename-safe" "${#logs}" "1"
 same "failure: output is in the log" "$(< "${logs[1]}")" "oops"
 

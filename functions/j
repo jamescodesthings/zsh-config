@@ -216,7 +216,7 @@ function j() {
         say warn "no matches for \"$query\""; return 1
       fi
       if (( ${#matches[@]} > 1 )); then
-        say fail "multiple matches — be more specific:"
+        say fail "multiple matches - be more specific:"
         for p in "${matches[@]}"; do echo "  $p"; done
         return 1
       fi

@@ -12,6 +12,10 @@
 #   key list   [--json]
 #   key path   <name> [-p|--previous]
 #
+# `path` prints the key file's path and exits 1 (a problem and a `key sync`
+# fix on stderr, nothing on stdout) when the file is missing or empty; -p
+# prints the newest backup's path.
+#
 # `sync --from FILE` seeds the store from the last VAR= line of an existing
 # file (one pair of surrounding quotes stripped) instead of asking 1Password;
 # with --push it then pushes the key; it cannot be combined with --local.
@@ -30,17 +34,18 @@
 # empty ZDOTDIR.
 if [[ "$0" == */* ]]; then
   fpath=("${0:a:h}" $fpath)
-  autoload -Uz col cli-init cli-icon say cheat-help cheat cheat-render is
+  autoload -Uz col cli-init cli-icon say problem fix problems cheat-help cheat cheat-render is
   [[ -n "$CHEATSHEET_DIR" ]] || export CHEATSHEET_DIR="${0:a:h:h}/cheatsheets"
   [[ -n "$CUSTOM_DIR" ]] || export CUSTOM_DIR="${0:a:h:h}"
 fi
 
 function key() {
-  autoload -Uz col cli-init cli-icon say cheat-help is
+  autoload -Uz col cli-init cli-icon say problem fix problems cheat-help is
   cheat-help key "$@" && return 0
   emulate -L zsh
   unsetopt xtrace verbose  # a caller's set -x must never trace a key
   setopt extended_glob
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   set -- "${@:#--plain}"
 
@@ -144,6 +149,12 @@ function key() {
       fi
       print -r -- "$dir/$name.key.$newest"
     else
+      if [[ ! -s "$dir/$name.key" ]]; then
+        problem "key: no key for $name (${dir/#$HOME/~}/$name.key is missing or empty)"
+        fix "key sync $name" "to pull it from 1Password"
+        problems
+        return 1
+      fi
       print -r -- "$dir/$name.key"
     fi
     return 0

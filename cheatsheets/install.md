@@ -12,7 +12,6 @@
 # Options
 
 - `[-q|--quiet]` - hide ok and info lines, keep warnings and failures
-- `[-v|--verbose]` - more detail from the installers
 - `--plain` - no colour or animation, icons stay
 - `--help` - show this sheet
 

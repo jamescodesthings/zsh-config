@@ -1,7 +1,7 @@
 # update
 
 > Pull zsh-config, then run every script in `updaters/` in number order, quietly, with a step counter.
-> Asks for sudo once; a failed updater is listed at the end and the exit code is 1.
+> Asks for sudo once (again if the ticket lapses mid-run); a failed updater is listed at the end and the exit code is 1.
 
 # Getting started
 
@@ -19,7 +19,7 @@
 
 # Logs
 
-- `log open last` - this run's log; `log open child` opens a failed updater's output
+- `log open last` - this run's log; a failed updater's fix line gives the exact `log open <name>` for its output
 - `~/.custom/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.log` - warning and failure lines per updater, plus the last 30 lines of a failed one; a clean run leaves none, the newest 20 are kept
 
 # See also

@@ -10,11 +10,11 @@ if is debian; then
 fi
 
 if is available bat; then
-  say info "skipping bat already installed"
+  say info "skipping: bat already installed"
   exit 0
 fi
 
-say info "installing bat via homebrew"
+say info "installing: bat via homebrew"
 if brew install bat; then
   say ok "bat installed"
   exit 0

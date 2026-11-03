@@ -1,7 +1,7 @@
 # zshenv
 
 > Opens this machine's `env.<hostname>.zsh` in micro.
-> Prints an error when micro is not installed.
+> Prints an error and exits 1 when micro is not installed.
 
 # Getting started
 

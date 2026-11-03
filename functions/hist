@@ -193,7 +193,7 @@ function hist() {
   cheat-help hist "$@" && return 0
   autoload -Uz cli-init say problem fix problems col
   local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
-  cli-init "$@"
+  cli-init ${(M)@:#--plain}
   set -- "${@:#--plain}"
   local _H _F _T _N _W _O _P _D _R
   col -v _H heading; col -v _F flag; col -v _T target; col -v _N num

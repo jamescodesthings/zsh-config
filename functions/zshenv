@@ -2,6 +2,7 @@
 
 function zshenv() {
   cheat-help zshenv "$@" && return 0
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   if is available micro; then
     micro "$CUSTOM_DIR/env.$(get-hostname).zsh"

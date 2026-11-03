@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+# Tests that tools which call cli-init leave CLI_PLAIN, CLI_QUIET and
+# CLI_VERBOSE unset in the caller's shell, whatever their output and flags.
+# Run: tests/cli-leak. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+failed=0
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+# Every external command the tools could run is a stub that does nothing, the
+# shell runs in an empty HOME and folder: nothing real is touched.
+mkdir -p "$TMP/bin" "$TMP/home" "$TMP/work"
+for c in docker git npm asdf apt apt-get brew sudo python3 pico8 gs convert jpegoptim; do
+  printf '#!/bin/sh\nexit 0\n' > "$TMP/bin/$c"
+  chmod +x "$TMP/bin/$c"
+done
+
+# One shell: call several converted tools with output redirected and -q/-v,
+# then report which variables leaked. --help paths and bad-usage paths still
+# run cli-init in the function body for most tools.
+OUT="$(cd "$TMP/work" && env -i HOME="$TMP/home" TMPDIR="$TMP" PATH="$TMP/bin:/usr/bin:/bin" timeout 300 zsh -f -c '
+  fpath=("$1/functions" $fpath)
+  autoload -Uz cheat-help cli-init cli-icon col say problem fix problems is deps \
+    get-hostname gcod gcom dsp zshenv aptr npm-update-latest picoh compress-jpg \
+    compress-pdf asdf-cleanup git-branch hist oh md link-cheatsheets key log config
+  export CUSTOM_DIR="$1" CHEATSHEET_DIR="$1/cheatsheets"
+  { get-hostname; get-hostname -q; get-hostname -v --plain
+    dsp -q -v --plain
+    gcod -q; gcom -v; git-branch -q
+    zshenv -q; aptr -q; npm-update-latest -q; picoh -q; compress-jpg -q
+    compress-pdf -q; asdf-cleanup -q
+    hist -q nothingmatches; hist --plain -v
+    key list -q; log list -q; config -q nosuchtool list
+    link-cheatsheets -q "$1/no-such-folder"
+  } > /dev/null 2>&1 < /dev/null
+  print -r -- "plain=${+CLI_PLAIN} quiet=${+CLI_QUIET} verbose=${+CLI_VERBOSE}"
+' _ "$REPO_DIR" 2>&1 </dev/null | tail -1)"
+
+if [[ "$OUT" == "plain=0 quiet=0 verbose=0" ]]; then
+  echo "ok: no CLI_PLAIN, CLI_QUIET or CLI_VERBOSE left in the caller's shell"
+else
+  echo "FAIL: leaked variables: $OUT"; failed=1
+fi
+
+(( failed )) && exit 1
+exit 0

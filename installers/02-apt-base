@@ -3,14 +3,14 @@
 source "${0:a:h}/_stub"
 
 if is not debian; then
-  say info "skipping apt base packages are Debian only"
+  say info "skipping: apt base packages are Debian only"
   exit 0
 fi
 
 # The list lives in configs/apt/base so updaters/000-debian installs the same one.
 PACKAGES=(${(f)"$(sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' "$REPO_DIR/configs/apt/base")"})
 
-say info "installing base packages via apt"
+say info "installing: base packages via apt"
 # One broken third-party source makes apt-get update exit non-zero even
 # though every other list refreshed, so that is a warning; the install below
 # still fails the run if a package cannot be found.

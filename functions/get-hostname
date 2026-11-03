@@ -2,6 +2,7 @@
 
 function get-hostname {
   cheat-help get-hostname "$@" && return 0
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   RAW_HOSTNAME=$(uname -n)
   CUT_HOSTNAME=${RAW_HOSTNAME%%.*}

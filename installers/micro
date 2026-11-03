@@ -17,20 +17,20 @@ local micro_plugins=(
 )
 
 if is debian; then
-  say info "skipping micro is installed by 02-apt-base on Debian"
+  say info "skipping: micro is installed by 02-apt-base on Debian"
 elif is not available micro; then
-  say info "installing micro via homebrew"
+  say info "installing: micro via homebrew"
   brew install micro || { say fail "homebrew install failed"; exit 1 }
 else
-  say info "skipping micro is already installed"
+  say info "skipping: micro is already installed"
 fi
 
 # install plugins
 for plugin in "${micro_plugins[@]}"; do
   if micro -plugin list | grep -q "$plugin"; then
-    say info "skipping micro plugin $plugin already installed"
+    say info "skipping: micro plugin $plugin already installed"
   else
-    say info "installing micro plugin $plugin"
+    say info "installing: micro plugin $plugin"
     micro -plugin install "$plugin"
   fi
 done
@@ -39,7 +39,7 @@ if is not dir "$CONFIG_DEST"; then
   say info "creating micro config directory at $CONFIG_DEST"
   mkdir -p "$CONFIG_DEST"
 else
-  say info "skipping micro config directory already exists at $CONFIG_DEST"
+  say info "skipping: micro config directory already exists at $CONFIG_DEST"
 fi
 
 

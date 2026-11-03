@@ -17,7 +17,7 @@
 # Inspect
 
 - `key list [--json]` - name, stored or not, backups, op reference, variable; never a key
-- `key path <name> [-p|--previous]` - the key file's path (even if none yet), or the newest backup's
+- `key path <name> [-p|--previous]` - the key file's path (exit 1 with a `key sync` fix when there is none), or the newest backup's
 
 # Variables
 

@@ -129,4 +129,13 @@ has "kitty: tab progress cleared on done" "$ERR" $'\e]9;4;0;0\a'
 run CLI_PROGRESS_FORCE=1 TERM=xterm-kitty -- 'progress start t 2; progress step a; sleep 0.3; progress done'
 [[ "$ERR" == *$'\e]9;4;1;'* ]] && { echo "FAIL: kitty progress shown before 2 s"; failed=1; } || echo "ok: kitty: short run shows no tab progress"
 
+# pause stops the spinner and keeps the count; resume draws it again
+run CLI_PROGRESS_FORCE=1 -- 'progress start t 3; progress step a; progress step b; progress pause
+  print -r -- "paused pid=$_PROGRESS_PID n=$_PROGRESS_N"; progress resume
+  print -r -- "resumed alive=$(kill -0 $_PROGRESS_PID 2>/dev/null && print yes || print no) n=$_PROGRESS_N"; progress done'
+has "pause: the spinner is stopped" "$OUT" "paused pid=0 n=2"
+has "pause then resume: spinner back, count kept" "$OUT" "resumed alive=yes n=2"
+run -- 'progress start t 2; progress pause; progress resume; progress done'
+same "pause and resume in plain mode are quiet" "$?" 0
+
 exit $failed

@@ -15,13 +15,19 @@ printf '#!/usr/bin/env zsh\necho "stub three ran"\nexit 0\n' > "$TMP/inst/30-aft
 printf '#!/usr/bin/env zsh\necho "never"\n' > "$TMP/inst/_skipme"
 chmod +x "$TMP/inst/10-good" "$TMP/inst/20-bad" "$TMP/inst/30-after" "$TMP/inst/_skipme"
 
+# Guard: a stub say binary first on PATH, so macOS /usr/bin/say can never speak
+# during the test. It records a call and exits 99; ours must be the function.
+mkdir -p "$TMP/bin"
+printf '#!/bin/sh\necho called >> "%s/say-called"\nexit 99\n' "$TMP" > "$TMP/bin/say"
+chmod +x "$TMP/bin/say"
+
 function check() {
   if eval "$2"; then echo "ok: $1"; else echo "FAIL: $1"; failed=1; fi
 }
 
 # run <args...>: sets OUT, ERR, CODE
 function run() {
-  OUT="$(INSTALL_INSTALLERS_DIR="$TMP/inst" HOME="$TMP/home" timeout 300 zsh "$REPO_DIR/install.zsh" "$@" </dev/null 2> "$TMP/err")"
+  OUT="$(env -u CUSTOM_DIR -u CLI_PALETTE PATH="$TMP/bin:$PATH" INSTALL_INSTALLERS_DIR="$TMP/inst" HOME="$TMP/home" timeout 300 zsh "$REPO_DIR/install.zsh" "$@" </dev/null 2> "$TMP/err")"
   CODE=$?
   ERR="$(< "$TMP/err")"
 }
@@ -44,8 +50,18 @@ check "no problems block when all pass" '[[ -z "$ERR" ]]'
 run --plain -q
 check "-q keeps installer output but exits 0" '(( CODE == 0 )) && [[ "$OUT" == *"stub one ran"* ]]'
 
+# a fresh machine: empty HOME, colour forced, no ~/.custom yet
+run -q
+check "no palette errors on a fresh machine" '[[ "$ERR" != *"no colour called"* ]]'
+OUT="$(env -u CUSTOM_DIR -u CLI_PALETTE PATH="$TMP/bin:$PATH" CLICOLOR_FORCE=1 INSTALL_INSTALLERS_DIR="$TMP/inst" HOME="$TMP/home" timeout 300 zsh -c 'source "$1/installers/_stub"; say ok hello; whence -w say' _ "$REPO_DIR" </dev/null 2> "$TMP/err")"
+ERR="$(< "$TMP/err")"
+check "stub: no palette errors with colour forced" '[[ "$ERR" != *"no colour called"* && "$OUT" == *hello* ]]'
+check "stub: say is our function" '[[ "$OUT" == *"say: function"* ]]'
+
 run --help
 check "--help exits 0" '(( CODE == 0 ))'
+
+check "the say binary was never called" '[[ ! -e "$TMP/say-called" ]]'
 
 (( failed )) && exit 1
 exit 0

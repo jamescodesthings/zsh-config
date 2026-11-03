@@ -26,10 +26,15 @@ check-or-load cheat-help
 check-or-load cheat
 # the status-line helpers each autoload their own deps (col, cli-icon)
 check-or-load cli-init
-check-or-load say
-check-or-load problem
-check-or-load fix
-check-or-load problems
+# say is autoloaded unconditionally: on macOS check-or-load would find
+# /usr/bin/say (text to speech) and never load ours
+autoload -Uz cli-icon col say problem fix problems
+
+# On a fresh machine ~/.custom is not linked yet, so the palette is read from
+# this repo until it is.
+if [[ -z "$CLI_PALETTE" && ! -r "${CUSTOM_DIR:-$HOME/.custom}/configs/palette/palette.conf" ]]; then
+  export CLI_PALETTE="$REPO_DIR/configs/palette/palette.conf"
+fi
 
 # a flag-less installer run is plain-aware through cli-init; install.zsh passes
 # its own flags, and the installers it starts inherit CLI_* from the environment

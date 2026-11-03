@@ -2,7 +2,8 @@
 
 function dsp() {
   cheat-help dsp "$@" && return 0
-  cli-init "$@"
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init ${(M)@:#--plain}
   set -- "${@:#--plain}"
 
   local DEPS=(docker)

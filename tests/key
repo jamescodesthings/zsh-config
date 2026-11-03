@@ -130,6 +130,13 @@ run "key path demo --previous"
 same "second cycle makes .2" "$OUT|$(< $KD/demo.key.2)" "$KD/demo.key.2|$K2"
 run "key path demo"
 same "path prints store path" "$OUT" "$KD/demo.key"
+run "key path nokey"
+same "path with no key file exits 1, prints nothing" "$CODE|$OUT" "1|"
+has_err=$([[ "$ERR" == *"key sync nokey"* ]] && echo yes)
+same "path with no key file suggests key sync" "$has_err" yes
+: > $KD/empty.key
+run "key path empty"
+same "path with an empty key file exits 1" "$CODE|$OUT" "1|"
 run "key path nope -p"
 same "path -p with no backup exits 1" "$CODE|$OUT" "1|"
 

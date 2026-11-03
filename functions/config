@@ -21,6 +21,7 @@ function config() {
   cheat-help config "$@" && return 0
   emulate -L zsh
   setopt extended_glob
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   set -- "${@:#--plain}"
 

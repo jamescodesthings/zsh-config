@@ -4,7 +4,7 @@ source "${0:a:h}/_stub"
 
 check-or-load install-link
 
-say info "installing prettier config"
+say info "installing: prettier config"
 
 install-link "$REPO_DIR/configs/prettier/.prettierrc" "$HOME/.prettierrc"
 

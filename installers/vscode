@@ -14,7 +14,7 @@ DEST_DIR=""
 SETTINGS_SUFFIX=""
 
 if is tty; then
-  say info "skipping vscode isn't available on a tty"
+  say info "skipping: vscode isn't available on a tty"
   exit 0
 fi
 

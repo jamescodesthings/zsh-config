@@ -60,7 +60,7 @@ function run-quiet() {
 
   if (( code )); then
     problem "${label} failed (exit ${code})"
-    fix "log open child" "for its output"
+    fix "log open ${log:t}" "for its output"
   fi
   return $code
 }

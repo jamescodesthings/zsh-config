@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-# progress start <title> <total> | step <label> | done | fail
+# progress start <title> <total> | step <label> | pause | resume | done | fail
 #
 # A spinner with `step X/Y` and the title on one line, the current step's
 # label dimmed on a second, and the elapsed time on done. Drawn on stderr, so
@@ -9,6 +9,8 @@
 #
 #   progress start "hub update" 5
 #   progress step "zsh-config"      # call once per step, 1 to total
+#   progress pause                  # clear the lines to print or prompt, then
+#   progress resume                 # draw them again
 #   progress done                   # or `progress fail`
 #
 # Plain mode (CLI_PLAIN, NO_COLOR, or stderr not a terminal): no animation, no
@@ -162,6 +164,22 @@ function progress() {
         print -r -- "step ${shown}/${_PROGRESS_TOTAL} ${_PROGRESS_LABEL}" >&2
       fi
       ;;
+    pause)
+      # stops the spinner and clears its lines, keeping the count, so the
+      # tool can print or prompt; resume starts it again
+      (( ${_PROGRESS_ACTIVE:-0} )) || return 1
+      [[ "$_PROGRESS_MODE" == anim ]] && _progress_stop
+      ;;
+    resume)
+      (( ${_PROGRESS_ACTIVE:-0} )) || return 1
+      if [[ "$_PROGRESS_MODE" == anim ]] && (( ! ${_PROGRESS_PID:-0} )); then
+        _PROGRESS_FILE="$(mktemp "${TMPDIR:-/tmp}/progress.XXXXXX")" || return 0
+        print -r -- "${_PROGRESS_N}"$'\n'"${_PROGRESS_LABEL}" >| "$_PROGRESS_FILE"
+        print -rn -- $'\e[?25l' >&2
+        ( _progress_anim "$_PROGRESS_FILE" "$_PROGRESS_TITLE" $_PROGRESS_TOTAL $_PROGRESS_START $$ $_PROGRESS_KITTY ) &!
+        _PROGRESS_PID=$!
+      fi
+      ;;
     done|fail)
       (( ${_PROGRESS_ACTIVE:-0} )) || return 1
       _progress_stop
@@ -174,7 +192,7 @@ function progress() {
       _PROGRESS_ACTIVE=0
       ;;
     *)
-      say fail "progress: the first word is start, step, done or fail, not ${sub:-nothing}"
+      say fail "progress: the first word is start, step, pause, resume, done or fail, not ${sub:-nothing}"
       return 2
       ;;
   esac

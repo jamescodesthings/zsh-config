@@ -10,11 +10,11 @@ if is debian; then
 fi
 
 if is available glow; then
-  say info "skipping glow already installed"
+  say info "skipping: glow already installed"
   exit 0
 fi
 
-say info "installing glow via homebrew"
+say info "installing: glow via homebrew"
 if brew install glow; then
   say ok "glow installed"
   exit 0

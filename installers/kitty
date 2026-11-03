@@ -7,7 +7,7 @@ check-or-load install-box-config
 check-or-load confirm
 
 if is tty; then
-  say info "skipping kitty is a terminal emulator and cannot be installed from a terminal session"
+  say info "skipping: kitty is a terminal emulator and cannot be installed from a terminal session"
   exit 0
 fi
 
@@ -32,7 +32,7 @@ if is available kitty || is existing "$OSX_INSTALL_LOCATION" || is dir "$LINUX_I
     say ok "kitty installed"
   fi
 else
-  say info "installing kitty from $INSTALL_SCRIPT_SOURCE"
+  say info "installing: kitty from $INSTALL_SCRIPT_SOURCE"
   curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
   say ok "kitty installed"
 fi
@@ -57,7 +57,7 @@ if is not dir "$CONFIG_DEST"; then
   say info "creating kitty config directory at $CONFIG_DEST"
   mkdir -p "$CONFIG_DEST"
 else
-  say info "skipping kitty config directory already exists at $CONFIG_DEST"
+  say info "skipping: kitty config directory already exists at $CONFIG_DEST"
 fi
 
 install-link "$CONFIG_SOURCE/kitty.conf" "$CONFIG_DEST/kitty.conf"

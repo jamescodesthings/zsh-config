@@ -180,6 +180,7 @@ function log() {
   emulate -L zsh
   setopt extended_glob
   cheat-help log "$@" && return 0
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   set -- "${@:#--plain}"
 

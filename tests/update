@@ -18,7 +18,15 @@ ln -s "$REPO_DIR/functions" "$R/functions"
 chmod +x "$R/update"
 
 # sudo succeeds without asking
-printf '#!/bin/sh\nexit 0\n' > "$TMP/bin/sudo"
+# (with $SUDO_LOG set it records each call; with $LAPSE naming a file that
+# exists, `sudo -n true` fails until the next `sudo -v` removes the file)
+cat > "$TMP/bin/sudo" <<'S'
+#!/bin/sh
+[ -n "$SUDO_LOG" ] && echo "$*" >> "$SUDO_LOG"
+if [ -n "$LAPSE" ] && [ "$1" = -n ] && [ -e "$LAPSE" ]; then exit 1; fi
+if [ -n "$LAPSE" ] && [ "$1" = -v ]; then rm -f "$LAPSE"; fi
+exit 0
+S
 chmod +x "$TMP/bin/sudo"
 
 # stub <name> <body>: an updater that sources _stub and runs the body
@@ -74,7 +82,7 @@ has "progress counts steps" "$ALL" "step 1/4 010-ok"
 has "progress reaches the last step" "$ALL" "step 4/4 040-err"
 lacks "updater chatter stays out of the terminal" "$ALL" "doing ok"
 has "the problems block names the failure" "$ERR" "030-fail failed (exit 1)"
-has "the problems block offers the child log" "$ERR" "log open child"
+has "the problems block offers the child log" "$ERR" "log open "
 has "the tagged log is printed" "$ALL" "[020-warn]"
 lacks "plain output has no escape codes" "$ALL" $'\e'
 LOGFILE=("$LOGS"/update/*.error.log(N))
@@ -142,6 +150,27 @@ same "unknown flag exits 2" "$CODE" 2
 run UPDATE_SELF_UPDATED= -- 010-ok
 same "self-update failure still runs the rest" "$CODE" 0
 has "self-update failure warns" "$ALL" "could not pull zsh-config"
+
+# --- a failed updater's fix opens its own child log, not the newest
+run -- 030-fail 040-err
+has "fix names the failed updater's log" "$ERR" "-update-030-fail.log"
+lacks "fix is not the newest-child shortcut" "$ERR" "log open child"
+
+# --- a lapsed sudo ticket is renewed visibly before the next updater
+stub 050-lapse 'touch "$LAPSE"'
+stub 060-after 'say ok "after"'
+rm -f "$TMP/sudo.log"
+run LAPSE="$TMP/lapse" SUDO_LOG="$TMP/sudo.log" -- 050-lapse 060-after
+same "lapse: run exits 0" "$CODE" 0
+has "lapse: the renewal is announced" "$ALL" "ticket lapsed"
+same "lapse: sudo -v ran twice" "$(grep -cx -- '-v' "$TMP/sudo.log")" 2
+rm -f "$TMP/sudo.log" "$TMP/lapse"
+run LAPSE="$TMP/lapse" SUDO_LOG="$TMP/sudo.log" -- 060-after
+lacks "no lapse: no renewal" "$ALL" "ticket lapsed"
+
+# --- names are checked after the self-update
+run UPDATE_SELF_UPDATED= -- nosuch
+same "unknown name after the self-update exits 2" "$CODE" 2
 
 (( failed )) && { echo "tests/update: FAILED"; exit 1; }
 echo "tests/update: all passed"

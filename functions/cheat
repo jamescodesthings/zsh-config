@@ -154,7 +154,7 @@ function cheat() {
       sheet_name="${sheet_name%.md}"
       local edit_file="$CHEATSHEET_DIR/$sheet_name.md"
       if ! is file "$edit_file"; then
-        say fail "'$sheet_name' not found — use cheat new $sheet_name to create it"
+        say fail "'$sheet_name' not found - use cheat new $sheet_name to create it"
         return 1
       fi
       ${EDITOR:-micro} "$edit_file"
@@ -168,7 +168,7 @@ function cheat() {
       local new_name="${1%.md}"
       local new_file="$CUSTOM_DIR/cheatsheets/$new_name.md"
       if is existing "$new_file" || is existing "$CHEATSHEET_DIR/$new_name.md" || [[ -L "$CHEATSHEET_DIR/$new_name.md" ]]; then
-        say fail "'$new_name' already exists — use cheat edit $new_name to edit it"
+        say fail "'$new_name' already exists - use cheat edit $new_name to edit it"
         return 1
       fi
       cat >| "$new_file" <<TEMPLATE

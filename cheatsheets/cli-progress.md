@@ -7,6 +7,7 @@
 
 - `progress start <title> <total>` - begin a run of total steps
 - `progress step <label>` - move to the next step
+- `progress pause`, `resume` - clear the spinner to print or prompt, then draw it again
 - `progress done` - stop with the elapsed time
 - `progress fail` - stop and show the step it failed at
 - `run-quiet <label> <command...>` - run a command into a child log; advances progress when one is active

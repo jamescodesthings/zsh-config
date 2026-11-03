@@ -5,7 +5,7 @@ INSTALL_SCRIPT_URL=https://raw.githubusercontent.com/Homebrew/install/HEAD/insta
 source "${0:a:h}/_stub"
 
 if is not osx; then
-  say info "skipping homebrew is macos only"
+  say info "skipping: homebrew is macos only"
   exit 0
 fi
 
@@ -18,9 +18,9 @@ if ! xcode-select -p >/dev/null 2>&1; then
 fi
 
 if is available brew; then
-  say info "skipping homebrew already installed"
+  say info "skipping: homebrew already installed"
 else
-  say info "installing homebrew"
+  say info "installing: homebrew"
   /bin/bash -c "$(curl -fsSL $INSTALL_SCRIPT_URL)"
 
   if is not equal "$?" "0"; then
@@ -40,7 +40,7 @@ else
 fi
 
 # installers/asdf compiles python and ruby, which needs the Brewfile libraries
-say info "installing the Brewfile packages"
+say info "installing: the Brewfile packages"
 brew bundle install --no-upgrade --file "$REPO_DIR/configs/brew/Brewfile"
 
 if is not equal "$?" "0"; then

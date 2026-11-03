@@ -20,13 +20,13 @@ if is debian; then
     exit 1
   fi
 elif is available asdf && is not equal "$1" "--force"; then
-  say info "skipping asdf already installed"
+  say info "skipping: asdf already installed"
 else
   if is available asdf; then
     say info "reinstalling asdf (--force)"
     brew reinstall asdf
   else
-    say info "installing asdf via homebrew"
+    say info "installing: asdf via homebrew"
     brew install asdf
   fi
   if is not equal "$?" "0"; then
