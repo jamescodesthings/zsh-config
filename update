@@ -244,8 +244,52 @@ for script in $SCRIPTS; do
 
   # stdin is closed so that a tool which tries to prompt gets an immediate
   # end-of-file instead of hanging the run. sudo reads from the terminal
-  # itself, so it is unaffected.
-  if [[ -n "$CLI_VERBOSE" ]]; then
+  # itself, so it is unaffected. An updater with a `# update: interactive`
+  # line near its top may prompt: when update has a terminal (stdin and stderr
+  # are ttys; UPDATE_TTY_FORCE=1 stands in for that in tests) it gets the
+  # terminal as stdin and shows its output live, also kept in the child log.
+  # Without a terminal it runs as any other updater, so it can never hang.
+  INTERACTIVE=""
+  if head -n 12 "$UPDATER_DIR/$script" | grep -q '^# update: interactive'; then
+    if { [[ -t 0 && -t 2 ]] || [[ -n "$UPDATE_TTY_FORCE" ]]; }; then
+      INTERACTIVE=1
+    fi
+  fi
+
+  if [[ -n "$INTERACTIVE" ]]; then
+    if [[ -n "$SHOW_PROGRESS" ]]; then
+      progress step "$script"
+      progress pause
+    fi
+    say info "$script may ask for input"
+    strftime -s STAMP '%Y-%m-%d-%H%M%S' $EPOCHSECONDS
+    OUTPUT="$CLI_LOG_DIR/children/$STAMP-update-$script.log"
+    mkdir -p "${OUTPUT:h}"
+    [[ -z "$CLI_PLAIN" ]] && export CLICOLOR_FORCE=1 COLORTERM="${COLORTERM:-truecolor}"
+    if is available script && [[ -z "$UPDATE_TTY_NO_PTY" ]]; then
+      # A pty, not a pipe: a Swift tool such as xcodes buffers a prompt that
+      # has no trailing newline when its stdout is a pipe, and it never shows.
+      # script shows the session live and writes it to the child log, with
+      # carriage returns and escape codes that collect-log strips. What the
+      # terminal echoes as typed input (the 2FA code) lands in that log too; a
+      # used code is harmless, and xcodes reads the Apple ID password with
+      # echo off. BSD script returns the child's status; util-linux needs -e.
+      if is linux; then
+        script -q -e -c "${(q)UPDATER_DIR}/${(q)script}" "$OUTPUT" < "${UPDATE_TTY:-/dev/tty}"
+      else
+        script -q "$OUTPUT" "$UPDATER_DIR/$script" < "${UPDATE_TTY:-/dev/tty}"
+      fi
+      result=$?
+    else
+      "$UPDATER_DIR/$script" < "${UPDATE_TTY:-/dev/tty}" 2>&1 | tee "$OUTPUT"
+      result=${pipestatus[1]}
+    fi
+    [[ -n "$SHOW_PROGRESS" ]] && progress resume
+    if is not equal "$result" "0"; then
+      problem "$script failed (exit $result)"
+      fix "log open ${OUTPUT:t}" "for its output"
+    fi
+  elif [[ -n "$CLI_VERBOSE" ]]; then
     # -v: the updater's output is shown as it happens, and kept in a child log.
     say info "running updater: $script"
     strftime -s STAMP '%Y-%m-%d-%H%M%S' $EPOCHSECONDS

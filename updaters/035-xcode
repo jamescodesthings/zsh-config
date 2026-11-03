@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+# update: interactive
 # Wrapped in braces so zsh parses the whole file before running it; see ../update.
 {
 source "${0:a:h}/_stub"
@@ -28,13 +29,13 @@ function installed-releases() {
 # --latest installs the newest release and does nothing when it is already
 # here, which needs no Apple ID. A real download does need one: xcodes keeps
 # the login in the keychain, and when that session runs out it wants a 2FA
-# code, which it cannot ask for here. --no-superuser stops xcodes showing a
+# code; `update` gives this updater a terminal (see the marker above). --no-superuser stops xcodes showing a
 # password prompt of its own; the steps it skips are run below with sudo.
 say info "updating xcode"
 xcodes install --latest --no-superuser --experimental-unxip --empty-trash --no-color
 if is not equal "$?" "0"; then
   say fail "xcodes could not install the latest xcode"
-  say warn "if it asked to sign in, run this once by hand: xcodes install --latest"
+  say warn "run update xcode from a terminal (it shows the Apple sign-in and 2FA prompts), or run xcodes install --latest by hand"
   exit 1
 fi
 

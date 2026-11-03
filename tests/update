@@ -29,6 +29,24 @@ exit 0
 S
 chmod +x "$TMP/bin/sudo"
 
+# script stub: records argv, runs the command with the given stdin and
+# appends its output to the file (BSD form `script -q FILE CMD...`, util-linux
+# form `script -q -e -c CMD FILE`); the real script never runs
+cat > "$TMP/bin/script" <<'S'
+#!/bin/sh
+echo "$*" >> "$SCRIPT_LOG"
+shift
+if [ "$1" = -e ]; then
+  shift 2; cmd="$1"; file="$2"
+  sh -c "$cmd" 2>&1 | tee "$file"
+else
+  file="$1"; shift
+  "$@" 2>&1 | tee "$file"
+fi
+exit $?
+S
+chmod +x "$TMP/bin/script"
+
 # stub <name> <body>: an updater that sources _stub and runs the body
 function stub() {
   printf '#!/usr/bin/env zsh\n{\nsource "${0:a:h}/_stub"\n%s\nexit 0\n}\n' "$2" > "$R/updaters/$1"
@@ -167,6 +185,46 @@ same "lapse: sudo -v ran twice" "$(grep -cx -- '-v' "$TMP/sudo.log")" 2
 rm -f "$TMP/sudo.log" "$TMP/lapse"
 run LAPSE="$TMP/lapse" SUDO_LOG="$TMP/sudo.log" -- 060-after
 lacks "no lapse: no renewal" "$ALL" "ticket lapsed"
+
+# --- an interactive updater gets the terminal only when update has one
+stub 070-ask 'printf "Enter code: "; read -r line; echo "got $line"; [[ "$line" == 123456 ]] || exit 1'
+sed -i.bak '2i\
+# update: interactive' "$R/updaters/070-ask"; rm -f "$R/updaters/070-ask.bak"
+stub 080-plain 'read -r line; echo "plain got ${line:-nothing}"'
+print 123456 > "$TMP/tty"
+print 999999 > "$TMP/tty-secret"
+rm -rf "$LOGS/children"
+rm -f "$TMP/script.log"
+run UPDATE_TTY="$TMP/tty" UPDATE_TTY_FORCE=1 SCRIPT_LOG="$TMP/script.log" -- 010-ok 070-ask 060-after
+same "interactive: run exits 0" "$CODE" 0
+has "interactive: the prompt reaches the screen" "$OUT" "Enter code: got 123456"
+has "interactive: the user is told" "$ALL" "070-ask may ask for input"
+CHILD=("$LOGS"/children/*-update-070-ask.log(N))
+has "interactive: the child log holds the prompt" "$(< ${CHILD[1]})" "Enter code: got 123456"
+has "pty: script was called with the child log" "$(< "$TMP/script.log")" "-q ${CHILD[1]} $R/updaters/070-ask"
+OUTSTEPS="$ERR"
+[[ "$OUTSTEPS" == *"step 1/3 010-ok"*"step 2/3 070-ask"*"step 3/3 060-after"* ]] \
+  && echo "ok: interactive: progress steps run in order around it" \
+  || { echo "FAIL: interactive: step order in ${(q+)OUTSTEPS}"; failed=1; }
+rm -f "$TMP/script.log"
+run UPDATE_TTY="$TMP/tty" UPDATE_TTY_FORCE=1 UPDATE_TTY_NO_PTY=1 SCRIPT_LOG="$TMP/script.log" -- 070-ask
+same "no-pty: falls back to tee, exits 0" "$CODE" 0
+has "no-pty: prompt on screen" "$OUT" "Enter code: got 123456"
+same "no-pty: script not called" "$(cat "$TMP/script.log" 2>/dev/null)" ""
+run UPDATE_TTY="$TMP/tty" UPDATE_TTY_FORCE=1 SCRIPT_LOG="$TMP/script.log" -- -v 070-ask
+same "interactive -v: exits 0" "$CODE" 0
+has "interactive -v: gets the terminal" "$OUT" "got 123456"
+
+rm -rf "$LOGS/children"
+run UPDATE_TTY="$TMP/tty" SCRIPT_LOG="$TMP/script.log" -- 070-ask
+same "no tty: the interactive updater fails, update finishes" "$CODE" 1
+has "no tty: it got end-of-file" "$(< ${$(print -l "$LOGS"/children/*-update-070-ask.log(N.om[1]))})" "got "
+has "no tty: the problem is recorded" "$ERR" "070-ask failed (exit 1)"
+lacks "no tty: no terminal handover" "$ALL" "may ask for input"
+
+run UPDATE_TTY="$TMP/tty-secret" UPDATE_TTY_FORCE=1 -- 080-plain
+has "a plain updater never reads UPDATE_TTY" "$(< ${$(print -l "$LOGS"/children/*-update-080-plain.log(N.om[1]))})" "plain got nothing"
+lacks "a plain updater did not read the tty file" "$ALL" "999999"
 
 # --- names are checked after the self-update
 run UPDATE_SELF_UPDATED= -- nosuch

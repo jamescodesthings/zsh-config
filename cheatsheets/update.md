@@ -16,6 +16,7 @@
 - `update [-v|--verbose]` - show each updater's output as it runs instead of the step counter
 - `update [-q|--quiet]` - print only warnings, failures and the log
 - `update --plain` - no colour or animation
+- `# update: interactive` - a marker line near the top of an updater: with a terminal it gets stdin and live output for prompts (`035-xcode`, Apple sign-in and 2FA); without one it runs quietly
 
 # Logs
 
