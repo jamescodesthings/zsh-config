@@ -111,7 +111,7 @@ function install-release() {
     fi
 
     mkdir -p "$tmp/x"
-    if ! tar -xzf "$tmp/$asset" -C "$tmp/x"; then
+    if ! command tar -xzf "$tmp/$asset" -C "$tmp/x"; then
       echo "$c[error]error:$c[reset] extract of $asset failed"
       return 1
     fi
@@ -125,10 +125,10 @@ function install-release() {
       echo "$c[error]error:$c[reset] cannot create $bindir"
       return 1
     fi
-    if ! cp "$tmp/x/$binpath" "$bindir/.$name.new" \
+    if ! command cp "$tmp/x/$binpath" "$bindir/.$name.new" \
       || ! chmod 755 "$bindir/.$name.new" \
       || ! rm -f "$bindir/$name" \
-      || ! mv "$bindir/.$name.new" "$bindir/$name"; then
+      || ! command mv "$bindir/.$name.new" "$bindir/$name"; then
       rm -f "$bindir/.$name.new"
       echo "$c[error]error:$c[reset] could not place $bindir/$name"
       return 1
@@ -139,7 +139,7 @@ function install-release() {
         echo "$c[error]error:$c[reset] completion $comppath not found in $asset"
         return 1
       fi
-      if ! mkdir -p "$compdir" || ! cp "$tmp/x/$comppath" "$compdir/_$name"; then
+      if ! command mkdir -p "$compdir" || ! command cp "$tmp/x/$comppath" "$compdir/_$name"; then
         echo "$c[error]error:$c[reset] could not place the completion for $name"
         return 1
       fi

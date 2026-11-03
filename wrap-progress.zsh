@@ -1,6 +1,6 @@
 # wrap-progress.zsh
 
-if ! is available progress; then
+if ! (( $+commands[progress] )); then
   return
 fi
 

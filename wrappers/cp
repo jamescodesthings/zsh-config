@@ -2,7 +2,7 @@ function cp() {
   command cp "$@" &
   local pid=$!
   trap "kill $pid 2>/dev/null; trap - INT" INT
-  progress -mp $pid
+  command progress -mp $pid
   wait $pid
   local exit_code=$?
   trap - INT

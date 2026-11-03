@@ -111,7 +111,7 @@ function _j_move() {
     rm -f "$tmp" "$report"
     return 0
   fi
-  mv "$tmp" "$data_file" || { rm -f "$tmp" "$report"; return 1; }
+  command mv "$tmp" "$data_file" || { command rm -f "$tmp" "$report"; return 1; }
   while IFS= read -r line; do echo "${c[success]}moved${c[reset]} $line"; done < "$report"
   echo "${c[success]}moved ${count} entries${c[reset]}"
   rm -f "$report"
@@ -167,7 +167,7 @@ function j() {
       local now; now=$(date +%s)
       if awk -F'|' -v p="$abs_path" '$1==p{found=1} END{exit !found}' "$data_file" 2>/dev/null; then
         local tmp; tmp=$(mktemp)
-        awk -F'|' -v p="$abs_path" 'BEGIN{OFS="|"} $1==p{$2=$2+1} {print}' "$data_file" > "$tmp" && mv "$tmp" "$data_file"
+        awk -F'|' -v p="$abs_path" 'BEGIN{OFS="|"} $1==p{$2=$2+1} {print}' "$data_file" > "$tmp" && command mv "$tmp" "$data_file"
         echo "${c[success]}incremented:${c[reset]} $abs_path"
       else
         printf '%s|1|%s\n' "$abs_path" "$now" >> "$data_file"
@@ -217,7 +217,7 @@ function j() {
       max_rank=$(_j_max_rank)
       new_rank=$(awk -v m="$max_rank" 'BEGIN{print m+1}')
       local tmp; tmp=$(mktemp)
-      awk -F'|' -v p="$target" -v r="$new_rank" 'BEGIN{OFS="|"} $1==p{$2=r} {print}' "$data_file" > "$tmp" && mv "$tmp" "$data_file"
+      awk -F'|' -v p="$target" -v r="$new_rank" 'BEGIN{OFS="|"} $1==p{$2=r} {print}' "$data_file" > "$tmp" && command mv "$tmp" "$data_file"
       echo "${c[success]}bumped:${c[reset]} $target ${c[info]}(rank → $new_rank)${c[reset]}"
       ;;
 
@@ -261,7 +261,7 @@ function j() {
           printf '%s|%s|%s\n' "$_jp" "$rank" "$ts"
         fi
       done < "$data_file" > "$tmp2"
-      mv "$tmp2" "$data_file"
+      command mv "$tmp2" "$data_file"
       echo "${c[success]}reordered ${#valid_paths[@]} entries${c[reset]}"
       ;;
 
@@ -282,7 +282,7 @@ function j() {
         while IFS='|' read -r _jp rank ts; do
           is existing "$_jp" && printf '%s|%s|%s\n' "$_jp" "$rank" "$ts"
         done < "$data_file" > "$tmp"
-        mv "$tmp" "$data_file"
+        command mv "$tmp" "$data_file"
         echo "${c[success]}cleaned ${#stale[@]} entries${c[reset]}"
       else
         echo "${c[warn]}cancelled${c[reset]}"

@@ -17,7 +17,7 @@ function log-start() {
   local base="${CLI_LOG_DIR:-$HOME/.custom/logs}" safe stamp
   safe="${name//[^A-Za-z0-9._-]##/-}"
   strftime -s stamp '%Y-%m-%d-%H%M%S' $EPOCHSECONDS
-  mkdir -p "$base/commands" "$base/children" || return 1
+  command mkdir -p "$base/commands" "$base/children" || return 1
 
   typeset -gx LOG_COMMAND="$name"
   typeset -gx LOG_FILE="$base/commands/$stamp-$safe.log"
@@ -28,7 +28,7 @@ function log-start() {
   local -a files
   for dir in commands children; do
     files=("$base/$dir"/*.log(N))
-    (( $#files > 50 )) && rm -f -- "${(@)files[1,-51]}"
+    (( $#files > 50 )) && command rm -f -- "${(@)files[1,-51]}"
   done
   return 0
 }

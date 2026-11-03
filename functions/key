@@ -188,11 +188,11 @@ function _key_conf() {
 
 # _key_dir_ready dir: makes the store, 700.
 function _key_dir_ready() {
-  [[ -d "$1" ]] || { mkdir -p "${1:h}" && mkdir -m 700 "$1"; } || {
+  [[ -d "$1" ]] || { command mkdir -p "${1:h}" && command mkdir -m 700 "$1"; } || {
     _key_say fail "key: could not make $1"
     return 1
   }
-  chmod 700 "$1"
+  command chmod 700 "$1"
 }
 
 # _key_save_conf: writes the caller's op and var to its cfile when options set them.
@@ -208,8 +208,8 @@ function _key_atomic_write() {
     _key_say fail "key: could not write ${file:t}"
     return 1
   }
-  print -r -- "$2" > "$tmp" && chmod 600 "$tmp" && mv -f "$tmp" "$file" || {
-    rm -f "$tmp"
+  print -r -- "$2" > "$tmp" && command chmod 600 "$tmp" && command mv -f "$tmp" "$file" || {
+    command rm -f "$tmp"
     _key_say fail "key: could not write ${file:t}"
     return 1
   }
@@ -223,11 +223,11 @@ function _key_publish_new() {
     _key_say fail "key: could not write ${file:t}"
     return 1
   }
-  if print -r -- "$2" > "$tmp" && chmod 600 "$tmp" && ln "$tmp" "$file" 2> /dev/null; then
-    rm -f "$tmp"
+  if print -r -- "$2" > "$tmp" && command chmod 600 "$tmp" && command ln "$tmp" "$file" 2> /dev/null; then
+    command rm -f "$tmp"
     return 0
   fi
-  rm -f "$tmp"
+  command rm -f "$tmp"
   _key_say fail "key: ${file:t} already exists or could not be written"
   return 1
 }
@@ -237,7 +237,7 @@ function _key_publish_new() {
 function _key_backup() {
   local n=1
   while [[ -e "$1.$n" ]]; do (( n++ )); done
-  ( umask 077; cp -p "$1" "$1.$n" ) && chmod 600 "$1.$n" || {
+  ( umask 077; command cp -p "$1" "$1.$n" ) && command chmod 600 "$1.$n" || {
     _key_say fail "key: could not back up ${1:t}"
     return 1
   }
@@ -276,8 +276,8 @@ function _key_write_to() {
       done < "$file"
     fi
     (( done )) || print -r -- "$v=$k"
-  } > "$tmp" && chmod 600 "$tmp" && mv -f "$tmp" "$file" || {
-    rm -f "$tmp"
+  } > "$tmp" && command chmod 600 "$tmp" && command mv -f "$tmp" "$file" || {
+    command rm -f "$tmp"
     _key_say fail "key: could not write $file"
     return 1
   }
@@ -509,7 +509,7 @@ function _key_push() {
       "$bin" item create --template="$tmp" > /dev/null || rc=1
     fi
   } always {
-    rm -f "$tmp"
+    command rm -f "$tmp"
   }
   if (( rc )); then
     _key_say fail "key: op could not $( (( exists )) && print update || print create ) the item $ref"

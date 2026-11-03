@@ -166,12 +166,12 @@ function _hist_move() {
     if [[ "$verb" == merge ]]; then
       tmp=$(mktemp "${dest}.XXXXXX") || { failed=1; continue; }
       if _hist_merge_files "$dest" "$f" > "$tmp"; then
-        mv "$tmp" "$dest" && rm -f "$f"
+        command mv "$tmp" "$dest" && command rm -f "$f"
       else
         rm -f "$tmp"; failed=1; continue
       fi
     else
-      mv "$f" "$dest" || { failed=1; continue; }
+      command mv "$f" "$dest" || { failed=1; continue; }
     fi
     echo "${c[success]}${verb}d${c[reset]} ${old}${suffix%/$hist_file} -> ${new}${suffix%/$hist_file}"
     (( moved++ ))

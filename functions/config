@@ -122,20 +122,20 @@ function _config_value() {
 function _config_write() {
   local dir="$1" file="$2" tmp
   shift 2
-  mkdir -p "$dir" || return 1
+  command mkdir -p "$dir" || return 1
   tmp="$(mktemp "$file.XXXXXX")" || return 1
   if [[ -s "$file" ]] && ! jq empty "$file" > /dev/null 2>&1; then
-    rm -f "$tmp"
+    command rm -f "$tmp"
     say fail "${file:t} is not valid JSON; fix it with: config ${file:t:r} edit"
     return 1
   fi
   local -a src=(-n)
   [[ -s "$file" ]] && src=("$file")
   if jq "$@" "${src[@]}" > "$tmp" 2> /dev/null; then
-    chmod 0644 "$tmp"
-    mv -f "$tmp" "$file"
+    command chmod 0644 "$tmp"
+    command mv -f "$tmp" "$file"
   else
-    rm -f "$tmp"
+    command rm -f "$tmp"
     say fail "could not write ${file:t}"
     return 1
   fi
@@ -179,7 +179,7 @@ function _config_list() {
 
 function _config_edit() {
   local dir="$1" file="$2"
-  mkdir -p "$dir" || return 1
+  command mkdir -p "$dir" || return 1
   [[ -e "$file" ]] || print -r -- '{}' > "$file"
   ${=EDITOR:-vi} "$file"
   if ! jq empty "$file" > /dev/null 2>&1; then

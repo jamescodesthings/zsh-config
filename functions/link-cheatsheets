@@ -28,7 +28,7 @@ function link-cheatsheets() {
     return 1
   fi
 
-  if ! mkdir -p "$CHEATSHEET_DIR"; then
+  if ! command mkdir -p "$CHEATSHEET_DIR"; then
     echo "$c[error]error:$c[reset] cannot create $CHEATSHEET_DIR"
     return 1
   fi
@@ -40,7 +40,7 @@ function link-cheatsheets() {
   for l in "$CHEATSHEET_DIR"/*(N@); do
     target="$(readlink "$l")"
     if [[ "$target" == "$dir"/* && ! -e "$l" ]]; then
-      rm "$l"
+      command rm "$l"
     fi
   done
 
@@ -52,7 +52,7 @@ function link-cheatsheets() {
     elif [[ ! -e "$dest" ]]; then
       # no dest, or a dangling link
       echo "$c[info]linking:$c[reset] $src → $dest"
-      if ln -sfn "$src" "$dest"; then
+      if command ln -sfn "$src" "$dest"; then
         linked+=1
       else
         echo "$c[warn]warning:$c[reset] could not link $name"

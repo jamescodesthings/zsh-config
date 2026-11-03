@@ -1,0 +1,60 @@
+#!/usr/bin/env zsh
+# Checks that the cp/mv wrappers never catch the CLI helpers and call the real
+# progress binary, not the helper function. Run: tests/wrappers-safe.
+# Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+mkdir -p "$TMP/bin" "$TMP/zdot" "$TMP/keys" "$TMP/empty"
+cat > "$TMP/bin/progress" <<SH
+#!/bin/sh
+echo called >> "$TMP/progress.calls"
+SH
+chmod +x "$TMP/bin/progress"
+: > "$TMP/target"
+
+# run <name> <path> <code>: sets OUT, ERR, CODE
+function run() {
+  rm -f "$TMP/progress.calls"
+  OUT="$(env -u COLORTERM -u CLICOLOR_FORCE -u AGENT_FORGE_HUB_WORKER -u NO_COLOR \
+    HOME="$TMP" ZDOTDIR="$TMP/zdot" PATH="$2" KEY_DIR="$TMP/keys" TMP="$TMP" \
+    CUSTOM_DIR="$REPO_DIR" REPO_DIR="$REPO_DIR" \
+    /bin/zsh -f -c '
+      fpath=("$REPO_DIR/functions" "$REPO_DIR/wrappers" $fpath)
+      autoload -Uz is mv cp key
+      '"$3"'
+    ' < /dev/null 2> "$TMP/err")"
+  CODE=$?
+  ERR="$(< "$TMP/err")"
+}
+
+function check() { # <label> <status of the condition, 0 = ok>
+  if (( $2 )); then print "FAIL: $1"; failed=1; else print "ok: $1"; fi
+}
+
+# 1. helpers bypass the wrappers
+run helpers "$TMP/bin:/usr/bin:/bin" '
+  key create x && key cycle x -y --to "$TMP/target"'
+[[ $ERR != *"progress:"* ]]; check "helpers: no helper progress error" $?
+[[ $ERR != *'['[0-9]']'* && $OUT != *'['[0-9]']'* ]]; check "helpers: no job lines" $?
+[[ ! -e "$TMP/progress.calls" ]]; check "helpers: fake progress not called" $?
+check "helpers: commands succeeded" $CODE
+
+# 2. the wrapper itself runs the binary
+: > "$TMP/a"
+run wrapper "$TMP/bin:/usr/bin:/bin" 'mv "$TMP/a" "$TMP/b"'
+[[ -e "$TMP/b" ]]; check "wrapper: moved the file" $?
+[[ -e "$TMP/progress.calls" ]]; check "wrapper: fake progress called" $?
+[[ $ERR != *"progress:"* ]]; check "wrapper: no helper progress error" $?
+
+# 3. no progress binary: wrap-progress.zsh defines nothing
+run gate "/usr/bin:/bin" '
+  unfunction mv cp
+  source "$REPO_DIR/wrap-progress.zsh"
+  (( $+functions[mv] )) && print mv-defined'
+[[ $OUT != *mv-defined* ]]; check "gate: no mv function without the binary" $?
+
+exit $failed
