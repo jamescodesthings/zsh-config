@@ -229,4 +229,47 @@ same "script creates a key" "$CODE|$(wc -c < $KD/ok1.key | tr -d ' ')" "0|45"
 OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin ZDOTDIR="$TMP/zd" zsh -f -c "fpath=($REPO_DIR/functions \$fpath); autoload -Uz key; key create bad/name; print alive" 2>/dev/null)"
 same "function call leaves the shell alive" "$OUT" "alive"
 
+# --- fix round 1
+fresh
+OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin ZDOTDIR="$TMP/zd" CLI_PLAIN=1 zsh -f "$REPO_DIR/functions/key" --help 2>&1)"; CODE=$?
+same "script-mode --help exits 0" "$CODE|${OUT:+text}" "0|text"
+
+fresh
+run "key create demo"; K1="$(< $KD/demo.key)"
+print -r -- 'X=1' > "$TMP/work/real"; ln -s real "$TMP/work/link"
+run "key cycle demo -y --to $TMP/work/link --var V"
+K2="$(< $KD/demo.key)"
+same "symlinked --to stays a symlink, target updated" "$([[ -L $TMP/work/link ]] && echo link)|$(< $TMP/work/real)" $'link|X=1\nV='"$K2"
+
+fresh
+run "key create demo"; K1="$(< $KD/demo.key)"
+run "key cycle demo -y --to $TMP/nodir/env"
+same "cycle with bad --to leaves the store key" "$CODE|$(< $KD/demo.key)|$(ls $KD | tr '\n' ' ')" "1|$K1|demo.key "
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo --to $TMP/nodir/env"
+same "pull with bad --to leaves the store key" "$CODE|$(< $KD/demo.key)" "1|$K1"
+chmod 500 "$TMP/work"
+run "key cycle demo -y --to $TMP/work/new"
+same "unwritable --to folder refused before the store changes" "$CODE|$(< $KD/demo.key)" "1|$K1"
+chmod 700 "$TMP/work"
+
+fresh
+run "key create demo"; K="$(< $KD/demo.key)"
+rm -f $KD/demo.key
+run "key create demo & key create demo; wait"
+same "create never clobbers: one key file" "$(ls $KD | grep -c '^demo.key$')" "1"
+mkdir -p $KD; print -r -- keep > $KD/demo.key
+run "key list >/dev/null; _key_publish_new $KD/demo.key other"
+same "publish_new refuses an existing file" "$CODE|$(< $KD/demo.key)|$(ls -A $KD | tr '\n' ' ')" "1|keep|demo.key "
+
+fresh
+run "key create demo"; K="$(< $KD/demo.key)"
+print -r -- 'a"b\\c' > "$TMP/qk"; cp "$TMP/qk" $KD/demo.key
+run "key sync demo --push -y"
+same "quote and backslash in the key escaped in the template" "$(jq -r '.title' $TMP/template.cap 2>/dev/null)|$(jq -r '.fields[0].value' $TMP/template.cap 2>/dev/null)" 'demo-key|a"b\\c'
+
+fresh
+run "key create demo"; K="$(< $KD/demo.key)"
+run "set -x; key cycle demo -y --to $TMP/work/e; set +x"
+same "set -x in the caller never traces the key" "$([[ $ERR == *$(< $KD/demo.key)* ]] && echo leak)" ""
+
 exit $failed

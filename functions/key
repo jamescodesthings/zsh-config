@@ -23,13 +23,15 @@
 # empty ZDOTDIR.
 if [[ "$0" == */* ]]; then
   fpath=("${0:a:h}" $fpath)
-  autoload -Uz col cli-init cli-icon say cheat-help
+  autoload -Uz col cli-init cli-icon say cheat-help cheat cheat-render is
+  [[ -n "$CHEATSHEET_DIR" ]] || export CHEATSHEET_DIR="${0:a:h:h}/cheatsheets"
   [[ -n "$CUSTOM_DIR" ]] || export CUSTOM_DIR="${0:a:h:h}"
 fi
 
 function key() {
   cheat-help key "$@" && return 0
   emulate -L zsh
+  unsetopt xtrace verbose  # a caller's set -x must never trace a key
   setopt extended_glob
   cli-init "$@"
   set -- "${@:#--plain}"
@@ -195,6 +197,23 @@ function _key_atomic_write() {
   }
 }
 
+# _key_publish_new file text: writes a new file (600) that must not exist yet:
+# temp file, then ln (which fails if the name is taken), then drop the temp.
+function _key_publish_new() {
+  local file="$1" tmp
+  tmp="$(umask 077; mktemp "${file:h}/.${file:t}.XXXXXX")" || {
+    _key_say fail "key: could not write ${file:t}"
+    return 1
+  }
+  if print -r -- "$2" > "$tmp" && chmod 600 "$tmp" && ln "$tmp" "$file" 2> /dev/null; then
+    rm -f "$tmp"
+    return 0
+  fi
+  rm -f "$tmp"
+  _key_say fail "key: ${file:t} already exists or could not be written"
+  return 1
+}
+
 # _key_backup file: copies it to file.<n>, n the next free integer from 1,
 # mode 600; sets REPLY to the copy.
 function _key_backup() {
@@ -213,7 +232,7 @@ function _key_backup() {
 # 600. The file is backed up first when it exists and always is 1 or its var
 # line holds another value.
 function _key_write_to() {
-  local file="$1" v="$2" k="$3" always="$4" line cur="" has=0 tmp done=0
+  local file="${1:A}" v="$2" k="$3" always="$4" line cur="" has=0 tmp done=0
   if [[ -f "$file" ]]; then
     while IFS= read -r line || [[ -n "$line" ]]; do
       if [[ "$line" == "$v="* ]]; then has=1; cur="${line#$v=}"; fi
@@ -249,8 +268,23 @@ function _key_write_to() {
 
 # _key_to_ok file: fails when file's folder does not exist.
 function _key_to_ok() {
-  [[ -z "$1" || -d "${1:a:h}" ]] && return 0
-  _key_say fail "key: ${1:a:h} does not exist, so $1 cannot be written"
+  [[ -z "$1" ]] && return 0
+  local real="${1:A}"
+  if [[ ! -d "${real:h}" ]]; then
+    _key_say fail "key: ${real:h} does not exist, so $1 cannot be written"
+    return 1
+  fi
+  if [[ -e "$real" && ! -w "$real" ]] || [[ ! -e "$real" && ! -w "${real:h}" ]]; then
+    _key_say fail "key: $1 cannot be written"
+    return 1
+  fi
+}
+
+# _key_to_write file var key always: _key_write_to, with the repair hint when
+# it fails after the store already holds the new key.
+function _key_to_write() {
+  _key_write_to "$@" && return 0
+  _key_say fail "key: the store holds the new $name key but $1 was not written; repair it with: key sync $name -l --to $1"
   return 1
 }
 
@@ -279,11 +313,11 @@ function _key_create() {
     _key_say fail "key: openssl could not make a key"
     return 1
   fi
-  _key_atomic_write "$kfile" "$k" || return 1
   _key_save_conf || return 1
+  _key_publish_new "$kfile" "$k" || return 1
   _key_say ok "made key $name"
   [[ -n "$_KEY_VERBOSE" ]] && _key_say info "stored at $kfile"
-  [[ -n "$to" ]] && { _key_write_to "$to" "$var" "$k" "" || return 1; }
+  [[ -n "$to" ]] && { _key_to_write "$to" "$var" "$k" "" || return 1; }
   return 0
 }
 
@@ -314,12 +348,12 @@ function _key_cycle() {
     _key_say fail "key: openssl could not make a key"
     return 1
   fi
+  _key_save_conf || return 1
   _key_backup "$kfile" || return 1
   _key_say info "kept the old key as ${REPLY:t}"
   _key_atomic_write "$kfile" "$k" || return 1
-  _key_save_conf || return 1
   _key_say ok "cycled key $name"
-  [[ -n "$to" ]] && { _key_write_to "$to" "$var" "$k" 1 || return 1; }
+  [[ -n "$to" ]] && { _key_to_write "$to" "$var" "$k" 1 || return 1; }
   return 0
 }
 
@@ -375,6 +409,7 @@ function _key_sync() {
     _key_say fail "key: op gave no key for $op"
     return 1
   fi
+  _key_save_conf || return 1
   if [[ -f "$kfile" && "$(< "$kfile")" == "$k" ]]; then
     _key_say info "$name is already current"
   else
@@ -385,8 +420,7 @@ function _key_sync() {
     _key_atomic_write "$kfile" "$k" || return 1
     _key_say ok "pulled key $name from 1Password"
   fi
-  _key_save_conf || return 1
-  [[ -n "$to" ]] && { _key_write_to "$to" "$var" "$k" "" || return 1; }
+  [[ -n "$to" ]] && { _key_to_write "$to" "$var" "$k" "" || return 1; }
   return 0
 }
 
@@ -397,8 +431,8 @@ function _key_push() {
   local rest="${ref#op://}" vault title field
   vault="${rest%%/*}"; rest="${rest#*/}"
   title="${rest%%/*}"; field="${rest#*/}"
-  vault="$(_key_json "$vault")"; title="$(_key_json "$title")"; field="$(_key_json "$field")"
-  k="$(< "$kfile")"
+  local jvault="$(_key_json "$vault")" jtitle="$(_key_json "$title")" jfield="$(_key_json "$field")"
+  k="$(_key_json "$(< "$kfile")")"
   tmp="$(umask 077; mktemp "$dir/.push.XXXXXX")" || {
     _key_say fail "key: could not make a template file"
     return 1
@@ -407,10 +441,10 @@ function _key_push() {
   {
     "$bin" item get --vault "${vault}" "${title}" > /dev/null 2>&1 && exists=1
     if (( exists )); then
-      print -r -- "{\"fields\":[{\"id\":\"$field\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
+      print -r -- "{\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
       "$bin" item edit --vault "$vault" "$title" --template="$tmp" > /dev/null || rc=1
     else
-      print -r -- "{\"title\":\"$title\",\"category\":\"PASSWORD\",\"vault\":{\"name\":\"$vault\"},\"fields\":[{\"id\":\"$field\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
+      print -r -- "{\"title\":\"$jtitle\",\"category\":\"PASSWORD\",\"vault\":{\"name\":\"$jvault\"},\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
       "$bin" item create --template="$tmp" > /dev/null || rc=1
     fi
   } always {
