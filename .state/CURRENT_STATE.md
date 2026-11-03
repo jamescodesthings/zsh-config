@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-11-03 11:36 GMT
-- **Current Task Status:** Hub CLI overhaul, zsh-config part, done (0426901..5b8d15c): `key` (per-project named keys, 1Password sync, import), wipcrypt owned here with `--key`, every CLI helper loads its own dependencies, progress wrappers call the binary, 950-projects runs `hub project update`. Next: the CLI and cheat-sheet sweep. Earlier: CLI helper library done (agent-forge docs/cli-spec/helpers-interface.md): palette and col, say and problems, cheat-render replacing tlrc in cheat, logs, pick, progress, run-quiet, config, the Nerd Font step, and every sheet on the new cheatsheet-test rules (See also last, ` - ` rows, 35 lines). Earlier: cheat v4.
+- **Date/Time Stamp:** 2026-11-03 12:19 GMT
+- **Current Task Status:** Hub CLI overhaul, zsh-config part, done (0426901..5b8d15c): `key` (per-project named keys, 1Password sync, import), wipcrypt owned here with `--key`, every CLI helper loads its own dependencies, progress wrappers call the binary, 950-projects runs `hub project update`. Then the CLI and cheat-sheet sweep, done (f749f35..3c4bd58): every tool on cli-init, say and problems, update quiet with a step counter and logs in ~/.custom/logs/update, $c[...] and zpm-zsh-colors retired. Earlier: CLI helper library done (agent-forge docs/cli-spec/helpers-interface.md): palette and col, say and problems, cheat-render replacing tlrc in cheat, logs, pick, progress, run-quiet, config, the Nerd Font step, and every sheet on the new cheatsheet-test rules (See also last, ` - ` rows, 35 lines). Earlier: cheat v4.
 
 ## Milestone & Phase Progress
 
@@ -71,6 +71,7 @@
 
 - docs/superpowers/specs/2026-10-07-{shell-core,debian-tools,asdf-setup,terminal}-design.md (local only)
 
+- [2026-11-03-cli-sweep-design.md](../docs/superpowers/specs/2026-11-03-cli-sweep-design.md) and [plan](../docs/superpowers/plans/2026-11-03-cli-sweep.md) (local only)
 - [2026-11-03-key-and-wipcrypt-design.md](../docs/superpowers/specs/2026-11-03-key-and-wipcrypt-design.md) and [plan](../docs/superpowers/plans/2026-11-03-key-and-wipcrypt.md) (local only)
 - [2026-10-06-cheatsheet-dir-design.md](../docs/superpowers/specs/2026-10-06-cheatsheet-dir-design.md) (local only)
 - [2026-10-06-cheatsheet-dir.md](../docs/superpowers/plans/2026-10-06-cheatsheet-dir.md) (local only)
@@ -83,7 +84,7 @@
 
 ## Next Steps
 
-- Start the CLI and cheat-sheet sweep: brief at ~/.local/share/agent-forge/hub/.state/briefs/2026-11-03-sweep.md, zsh-config section of agent-forge docs/cli-spec/sweep-plan.md.
+- James: after pulling, `exec zsh`; the first real `update` run is the check of the new quiet runner (sudo prompt, step counter, `update --errors`).
 - With the hub (not here): one manual push of a throwaway key (`key create zz-test`, `key sync zz-test --push` twice, `key sync zz-test`) to confirm `op item edit --template` edits only the field and `item create --vault` with a template works; tests use a stub op.
 
 - Other machines: after pulling, open a new shell and run each project's installer, or `update`, to fill `~/cheatsheets`. `link-cheatsheets` refuses to link while an old in-repo `CHEATSHEET_DIR` is in the environment.
@@ -100,6 +101,15 @@
 - Hub v3: no zsh-config file names the old hub commands; `.hub/` ignored; `hub oh` calls zsh-config's `oh` unchanged.
 - CHEATSHEET_DIR shim in .zshenv: kept until every machine has pulled. Alternative: drop it now, which breaks `link-cheatsheets` on a machine whose shells still carry the old value.
 - wipcrypt and `key`: zsh-config owns them and the key store, so any project can use them. Alternative: leave wipcrypt in agent-forge, which leaves other projects and machines without it.
+
+## Decisions 2026-11-03 (CLI sweep)
+
+- `-q` and `-v` live in cli-init (CLI_QUIET, CLI_VERBOSE); say ok/info are silent under CLI_QUIET. Tools declare the three CLI_* variables local so a redirected call cannot leak plain mode into the shell. Alternative: each tool parsing the flags.
+- Tiny shortcuts (gcod, gcom, dsp, git-branch, get-hostname, zshenv) get help, a sheet and a completion, not the full flag set. hist and dsp pass only --plain to cli-init, since -q and -v mean something else there.
+- update runs updaters through run-quiet with progress after sudo, `-v` keeps live output, the error log is ~/.custom/logs/update, an updater reaches it with say warn or say fail; the spinner pauses for a lapsed sudo ticket. Unknown updater names exit 2.
+- install.zsh keeps live output (installers may prompt) and ends with a problems block.
+- zpm-zsh-colors and $c[...] are gone; nothing here or in other repos used them. test-color-names and test-color-codes went with them.
+- key path NAME exits 1 when the key is missing or empty.
 
 ## Decisions 2026-11-03 (key and wipcrypt)
 
@@ -137,5 +147,6 @@
 - 404c7fb: agent-forge's six cheat-render/cheatsheet-test gaps (subcommands known from sheets, inline code without backticks, column width within the cap, `var` role, standard headings checked, multi-command rows).
 - 8c9399c: CLICOLOR_FORCE keeps colour without a tty in cli-init and cheat; --plain and NO_COLOR still win.
 - 0426901..5b8d15c (2026-11-03): key, wipcrypt ownership, helper autoloads, progress wrappers, 950-projects; see Decisions 2026-11-03.
+- f749f35..3c4bd58 (2026-11-03): the CLI sweep; see Decisions 2026-11-03 (CLI sweep).
 - Parked minors: an `export` line with two spaces or a tab is not matched by key; the key-users dedup is exact-string (`/a/b` and `/a/b/` are two roots).
 
