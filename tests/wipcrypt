@@ -1,0 +1,532 @@
+#!/usr/bin/env zsh
+# Tests functions/wipcrypt: the engine, the --key store option, cycle-key with
+# and without --key, and the autoloaded-function guard. Run: tests/wipcrypt.
+# Every fixture is a temp root with its own pairs file and throwaway keys;
+# KEY_DIR points into a temp dir, so the real store, .env files and 1Password
+# are never read. Fixture names are meaningless (x for the type, y for the item).
+# Exit 1 on any failure.
+REPO_DIR="${0:a:h:h}"
+WIPCRYPT="$REPO_DIR/functions/wipcrypt"
+KEYCMD="$REPO_DIR/functions/key"
+pass=0 fail=0
+
+# An empty ZDOTDIR keeps ~/.zshenv out of every child shell; the overrides the
+# tool honours are cleared so a caller's environment cannot point at real keys.
+ZDOTDIR=$(mktemp -d)
+TMPS=("$ZDOTDIR")
+export ZDOTDIR CLI_PLAIN=1
+trap 'rm -rf -- "${TMPS[@]}"' EXIT
+unset AGENT_FORGE_ENV_FILE AGENT_FORGE_WIP_PAIRS AGENT_FORGE_KEY_USERS \
+  AGENT_FORGE_ROOT AGENT_FORGE_CONTENT_ROOT AI_CONFIG_DIR KEY_DIR WIPCRYPT_KEY_CMD
+
+check() {
+  local name="$1" expected="$2" actual="$3"
+  if [[ "$actual" == "$expected" ]]; then
+    print -r -- "ok   $name"; pass=$((pass + 1))
+  else
+    print -r -- "FAIL $name"
+    print -r -- "       expected: [$expected]"
+    print -r -- "       actual:   [$actual]"
+    fail=$((fail + 1))
+  fi
+}
+
+# run <args...>: wipcrypt as a script, stdin closed, bounded. Sets OUT, CODE.
+run() {
+  OUT="$(perl -e 'alarm 120; exec @ARGV' zsh "$WIPCRYPT" "$@" 2>&1 < /dev/null)"
+  CODE=$?
+}
+
+mkt() { local d; d=$(mktemp -d); TMPS+=("$d"); print -r -- "$d" }
+newkey() { openssl rand -base64 32 }
+key_of() { grep '^SKILLS_ENCRYPTION_KEY=' "$1" | cut -d= -f2- }
+ciphers_of() { print -l "$1"/.claude/x-encrypted/**/*(N.) | grep -c . }
+decrypts_with() {
+  openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:"$1" -in "$2" < /dev/null 2>/dev/null
+}
+
+# A project-shaped root: .claude/wip-pairs naming one pair and one plaintext
+# item. No .env: tests that need one write it.
+new_root() {
+  local t; t=$(mkt)
+  mkdir -p "$t/.claude/x-wip" "$t/.claude/x-encrypted"
+  print -r -- ".claude/x-wip:.claude/x-encrypted" > "$t/.claude/wip-pairs"
+  print -r -- "body of y" > "$t/.claude/x-wip/y.md"
+  print -r -- "$t"
+}
+
+# ---------------------------------------------------------------------------
+# --key NAME
+# ---------------------------------------------------------------------------
+KD=$(mkt); export KEY_DIR="$KD"
+t=$(new_root)
+print -r -- "$(newkey)" > "$KD/n.key"; chmod 600 "$KD/n.key"
+
+run encrypt --root "$t" --key n
+check "encrypt --key n exits zero with no env file" "0" "$CODE"
+check "encrypt --key n writes one ciphertext" "1" "$(ciphers_of $t)"
+check "no env file was created" "no" "$([[ -e $t/.env ]] && print yes || print no)"
+f=$(print -r -- "$t"/.claude/x-encrypted/**/*(N.[1]))
+check "ciphertext opens with the store key" "body of y" "$(decrypts_with "$(<$KD/n.key)" "$f" | tail -n 1)"
+
+rm -f "$t/.claude/x-wip/y.md"
+run decrypt --root "$t" --key n
+check "decrypt --key n exits zero" "0" "$CODE"
+check "decrypt --key n restores the file" "body of y" "$(<$t/.claude/x-wip/y.md)"
+run status --root "$t" --key n
+check "status --key n reports in sync" "x-wip: in sync" "$OUT"
+
+t2=$(new_root)
+run encrypt --root "$t2" --key missing
+check "--key missing exits 1" "1" "$CODE"
+check "--key missing names key sync" "yes" "$([[ $OUT == *"key sync missing"* ]] && print yes || print no)"
+check "--key missing writes nothing" "0" "$(ciphers_of $t2)"
+run encrypt --root "$t2" --key 'Bad/Name'
+check "--key with a bad name exits 2" "2" "$CODE"
+check "--key bad name writes nothing" "0" "$(ciphers_of $t2)"
+run encrypt --root "$t2" --key
+check "--key with no value exits 2" "2" "$CODE"
+check "key is read without source: no literal source line" "0" \
+  "$(grep -c '^[[:space:]]*source ' "$WIPCRYPT")"
+
+# ---------------------------------------------------------------------------
+# cycle-key --key
+# ---------------------------------------------------------------------------
+KD=$(mkt); export KEY_DIR="$KD"
+t=$(new_root); u=$(new_root)
+print -r -- "second item" > "$u/.claude/x-wip/z.md"
+old=$(newkey)
+print -r -- "$old" > "$KD/n.key"; chmod 600 "$KD/n.key"
+print -r -- "# the other tree this key protects" > "$KD/n.users"
+print -r -- "$u" >> "$KD/n.users"
+run encrypt --root "$t" --key n
+run encrypt --root "$u" --key n
+
+run cycle-key --root "$t" --key n
+check "cycle-key --key n exits zero" "0" "$CODE"
+new=$(<"$KD/n.key")
+check "the store holds a new key" "differs" "$([[ $new != $old ]] && print differs || print same)"
+check "n.key.1 holds the old key" "$old" "$(<"$KD/n.key.1")"
+check "no env file was created" "no" "$([[ -e $t/.env ]] && print yes || print no)"
+f=$(print -r -- "$t"/.claude/x-encrypted/**/*(N.[1]))
+check "own tree re-encrypted under the new key" "body of y" "$(decrypts_with "$new" "$f" | tail -n 1)"
+g=$(print -l "$u"/.claude/x-encrypted/**/*(N.) | wc -l | tr -d ' ')
+check "registered tree has both items" "2" "$g"
+ok=yes
+for f in "$u"/.claude/x-encrypted/**/*(N.); do
+  [[ -n "$(decrypts_with "$new" "$f")" ]] || ok=no
+done
+check "registered tree re-encrypted under the new key" "yes" "$ok"
+run status --root "$t" --key n
+check "status --key n after rotation is in sync" "x-wip: in sync" "$OUT"
+
+# --env as well: the env file gets the new key through key cycle --to.
+KD=$(mkt); export KEY_DIR="$KD"
+t=$(new_root)
+old=$(newkey)
+print -r -- "$old" > "$KD/n.key"; chmod 600 "$KD/n.key"
+print -r -- "OTHER=keep" > "$t/.env"
+print -r -- "SKILLS_ENCRYPTION_KEY=$old" >> "$t/.env"
+run encrypt --root "$t" --key n
+run cycle-key --root "$t" --key n --env "$t/.env"
+check "cycle-key --key n --env exits zero" "0" "$CODE"
+new=$(<"$KD/n.key")
+check "the env file holds the new key" "$new" "$(key_of "$t/.env")"
+check "the env file keeps its other lines" "OTHER=keep" "$(grep '^OTHER=' "$t/.env")"
+check "n.key.1 holds the old key" "$old" "$(<"$KD/n.key.1")"
+f=$(print -r -- "$t"/.claude/x-encrypted/**/*(N.[1]))
+check "tree re-encrypted under the new key" "body of y" "$(decrypts_with "$new" "$f" | tail -n 1)"
+
+# An env file in another directory is no obstacle with --key (no ownership guard).
+t=$(new_root); e=$(mkt)
+print -r -- "SKILLS_ENCRYPTION_KEY=$(<$KD/n.key)" > "$e/.env"
+run encrypt --root "$t" --key n
+run cycle-key --root "$t" --key n --env "$e/.env"
+check "--env outside the root is accepted with --key" "0" "$CODE"
+check "that env file holds the new key" "$(<$KD/n.key)" "$(key_of "$e/.env")"
+
+# A stale store key aborts before anything is touched.
+t=$(new_root)
+print -r -- "$(newkey)" > "$KD/m.key"; chmod 600 "$KD/m.key"
+run encrypt --root "$t" --key m
+before=$(<"$KD/m.key")
+print -r -- "$(newkey)" > "$KD/m.key"
+run cycle-key --root "$t" --key m
+check "stale store key refuses to rotate" "1" "$CODE"
+check "stale store key is left alone" "no" "$([[ -e $KD/m.key.1 ]] && print yes || print no)"
+
+# A registry entry that is gone aborts before key cycle runs.
+t=$(new_root)
+print -r -- "$(newkey)" > "$KD/p.key"; chmod 600 "$KD/p.key"
+print -r -- "/nonexistent/elsewhere" > "$KD/p.users"
+run encrypt --root "$t" --key p
+before=$(<"$KD/p.key")
+run cycle-key --root "$t" --key p
+check "missing registered root aborts" "1" "$CODE"
+check "the key is unchanged" "$before" "$(<"$KD/p.key")"
+
+# AGENT_FORGE_KEY_USERS still overrides the store registry.
+t=$(new_root)
+print -r -- "$(newkey)" > "$KD/q.key"; chmod 600 "$KD/q.key"
+print -r -- "/nonexistent/elsewhere" > "$KD/q.users"
+print -r -- "# none" > "$KD/q.override"
+run encrypt --root "$t" --key q
+AGENT_FORGE_KEY_USERS="$KD/q.override" run cycle-key --root "$t" --key q
+check "AGENT_FORGE_KEY_USERS overrides n.users" "0" "$CODE"
+
+# WIPCRYPT_KEY_CMD names the key command; a failing one aborts, hint names key path.
+t=$(new_root)
+print -r -- "$(newkey)" > "$KD/r.key"; chmod 600 "$KD/r.key"
+run encrypt --root "$t" --key r
+printf '#!/bin/sh\nexit 1\n' > "$KD/failkey"
+WIPCRYPT_KEY_CMD="$KD/failkey" run cycle-key --root "$t" --key r
+check "failing key command aborts" "1" "$CODE"
+check "abort hint names key path r -p" "yes" "$([[ $OUT == *"key path r -p"* ]] && print yes || print no)"
+
+# ---------------------------------------------------------------------------
+# Called as an autoloaded function, exit never reaches the caller's shell.
+# ---------------------------------------------------------------------------
+fd=$(mkt); cp "$WIPCRYPT" "$fd/wipcrypt"
+out="$(perl -e 'alarm 120; exec @ARGV' zsh -f -c '
+  fpath=("$1" $fpath); autoload -Uz wipcrypt
+  wipcrypt bogus; print "rc=$?"; print alive' _ "$fd" 2>&1 < /dev/null)"
+check "function call: unknown subcommand reports usage" "yes" "$([[ $out == *"unknown subcommand: bogus"* ]] && print yes || print no)"
+check "function call: returns 2 and the shell stays alive" "yes" "$([[ $out == *"rc=2"*alive ]] && print yes || print no)"
+
+
+# ---------------------------------------------------------------------------
+# Ported from agent-forge's test-wipcrypt: the engine without --key. These
+# use agent-forge's layout (zsh/lib/wip-pairs, a .env per root) and a stub
+# create-key, because the env-file rotation path shells out to the create-key
+# that sits beside the env file.
+# ---------------------------------------------------------------------------
+unset KEY_DIR
+(( $+commands[md5] )) || md5() { md5sum | cut -d' ' -f1 }
+run_af() { perl -e 'alarm 120; exec @ARGV' zsh "$WIPCRYPT" "$@" < /dev/null }
+
+new_aroot() {
+  local t=$(mkt)
+  mkdir -p "$t/zsh/lib" "$t/shared/x-wip/y" "$t/shared/x-encrypted"
+  print -r -- "shared/x-wip:shared/x-encrypted" > "$t/zsh/lib/wip-pairs"
+  print -r -- "body line one" > "$t/shared/x-wip/y/NOTE.md"
+  print -r -- "body line two" >> "$t/shared/x-wip/y/NOTE.md"
+  print -r -- "SKILLS_ENCRYPTION_KEY=$(openssl rand -base64 32)" > "$t/.env"
+  chmod 600 "$t/.env"
+  print -r -- "$t"
+}
+akey_of() { grep '^SKILLS_ENCRYPTION_KEY=' "$1/.env" | cut -d= -f2- }
+cipher_file_of() { print -r -- "$1"/shared/x-encrypted/**/*(N.) }
+
+# A create-key that backs .env up to .env.1 and writes a fresh key, printing
+# BACKUP_PATH the way agent-forge's does.
+stub_create_key() {
+  cat > "$1/zsh/lib/create-key" <<'STUB'
+#!/usr/bin/env zsh
+env_file="${0:a:h:h:h}/.env"
+cp "$env_file" "$env_file.1"
+print -r -- "SKILLS_ENCRYPTION_KEY=$(openssl rand -base64 32)" > "$env_file"
+print -r -- "BACKUP_PATH=$env_file.1"
+STUB
+  chmod +x "$1/zsh/lib/create-key"
+}
+# --- 1: encrypt writes ciphertext carrying a wip-path header
+
+t=$(new_aroot)
+run_af encrypt --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+rc=$?
+check "encrypt exits zero" "0" "$rc"
+check "encrypt writes exactly one ciphertext file" "1" \
+  "$(print -l "$t"/shared/x-encrypted/**/*(N.) | grep -c .)"
+cipher=$(cipher_file_of "$t")
+check "the payload's first line is the wip-path header" "wip-path: y/NOTE.md" \
+  "$(decrypts_with "$(akey_of "$t")" "$cipher" | head -1)"
+check "the payload's body is the plaintext" "body line one" \
+  "$(decrypts_with "$(akey_of "$t")" "$cipher" | sed -n 2p)"
+
+# --- 2: status reports in sync and writes nothing
+
+before_sum=$(cat "$t"/shared/x-encrypted/**/*(N.) | md5)
+out=$(run_af status --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" 2>&1)
+check "status reports the pair in sync" "x-wip: in sync" "$out"
+check "status leaves the ciphertext bytes untouched" "$before_sum" \
+  "$(cat "$t"/shared/x-encrypted/**/*(N.) | md5)"
+
+# --- 3: status reports drift once the plaintext changes
+
+print -r -- "body line three" >> "$t/shared/x-wip/y/NOTE.md"
+out=$(run_af status --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" 2>&1)
+check "status reports drift for a modified file" \
+  "x-wip: 1 changed, 0 not yet encrypted, 0 stale ciphertext" "$out"
+rm -rf "$t"
+
+# --- 4: decrypt into a second, empty root restores the file byte for byte
+
+t=$(new_aroot)
+run_af encrypt --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+t2=$(mktemp -d)
+mkdir -p "$t2/zsh/lib" "$t2/shared/x-wip"
+print -r -- "shared/x-wip:shared/x-encrypted" > "$t2/zsh/lib/wip-pairs"
+cp -R "$t/shared/x-encrypted" "$t2/shared/x-encrypted"
+cp "$t/.env" "$t2/.env"
+run_af decrypt --root "$t2" --pairs "$t2/zsh/lib/wip-pairs" --env "$t2/.env" > /dev/null 2>&1
+rc=$?
+check "decrypt exits zero" "0" "$rc"
+check "decrypt restores the item at its real path" "1" \
+  "$([[ -f "$t2/shared/x-wip/y/NOTE.md" ]] && print -r -- 1 || print -r -- 0)"
+check "the restored file is byte identical" "same" \
+  "$(cmp -s "$t/shared/x-wip/y/NOTE.md" "$t2/shared/x-wip/y/NOTE.md" && print -r -- same || print -r -- differs)"
+rm -rf "$t" "$t2"
+
+# --- 5: cycle-key re-encrypts under a new key, and the old key then fails
+# status with the stale-key wording.
+#
+# create-key and lib are copied into the fixture so the rotation rewrites the
+# fixture's own .env. wipcrypt resolves create-key next to the env file it was
+# given, which is what keeps a rotation in a fixture out of the real .env.
+
+t=$(new_aroot)
+stub_create_key "$t"
+run_af encrypt --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+oldkey=$(akey_of "$t")
+before_paths=$(cd "$t/shared/x-encrypted" && print -l **/*(N.) | sort)
+run_af cycle-key --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+rc=$?
+newkey=$(akey_of "$t")
+cipher=$(cipher_file_of "$t")
+check "cycle-key exits zero" "0" "$rc"
+check "cycle-key wrote a new key into the fixture's own .env" "differs" \
+  "$([[ "$oldkey" != "$newkey" ]] && print -r -- differs || print -r -- same)"
+check "cycle-key preserves every ciphertext path" "$before_paths" \
+  "$(cd "$t/shared/x-encrypted" && print -l **/*(N.) | sort)"
+check "the rotated payload decrypts under the new key" "wip-path: y/NOTE.md" \
+  "$(decrypts_with "$newkey" "$cipher" | head -1)"
+
+print -r -- "SKILLS_ENCRYPTION_KEY=$oldkey" > "$t/old.env"
+chmod 600 "$t/old.env"
+out=$(run_af status --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/old.env" 2>&1)
+rc=$?
+check "the pre-rotation key fails status" "nonzero" \
+  "$([[ $rc -ne 0 ]] && print -r -- nonzero || print -r -- zero)"
+check "the pre-rotation key fails with the stale-key wording" "1" \
+  "$(print -r -- "$out" | grep -c 'does not match the encrypted tree')"
+check "the stale-key refusal leaks no key material" "0" \
+  "$(print -r -- "$out" | grep -cF "$oldkey")"
+rm -rf "$t"
+
+# --- 6: a missing env file gives the same message load_env has always given
+
+t=$(new_aroot)
+out=$(run_af status --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/nope.env" 2>&1)
+rc=$?
+check "a missing env file exits non-zero" "nonzero" \
+  "$([[ $rc -ne 0 ]] && print -r -- nonzero || print -r -- zero)"
+check "a missing env file gives load_env's exact message" "1" \
+  "$(print -r -- "$out" | grep -cF "missing $t/nope.env: run key-sync (1Password) or zsh/lib/create-key first")"
+rm -rf "$t"
+
+# --- 7: argument errors print usage on stderr and exit 2
+
+t=$(new_aroot)
+out=$(run_af bogus --root "$t" --env "$t/.env" 2>&1 >/dev/null)
+rc=$?
+check "an unknown subcommand exits 2" "2" "$rc"
+check "an unknown subcommand prints usage on stderr" "1" \
+  "$(print -r -- "$out" | grep -c '^usage: wipcrypt ')"
+
+out=$(run_af encrypt --bogus --root "$t" --env "$t/.env" 2>&1 >/dev/null)
+rc=$?
+check "an unknown option exits 2" "2" "$rc"
+check "an unknown option prints usage on stderr" "1" \
+  "$(print -r -- "$out" | grep -c '^usage: wipcrypt ')"
+
+out=$(run_af 2>&1 >/dev/null)
+rc=$?
+check "no subcommand at all exits 2" "2" "$rc"
+
+out=$(run_af encrypt --root 2>&1 >/dev/null)
+rc=$?
+check "an option with no value exits 2" "2" "$rc"
+
+# --- 8: root defaults. With --pairs and no --root, the root is the pairs
+# file's directory's parent's parent, which is what makes both
+# zsh/lib/wip-pairs and .claude/wip-pairs resolve to a repo root.
+
+run_af encrypt --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+out=$(cd / && run_af status --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" 2>&1)
+check "--pairs alone derives the root from the pairs file's location" "x-wip: in sync" "$out"
+
+# With neither, the root is $PWD and the pairs file is found under it.
+out=$(cd "$t" && run_af status --env "$t/.env" 2>&1)
+check "no --root and no --pairs falls back to \$PWD and its zsh/lib/wip-pairs" \
+  "x-wip: in sync" "$out"
+rm -rf "$t"
+
+# --- 9: a project-shaped root, whose pairs file lives at .claude/wip-pairs
+# with .claude/-relative entries, resolves the same way.
+
+t=$(mktemp -d)
+mkdir -p "$t/.claude/x-wip/y" "$t/.claude/x-encrypted"
+print -r -- ".claude/x-wip:.claude/x-encrypted" > "$t/.claude/wip-pairs"
+print -r -- "project body" > "$t/.claude/x-wip/y/NOTE.md"
+print -r -- "SKILLS_ENCRYPTION_KEY=$(openssl rand -base64 32)" > "$t/.env"
+chmod 600 "$t/.env"
+out=$(cd "$t" && run_af encrypt --env "$t/.env" 2>&1)
+check "a .claude/wip-pairs root encrypts" "1" \
+  "$(print -l "$t"/.claude/x-encrypted/**/*(N.) | grep -c .)"
+out=$(cd "$t" && run_af status --env "$t/.env" 2>&1)
+check "a .claude/wip-pairs root reports in sync" "x-wip: in sync" "$out"
+rm -rf "$t"
+
+# --- 10: a root with neither pairs file is an error naming both candidates
+
+t=$(mktemp -d)
+print -r -- "SKILLS_ENCRYPTION_KEY=$(openssl rand -base64 32)" > "$t/.env"
+chmod 600 "$t/.env"
+out=$(cd "$t" && run_af status --env "$t/.env" 2>&1)
+rc=$?
+check "no pairs file anywhere exits non-zero" "nonzero" \
+  "$([[ $rc -ne 0 ]] && print -r -- nonzero || print -r -- zero)"
+check "no pairs file anywhere names the zsh/lib candidate" "1" \
+  "$(print -r -- "$out" | grep -c 'zsh/lib/wip-pairs')"
+check "no pairs file anywhere names the .claude candidate" "1" \
+  "$(print -r -- "$out" | grep -c '\.claude/wip-pairs')"
+rm -rf "$t"
+
+# --- 12: --dry-run is a prediction of what encrypt would write. decrypt has
+# no such mode and cycle-key least of all, so both reject the flag rather
+# than accepting it and doing the real thing.
+
+t=$(new_aroot)
+for sub in decrypt cycle-key; do
+  out=$(run_af $sub --dry-run --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" 2>&1 >/dev/null)
+  rc=$?
+  check "$sub rejects --dry-run with exit 2" "2" "$rc"
+  check "$sub says why it rejected --dry-run" "1" \
+    "$(print -r -- "$out" | grep -c "^wipcrypt: --dry-run is not supported for $sub\$")"
+done
+
+# --- 13: a pair is exactly two paths, so a third positional is a typo or an
+# over-eager glob, never something to silently drop.
+
+out=$(run_af encrypt --root "$t" --env "$t/.env" a b c 2>&1 >/dev/null)
+rc=$?
+check "a third positional exits 2" "2" "$rc"
+check "a third positional says too many arguments" "1" \
+  "$(print -r -- "$out" | grep -c '^wipcrypt: too many arguments$')"
+rm -rf "$t"
+
+# --- 14: a call that names none of --root, --pairs or --env says which files
+# its defaults picked. A call that names any of them stays quiet, which is
+# what keeps this line out of everything that parses wipcrypt's output.
+
+t=$(new_aroot)
+out=$(cd "$t" && AI_CONFIG_DIR="$t" AGENT_FORGE_ENV_FILE= run_af status 2>&1)
+check "a fully defaulted call reports the root it resolved" "1" \
+  "$(print -r -- "$out" | grep -c "Resolved root $t,")"
+check "a fully defaulted call reports the pairs file it resolved" "1" \
+  "$(print -r -- "$out" | grep -c "pairs $t/zsh/lib/wip-pairs,")"
+check "a fully defaulted call reports the env file it resolved" "1" \
+  "$(print -r -- "$out" | grep -c "env $t/.env")"
+out=$(cd "$t" && AI_CONFIG_DIR="$t" run_af status --env "$t/.env" 2>&1)
+check "naming even one of the three suppresses the resolved line" "0" \
+  "$(print -r -- "$out" | grep -c 'Resolved root')"
+rm -rf "$t"
+
+# --- 16: cycle-key refuses an env file that does not belong to the root it
+# was asked to rotate. Without this, a bare cycle-key run anywhere with a
+# pairs file in it would mint a new shared key and re-encrypt only that one
+# directory, orphaning every other tree the key protects.
+
+t=$(new_aroot)
+stub_create_key "$t"
+run_af encrypt --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+elsewhere=$(mktemp -d)
+cp "$t/.env" "$elsewhere/.env"
+before_key=$(akey_of "$t")
+before_sum=$(cat "$t"/shared/x-encrypted/**/*(N.) | md5)
+out=$(run_af cycle-key --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$elsewhere/.env" 2>&1)
+rc=$?
+check "cycle-key refuses an env file owned by another root" "nonzero" \
+  "$([[ $rc -ne 0 ]] && print -r -- nonzero || print -r -- zero)"
+check "the refusal names both the env file's owner and the root being rotated" "1" \
+  "$(print -r -- "$out" | grep -c "belongs to $elsewhere, not to $t")"
+check "the refusal leaves the encrypted tree untouched" "$before_sum" \
+  "$(cat "$t"/shared/x-encrypted/**/*(N.) | md5)"
+check "the refusal leaves the key alone" "$before_key" "$(akey_of "$t")"
+check "the refusal never reaches create-key" "0" \
+  "$([[ -f "$t/.env.1" || -f "$elsewhere/.env.1" ]] && print -r -- 1 || print -r -- 0)"
+rm -rf "$t" "$elsewhere"
+
+# --- 17: one key protects more than one tree, so rotation re-encrypts every
+# root in the key-users registry, not just its own.
+
+t=$(new_aroot)
+stub_create_key "$t"
+p2=$(mktemp -d)
+mkdir -p "$p2/.claude/x-wip/y" "$p2/.claude/x-encrypted"
+print -r -- ".claude/x-wip:.claude/x-encrypted" > "$p2/.claude/wip-pairs"
+print -r -- "second root body" > "$p2/.claude/x-wip/y/NOTE.md"
+run_af encrypt --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+run_af encrypt --root "$p2" --pairs "$p2/.claude/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+oldkey=$(akey_of "$t")
+print -r -- "SKILLS_ENCRYPTION_KEY=$oldkey" > "$t/old.env"
+chmod 600 "$t/old.env"
+registry="$t/key-users"
+{
+  print -r -- "# roots sharing this key"
+  print -r -- ""
+  print -r -- "$p2"
+} > "$registry"
+p2_before=$(cd "$p2/.claude/x-encrypted" && print -l **/*(N.) | sort)
+
+AGENT_FORGE_KEY_USERS="$registry" run_af cycle-key --root "$t" \
+  --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+rc=$?
+newkey=$(akey_of "$t")
+check "rotation with a registry exits zero" "0" "$rc"
+check "the registered root's ciphertext paths are preserved" "$p2_before" \
+  "$(cd "$p2/.claude/x-encrypted" && print -l **/*(N.) | sort)"
+check "the registered root's payload decrypts under the new key" "wip-path: y/NOTE.md" \
+  "$(decrypts_with "$newkey" "$(print -r -- "$p2"/.claude/x-encrypted/**/*(N.))" | head -1)"
+check "the rotating root's own payload decrypts under the new key too" "wip-path: y/NOTE.md" \
+  "$(decrypts_with "$newkey" "$(cipher_file_of "$t")" | head -1)"
+
+out=$(run_af status --root "$p2" --pairs "$p2/.claude/wip-pairs" --env "$t/.env" 2>&1)
+check "the registered root reports in sync under the new key" "x-wip: in sync" "$out"
+out=$(run_af status --root "$p2" --pairs "$p2/.claude/wip-pairs" --env "$t/old.env" 2>&1)
+rc=$?
+check "the old key now fails on the registered root" "nonzero" \
+  "$([[ $rc -ne 0 ]] && print -r -- nonzero || print -r -- zero)"
+check "the old key fails the registered root with the stale-key wording" "1" \
+  "$(print -r -- "$out" | grep -c 'does not match the encrypted tree')"
+out=$(run_af status --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/old.env" 2>&1)
+rc=$?
+check "the old key now fails on the rotating root as well" "nonzero" \
+  "$([[ $rc -ne 0 ]] && print -r -- nonzero || print -r -- zero)"
+rm -rf "$t" "$p2"
+
+# --- 18: a registered root that is gone aborts the whole rotation before
+# create-key runs. Rotating past it would report success and leave that root's
+# ciphertext locked under a key that no longer exists anywhere.
+
+t=$(new_aroot)
+stub_create_key "$t"
+run_af encrypt --root "$t" --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
+gone=$(mktemp -d)
+rmdir "$gone"
+registry="$t/key-users"
+print -r -- "$gone" > "$registry"
+before_key=$(akey_of "$t")
+before_sum=$(cat "$t"/shared/x-encrypted/**/*(N.) | md5)
+out=$(AGENT_FORGE_KEY_USERS="$registry" run_af cycle-key --root "$t" \
+  --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" 2>&1)
+rc=$?
+check "a registered root that is gone aborts the rotation" "nonzero" \
+  "$([[ $rc -ne 0 ]] && print -r -- nonzero || print -r -- zero)"
+check "the abort names the missing root" "1" "$(print -r -- "$out" | grep -cF "$gone")"
+check "the abort leaves the key alone" "$before_key" "$(akey_of "$t")"
+check "the abort never reaches create-key" "0" \
+  "$([[ -f "$t/.env.1" ]] && print -r -- 1 || print -r -- 0)"
+print -r -- ""
+print -r -- "$pass passed, $fail failed"
+(( fail == 0 ))

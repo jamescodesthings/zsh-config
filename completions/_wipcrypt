@@ -1,0 +1,30 @@
+#compdef wipcrypt
+
+_wipcrypt_key_names() {
+  local dir="${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys}" f
+  local -a names
+  for f in "$dir"/*.key(N); do names+=("${${f:t}%.key}"); done
+  _describe -t keys 'key name' names
+}
+
+_wipcrypt() {
+  local -a subs
+  subs=(
+    'encrypt:mirror each wip root into its encrypted root'
+    'decrypt:restore each encrypted root into its wip root'
+    'status:report drift, write nothing'
+    'cycle-key:re-key every registered pair'
+  )
+
+  _arguments \
+    '--root[directory the pairs file resolves against]:directory:_files -/' \
+    '--pairs[the wip-pairs file]:file:_files' \
+    '--key[named key from the key store]:key name:_wipcrypt_key_names' \
+    '--env[env file holding SKILLS_ENCRYPTION_KEY]:file:_files' \
+    '--dry-run[encrypt and status only: write nothing]' \
+    '(-h --help)'{-h,--help}'[show usage]' \
+    '1:subcommand:_describe -t commands subcommand subs' \
+    '*::source and destination:_files -/'
+}
+
+_wipcrypt "$@"

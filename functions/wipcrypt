@@ -4,7 +4,8 @@
 # between the two, and rotates the key across every registered pair.
 #
 #   wipcrypt <encrypt|decrypt|status|cycle-key>
-#            [--root DIR] [--pairs FILE] [--env FILE] [--dry-run] [SRC DST]
+#            [--root DIR] [--pairs FILE] [--key NAME] [--env FILE]
+#            [--dry-run] [SRC DST]
 #
 #   encrypt     mirror each wip root into its encrypted root
 #   decrypt     restore each encrypted root into its wip root
@@ -15,34 +16,32 @@
 # registered one; status does the same. An unknown subcommand or option
 # prints this usage on stderr and exits 2.
 #
-# This file is the canonical copy. zsh-config carries a duplicate at
-# functions/wipcrypt, and `make sync-wipcrypt` pushes this one to it. That is
-# also why it sources nothing: lib does not exist where the
-# zsh-config copy runs, so the painters and the crypto helpers below are
-# copies of lib's rather than calls into it. lib keeps its own copies for its
-# other callers (key-sync, doctor), and the two sets must stay
-# character-identical: a drift test hashes verify_key_usable and
-# payload_matches in both files and fails when they diverge.
+# zsh-config owns this file and agent-forge calls it. It sources nothing: it
+# runs as a script even when autoloaded, with the painters and the crypto
+# helpers below built in. It has no literal `source` anywhere (tests/wipcrypt
+# asserts that), so load_env reads an env file with `.`, and --key reads the
+# store file with `read`, never as shell code.
 #
-# load_env is the one deliberate exception. lib's copy sources the env file
-# with `source`; this one uses `.` instead, since the standalone test for
-# this file (its zsh-config copy runs with nothing else on disk) asserts
-# there is no literal `source` anywhere in it. The two spellings behave
-# identically in zsh, so this is a textual divergence only, not a behavioural
-# one, and it is exempt from the drift test's character-identical check for
-# exactly that reason.
+# Autoloaded from functions/, a call re-runs this file as a script
+# (`zsh <file> "$@"`), so the `exit` in error and usage_error ends that child
+# and never the caller's shell.
 #
 # Path resolution, in this order:
 #
 #   --root    the directory every relative path in the pairs file resolves
 #             against. Defaults to the pairs file's directory's parent's
-#             parent when --pairs was given (so both shared/tools/wip-pairs
+#             parent when --pairs was given (so both zsh/lib/wip-pairs
 #             and .claude/wip-pairs land on the repo root that contains
 #             them), and to $PWD when it was not.
-#   --pairs   defaults to <root>/shared/tools/wip-pairs when that exists,
+#   --pairs   defaults to <root>/zsh/lib/wip-pairs when that exists,
 #             else <root>/.claude/wip-pairs. When neither exists and a pairs
 #             file is actually needed, both candidates are named in the
 #             error.
+#   --key     a named key from the key store, `${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys}/NAME.key`
+#             (made and synced by the `key` command). It is read into
+#             SKILLS_ENCRYPTION_KEY with `read`, never from argv. A missing
+#             key exits 1 naming `key sync NAME`; a bad name exits 2. Without
+#             --key the key comes from the env file, as it always has.
 #   --env     defaults to $AGENT_FORGE_ENV_FILE, else $AI_CONFIG_DIR/.env
 #             when that variable is set and the file exists, else
 #             <root>/.env. One key is shared across every tier, so a project
@@ -58,7 +57,7 @@
 #   ${AGENT_FORGE_KEY_USERS:-<env file's directory>/.cache/key-users}
 #
 # One absolute project root per line, blank lines and # comments allowed. Each
-# listed root contributes its own .claude/wip-pairs (or shared/tools/wip-pairs)
+# listed root contributes its own .claude/wip-pairs (or zsh/lib/wip-pairs)
 # to the stale-key check, the decrypt pass and the re-encrypt. A listed root
 # that is missing, or whose pairs file cannot be read, aborts the rotation
 # before create-key runs and before any ciphertext is touched: rotating past it
@@ -68,11 +67,25 @@
 # gitignores, and that is deliberate: the registry is a list of absolute paths
 # on one machine, and this repo is public.
 #
-# shared/tools/encrypt, decrypt and cycle-key are thin wrappers that call
+# zsh/lib/encrypt, decrypt and cycle-key are thin wrappers that call
 # this with --root/--pairs/--env already resolved the way they always
 # resolved them, so every existing caller, test and hook keeps working.
+#
+# cycle-key --key NAME rotates the store key instead: the env-file ownership
+# guard and the create-key lookup do not apply, the new key comes from
+# `key cycle NAME -y` (run with zsh, from WIPCRYPT_KEY_CMD or the `key` file
+# beside this one), --env FILE, when given, is rewritten by key's `--to` as a
+# synced copy, and the key-users registry defaults to $KEY_DIR/NAME.users
+# (AGENT_FORGE_KEY_USERS still overrides).
+if [[ $ZSH_EVAL_CONTEXT == *shfunc* ]]; then
+  local wc_file="${functions_source[wipcrypt]:-$FN_DIR/wipcrypt}"
+  zsh "$wc_file" "$@"
+  return
+fi
 emulate -L zsh
 unsetopt MONITOR
+# The folder of this file, where the key command sits.
+WIPCRYPT_DIR="${0:a:h}"
 
 # Copies of lib's painters, printing exactly the same text. The colour prefix
 # goes through print -P, the message never does. Paths reach these functions,
@@ -84,7 +97,7 @@ warn()    { print -Pn "%F{yellow}[warn]%f:  "; print -r -- "$1" }
 error()   { print -Pn "%F{red}[error]%f "; print -r -- "$1"; exit 1 }
 
 usage() {
-  print -r -- "usage: wipcrypt <encrypt|decrypt|status|cycle-key> [--root DIR] [--pairs FILE] [--env FILE] [--dry-run] [SRC DST]"
+  print -r -- "usage: wipcrypt <encrypt|decrypt|status|cycle-key> [--root DIR] [--pairs FILE] [--key NAME] [--env FILE] [--dry-run] [SRC DST]"
 }
 
 # Exit 2, not 1: an argument mistake is a different failure from a refusal to
@@ -97,11 +110,10 @@ usage_error() {
 }
 
 # ---------------------------------------------------------------------------
-# Moved from lib, verbatim
+# Helpers that began in agent-forge's lib
 # ---------------------------------------------------------------------------
-# These are copies, not adaptations. lib still holds the originals for its own
-# callers, and the two must not drift, so nothing here is reworded or
-# reformatted even where the wording refers to lib itself. ROOT_DIR and
+# This file now owns them, and some wording still refers to lib. Nothing is
+# reworded for its own sake. ROOT_DIR and
 # CONTENT_ROOT are set by the argument parser at the bottom of this file
 # before any of them runs, which is what makes their defaults resolve against
 # --root the way lib's resolve against the repo.
@@ -136,9 +148,24 @@ fetch_wip_slug() {
   return 1
 }
 
+# The named key: one line in the store, read with `read`, never run as shell
+# code and never put on argv.
+load_store_key() {
+  local key_file="$KEY_STORE/$KEY_NAME.key" line=""
+  [[ -f "$key_file" ]] \
+    || error "no key named $KEY_NAME in $KEY_STORE: run: key sync $KEY_NAME"
+  IFS= read -r line < "$key_file"
+  [[ -n "$line" ]] || error "$key_file is empty: run: key sync $KEY_NAME"
+  export SKILLS_ENCRYPTION_KEY="$line"
+}
+
 load_env() {
+  if [[ -n "$KEY_NAME" ]]; then
+    load_store_key
+    return
+  fi
   local env_file="${1:-${AGENT_FORGE_ENV_FILE:-$ROOT_DIR/.env}}"
-  [[ -f "$env_file" ]] || error "missing $env_file: run key-sync (1Password) or shared/tools/create-key first"
+  [[ -f "$env_file" ]] || error "missing $env_file: run key-sync (1Password) or zsh/lib/create-key first"
   set -a
   . "$env_file"
   set +a
@@ -147,10 +174,10 @@ load_env() {
 
 # Emits "<abs-wip-root> <abs-encrypted-root>" per line, one per registered
 # content-type, resolved against CONTENT_ROOT. Add a pair to
-# shared/tools/wip-pairs to onboard a new one, or point AGENT_FORGE_WIP_PAIRS
+# zsh/lib/wip-pairs to onboard a new one, or point AGENT_FORGE_WIP_PAIRS
 # at a project's own pairs file.
 wip_pairs() {
-  local pairs_file="${1:-${AGENT_FORGE_WIP_PAIRS:-$ROOT_DIR/shared/tools/wip-pairs}}"
+  local pairs_file="${1:-${AGENT_FORGE_WIP_PAIRS:-$ROOT_DIR/zsh/lib/wip-pairs}}"
   [[ -f "$pairs_file" ]] || error "missing $pairs_file"
   local line wip enc
   while IFS=':' read -r wip enc || [[ -n "$wip" ]]; do
@@ -162,7 +189,7 @@ wip_pairs() {
 # True when the ciphertext at $1 decrypts to exactly the plaintext at $2.
 # The wip-path header occupies the first line of every payload and is not
 # part of the file's content, so it is dropped before comparing. Both
-# shared/tools/encrypt and the Makefile's wip-status target call this: the
+# zsh/lib/encrypt and wip-status call this: the
 # comparison existed in two places once, they drifted the moment a header
 # was added, and wip-status silently reported everything as changed.
 payload_matches() {
@@ -388,7 +415,7 @@ validate_enc_item() {
 }
 
 # ---------------------------------------------------------------------------
-# Moved from shared/tools/encrypt, verbatim
+# Moved from zsh/lib/encrypt, verbatim
 # ---------------------------------------------------------------------------
 # Encrypts every file in a wip root into its matching path under the paired
 # encrypted root. The destination is kept as an exact mirror of the source:
@@ -546,7 +573,7 @@ encrypt_pair() {
       # existing entry with this exact body, but the liveness guard rejected
       # reusing it because the path its own header names is still present
       # under $src_root. That is exactly the shape a rename made on a
-      # DIFFERENT machine takes once it reaches this one: `make decrypt`
+      # DIFFERENT machine takes once it reaches this one: `zsh/lib/decrypt`
       # honours SKILLS_DECRYPT_SKIP_EXISTING and writes the new path, but
       # nothing ever prunes plaintext, so the old path is still sitting here
       # locally, still hash-matching, still "live" by this guard's own
@@ -728,7 +755,7 @@ encrypt_pair() {
   if [[ -n "$git_dir" && -n "$git_common_dir" && "$git_dir" != "$git_common_dir" ]]; then
     warn "Linked git worktree detected: skipping the prune pass for ${dst_root:t}. Encryption still ran normally. Prune from the main checkout instead."
   elif [[ "$src_file_count" -eq 0 && "$dst_file_count" -gt 0 ]]; then
-    warn "${src_root:t} has no files but ${dst_root:t} has $dst_file_count: refusing to prune. Run shared/tools/decrypt first if this is a fresh clone."
+    warn "${src_root:t} has no files but ${dst_root:t} has $dst_file_count: refusing to prune. Run zsh/lib/decrypt first if this is a fresh clone."
   else
     for file in ${dst_root}/**/*(N.); do
       [[ "${file:t}" == ".gitkeep" ]] && continue
@@ -771,7 +798,7 @@ encrypt_pair() {
 }
 
 # ---------------------------------------------------------------------------
-# Moved from shared/tools/decrypt, verbatim
+# Moved from zsh/lib/decrypt, verbatim
 # ---------------------------------------------------------------------------
 # Decrypts every file in an encrypted root into its matching path under the
 # paired wip root.
@@ -888,7 +915,7 @@ decrypt_pair() {
 }
 
 # ---------------------------------------------------------------------------
-# Moved from shared/tools/cycle-key
+# Moved from zsh/lib/cycle-key
 # ---------------------------------------------------------------------------
 
 # Rotates the encryption key atomically across every registered wip/encrypted
@@ -957,6 +984,8 @@ run_cycle_key() {
   local wip_root="" enc_root="" old_key="" create_key_output="" backup_path=""
   local key_hint="" tmp_root="" enc_file="" enc_rel="" seed_tmp=""
   local entry="" entry_pairs=""
+  local -a key_args
+  local KEY_CMD="${WIPCRYPT_KEY_CMD:-$WIPCRYPT_DIR/key}"
   local -i create_key_rc=0
   local -A tmp_for_enc
   WIPCRYPT_TMP_ROOTS=()
@@ -971,7 +1000,7 @@ run_cycle_key() {
   git_dir=$(git -C "$ROOT_DIR" rev-parse --absolute-git-dir 2>/dev/null)
   git_common_dir=$(cd "$ROOT_DIR" && cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd)
   if [[ -n "$git_dir" && -n "$git_common_dir" && "$git_dir" != "$git_common_dir" ]]; then
-    error "Linked git worktree detected: refusing to rotate the key here. Rotation rebuilds each encrypted root from its wip root, which is gitignored and therefore incomplete in a worktree; every item not copied here would be lost. Run shared/tools/cycle-key from the main checkout."
+    error "Linked git worktree detected: refusing to rotate the key here. Rotation rebuilds each encrypted root from its wip root, which is gitignored and therefore incomplete in a worktree; every item not copied here would be lost. Run zsh/lib/cycle-key from the main checkout."
   fi
 
   require_pairs_file
@@ -983,15 +1012,15 @@ run_cycle_key() {
   # is left as ciphertext nobody holds a key for. Rotation is the one
   # subcommand where reading a key you do not own is destructive rather than
   # merely surprising, which is why only this one checks.
-  [[ "${ENV_FILE:h}" == "$ROOT_DIR" ]] \
+  [[ -n "$KEY_NAME" || "${ENV_FILE:h}" == "$ROOT_DIR" ]] \
     || error "Refusing to rotate: $ENV_FILE belongs to ${ENV_FILE:h}, not to $ROOT_DIR. Rotation rewrites the key for every tree that env file protects, and only $ROOT_DIR's pairs would be re-encrypted. Run cycle-key from the root that owns the key."
 
   # Checked before anything is decrypted, for the same reason the stale-key
   # guard below is: a rotation that got as far as minting a new key and then
   # found it had no way to write it would leave the operator holding a
   # half-rotated tree and no record of which key opens it.
-  create_key="${ENV_FILE:h}/shared/tools/create-key"
-  [[ -x "$create_key" ]] \
+  create_key="${ENV_FILE:h}/zsh/lib/create-key"
+  [[ -n "$KEY_NAME" || -x "$create_key" ]] \
     || error "No create-key found at $create_key: rotation writes the new key into $ENV_FILE, so it needs the create-key that owns that file."
 
   # One key protects more than one tree. The rotating root's own pairs are the
@@ -1009,7 +1038,11 @@ run_cycle_key() {
   ROTATION_ROOTS=("$ROOT_DIR")
   ROTATION_PAIRS_FILES=("$PAIRS_FILE")
 
-  key_users_file="${AGENT_FORGE_KEY_USERS:-${ENV_FILE:h}/.cache/key-users}"
+  if [[ -n "$KEY_NAME" ]]; then
+    key_users_file="${AGENT_FORGE_KEY_USERS:-$KEY_STORE/$KEY_NAME.users}"
+  else
+    key_users_file="${AGENT_FORGE_KEY_USERS:-${ENV_FILE:h}/.cache/key-users}"
+  fi
   if [[ -e "$key_users_file" ]]; then
     [[ -r "$key_users_file" ]] \
       || error "Refusing to rotate: the key-users registry at $key_users_file exists but cannot be read, so there is no way to tell which other trees this key protects. Nothing was changed."
@@ -1025,10 +1058,10 @@ run_cycle_key() {
       entry_pairs=""
       if [[ -f "$entry/.claude/wip-pairs" ]]; then
         entry_pairs="$entry/.claude/wip-pairs"
-      elif [[ -f "$entry/shared/tools/wip-pairs" ]]; then
-        entry_pairs="$entry/shared/tools/wip-pairs"
+      elif [[ -f "$entry/zsh/lib/wip-pairs" ]]; then
+        entry_pairs="$entry/zsh/lib/wip-pairs"
       else
-        error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which has neither .claude/wip-pairs nor shared/tools/wip-pairs. Nothing was changed."
+        error "Refusing to rotate: the key-users registry at $key_users_file lists $entry, which has neither .claude/wip-pairs nor zsh/lib/wip-pairs. Nothing was changed."
       fi
       [[ -r "$entry_pairs" ]] \
         || error "Refusing to rotate: $entry_pairs exists but cannot be read, so the trees it registers cannot be re-encrypted. Nothing was changed."
@@ -1069,11 +1102,17 @@ run_cycle_key() {
 
   info "Generating new key..."
   # Captured rather than left to stream straight to the terminal, so the
-  # BACKUP_PATH line create-key prints (see shared/tools/create-key) can be
+  # BACKUP_PATH line create-key prints (see zsh/lib/create-key) can be
   # pulled out below. Printed back out immediately after, minus that line, so
   # the operator still sees exactly what create-key reported, just delayed
   # until it finishes instead of arriving live.
-  create_key_output=$("$create_key" --force)
+  if [[ -n "$KEY_NAME" ]]; then
+    key_args=(cycle "$KEY_NAME" -y)
+    (( ENV_GIVEN )) && key_args+=(--to "$ENV_FILE" --var SKILLS_ENCRYPTION_KEY)
+    create_key_output=$(KEY_DIR="$KEY_STORE" zsh "$KEY_CMD" "${key_args[@]}" < /dev/null)
+  else
+    create_key_output=$("$create_key" --force)
+  fi
   create_key_rc=$?
   print -r -- "$create_key_output" | grep -v '^BACKUP_PATH='
 
@@ -1091,8 +1130,11 @@ run_cycle_key() {
   # guessed at, when create-key never got far enough to print a backup path
   # (its own backup step itself failed): a wrong path is worse than no note.
   key_hint=""
-  [[ -n "$backup_path" ]] \
-    && key_hint=" .env may now hold the NEW key: to get back to the OLD key, run: cp $backup_path .env"
+  if [[ -n "$KEY_NAME" ]]; then
+    key_hint=" The store may now hold the NEW key for $KEY_NAME: the OLD key is the newest backup, whose path is printed by: key path $KEY_NAME -p"
+  elif [[ -n "$backup_path" ]]; then
+    key_hint=" .env may now hold the NEW key: to get back to the OLD key, run: cp $backup_path .env"
+  fi
 
   (( create_key_rc == 0 )) \
     || error "Key generation failed, aborting rotation.${key_hint}"
@@ -1169,7 +1211,7 @@ run_cycle_key() {
 # ---------------------------------------------------------------------------
 # Options and positionals are collected in one pass in any order, so
 # `encrypt --dry-run SRC DST` and `encrypt SRC DST --dry-run` are the same
-# call: the shape shared/tools/encrypt already accepted, and what the wrapper
+# call: the shape zsh/lib/encrypt already accepted, and what the wrapper
 # scripts produce when they put their own --root/--pairs/--env in front of a
 # caller's "$@".
 
@@ -1180,6 +1222,8 @@ DRY_RUN=0
 ROOT_DIR=""
 PAIRS_FILE=""
 ENV_FILE=""
+KEY_NAME=""
+KEY_STORE="${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys}"
 # Whether each path came from the caller or from a default. Only used to
 # decide whether to say out loud what got resolved: a call that named none of
 # the three is a person typing `wipcrypt status` somewhere and trusting the
@@ -1191,12 +1235,17 @@ ENV_GIVEN=0
 
 while (( $# )); do
   case "$1" in
-    --root|--pairs|--env)
+    --root|--pairs|--env|--key)
       (( $# >= 2 )) || usage_error "$1 requires a value"
       case "$1" in
         --root)  ROOT_DIR="$2";   ROOT_GIVEN=1 ;;
         --pairs) PAIRS_FILE="$2"; PAIRS_GIVEN=1 ;;
         --env)   ENV_FILE="$2";   ENV_GIVEN=1 ;;
+        --key)
+          [[ "$2" =~ '^[a-z0-9][a-z0-9._-]*$' ]] \
+            || usage_error "--key name must match [a-z0-9][a-z0-9._-]*: $2"
+          KEY_NAME="$2"
+          ;;
       esac
       shift
       ;;
@@ -1236,7 +1285,7 @@ esac
 
 # The root every relative path in the pairs file resolves against. Derived
 # from the pairs file's own location when only --pairs was given: both
-# <root>/shared/tools/wip-pairs and <root>/.claude/wip-pairs are two
+# <root>/zsh/lib/wip-pairs and <root>/.claude/wip-pairs are two
 # directories below the root that owns them, so the same "directory, parent,
 # parent" walk lands on the root either way.
 if [[ -z "$ROOT_DIR" ]]; then
@@ -1270,8 +1319,8 @@ CONTENT_ROOT="${AGENT_FORGE_CONTENT_ROOT:-$ROOT_DIR}"
 # names its pair positionally never reads a pairs file at all, and refusing
 # it here would break every such caller on a root that has no registry.
 if [[ -z "$PAIRS_FILE" ]]; then
-  if [[ -f "$ROOT_DIR/shared/tools/wip-pairs" ]]; then
-    PAIRS_FILE="$ROOT_DIR/shared/tools/wip-pairs"
+  if [[ -f "$ROOT_DIR/zsh/lib/wip-pairs" ]]; then
+    PAIRS_FILE="$ROOT_DIR/zsh/lib/wip-pairs"
   elif [[ -f "$ROOT_DIR/.claude/wip-pairs" ]]; then
     PAIRS_FILE="$ROOT_DIR/.claude/wip-pairs"
   fi
@@ -1279,7 +1328,7 @@ fi
 
 require_pairs_file() {
   [[ -n "$PAIRS_FILE" ]] \
-    || error "No wip-pairs file found: looked for $ROOT_DIR/shared/tools/wip-pairs and $ROOT_DIR/.claude/wip-pairs"
+    || error "No wip-pairs file found: looked for $ROOT_DIR/zsh/lib/wip-pairs and $ROOT_DIR/.claude/wip-pairs"
 }
 
 # One key covers every tier, so a project root normally reads agent-forge's
@@ -1298,12 +1347,12 @@ fi
 
 # Said out loud only when the caller named none of the three, which means
 # every path below was guessed. The wrappers always pass all three, so this
-# never appears in front of anything that parses this output (make wip-status,
+# never appears in front of anything that parses this output (zsh/lib/wip-status,
 # doctor, the pre-commit hook). "no pairs file found" rather than an empty
 # field: a call that names its pair positionally is a legitimate way to run
 # with no registry at all, and this line reports what was resolved, not what
 # is wrong.
-if (( ! ROOT_GIVEN && ! PAIRS_GIVEN && ! ENV_GIVEN )); then
+if (( ! ROOT_GIVEN && ! PAIRS_GIVEN && ! ENV_GIVEN )) && [[ -z "$KEY_NAME" ]]; then
   info "Resolved root $ROOT_DIR, pairs ${PAIRS_FILE:-(no pairs file found)}, env $ENV_FILE"
 fi
 
@@ -1342,7 +1391,7 @@ case "$SUB" in
   status)
     # status is encrypt --dry-run under another name, which is what keeps the
     # "<name>: in sync" line and the drift counts identical to what
-    # make wip-status has always printed.
+    # zsh/lib/wip-status has always printed.
     DRY_RUN=1
     load_env "$ENV_FILE"
     [[ -n "$SKILLS_ENCRYPTION_KEY" ]] || error "SKILLS_ENCRYPTION_KEY not set"
