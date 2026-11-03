@@ -20,7 +20,10 @@
 # ok, 1 failed, 2 usage. A key is never put on any command's argv or printed:
 # openssl output and `op read` land in a shell variable, FILE is rewritten
 # with builtins only, and `op` gets a pushed key through a 600 template file.
-# Environment: KEY_DIR, KEY_OP_BIN (default op), KEY_FORCE_TTY (tests only).
+# The default 1Password reference is op://${KEY_OP_VAULT:-Personal}/<name>-key/
+# password, read at call time; a ref in <name>.conf or passed with --op wins.
+# Environment: KEY_DIR (the store), KEY_OP_BIN (the op binary, default op),
+# KEY_OP_VAULT (default vault, default Personal), KEY_FORCE_TTY (tests only).
 #
 # Run as a script (`zsh functions/key ...`) it puts its own folder on fpath and
 # autoloads the helpers it uses, so it works from any shell, even with an
@@ -169,7 +172,7 @@ function _key_say() {
 # else the defaults.
 function _key_conf() {
   local line
-  op="op://Private/$2-key/password"
+  op="op://${KEY_OP_VAULT:-Personal}/$2-key/password"
   var="${${(U)2}//[-.]/_}_KEY"
   [[ -r "$1" ]] || return 0
   while IFS= read -r line || [[ -n "$line" ]]; do

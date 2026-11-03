@@ -87,9 +87,9 @@ K="$(< $KD/demo.key)"
 same "--to writes V once, keeps other lines" "$(< $TMP/work/env)" $'A=1\nV='"$K"$'\nB=2'
 same "--to file mode 600" "$(mode $TMP/work/env)" "600"
 same "differing V line backs the file up" "$(< $TMP/work/env.1)" $'A=1\nV=old\nB=2\nV=dup'
-same "var saved to conf" "$(< $KD/demo.conf)" $'op = op://Private/demo-key/password\nvar = V'
+same "var saved to conf" "$(< $KD/demo.conf)" $'op = op://Personal/demo-key/password\nvar = V'
 run "key list --json"
-same "conf var shows in list" "$OUT" '[{"name":"demo","stored":true,"backups":0,"op":"op://Private/demo-key/password","var":"V"}]'
+same "conf var shows in list" "$OUT" '[{"name":"demo","stored":true,"backups":0,"op":"op://Personal/demo-key/password","var":"V"}]'
 
 fresh
 printf 'A=1' > "$TMP/work/env"
@@ -148,7 +148,7 @@ same "pull without a terminal exits 1 naming it" "$CODE|${ERR##*needs a terminal
 same "no op call made without a terminal" "$(cat $OPLOG 2>/dev/null)" ""
 EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
 same "pull stores the stub key" "$CODE|$(< $KD/demo.key)|$(mode $KD/demo.key)" "0|stub-key-from-op|600"
-same "pull used default ref" "$(< $OPLOG)" "read op://Private/demo-key/password"
+same "pull used default ref" "$(< $OPLOG)" "read op://Personal/demo-key/password"
 print -r -- other-key > "$KD/demo.key"
 EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo --to $TMP/work/env --var V"
 same "pull backs a different key up" "$(< $KD/demo.key.1)|$(< $KD/demo.key)" "other-key|stub-key-from-op"
@@ -167,7 +167,7 @@ fresh
 run "key create demo"; K="$(< $KD/demo.key)"; : > $OPLOG
 run "key sync demo --push -y"
 same "push with item absent creates" "$CODE|$(grep -c 'item create' $OPLOG)" "0|1"
-same "template holds the key, ref parts" "$([[ $(< $TMP/template.cap) == *\"$K\"* && $(< $TMP/template.cap) == *'"title":"demo-key"'* && $(< $TMP/template.cap) == *'"name":"Private"'* ]] && echo yes)" "yes"
+same "template holds the key, ref parts" "$([[ $(< $TMP/template.cap) == *\"$K\"* && $(< $TMP/template.cap) == *'"title":"demo-key"'* && $(< $TMP/template.cap) == *'"name":"Personal"'* ]] && echo yes)" "yes"
 same "key never in op argv" "$(grep -cF "$K" $OPLOG)" "0"
 same "no template left behind" "$(ls -A $KD | grep -c tmp\\.\|XXXX)" "0"
 touch "$TMP/exists"; : > $OPLOG
@@ -213,7 +213,7 @@ run "key list"
 same "list names both, never the key" "$CODE|$(print -r -- $OUT | grep -c .)|$([[ $OUT == *$K* ]] && echo leak)" "0|2|"
 same "list shows backups and var" "$([[ ${${(f)OUT}[2]} == *two*1*TWO_KEY* ]] && echo yes)" "yes"
 run "key list --json"
-same "json names each key, stored true" "$OUT" '[{"name":"one","stored":true,"backups":0,"op":"op://Private/one-key/password","var":"ONE_KEY"},{"name":"two","stored":true,"backups":1,"op":"op://Private/two-key/password","var":"TWO_KEY"}]'
+same "json names each key, stored true" "$OUT" '[{"name":"one","stored":true,"backups":0,"op":"op://Personal/one-key/password","var":"ONE_KEY"},{"name":"two","stored":true,"backups":1,"op":"op://Personal/two-key/password","var":"TWO_KEY"}]'
 same "json has no key text" "$([[ $OUT == *$K* ]] && echo leak)" ""
 same "list never called op" "$(cat $OPLOG 2>/dev/null)" ""
 fresh
@@ -304,5 +304,15 @@ same "--from --push -y creates the item" "$CODE|$(grep -c 'item create' $OPLOG)|
 same "template holds the key" "$([[ $(< $TMP/template.cap) == *pushme-key* ]] && echo yes)" "yes"
 run "key sync demo --from $TMP/work/src --push"
 same "--from --push without -y or tty exits 1" "$CODE" "1"
+
+# --- round 3: default vault
+fresh
+run "key create demo; key list --json"
+same "default ref uses Personal" "${OUT##*\"op\":\"}" 'op://Personal/demo-key/password","var":"DEMO_KEY"}]'
+EXTRA_ENV="KEY_OP_VAULT=Work" run "key list --json"
+same "KEY_OP_VAULT changes the default" "${${OUT##*\"op\":\"}%%\"*}" "op://Work/demo-key/password"
+run "key create other --op op://Vault/x/password"
+EXTRA_ENV="KEY_OP_VAULT=Work" run "key list --json"
+same "a conf ref wins over KEY_OP_VAULT" "$([[ $OUT == *'"op":"op://Vault/x/password"'* ]] && echo yes)" "yes"
 
 exit $failed
