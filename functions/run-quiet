@@ -34,6 +34,7 @@ function _run_quiet_log() {
 }
 
 function run-quiet() {
+  autoload -Uz cheat-help say problem fix progress
   emulate -L zsh
   cheat-help run-quiet "$@" && return 0
 

@@ -17,6 +17,7 @@
 # With no subcommand, an fzf picker over the settings (plain mode or no fzf:
 # list), then a prompt for the new value.
 function config() {
+  autoload -Uz cheat-help cli-init col say pick
   cheat-help config "$@" && return 0
   emulate -L zsh
   setopt extended_glob

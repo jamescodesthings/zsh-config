@@ -176,6 +176,7 @@ function _log_open() {
 }
 
 function log() {
+  autoload -Uz cheat-help cli-init cli-icon col say pick
   emulate -L zsh
   setopt extended_glob
   cheat-help log "$@" && return 0

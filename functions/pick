@@ -10,6 +10,7 @@
 #
 # CLI_PICK_FORCE=1 skips the terminal check (tests, with a fake fzf).
 function pick() {
+  autoload -Uz cheat-help col say
   emulate -L zsh
   cheat-help pick "$@" && return 0
 

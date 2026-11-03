@@ -34,6 +34,7 @@ function _cheat_expand_vars() {
 }
 
 function cheat() {
+  autoload -Uz is cheat-render link-cheatsheets
   if is empty "$CHEATSHEET_DIR"; then
     echo "${c[error]}error:${c[reset]} CHEATSHEET_DIR not set, run zsh-config/install to install it"
     return 1

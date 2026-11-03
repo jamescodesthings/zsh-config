@@ -1,0 +1,64 @@
+#!/usr/bin/env zsh
+# Each CLI helper must work from a bare `zsh -f` that autoloads only that
+# helper: the helpers it calls load themselves. Run: tests/helpers-standalone.
+# Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+mkdir -p "$TMP/home" "$TMP/zdot" "$TMP/cfg" "$TMP/keys"
+echo '{"a": {"default": 1, "meaning": "x"}}' > "$TMP/schema.json"
+
+# check <helper> <label> <code>: runs code in a fresh zsh -f with only <helper> autoloaded
+function check() {
+  local helper="$1" label="$2" code="$3" err
+  env -u COLORTERM -u CLICOLOR_FORCE -u AGENT_FORGE_HUB_WORKER -i \
+    HOME="$TMP/home" ZDOTDIR="$TMP/zdot" PATH=/usr/bin:/bin CLI_PLAIN=1 \
+    CHEATSHEET_DIR="$REPO_DIR/cheatsheets" CUSTOM_DIR="$REPO_DIR" \
+    CLI_LOG_DIR="$TMP/logs" CLI_CONFIG_DIR="$TMP/cfg" KEY_DIR="$TMP/keys" \
+    zsh -f -c '
+      fpath=("$1/functions" $fpath)
+      autoload -Uz "$2"
+      eval "$3"
+    ' _ "$REPO_DIR" "$helper" "$code" > /dev/null 2> "$TMP/err" < /dev/null
+  err="$(< "$TMP/err")"
+  if [[ "$err" == *"command not found"* ]]; then
+    echo "FAIL: $helper $label: ${err//$'\n'/ | }"; failed=1
+  else
+    echo "ok: $helper $label"
+  fi
+}
+
+check cli-init   call 'cli-init'
+check col        call 'col ok; col --list'
+check cli-icon   call 'cli-icon ok'
+check say        call 'say ok hi; say fail hi'
+check problem    call 'problem x'
+check fix        call 'fix "a b" why'
+check problems call 'problems'
+check pick       call 'pick header one two'
+check pick       help 'pick --help'
+check progress   call 'progress start x 1; progress step a; progress done'
+check progress   fail 'progress start x 1; progress fail'
+check progress   help 'progress --help'
+check run-quiet  call 'run-quiet label true'
+check run-quiet  fail 'autoload -Uz problems; run-quiet label false; problems'
+check run-quiet  help 'run-quiet --help'
+check log-start  call 'log-start demo'
+check log-line   call 'log-line hi'
+check log        call 'log list; log open last'
+check log        help 'log --help'
+check config     call "config --schema $TMP/schema.json demo list; config --schema $TMP/schema.json demo set a 2"
+check config     help 'config --help'
+check cheat-help call 'cheat-help cheat --help'
+check cheat      call 'cheat cli'
+check cheat      help 'cheat --help'
+check cheat-render call "cheat-render $REPO_DIR/cheatsheets/cli.md"
+check confirm    help 'confirm --help'
+check is         call 'is available zsh; is empty ""'
+check is         help 'is --help'
+check key        call 'key list'
+check key        help 'key --help'
+
+exit $failed

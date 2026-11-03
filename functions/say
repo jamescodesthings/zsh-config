@@ -4,6 +4,7 @@
 # the whole line in the role's colour (ok, info, warn, err). fail goes to
 # stderr. Plain mode (cli-init) keeps the icon and drops the colour.
 function say() {
+  autoload -Uz cli-icon col
   local kind="$1" role icon
   shift
   case "$kind" in

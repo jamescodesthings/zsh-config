@@ -29,6 +29,7 @@ if [[ "$0" == */* ]]; then
 fi
 
 function key() {
+  autoload -Uz col cli-init cli-icon say cheat-help is
   cheat-help key "$@" && return 0
   emulate -L zsh
   unsetopt xtrace verbose  # a caller's set -x must never trace a key

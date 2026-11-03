@@ -5,6 +5,7 @@
 # LOG_COMMAND, writes a first line, and keeps the newest 50 logs in each of
 # commands/ and children/. `log-line` appends to it; `log` reads it back.
 function log-start() {
+  autoload -Uz log-line say
   emulate -L zsh
   setopt extended_glob
   zmodload -F zsh/datetime b:strftime 2>/dev/null

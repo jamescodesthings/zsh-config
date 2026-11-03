@@ -7,6 +7,7 @@
 # a log (LOG_FILE). Returns 1 when there were problems, 0 when none; the lists
 # are cleared once printed.
 function problems() {
+  autoload -Uz cli-icon col
   typeset -ga _CLI_PROBLEMS _CLI_FIXES
   local -i count=${#_CLI_PROBLEMS}
   (( count )) || { _CLI_FIXES=(); return 0; }

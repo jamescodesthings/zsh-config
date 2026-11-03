@@ -9,6 +9,7 @@
 # cheat falls back to the nearest parent sheet for a word with no sheet of its
 # own. Otherwise it prints nothing and returns 1, and the tool carries on.
 function cheat-help() {
+  autoload -Uz cheat
   local tool="$1"
   shift
   if [[ "$1" != -h ]] && (( ! ${@[(Ie)--help]} )); then

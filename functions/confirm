@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 function confirm() {
+  autoload -Uz cheat-help
   cheat-help confirm "$@" && return 0
 
   local MESSAGE=${1:="$c[warn]are you sure?$c[reset]"}

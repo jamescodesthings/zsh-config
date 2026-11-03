@@ -9,6 +9,7 @@
 # --plain and NO_COLOR still win. A tool still drops --plain from its own
 # arguments: `set -- "${@:#--plain}"`.
 function cli-init() {
+  autoload -Uz col
   if (( ${@[(Ie)--plain]} )) || [[ -n "$NO_COLOR" ]]; then
     typeset -g CLI_PLAIN=1
   elif [[ ! -t 1 ]] && [[ -z "$CLICOLOR_FORCE" || "$CLICOLOR_FORCE" == 0 ]]; then

@@ -116,6 +116,7 @@ function _progress_finish() {
 }
 
 function progress() {
+  autoload -Uz cheat-help cli-icon col say
   emulate -L zsh
   cheat-help progress "$@" && return 0
   zmodload zsh/datetime 2> /dev/null
