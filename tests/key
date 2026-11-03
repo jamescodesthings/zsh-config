@@ -272,4 +272,37 @@ run "key create demo"; K="$(< $KD/demo.key)"
 run "set -x; key cycle demo -y --to $TMP/work/e; set +x"
 same "set -x in the caller never traces the key" "$([[ $ERR == *$(< $KD/demo.key)* ]] && echo leak)" ""
 
+# --- round 2: sync --from
+fresh
+print -r -- $'A=1\nV=first\nB=2\nV="quoted-key"' > "$TMP/work/src"
+run "key sync demo --from $TMP/work/src --var V"
+same "import takes the last V line, quotes stripped" "$CODE|$(< $KD/demo.key)|$(mode $KD/demo.key)" "0|quoted-key|600"
+same "import makes no op call, no terminal needed" "$(cat $OPLOG 2>/dev/null)" ""
+same "key not in stdout or stderr" "$([[ $OUT$ERR == *quoted-key* ]] && echo leak)" ""
+same "var saved to conf" "$(grep '^var' $KD/demo.conf)" "var = V"
+print -r -- "V='single'" > "$TMP/work/src2"
+run "key sync demo --from $TMP/work/src2 --var NOPE"
+same "missing VAR line exits 1, store and conf untouched" "$CODE|$(< $KD/demo.key)|$(grep '^var' $KD/demo.conf)" "1|quoted-key|var = V"
+run "key sync demo --from $TMP/work/src2 --var V"
+same "different key backs the old one up" "$CODE|$(< $KD/demo.key)|$(< $KD/demo.key.1)" "0|single|quoted-key"
+run "key sync demo --from $TMP/work/src2"
+same "identical key is a no-op success" "$CODE|$(ls $KD | tr '\n' ' ')" "0|demo.conf demo.key demo.key.1 "
+run "key sync demo --from $TMP/work/nope"
+same "missing file exits 1" "$CODE|$(< $KD/demo.key)" "1|single"
+print -r -- $'V=\nW=3' > "$TMP/work/src3"
+run "key sync demo --from $TMP/work/src3"
+same "empty V line exits 1, store untouched" "$CODE|$(< $KD/demo.key)" "1|single"
+run "key sync demo --from $TMP/work/src2 --to $TMP/work/out"
+same "--to still works after import" "$(< $TMP/work/out)" "V=single"
+run "key sync demo --from $TMP/work/src2 -l"
+same "--from with -l exits 2" "$CODE" "2"
+
+fresh
+print -r -- "V=pushme-key" > "$TMP/work/src"
+run "key sync demo --from $TMP/work/src --var V --push -y"
+same "--from --push -y creates the item" "$CODE|$(grep -c 'item create' $OPLOG)|$(grep -c 'pushme-key' $OPLOG)" "0|1|0"
+same "template holds the key" "$([[ $(< $TMP/template.cap) == *pushme-key* ]] && echo yes)" "yes"
+run "key sync demo --from $TMP/work/src --push"
+same "--from --push without -y or tty exits 1" "$CODE" "1"
+
 exit $failed

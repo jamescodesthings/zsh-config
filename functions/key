@@ -8,9 +8,13 @@
 #
 #   key create <name> [--to FILE] [--var VAR] [--op REF]
 #   key cycle  <name> [--to FILE] [--var VAR] [-n|--dry-run] [-y|--yes]
-#   key sync   <name> [--push] [-l|--local] [--to FILE] [--var VAR] [--op REF] [-y|--yes]
+#   key sync   <name> [--push] [-l|--local] [--from FILE] [--to FILE] [--var VAR] [--op REF] [-y|--yes]
 #   key list   [--json]
 #   key path   <name> [-p|--previous]
+#
+# `sync --from FILE` seeds the store from the last VAR= line of an existing
+# file (one pair of surrounding quotes stripped) instead of asking 1Password;
+# with --push it then pushes the key; it cannot be combined with --local.
 #
 # Every subcommand also takes -v|--verbose, -q|--quiet and --plain. Exit 0
 # ok, 1 failed, 2 usage. A key is never put on any command's argv or printed:
@@ -46,12 +50,14 @@ function key() {
 
   # option state shared by the helpers below
   typeset -g _KEY_QUIET="" _KEY_VERBOSE=""
-  local name="" to="" var_opt="" op_opt="" dry="" yes="" push="" local_only="" json="" prev=""
+  local name="" to="" from="" var_opt="" op_opt="" dry="" yes="" push="" local_only="" json="" prev=""
   local -a rest
   while (( $# )); do
     case "$1" in
       --to) (( $# >= 2 )) || { _key_say fail "key: --to needs a file"; return 2; }; to="$2"; shift 2 ;;
       --to=*) to="${1#--to=}"; shift ;;
+      --from) (( $# >= 2 )) || { _key_say fail "key: --from needs a file"; return 2; }; from="$2"; shift 2 ;;
+      --from=*) from="${1#--from=}"; shift ;;
       --var) (( $# >= 2 )) || { _key_say fail "key: --var needs a name"; return 2; }; var_opt="$2"; shift 2 ;;
       --var=*) var_opt="${1#--var=}"; shift ;;
       --op) (( $# >= 2 )) || { _key_say fail "key: --op needs a reference"; return 2; }; op_opt="$2"; shift 2 ;;
@@ -101,6 +107,14 @@ function key() {
     _key_say fail "key: --push and --local cannot be combined"
     return 2
   fi
+  if [[ -n "$from" && -n "$local_only" ]]; then
+    _key_say fail "key: --from and --local cannot be combined (--local means no source)"
+    return 2
+  fi
+  if [[ -n "$from" && "$sub" != sync ]]; then
+    _key_say fail "key: --from belongs to sync"
+    return 2
+  fi
   if [[ -n "$op_opt" && ! "$op_opt" =~ '^op://[^/]+/[^/]+/[^/]+$' ]]; then
     _key_say fail "key: $op_opt is not an op://vault/item/field reference"
     return 2
@@ -139,7 +153,7 @@ function key() {
   case "$sub" in
     create) _key_create "$dir" "$name" "$to" ;;
     cycle) _key_cycle "$dir" "$name" "$to" "$dry" "$yes" ;;
-    sync) _key_sync "$dir" "$name" "$to" "$push" "$local_only" "$yes" ;;
+    sync) _key_sync "$dir" "$name" "$to" "$push" "$local_only" "$yes" "$from" ;;
   esac
 }
 
@@ -359,8 +373,16 @@ function _key_cycle() {
 }
 
 function _key_sync() {
-  local dir="$1" name="$2" to="$3" push="$4" local_only="$5" yes="$6" k
+  local dir="$1" name="$2" to="$3" push="$4" local_only="$5" yes="$6" from="$7" k
   local bin="${KEY_OP_BIN:-op}"
+
+  if [[ -n "$from" ]]; then
+    if [[ -n "$push" && -z "$yes" ]]; then
+      _key_have_tty || { _key_say fail "key: pushing needs a terminal to ask, or -y"; return 1; }
+    fi
+    _key_import "$dir" "$name" "$from" "$to" || return 1
+    [[ -n "$push" ]] || return 0
+  fi
 
   if [[ -n "$local_only" ]]; then
     if [[ -z "$to" ]]; then
@@ -420,6 +442,41 @@ function _key_sync() {
     fi
     _key_atomic_write "$kfile" "$k" || return 1
     _key_say ok "pulled key $name from 1Password"
+  fi
+  [[ -n "$to" ]] && { _key_to_write "$to" "$var" "$k" "" || return 1; }
+  return 0
+}
+
+# _key_import dir name from to: stores the last VAR= value of file `from` as
+# the key, with the same backup rule as a pull. Builtins only.
+function _key_import() {
+  local dir="$1" name="$2" src="$3" to="$4" line k=""
+  if [[ ! -r "$src" || -d "$src" ]]; then
+    _key_say fail "key: cannot read $src"
+    return 1
+  fi
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" == "$var="* ]] && k="${line#$var=}"
+  done < "$src"
+  if (( ${#k} >= 2 )) && [[ ( "${k[1]}" == '"' || "${k[1]}" == "'" ) && "${k[1]}" == "${k[-1]}" ]]; then
+    k="${k[2,-2]}"
+  fi
+  if [[ -z "$k" ]]; then
+    _key_say fail "key: $src has no $var= line with a value"
+    return 1
+  fi
+  _key_to_ok "$to" || return 1
+  _key_dir_ready "$dir" || return 1
+  _key_save_conf || return 1
+  if [[ -f "$kfile" && "$(< "$kfile")" == "$k" ]]; then
+    _key_say info "$name is already current"
+  else
+    if [[ -f "$kfile" ]]; then
+      _key_backup "$kfile" || return 1
+      _key_say info "kept the old key as ${REPLY:t}"
+    fi
+    _key_atomic_write "$kfile" "$k" || return 1
+    _key_say ok "imported key $name from $src"
   fi
   [[ -n "$to" ]] && { _key_to_write "$to" "$var" "$k" "" || return 1; }
   return 0
