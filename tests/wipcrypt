@@ -620,6 +620,22 @@ check "cycle-key --dry-run points at status" "yes" "$([[ $OUT == *"no dry run"* 
 check "cycle-key --dry-run leaves the store alone" "no" "$([[ -e $KD/n.key.1 || $(<$KD/n.key) != $old ]] && print yes || print no)"
 check "cycle-key --dry-run leaves the trees alone" "$before" "$(snap $t)"
 
+# Wrong key: encrypt and decrypt say what to check for the key they were given.
+t=$(new_key_fixture)
+print -r -- "$(newkey)" > "$KD/n.key"
+for sub in encrypt decrypt; do
+  run $sub --root "$t" --key n
+  check "$sub --key with a wrong store key exits 1" "1" "$CODE"
+  check "$sub --key says to check the store" "yes" \
+    "$([[ $OUT == *"does not match"* && $OUT == *"key path n -p"* && $OUT == *"key sync n"* && $OUT != *".env"* ]] && print yes || print no)"
+done
+t=$(new_aroot)
+run_af encrypt --root "$t" --env "$t/.env" > /dev/null 2>&1
+print -r -- "SKILLS_ENCRYPTION_KEY=$(openssl rand -base64 32)" > "$t/wrong.env"
+out=$(run_af decrypt --root "$t" --env "$t/wrong.env" 2>&1)
+check "decrypt --env with a wrong key keeps the .env wording" "1" \
+  "$(print -r -- "$out" | grep -c 'Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates.')"
+
 # FN_DIR unset: the function-call fallback never becomes /wipcrypt.
 check "guard fallback does not use a bare FN_DIR" "0" "$(grep -c '\$FN_DIR/wipcrypt' "$WIPCRYPT")"
 

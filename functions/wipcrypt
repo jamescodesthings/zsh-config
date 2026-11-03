@@ -159,6 +159,16 @@ load_store_key() {
   export SKILLS_ENCRYPTION_KEY="$line"
 }
 
+# What to check when the key does not open the tree. Under --key the key is in
+# the store; otherwise it is in the env file, as it always was.
+mismatch_hint() {
+  if [[ -n "$KEY_NAME" ]]; then
+    print -r -- "Check the store key with: key path $KEY_NAME, and the previous key with: key path $KEY_NAME -p; restore the right one with: key sync $KEY_NAME"
+  else
+    print -r -- "Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."
+  fi
+}
+
 load_env() {
   if [[ -n "$KEY_NAME" ]]; then
     load_store_key
@@ -439,7 +449,7 @@ encrypt_pair() {
   # it. Dry-run writes nothing either way, so the only cost here is an
   # accurate refusal instead of a comforting lie.
   verify_key_usable "$dst_root" \
-    || error "The encryption key does not match the encrypted tree at ${dst_root}. Nothing was changed. Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."
+    || error "The encryption key does not match the encrypted tree at ${dst_root}. Nothing was changed. $(mismatch_hint)"
 
   # Map real path -> ciphertext path, read from each payload's own header. This
   # is what lets a plaintext item be renamed without its ciphertext path
@@ -822,7 +832,7 @@ decrypt_pair() {
   local rel dest tmp header real_rel resolved_root resolved_parent
 
   verify_key_usable "$src_root" \
-    || error "The encryption key does not match the encrypted tree at ${src_root}. Nothing was changed. Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."
+    || error "The encryption key does not match the encrypted tree at ${src_root}. Nothing was changed. $(mismatch_hint)"
 
   # No .gitkeep filter here: the glob above already excludes it. See the
   # comment on verify_key_usable's own emptiness check, in lib,
@@ -1076,8 +1086,7 @@ run_cycle_key() {
   load_env "$ENV_FILE"
 
   stale_hint="Check that .env holds the current key before rotating."
-  [[ -n "$KEY_NAME" ]] \
-    && stale_hint="Check the store key with: key path $KEY_NAME, and the previous key with: key path $KEY_NAME -p; restore the right one with: key sync $KEY_NAME"
+  [[ -n "$KEY_NAME" ]] && stale_hint="$(mismatch_hint)"
 
   # Checked for every registered pair before anything else runs, including
   # before create-key below: a rotation that started decrypting one pair, then
