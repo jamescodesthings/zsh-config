@@ -99,7 +99,7 @@ is not empty "$var"  # -z test (negated)
 
 ### CLI helper library
 
-The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, project-manager, readerr), autoloaded from `functions/` like everything else, so a zsh tool uses it with no sourcing. The interface is agent-forge's `docs/cli-spec/helpers-interface.md`; the look is its `docs/cli-spec/demos/`.
+The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, readerr), autoloaded from `functions/` like everything else, so a zsh tool uses it with no sourcing. The interface is agent-forge's `docs/cli-spec/helpers-interface.md`; the look is its `docs/cli-spec/demos/`.
 
 - `configs/palette/palette.conf` is the one palette: `key = value` lines, a value being `#rrggbb`, another key, or `key-NN` (NN per cent of that colour over `background`). It holds the background, 15 hues and the roles (`cmd`, `tool`, `target`, `flag`, `num`, `heading`, `marker`, `prose`, `dim`, `ok`, `info`, `warn`, `err`, `tag-cmd`, `tag-child`), each role an alias of a hue. `~/.config/zsh-config/palette.conf` is read after it and wins per key. Rust and Swift tools parse the same file themselves.
 - `col <name|name-NN|role|bold|reset>` prints the escape: truecolor when `COLORTERM` is `truecolor` or `24bit`, the nearest of the 256 colours otherwise, nothing when `NO_COLOR` is set or `CLI_PLAIN=1`. `col -v VAR name` sets a variable instead (no subshell), `col --hex name` prints the resolved hex, `col --list` shows every hue and role.
@@ -113,6 +113,12 @@ The shared look for every CLI James runs (agent-forge's `hub`, pkms's `any`, pro
 - `config [--schema FILE] <tool> list|get|set|unset|edit` keeps a tool's settings in `~/.custom/config/<tool>.json` (gitignored), written atomically with jq; the tool ships a schema of `{key: {default, meaning}}` (`cheat config`).
 - `installers/fonts` (and `updaters/125-fonts`, and the Brewfile cask) installs the Nerd Font kitty names, DejaVuSansM Nerd Font Mono, so the icons render.
 - `cheat cli` is the helper library's sheet. `tests/col`, `tests/say`, `tests/pick`, `tests/progress`, `tests/run-quiet`, `tests/log` and `tests/config` cover it.
+
+### Keys and wipcrypt
+
+zsh-config owns `key` and `wipcrypt`; agent-forge and any other project call them. `key create|cycle|sync|list|path <name>` keeps per-project named keys in the store `${KEY_DIR:-$CUSTOM_DIR/config/keys}` (inside the gitignored `/config/`, folder 700): `<name>.key` (mode 600), older keys as `<name>.key.<n>`, `<name>.conf` (the 1Password reference and the variable name) and `<name>.users` (the roots wipcrypt re-encrypts on a cycle). Nothing per project is tracked, because the repo is public; a caller passes `--op` and `--var` once and they are remembered. The defaults are `op://${KEY_OP_VAULT:-Personal}/<name>-key/password` and `<NAME>_KEY`. A key never reaches argv, a log or the screen. `create` never replaces a key, `cycle` does and keeps the old one, and `sync` pulls from or pushes to 1Password (a terminal is needed, since `op` waits on the app).
+
+`wipcrypt <encrypt|decrypt|status|cycle-key>` turns a plaintext tree into a ciphertext tree and back. `--key NAME` takes the key from the store; without it the key is `SKILLS_ENCRYPTION_KEY` in the `--env` file. `cycle-key --key NAME` runs `key cycle NAME -y` and re-encrypts every pair, including the roots in `<name>.users`. As an autoloaded function it runs its own file as a script, so `exit` never closes the caller's shell. `cheat key` and `cheat wipcrypt` are the references; `tests/key` and `tests/wipcrypt` cover them.
 
 ### `cheatsheets/` directory
 
@@ -154,7 +160,7 @@ Each run keeps an error log at `.cache/logs/update/<YYYY-MM-DD-HH-MM-SS>.error.l
 
 Rules for an updater:
 
-- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities (`115-releases` refreshes the Debian release tools), `900` applications that depend on the rest, `950-projects` last (pulls every project through project-manager's `projects` and runs its `zsh/install.zsh`, which is how agent-forge is updated; skipped when `projects` is missing). Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
+- Name it `NNN-name`. Numbers rise in tens and run big to little: `000` OS, `010` package managers, `020` app stores, `030` app extensions, `035` Xcode, `040` to `070` languages, `080` to `090` shell frameworks, `100` to `120` utilities (`115-releases` refreshes the Debian release tools), `900` applications that depend on the rest, `950-projects` last (pulls every project through agent-forge's `hub project update` and runs its installer, which is how agent-forge is updated; skipped when `hub` is missing; `update` never calls `hub update`; James runs `hub down`, `update`, then `hub`). Two scripts may share a number when they never run on the same OS (`000-soft` and `000-debian`).
 - Source `_stub` from the same directory; it loads `is` and the colours, and exports the non-interactive environment (`NONINTERACTIVE`, `DEBIAN_FRONTEND`, `GIT_TERMINAL_PROMPT=0`).
 - Skip with `exit 0` when the tool is missing, `exit 1` on failure.
 - Never prompt. Pass the tool's own `--yes` style flag; sudo drops the environment, so pass variables on the sudo command line.

@@ -14,8 +14,8 @@
 - `cheat j`, `cheat hist` - jump to folders; search and tidy history
 - `cheat oh`, `cheat md` - open a folder; make one and cd into it
 - `cheat md-to-html`, `cheat md-to-pdf` - convert markdown
-- `cheat update` - pull and run every updater
-- `cheat log`, `cheat config` - run logs; a tool's settings
+- `cheat update`, `cheat log`, `cheat config` - updater; run logs; a tool's settings
+- `cheat key`, `cheat wipcrypt` - per-project keys; encrypt and decrypt a tree
 - `cheat kitty`, `cheat gnome-bin` - terminal keys; GNOME window scripts
 - Sheets: `cheat cheat`, `cheat cheatsheet-test`, `cheat link-cheatsheets`
 - Shell helpers: `cheat is`, `cheat confirm`, `cheat reload`, `cheat deps`, `cheat touch-sudo`, `cheat start-workstation`

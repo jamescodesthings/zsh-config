@@ -60,7 +60,7 @@
 - [x] rust `stable` is gone; only 1.99.1 is installed (checked 2026-10-29)
 - [ ] James: fill in uConsole keys (held in Anytype) in configs/kitty/overrides.uconsole.conf and configs/micro/bindings.uconsole.json
 - [ ] James: on each other machine, pull, restart terminals, run ./install (or update) (held in Anytype)
-- [x] wipcrypt: agent-forge owns it and `make sync-wipcrypt` keeps this copy current
+- [x] wipcrypt and the key store: zsh-config owns them (2026-11-03); agent-forge calls them
 - [x] 900-agent-forge retired (415d1c2); 130-obsidian retired (vault gone)
 - [x] apt keeps going past one broken source (02-apt-base, 000-debian), tested in docker
 - [x] `hist move` and `j move` for folders that moved, with tests/hist-j-move
@@ -95,7 +95,7 @@
 - Folder reorganise: zsh-config itself does not move (personal, not a fork, already at ~/projects/personal). What breaks on a move is history and z data keyed on paths, so `hist move` and `j move` were added. Alternatives: let `hist clean` and `j clean` drop them (loses history), or symlink old paths (clutters ~/projects).
 - Hub v3: no zsh-config file names the old hub commands; `.hub/` ignored; `hub oh` calls zsh-config's `oh` unchanged.
 - CHEATSHEET_DIR shim in .zshenv: kept until every machine has pulled. Alternative: drop it now, which breaks `link-cheatsheets` on a machine whose shells still carry the old value.
-- wipcrypt: keep the synced copy. Alternative: drop it and rely on agent-forge's PATH, which leaves machines without agent-forge without it.
+- wipcrypt and `key`: zsh-config owns them and the key store, so any project can use them. Alternative: leave wipcrypt in agent-forge, which leaves other projects and machines without it.
 
 ## Decisions 2026-10-30 (cheat v4)
 
