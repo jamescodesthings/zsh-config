@@ -1,18 +1,13 @@
 #!/usr/bin/env zsh
 
 function npm-update-latest() {
-  if is equal "$1" "--help"; then
-    echo "$c[h1]npm-update-latest$c[reset]"
-    echo ""
-    echo "$c[lead]checks for outdated npm packages and updates each one to @latest with confirmation.$c[reset]"
-    echo ""
-    echo "$c[h2]usage$c[reset]"
-    echo "  npm-update-latest $c[flag][--help]$c[reset]"
-    echo ""
-    echo "$c[h2]notes$c[reset]"
-    echo "  runs $c[param]npm outdated --json$c[reset] to detect outdated packages"
-    echo "  prompts $c[sub][y/n]$c[reset] before each $c[param]npm install <pkg>@latest --save$c[reset]"
-    return 0
+  cheat-help npm-update-latest "$@" && return 0
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
+
+  if is not empty "$1"; then
+    say fail "unknown argument: $1"
+    return 2
   fi
 
   local DEPS=(npm)
@@ -20,14 +15,11 @@ function npm-update-latest() {
     return 1
   fi
 
-  echo "$c[h1]npm update latest$c[reset]"
-  echo ""
-
   local outdated_json
   outdated_json=$(npm outdated --json 2>/dev/null)
 
   if is empty "$outdated_json" || is equal "$outdated_json" "{}"; then
-    echo "$c[success]all packages are up to date$c[reset]"
+    say ok "all packages are up to date"
     return 0
   fi
 
@@ -40,12 +32,12 @@ for pkg in data:
 " 2>/dev/null))
 
   if is empty "$packages"; then
-    echo "$c[success]all packages are up to date$c[reset]"
+    say ok "all packages are up to date"
     return 0
   fi
 
   local total=${#packages[@]}
-  echo "$c[warn]found $total outdated package(s):$c[reset]"
+  say warn "found $total outdated package(s)"
   echo ""
 
   echo "$outdated_json" | python3 -c "
@@ -79,30 +71,31 @@ for pkg, info in data.items():
       type_flag="--save"
     fi
 
-    echo "$c[h2]$pkg$c[reset]  $c[info-small]$current -> $latest$c[reset]"
+    print -r -- "$pkg  $current -> $latest"
 
-    if confirm "  update $c[param]${pkg}@latest$c[reset] $c[info-small]($type_flag)$c[reset]?"; then
-      echo "  $c[info]running:$c[reset] npm install ${pkg}@latest $type_flag"
+    if confirm "  update ${pkg}@latest ($type_flag)?"; then
+      say info "running: npm install ${pkg}@latest $type_flag"
       local npm_output npm_exit
       npm_output=$(npm install "${pkg}@latest" $type_flag 2>&1)
       npm_exit=$?
       if (( npm_exit == 0 )); then
-        echo "  $c[success]updated$c[reset] $pkg to latest"
+        say ok "updated $pkg to latest"
         (( updated++ ))
       else
-        echo "$npm_output"
-        echo "  $c[error]error:$c[reset] failed to update $pkg — try manually: npm install ${pkg}@latest $type_flag"
+        print -r -- "$npm_output"
+        problem "could not update $pkg"
+        fix "npm install ${pkg}@latest $type_flag" "run it by hand to see the error"
       fi
     else
-      echo "  $c[info]skipped$c[reset]"
+      say info "skipped $pkg"
       (( skipped++ ))
     fi
 
     echo ""
   done
 
-  echo "$c[h2]done$c[reset]"
-  echo "  $c[success]updated: $updated$c[reset]  $c[warn]skipped: $skipped$c[reset]"
+  say ok "updated: $updated, skipped: $skipped"
+  problems
 }
 
 npm-update-latest "$@"

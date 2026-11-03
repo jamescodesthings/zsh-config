@@ -1,0 +1,11 @@
+#compdef compress-jpg
+
+_compress-jpg() {
+  _arguments \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '--plain[no colour]' \
+    '(-q --quiet)'{-q,--quiet}'[say less]' '(-v --verbose)'{-v,--verbose}'[say more]' \
+    '1:jpeg file:_files -g "*.(jpg|jpeg|JPG|JPEG)"'
+}
+
+_compress-jpg "$@"

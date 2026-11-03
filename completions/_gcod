@@ -1,0 +1,7 @@
+#compdef gcod
+
+_gcod() {
+  _arguments '(-h --help)'{-h,--help}'[show help]'
+}
+
+_gcod "$@"

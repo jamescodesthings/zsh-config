@@ -1,9 +1,14 @@
 #!/usr/bin/env zsh
 
 function zshenv() {
+  cheat-help zshenv "$@" && return 0
+  cli-init "$@"
   if is available micro; then
     micro "$CUSTOM_DIR/env.$(get-hostname).zsh"
     return 0
   fi
-  echo "No editor found. Run $CUSTOM_DIR/install-micro to install micro."
+  say fail "no editor found: run $CUSTOM_DIR/install-micro to install micro"
+  return 1
 }
+
+zshenv "$@"

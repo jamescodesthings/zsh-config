@@ -1,0 +1,7 @@
+#compdef zshenv
+
+_zshenv() {
+  _arguments '(-h --help)'{-h,--help}'[show help]'
+}
+
+_zshenv "$@"

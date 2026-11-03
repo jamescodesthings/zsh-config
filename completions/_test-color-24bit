@@ -1,0 +1,8 @@
+#compdef test-color-24bit
+
+_test-color-24bit() {
+  _arguments \
+    '(-h --help)'{-h,--help}'[show help]'
+}
+
+_test-color-24bit "$@"

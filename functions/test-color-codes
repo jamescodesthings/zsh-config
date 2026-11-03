@@ -1,5 +1,8 @@
 #!/usr/bin/env zsh
 
+cheat-help test-color-codes "$@" && return 0
+cli-init "$@"
+
 typeset -a colors; colors=(
   base1
   base2

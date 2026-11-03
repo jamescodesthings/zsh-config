@@ -1,0 +1,7 @@
+#compdef gcom
+
+_gcom() {
+  _arguments '(-h --help)'{-h,--help}'[show help]'
+}
+
+_gcom "$@"

@@ -1,0 +1,10 @@
+#compdef dsp
+
+_dsp() {
+  _arguments \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '--plain[no colour]' \
+    '*:docker system prune option:'
+}
+
+_dsp "$@"

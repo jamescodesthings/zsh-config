@@ -1,0 +1,7 @@
+#compdef git-branch
+
+_git-branch() {
+  _arguments '(-h --help)'{-h,--help}'[show help]'
+}
+
+_git-branch "$@"

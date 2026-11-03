@@ -1,0 +1,10 @@
+#compdef compress-pdf-all
+
+_compress-pdf-all() {
+  _arguments \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '--plain[no colour]' \
+    '(-q --quiet)'{-q,--quiet}'[say less]' '(-v --verbose)'{-v,--verbose}'[say more]'
+}
+
+_compress-pdf-all "$@"

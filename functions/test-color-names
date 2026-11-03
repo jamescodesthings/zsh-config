@@ -1,5 +1,8 @@
 #!/usr/bin/env zsh
 
+cheat-help test-color-names "$@" && return 0
+cli-init "$@"
+
 # from: https://github.com/zpm-zsh/colors
 
 echo -e "${c[base1]} COLOR BASE1 ${c[reset]} ${c[base2]} COLOR BASE2 ${c[reset]} ${c[base3]} COLOR BASE3 ${c[reset]} ${c[base4]} COLOR BASE4 ${c[reset]}"

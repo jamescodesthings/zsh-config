@@ -78,6 +78,8 @@
 # synced copy, and the key-users registry defaults to $KEY_DIR/NAME.users
 # (AGENT_FORGE_KEY_USERS still overrides).
 if [[ $ZSH_EVAL_CONTEXT == *shfunc* ]]; then
+  autoload -Uz cheat-help
+  cheat-help wipcrypt "$@" && return 0
   local wc_file="${functions_source[wipcrypt]:-${FN_DIR:-${CUSTOM_DIR:-$HOME/.custom}/functions}/wipcrypt}"
   zsh "$wc_file" "$@"
   return
@@ -102,7 +104,7 @@ usage() {
 
 # Exit 2, not 1: an argument mistake is a different failure from a refusal to
 # operate, and a caller that wants to tell the two apart can. Both lines go to
-# stderr here; --help prints the same usage on stdout and exits 0.
+# stderr here; --help shows `cheat wipcrypt` and exits 0.
 usage_error() {
   print -r -- "wipcrypt: $1" >&2
   usage >&2
@@ -1291,7 +1293,11 @@ while (( $# )); do
       shift
       ;;
     --dry-run) DRY_RUN=1 ;;
-    -h|--help) usage; exit 0 ;;
+    -h|--help)
+      # Run as a plain script (not through the autoloaded function), so show
+      # the sheet through a child shell that has this folder on its fpath.
+      FPATH="$WIPCRYPT_DIR:$FPATH" zsh -fc 'autoload -Uz cheat; cheat wipcrypt' || usage
+      exit 0 ;;
     -*) usage_error "unknown option: $1" ;;
     *)
       if [[ -z "$SUB" ]]; then

@@ -1,0 +1,76 @@
+#!/usr/bin/env zsh
+# Tests --help and --plain on the user tools (compress-*, asdf-cleanup,
+# npm-update-latest, steamos-install, picoh, aptr, dsp, gcod, gcom,
+# get-hostname, git-branch, zshenv, test-color-*, wipcrypt) from a plain
+# `zsh -f` child with functions/ on fpath. --help must exit 0 and print the
+# sheet title. --plain output must hold no escape codes, but only for runs
+# with no side effect (a bad argument or an empty folder); the rest check
+# --help only. Nothing here installs, deletes or touches the network.
+# Run: tests/flags. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+E=$'\e'
+mkdir -p "$TMP/home" "$TMP/work"
+
+# run <dir> <zsh code>: sets OUT (stdout and stderr together) and CODE
+function run() {
+  OUT="$(cd "$1" && env -i HOME="$TMP/home" PATH=/usr/bin:/bin:/usr/local/bin \
+    CHEATSHEET_DIR="$REPO_DIR/cheatsheets" CUSTOM_DIR="$REPO_DIR" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz cheat cheat-help cheat-render col cli-init cli-icon say problem fix problems is deps confirm
+    autoload -Uz ${(f)"$(ls $1/functions)"} 2>/dev/null
+    eval "$2"
+  ' _ "$REPO_DIR" "$2" 2>&1 < /dev/null)"
+  CODE=$?
+}
+
+function ok() { print "ok   $1"; }
+function bad() { print "FAIL $1"; print -r -- "$2" | head -5 | sed 's/^/     /'; failed=1; }
+
+local tool
+for tool in aptr asdf-cleanup compress-jpg compress-jpg-all compress-pdf compress-pdf-all \
+  dsp gcod gcom get-hostname git-branch npm-update-latest picoh steamos-install \
+  test-color-24bit test-color-codes test-color-names zshenv wipcrypt; do
+  run "$TMP/work" "$tool --help"
+  if (( CODE == 0 )) && [[ "$OUT" == *"# $tool"* || "$OUT" == *"$tool"$'\n'* ]]; then
+    ok "$tool --help"
+  else
+    bad "$tool --help (exit $CODE)" "$OUT"
+  fi
+  run "$TMP/work" "$tool -h"
+  if (( CODE == 0 )) && [[ "$OUT" == *"$tool"* ]]; then ok "$tool -h"; else bad "$tool -h (exit $CODE)" "$OUT"; fi
+done
+
+# --plain: runs with no side effect. <tool args> <wanted exit>
+function plain() {
+  run "$TMP/work" "$1 --plain"
+  if [[ "$OUT" == *"$E"* ]]; then
+    bad "$1 --plain has escape codes" "${OUT//$E/<ESC>}"
+  elif [[ -n "$2" ]] && (( CODE != $2 )); then
+    bad "$1 --plain exit $CODE, wanted $2" "$OUT"
+  else
+    ok "$1 --plain"
+  fi
+}
+
+plain "compress-jpg" 2
+plain "compress-jpg-all" 0
+plain "compress-pdf-all" 0
+plain "npm-update-latest --bogus" 2
+plain "steamos-install --bogus" 2
+plain "asdf-cleanup --bogus" 2
+plain "get-hostname" 0
+plain "picoh" 1
+
+# git-branch only inside a repo
+( cd "$TMP/work" && git init -q . 2>/dev/null && git commit -q --allow-empty -m x 2>/dev/null )
+plain "git-branch" 0
+
+# wipcrypt keeps its one-line usage on stderr and exit 2 for a bad argument
+run "$TMP/work" "wipcrypt --bogus"
+if (( CODE == 2 )) && [[ "$OUT" == *"usage: wipcrypt"* ]]; then ok "wipcrypt bad argument"; else bad "wipcrypt bad argument (exit $CODE)" "$OUT"; fi
+
+exit $failed

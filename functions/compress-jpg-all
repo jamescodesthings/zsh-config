@@ -1,26 +1,40 @@
 #!/usr/bin/env zsh
 
 compress-jpg-all() {
-    # Find all .jpg and .jpeg files (case-insensitive, ignores already compressed)
-    local jpegs=( *.(jpg|jpeg|JPG|JPEG)(N) )
-    local target_jpegs=()
+  cheat-help compress-jpg-all "$@" && return 0
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
-    for f in $jpegs; do
-        if [[ ! -f "compressed/$f" ]]; then
-            target_jpegs+=("$f")
-        fi
-    done
+  if [[ -n "$1" ]]; then
+    say fail "unknown argument: $1"
+    return 2
+  fi
 
-    # Check if any uncompressed JPEGs exist
-    if (( ${#target_jpegs} == 0 )); then
-        echo "No uncompressed JPEG files found in this folder."
-        return 0
+  # Find all .jpg and .jpeg files (case-insensitive, ignores already compressed)
+  local jpegs=( *.(jpg|jpeg|JPG|JPEG)(N) )
+  local target_jpegs=() f input
+
+  for f in $jpegs; do
+    if [[ ! -f "compressed/$f" ]]; then
+      target_jpegs+=("$f")
     fi
+  done
 
-    # Loop and call the single compression function
-    for input in "${target_jpegs[@]}"; do
-        compress-jpg "$input"
-    done
+  if (( ${#target_jpegs} == 0 )); then
+    say info "no uncompressed JPEG files found in this folder"
+    return 0
+  fi
+
+  # Loop and call the single compression function; a failure is recorded in
+  # the problems block and the loop carries on.
+  for input in "${target_jpegs[@]}"; do
+    if ! compress-jpg "$input"; then
+      problem "could not compress $input"
+      fix "compress-jpg $input" "run it alone to see the error"
+    fi
+  done
+
+  problems
 }
 
 compress-jpg-all "$@"

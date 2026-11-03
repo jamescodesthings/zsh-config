@@ -1,0 +1,7 @@
+#compdef get-hostname
+
+_get-hostname() {
+  _arguments '(-h --help)'{-h,--help}'[show help]'
+}
+
+_get-hostname "$@"

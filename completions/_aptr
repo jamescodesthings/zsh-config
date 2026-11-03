@@ -1,0 +1,11 @@
+#compdef aptr
+
+_aptr() {
+  _arguments \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '--plain[no colour]' \
+    '(-q --quiet)'{-q,--quiet}'[say less]' '(-v --verbose)'{-v,--verbose}'[say more]' \
+    '1:package:_deb_packages installed'
+}
+
+_aptr "$@"

@@ -1,0 +1,10 @@
+#compdef steamos-install
+
+_steamos-install() {
+  _arguments \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '--plain[no colour]' \
+    '(-q --quiet)'{-q,--quiet}'[say less]' '(-v --verbose)'{-v,--verbose}'[say more]'
+}
+
+_steamos-install "$@"

@@ -1,16 +1,23 @@
 #!/usr/bin/env zsh
 
 function compress-pdf() {
+  cheat-help compress-pdf "$@" && return 0
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
+
   local DEPS=(gs)
   if ! deps "${DEPS[@]}"; then
     return 1
   fi
 
-  # Check if a file was provided
-  if [ -z "$1" ]; then
-    echo "Error: Please provide a PDF file name."
-    echo "Usage: compress_pdf input.pdf"
-    return 1
+  if [[ -z "$1" ]]; then
+    say fail "provide a PDF file name"
+    say info "usage: compress-pdf input.pdf"
+    return 2
+  fi
+  if [[ "$1" == -* ]]; then
+    say fail "unknown option: $1"
+    return 2
   fi
 
   # Extract the base name without the extension
@@ -20,12 +27,15 @@ function compress-pdf() {
   mkdir -p compressed
 
   # Run the compression
-  gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite \
+  if ! gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite \
     -dCompatibilityLevel=1.5 -dPDFSETTINGS=/screen \
     -dEmbedAllFonts=true -dSubsetFonts=true \
-    -sOutputFile="compressed/${base_name}.pdf" "$1"
+    -sOutputFile="compressed/${base_name}.pdf" "$1"; then
+    say fail "could not compress $1"
+    return 1
+  fi
 
-  echo "Done! Created: compressed/${base_name}.pdf"
+  say ok "created compressed/${base_name}.pdf"
 }
 
 compress-pdf "$@"
