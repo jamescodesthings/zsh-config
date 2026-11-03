@@ -53,6 +53,21 @@ same "say with an unknown kind fails" "${OUT}|${${ERR:+err}}" "rc=2|err"
 run COLORTERM=truecolor -- 'say ok done'
 same "say colours the line in the role colour" "$OUT" "${E}[38;2;34;218;110m${I_OK}  done${E}[0m"
 
+run CLI_PLAIN=1 CLI_QUIET=1 -- 'say ok a; say info b; say warn c; say fail d'
+same "CLI_QUIET silences ok and info, not warn or fail" "$OUT|$ERR" "${I_WARN}  c|${I_ERR}  d"
+
+run CLI_PLAIN=1 -- 'cli-init -q; say ok a; say warn c; print -r -- "q=$CLI_QUIET v=${CLI_VERBOSE:-unset}"'
+same "cli-init -q sets CLI_QUIET" "$OUT" "${I_WARN}  c${NL}q=1 v=unset"
+
+run CLI_PLAIN=1 -- 'cli-init --quiet -v; print -r -- "q=$CLI_QUIET v=$CLI_VERBOSE"'
+same "cli-init --quiet and -v set both" "$OUT" "q=1 v=1"
+
+run CLI_PLAIN=1 -- 'cli-init --verbose; print -r -- "q=${CLI_QUIET:-unset} v=$CLI_VERBOSE"'
+same "cli-init --verbose sets CLI_VERBOSE only" "$OUT" "q=unset v=1"
+
+run CLI_PLAIN=1 CLI_QUIET=1 -- 'cli-init; print -r -- "q=${CLI_QUIET:-unset}"'
+same "cli-init never unsets an inherited CLI_QUIET" "$OUT" "q=1"
+
 run CLI_PLAIN=1 -- 'problems; print -r -- "rc=$?"'
 same "problems with nothing collected prints nothing and returns 0" "$OUT|$ERR" "rc=0|"
 

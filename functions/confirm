@@ -4,6 +4,11 @@ function confirm() {
   autoload -Uz cheat-help
   cheat-help confirm "$@" && return 0
 
+  # -y|--yes or CLI_YES=1: yes without asking.
+  if [[ "$1" == (-y|--yes) ]] || [[ -n "$CLI_YES" && "$CLI_YES" != 0 ]]; then
+    return 0
+  fi
+
   local MESSAGE=${1:="$c[warn]are you sure?$c[reset]"}
   read "confirmed?$MESSAGE $c[sub][y/n]$c[reset] "
   if [[ "$confirmed" =~ ^[Yy]$ ]]; then

@@ -8,6 +8,11 @@
 # without a terminal, for a parent that captures the output to reprint it;
 # --plain and NO_COLOR still win. A tool still drops --plain from its own
 # arguments: `set -- "${@:#--plain}"`.
+#
+# -q|--quiet sets CLI_QUIET=1 (say ok and info print nothing) and
+# -v|--verbose sets CLI_VERBOSE=1. They are only ever set here, never unset,
+# so a value inherited from a parent tool stays. A tool drops them from its
+# own arguments the same way: `set -- "${@:#(-q|--quiet|-v|--verbose)}"`.
 function cli-init() {
   autoload -Uz col
   if (( ${@[(Ie)--plain]} )) || [[ -n "$NO_COLOR" ]]; then
@@ -15,6 +20,8 @@ function cli-init() {
   elif [[ ! -t 1 ]] && [[ -z "$CLICOLOR_FORCE" || "$CLICOLOR_FORCE" == 0 ]]; then
     typeset -g CLI_PLAIN=1
   fi
+  (( ${@[(Ie)-q]} + ${@[(Ie)--quiet]} )) && typeset -g CLI_QUIET=1
+  (( ${@[(Ie)-v]} + ${@[(Ie)--verbose]} )) && typeset -g CLI_VERBOSE=1
   col -v _cli_reset reset
 }
 

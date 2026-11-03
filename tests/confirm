@@ -1,0 +1,40 @@
+#!/usr/bin/env zsh
+# Tests functions/confirm from a plain `zsh -f -c`, stdin closed.
+# Run: tests/confirm. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+# run <env...> -- <args...>: sets OUT, CODE
+function run() {
+  local -a envs=()
+  while [[ "$1" != -- ]]; do envs+=("$1"); shift; done
+  shift
+  OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin "${envs[@]}" zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz confirm cheat-help
+    shift
+    confirm "$@"
+  ' _ "$REPO_DIR" "$@" </dev/null 2>&1)"
+  CODE=$?
+}
+
+function code() {
+  if [[ "$CODE" == "$2" ]]; then echo "ok: $1"; else echo "FAIL: $1: exit $CODE, wanted $2 ($OUT)"; failed=1; fi
+}
+
+run -- -y "Go on?"
+code "confirm -y returns 0 without asking" 0
+
+run -- --yes
+code "confirm --yes returns 0" 0
+
+run CLI_YES=1 -- "Go on?"
+code "CLI_YES=1 returns 0 without asking" 0
+
+run -- "Go on?"
+code "no -y and no tty: reads nothing, returns 1" 1
+
+exit $failed
