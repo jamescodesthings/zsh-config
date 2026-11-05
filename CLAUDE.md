@@ -241,7 +241,7 @@ In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`config
 
 # Global workflow
 
-Synced from agent-forge (`claude/config/CLAUDE.md`, portable sections only) by following `PROJECT_INIT.md`. Edit these sections upstream and re-sync; do not edit them here.
+Synced from agent-forge (`config/CLAUDE.md`, portable sections only) by following `PROJECT_INIT.md`. Edit these sections upstream and re-sync; do not edit them here.
 
 ## Rule precedence
 
@@ -292,7 +292,7 @@ Key triggers:
 
 After any work that creates or modifies files, subagent or orchestrator, code or docs/markdown, invoke **`post-implementation-review`** skill.
 
-Whenever a cheat sheet is made or changed, run `cheatsheet-test <sheet or cheatsheets dir>` (a zsh-config function) and fix every failure before the work counts as done. Sheets are tldr-shaped minimal lists, one sheet per subcommand: every non-empty line starts with `# `, `> `, `- ` or a backtick, an example line ends with a backtick, and nothing is indented.
+Whenever a CLI, shell function, script or Makefile target that prints to a terminal is made or changed, follow the house CLI style skill; whenever a cheat sheet is made or changed, follow the house cheat-sheet skill. Both are installed from agent-forge into every session, and `cheat cli` and `cheat cheat format` are their quick references. Before the work counts as done, run `cheatsheet-test --strict <sheet or cheatsheets dir>` (a zsh-config function) and fix every failure.
 
 ## Git strategy
 
@@ -335,6 +335,8 @@ Subagents: specify `model:` in agent frontmatter. Read-only validators and triag
 | Config, scripts, throwaway / one-off | No |
 | Unclear scope or scale | Ask during `superpowers:brainstorming`, before writing a plan |
 
+Tests never execute a real user tool, installer, alias, git wrapper or destructive command, not even once to see what it does. Stub every external command first (a PATH of stubs, an empty temp HOME and an empty temp working folder), and check each new test for unstubbed commands before it runs. Every prompt for a subagent that writes or runs tests carries this rule.
+
 ## Scope creep guard
 
 Agents must not touch files outside their assigned task scope. If a fix requires out-of-scope changes, surface it to the orchestrator; do not silently expand scope.
@@ -368,4 +370,4 @@ An open action goes to the user's task tracker, through a task skill where one i
 
 ## Project initialization
 
-Initializing a new project (`claude init`, first run in a directory, or on request) requires a specific `CLAUDE.md` structure and a seeded project memory directory. Use the `project-init` skill; it is public, at `shared/skills/project-init/` in the agent-forge repo, and installed as `~/.claude/skills/project-init`. If it doesn't trigger, follow `PROJECT_INIT.md` in the agent-forge repo directly.
+Initializing a new project (`claude init`, first run in a directory, or on request) requires a specific `CLAUDE.md` structure and a seeded project memory directory. Use the `project-init` skill; it is public, at `skills/project-init/` in the agent-forge repo, and installed as `~/.claude/skills/project-init`. If it doesn't trigger, follow `PROJECT_INIT.md` in the agent-forge repo directly.
