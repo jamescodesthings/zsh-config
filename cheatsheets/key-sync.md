@@ -8,7 +8,7 @@
 - `<name>` - the key's name
 - `--push` - push the stored key to 1Password (create or edit the item); asks once
 - `[-l|--local]` - skip 1Password; only write the stored key into `--to` FILE (needs `--to`)
-- `--from FILE` - take the key from FILE's last `VAR=` line instead of 1Password; with `--push`, then push it
+- `--from FILE` - take the key from FILE's last `VAR=` line (or its one bare-key line) instead of 1Password; with `--push`, then push it
 - `--to FILE` - also write `VAR=key` into FILE
 - `--var VAR`, `--op REF` - override and remember the variable and the reference
 - `[-y|--yes]` - do not ask before a push

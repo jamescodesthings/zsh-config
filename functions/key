@@ -470,21 +470,28 @@ function _key_sync() {
 }
 
 # _key_import dir name from to: stores the last VAR= value of file `from` as
-# the key, with the same backup rule as a pull. Builtins only.
+# the key, with the same backup rule as a pull. A file with no VAR= line is
+# taken as a bare key when it holds one non-blank line with no whitespace, no
+# leading # and no look of an assignment (NAME=). Builtins only.
 function _key_import() {
-  local dir="$1" name="$2" src="$3" to="$4" line k=""
+  local dir="$1" name="$2" src="$3" to="$4" line k="" bare="" nlines=0
   if [[ ! -r "$src" || -d "$src" ]]; then
     _key_say fail "key: cannot read $src"
     return 1
   fi
   while IFS= read -r line || [[ -n "$line" ]]; do
     [[ "$line" == ("export "[[:space:]]#|)"$var="* ]] && k="${line#*$var=}"
+    [[ -n "$line" ]] && { bare="$line"; (( nlines++ )); }
   done < "$src"
+  if [[ -z "$k" ]] && (( nlines == 1 )) && [[ "$bare" != *[[:space:]]* && "$bare" != "#"* ]] \
+    && ! [[ "$bare" =~ '^(export[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=' ]]; then
+    k="$bare"
+  fi
   if (( ${#k} >= 2 )) && [[ ( "${k[1]}" == '"' || "${k[1]}" == "'" ) && "${k[1]}" == "${k[-1]}" ]]; then
     k="${k[2,-2]}"
   fi
   if [[ -z "$k" ]]; then
-    _key_say fail "key: $src has no $var= line with a value"
+    _key_say fail "key: $src has no $var= line with a value (a bare one-line key is also accepted)"
     return 1
   fi
   _key_to_ok "$to" || return 1

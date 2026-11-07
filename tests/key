@@ -331,6 +331,37 @@ same "template holds the key" "$([[ $(< $TMP/template.cap) == *pushme-key* ]] &&
 run "key sync demo --from $TMP/work/src --push"
 same "--from --push without -y or tty exits 1" "$CODE" "1"
 
+# --- bare-key files
+fresh
+print -r -- "barekey-one" > "$TMP/work/bare"
+run "key sync demo --from $TMP/work/bare"
+same "bare-key file imports" "$CODE|$(< $KD/demo.key)" "0|barekey-one"
+same "bare key not in output" "$([[ $OUT$ERR == *barekey-one* ]] && echo leak)" ""
+fresh
+print -r -- $'\n\n"barekey-two"\n\n' > "$TMP/work/bare"
+run "key sync demo --from $TMP/work/bare"
+same "bare key with blank lines, quotes stripped" "$CODE|$(< $KD/demo.key)" "0|barekey-two"
+print -r -- 'abc+/def==' > "$TMP/work/b64"
+run "key sync demo --from $TMP/work/b64"
+same "base64 bare key with = padding imports" "$CODE|$(< $KD/demo.key)" "0|abc+/def=="
+same "base64 key not in output" "$([[ $OUT$ERR == *abc+/def* ]] && echo leak)" ""
+print -r -- 'barekey-two' | cp /dev/stdin $KD/demo.key
+print -r -- $'barekey-x\nbarekey-y' > "$TMP/work/bare2"
+run "key sync demo --from $TMP/work/bare2"
+same "two-line file with no VAR line fails, store untouched" "$CODE|$(< $KD/demo.key)" "1|barekey-two"
+same "failure message mentions bare key, no key leak" "$([[ $ERR == *'bare one-line key'* ]] && echo yes)|$([[ $OUT$ERR == *barekey-x* ]] && echo leak)" "yes|"
+print -r -- $'noise\nV=varwins\nmore' > "$TMP/work/mixed"
+run "key sync demo --from $TMP/work/mixed --var V"
+same "VAR line wins over other lines" "$CODE|$(< $KD/demo.key)" "0|varwins"
+print -r -- "V=onlyvar" > "$TMP/work/mixed2"
+run "key sync demo --from $TMP/work/mixed2 --var V"
+same "single VAR line is not read as bare" "$(< $KD/demo.key)" "onlyvar"
+fresh
+print -r -- "barepush-key" > "$TMP/work/bare"
+run "key sync demo --from $TMP/work/bare --push -y"
+same "bare --push -y creates the item, key only in template" "$CODE|$(grep -c 'item create' $OPLOG)|$(grep -c 'barepush-key' $OPLOG)|$([[ $(< $TMP/template.cap) == *barepush-key* ]] && echo yes)" "0|1|0|yes"
+same "no leak in push output" "$([[ $OUT$ERR == *barepush-key* ]] && echo leak)" ""
+
 # --- round 3: default vault
 fresh
 run "key create demo; key list --json"
