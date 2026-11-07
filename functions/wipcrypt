@@ -1051,16 +1051,14 @@ run_cycle_key() {
   ROTATION_ROOTS=("$ROOT_DIR")
   ROTATION_PAIRS_FILES=("$PAIRS_FILE")
 
-  # Under --key the registry is the store's NAME.users; with --env the legacy
-  # <env dir>/.cache/key-users is read too when it exists. Both are read and
-  # deduplicated. AGENT_FORGE_KEY_USERS overrides both.
+  # Under --key the registry is the store's NAME.users only; the old
+  # <env dir>/.cache/key-users is not read. Without --key it is the old --env
+  # contract, <env dir>/.cache/key-users. AGENT_FORGE_KEY_USERS overrides both.
   local -a key_users_files
   if [[ -n "$AGENT_FORGE_KEY_USERS" ]]; then
     key_users_files=("$AGENT_FORGE_KEY_USERS")
   elif [[ -n "$KEY_NAME" ]]; then
     key_users_files=("$KEY_STORE/$KEY_NAME.users")
-    (( ENV_GIVEN )) && [[ -e "${ENV_FILE:h}/.cache/key-users" ]] \
-      && key_users_files+=("${ENV_FILE:h}/.cache/key-users")
   else
     key_users_files=("${ENV_FILE:h}/.cache/key-users")
   fi

@@ -23,7 +23,7 @@
 # Cycling
 
 - `wipcrypt cycle-key --key <name>` - runs `key cycle <name> -y`, then re-encrypts every pair
-- `--env FILE` with it also rewrites FILE's key line; other roots come from `<name>.users`, and from agent-forge's `.cache/key-users` too
+- `--env FILE` with it also rewrites FILE's key line; other roots come from `<name>.users`
 
 # Examples
 

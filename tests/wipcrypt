@@ -148,8 +148,8 @@ run cycle-key --root "$t" --key n --env "$e/.env"
 check "--env outside the root is accepted with --key" "0" "$CODE"
 check "that env file holds the new key" "$(<$KD/n.key)" "$(key_of "$e/.env")"
 
-# A root listed only in the legacy <env dir>/.cache/key-users is rotated too
-# with --key --env; a root in both files is rotated once.
+# A root listed only in the legacy <env dir>/.cache/key-users is NOT read with
+# --key --env (its ciphertext stays as it was); a root in NAME.users is rotated.
 KD=$(mkt); export KEY_DIR="$KD"
 t=$(new_root); lg=$(new_root); both=$(new_root); e=$(mkt)
 old=$(newkey)
@@ -162,16 +162,16 @@ print -r -- "$both" > "$KD/n.users"
 run encrypt --root "$t" --key n
 run encrypt --root "$lg" --key n
 run encrypt --root "$both" --key n
+lgsum=$(cat "$lg"/.claude/x-encrypted/**/*(N.) | cksum)
 run cycle-key --root "$t" --key n --env "$e/.env"
-check "legacy registry cycle exits zero" "0" "$CODE"
+check "registry cycle exits zero" "0" "$CODE"
 new=$(<"$KD/n.key")
 ok=yes
-for r in "$lg" "$both"; do
-  for f in "$r"/.claude/x-encrypted/**/*(N.); do
-    [[ -n "$(decrypts_with "$new" "$f")" ]] || ok=no
-  done
+for f in "$both"/.claude/x-encrypted/**/*(N.); do
+  [[ -n "$(decrypts_with "$new" "$f")" ]] || ok=no
 done
-check "legacy-only and shared roots re-encrypted under the new key" "yes" "$ok"
+check "root in NAME.users re-encrypted under the new key" "yes" "$ok"
+check "legacy-only root's ciphertext unchanged" "$lgsum" "$(cat "$lg"/.claude/x-encrypted/**/*(N.) | cksum)"
 
 # A stale store key aborts before anything is touched.
 t=$(new_root)
