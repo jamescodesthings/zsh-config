@@ -1,7 +1,7 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-11-03 19:57 GMT
+- **Date/Time Stamp:** 2026-11-08 21:00 GMT
 - **Current Task Status:** Hub CLI overhaul, zsh-config part, done (0426901..5b8d15c): `key` (per-project named keys, 1Password sync, import), wipcrypt owned here with `--key`, every CLI helper loads its own dependencies, progress wrappers call the binary, 950-projects runs `hub project update`. Then the CLI and cheat-sheet sweep, done (f749f35..3c4bd58): every tool on cli-init, say and problems, update quiet with a step counter and logs in ~/.custom/logs/update, $c[...] and zpm-zsh-colors retired. Earlier: CLI helper library done (agent-forge docs/cli-spec/helpers-interface.md): palette and col, say and problems, cheat-render replacing tlrc in cheat, logs, pick, progress, run-quiet, config, the Nerd Font step, and every sheet on the new cheatsheet-test rules (See also last, ` - ` rows, 35 lines). Earlier: cheat v4.
 
 ## Milestone & Phase Progress
@@ -88,8 +88,8 @@
 - Open work from the hub, in this order (handover 2026-11-03 19:18):
   1. Finish branch `wip/2026-11-03` (32d55e2): CLI helpers safe under `set -u` (emulate -L zsh, `${VAR-}`), tests/set-u still failing. Rebase on main, finish, ff-merge, delete the branch.
   2. On that work too: cheatsheet-test skips `*-encrypted` and `.cipher` folders when walking a directory and refuses them as direct arguments (exit 1), with binary stand-in tests; run-quiet renames a failed child log to `*.failed.log` and pruning keeps the newest 50 ordinary and 50 failed separately, with a 1-fail-plus-120-ok test; cheatsheet-test autoloads is, cheat-render and cheat-help itself (tests/helpers-standalone case).
-  3. `key` direction rename (forms already sent to the hub and agreed): `key pull|push|import|export`, `key sync` dropped and every old form exits 2 with a fix line naming the new command; wipcrypt hints to `key push NAME` / `key pull NAME`; sheets key-pull, key-push, key-import, key-export replace key-sync; completion, tests, CLAUDE.md, design doc.
-  4. Report all three to the hub with leak and secrets results. Test rule: stub PATH, temp HOME and temp cwd before any tool runs.
+  3. Done 2026-11-08 (3fb5677): `key pull|push|import|export`, `key sync` refuses with fix lines.
+  4. Report items 1 and 2 to the hub with leak and secrets results. Test rule: stub PATH, temp HOME and temp cwd before any tool runs.
 - James: after pulling, `exec zsh`; the first real `update` run is the check of the new quiet runner (sudo prompt, step counter, `update --errors`).
 - With the hub (not here): one manual push of a throwaway key (`key create zz-test`, `key sync zz-test --push` twice, `key sync zz-test`) to confirm `op item edit --template` edits only the field and `item create --vault` with a template works; tests use a stub op.
 
