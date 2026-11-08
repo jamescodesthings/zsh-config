@@ -1,23 +1,23 @@
 # key
 
-> Per-project named keys kept outside git, synced with 1Password, written into a file on request.
+> Per-project named keys kept outside git, pulled from and pushed to 1Password, written into a file on request.
 
 # Getting started
 
 - `key create <name>` - make a key where none exists
-- `key sync <name>` - pull the key from 1Password (needs a terminal)
+- `key pull <name>` - pull the key from 1Password (needs a terminal)
 - `key list` - every key in the store
 
 # Everyday
 
 - `key create <name> [--to FILE]` - new key; `--to` also writes it into FILE
 - `key cycle <name> [--to FILE] [-n|--dry-run] [-y|--yes]` - replace the key, keep the old as a backup
-- `key sync <name> [--push] [-l|--local] [--from FILE] [--to FILE] [-y|--yes]` - 1Password to the store; `--push` the other way; `--from` reads a file
-
-# Inspect
-
+- `key pull <name> [--to FILE] [-y|--yes]` - 1Password to the store; `--to` also writes FILE
+- `key push <name> [--from FILE] [-y|--yes]` - the store to 1Password; `--from` imports FILE first
+- `key import <name> --from FILE` - FILE's key into the store, no 1Password
+- `key export <name> --to FILE` - the stored key into FILE, no 1Password
 - `key list [--json]` - name, stored or not, backups, op reference, variable; never a key
-- `key path <name> [-p|--previous]` - the key file's path (exit 1 with a `key sync` fix when there is none), or the newest backup's
+- `key path <name> [-p|--previous]` - the key file's path (exit 1 with a `key pull` fix when there is none), or the newest backup's
 
 # Variables
 
@@ -27,6 +27,6 @@
 
 # See also
 
-- `cheat key create`, `cheat key cycle`, `cheat key sync` - one sheet each
+- `cheat key pull` - and one sheet for each other subcommand
 - `cheat wipcrypt` - encrypts a tree with a stored key
 - `cheat zsh-config` - everything zsh-config gives you

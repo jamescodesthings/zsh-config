@@ -79,7 +79,7 @@ check "status --key n reports in sync" "x-wip: in sync" "$OUT"
 t2=$(new_root)
 run encrypt --root "$t2" --key missing
 check "--key missing exits 1" "1" "$CODE"
-check "--key missing names key sync" "yes" "$([[ $OUT == *"key sync missing"* ]] && print yes || print no)"
+check "--key missing names key pull" "yes" "$([[ $OUT == *"key pull missing"* ]] && print yes || print no)"
 check "--key missing writes nothing" "0" "$(ciphers_of $t2)"
 run encrypt --root "$t2" --key 'Bad/Name'
 check "--key with a bad name exits 2" "2" "$CODE"
@@ -120,8 +120,8 @@ done
 check "registered tree re-encrypted under the new key" "yes" "$ok"
 run status --root "$t" --key n
 check "status --key n after rotation is in sync" "x-wip: in sync" "$OUT"
-check "cycle-key --key ends with key sync NAME --push" "yes" \
-  "$([[ -n "$(print -r -- "$cyc_out" | grep -F 'with: key sync n --push')" && "$cyc_out" != *'key-sync --push'* ]] && print yes || print no)"
+check "cycle-key --key ends with key push NAME" "yes" \
+  "$([[ -n "$(print -r -- "$cyc_out" | grep -F 'with: key push n')" && "$cyc_out" != *'key-sync --push'* ]] && print yes || print no)"
 
 # --env as well: the env file gets the new key through key cycle --to.
 KD=$(mkt); export KEY_DIR="$KD"
@@ -655,7 +655,7 @@ for sub in encrypt decrypt; do
   run $sub --root "$t" --key n
   check "$sub --key with a wrong store key exits 1" "1" "$CODE"
   check "$sub --key says to check the store" "yes" \
-    "$([[ $OUT == *"does not match"* && $OUT == *"key path n -p"* && $OUT == *"key sync n"* && $OUT != *".env"* ]] && print yes || print no)"
+    "$([[ $OUT == *"does not match"* && $OUT == *"key path n -p"* && $OUT == *"key pull n"* && $OUT != *".env"* ]] && print yes || print no)"
 done
 t=$(new_aroot)
 run_af encrypt --root "$t" --env "$t/.env" > /dev/null 2>&1

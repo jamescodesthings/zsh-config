@@ -40,7 +40,7 @@
 #   --key     a named key from the key store, `${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys}/NAME.key`
 #             (made and synced by the `key` command). It is read into
 #             SKILLS_ENCRYPTION_KEY with `read`, never from argv. A missing
-#             key exits 1 naming `key sync NAME`; a bad name exits 2. Without
+#             key exits 1 naming `key pull NAME`; a bad name exits 2. Without
 #             --key the key comes from the env file, as it always has.
 #   --env     defaults to $AGENT_FORGE_ENV_FILE, else $AI_CONFIG_DIR/.env
 #             when that variable is set and the file exists, else
@@ -155,9 +155,9 @@ fetch_wip_slug() {
 load_store_key() {
   local key_file="$KEY_STORE/$KEY_NAME.key" line=""
   [[ -f "$key_file" ]] \
-    || error "no key named $KEY_NAME in $KEY_STORE: run: key sync $KEY_NAME"
+    || error "no key named $KEY_NAME in $KEY_STORE: run: key pull $KEY_NAME"
   IFS= read -r line < "$key_file"
-  [[ -n "$line" ]] || error "$key_file is empty: run: key sync $KEY_NAME"
+  [[ -n "$line" ]] || error "$key_file is empty: run: key pull $KEY_NAME"
   export SKILLS_ENCRYPTION_KEY="$line"
 }
 
@@ -165,7 +165,7 @@ load_store_key() {
 # the store; otherwise it is in the env file, as it always was.
 mismatch_hint() {
   if [[ -n "$KEY_NAME" ]]; then
-    print -r -- "Check the store key with: key path $KEY_NAME, and the previous key with: key path $KEY_NAME -p; restore the right one with: key sync $KEY_NAME"
+    print -r -- "Check the store key with: key path $KEY_NAME, and the previous key with: key path $KEY_NAME -p; restore the right one with: key pull $KEY_NAME"
   else
     print -r -- "Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."
   fi
@@ -1241,7 +1241,7 @@ run_cycle_key() {
 
   success "Key rotation complete"
   if [[ -n "$KEY_NAME" ]]; then
-    info "push the new key to 1Password with: key sync $KEY_NAME --push"
+    info "push the new key to 1Password with: key push $KEY_NAME"
   else
     info "push the new key to 1Password with: key-sync --push"
   fi

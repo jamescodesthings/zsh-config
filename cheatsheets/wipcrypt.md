@@ -31,5 +31,5 @@
 
 # See also
 
-- `cheat key` - make, cycle and sync the keys
+- `cheat key` - make, cycle, pull and push the keys
 - `cheat zsh-config` - everything zsh-config gives you

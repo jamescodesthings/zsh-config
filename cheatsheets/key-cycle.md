@@ -20,5 +20,5 @@
 # See also
 
 - `cheat wipcrypt` - `cycle-key --key` cycles and re-encrypts every tree
-- `cheat key sync` - push the new key to 1Password
+- `cheat key push` - push the new key to 1Password
 - `cheat key` - all subcommands

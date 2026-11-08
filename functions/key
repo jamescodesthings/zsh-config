@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-# key create|cycle|sync|list|path <name> [...]: per-project named keys, kept
+# key create|cycle|pull|push|import|export|list|path <name> [...]: per-project named keys, kept
 # in the store ${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys} (folder
 # 700, files 600). Per key: <name>.key (the key on one line), <name>.key.<n>
 # (older keys, n counting up from 1), <name>.conf (`op = REF`, `var = VAR`)
@@ -8,17 +8,24 @@
 #
 #   key create <name> [--to FILE] [--var VAR] [--op REF]
 #   key cycle  <name> [--to FILE] [--var VAR] [-n|--dry-run] [-y|--yes]
-#   key sync   <name> [--push] [-l|--local] [--from FILE] [--to FILE] [--var VAR] [--op REF] [-y|--yes]
+#   key pull   <name> [--to FILE] [--var VAR] [--op REF] [-y|--yes]
+#   key push   <name> [--from FILE] [--var VAR] [--op REF] [-y|--yes]
+#   key import <name> --from FILE [--var VAR]
+#   key export <name> --to FILE [--var VAR]
 #   key list   [--json]
 #   key path   <name> [-p|--previous]
 #
-# `path` prints the key file's path and exits 1 (a problem and a `key sync`
+# `path` prints the key file's path and exits 1 (a problem and a `key pull`
 # fix on stderr, nothing on stdout) when the file is missing or empty; -p
 # prints the newest backup's path.
 #
-# `sync --from FILE` seeds the store from the last VAR= line of an existing
-# file (one pair of surrounding quotes stripped) instead of asking 1Password;
-# with --push it then pushes the key; it cannot be combined with --local.
+# `pull` reads 1Password into the store (a different old key is kept as a
+# backup), then writes --to FILE if given; -y is accepted and ignored. `push`
+# sends the stored key to 1Password; with --from FILE it first imports FILE's
+# key. `import` seeds the store from the last VAR= line of FILE (one pair of
+# surrounding quotes stripped, or a bare one-line key); `export` writes the
+# stored key into FILE. Neither import nor export talks to 1Password.
+# `key sync` is gone: every old form exits 2 with a fix naming the new command.
 #
 # Every subcommand also takes -v|--verbose, -q|--quiet and --plain. Exit 0
 # ok, 1 failed, 2 usage. A key is never put on any command's argv or printed:
@@ -51,7 +58,7 @@ function key() {
 
   local sub="$1"
   if [[ -z "$sub" ]]; then
-    _key_say fail "key: usage: key create|cycle|sync|list|path <name> (key --help)"
+    _key_say fail "key: usage: key create|cycle|pull|push|import|export|list|path <name> (key --help)"
     return 2
   fi
   shift
@@ -72,8 +79,8 @@ function key() {
       --op=*) op_opt="${1#--op=}"; shift ;;
       -n|--dry-run) dry=1; shift ;;
       -y|--yes) yes=1; shift ;;
-      --push) push=1; shift ;;
-      -l|--local) local_only=1; shift ;;
+      --push) [[ "$sub" == sync ]] || { _key_say fail "key: no option called $1"; return 2; }; push=1; shift ;;
+      -l|--local) [[ "$sub" == sync ]] || { _key_say fail "key: no option called $1"; return 2; }; local_only=1; shift ;;
       --json) json=1; shift ;;
       -p|--previous) prev=1; shift ;;
       -v|--verbose) _KEY_VERBOSE=1; shift ;;
@@ -85,13 +92,18 @@ function key() {
 
   local dir="${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys}"
 
+  if [[ "$sub" == sync ]]; then
+    _key_sync_gone "${rest[1]:-NAME}" "$to" "$from" "$push" "$local_only"
+    return 2
+  fi
+
   case "$sub" in
     list)
       (( ${#rest} == 0 )) || { _key_say fail "key: list takes no name"; return 2; }
       _key_list "$dir" "$json"
       return $?
       ;;
-    create|cycle|sync|path) ;;
+    create|cycle|pull|push|import|export|path) ;;
     *)
       _key_say fail "key: no subcommand called $sub"
       return 2
@@ -111,16 +123,24 @@ function key() {
     _key_say fail "key: $name is not a valid key name (use a-z, 0-9, . _ -)"
     return 2
   fi
-  if [[ -n "$push" && -n "$local_only" ]]; then
-    _key_say fail "key: --push and --local cannot be combined"
+  if [[ -n "$from" && "$sub" != (push|import) ]]; then
+    _key_say fail "key: --from belongs to push and import"
     return 2
   fi
-  if [[ -n "$from" && -n "$local_only" ]]; then
-    _key_say fail "key: --from and --local cannot be combined (--local means no source)"
+  if [[ -n "$to" && "$sub" == (push|import) ]]; then
+    _key_say fail "key: --to does not belong to $sub"
     return 2
   fi
-  if [[ -n "$from" && "$sub" != sync ]]; then
-    _key_say fail "key: --from belongs to sync"
+  if [[ -n "$op_opt" && "$sub" == (import|export) ]]; then
+    _key_say fail "key: $sub does not talk to 1Password, so --op does not belong to it"
+    return 2
+  fi
+  if [[ "$sub" == import && -z "$from" ]]; then
+    _key_say fail "key: import needs --from FILE"
+    return 2
+  fi
+  if [[ "$sub" == export && -z "$to" ]]; then
+    _key_say fail "key: export needs --to FILE"
     return 2
   fi
   if [[ "$op_opt" == *[[:cntrl:]]* ]]; then
@@ -151,7 +171,7 @@ function key() {
     else
       if [[ ! -s "$dir/$name.key" ]]; then
         problem "key: no key for $name (${dir/#$HOME/~}/$name.key is missing or empty)"
-        fix "key sync $name" "to pull it from 1Password"
+        fix "key pull $name" "to pull it from 1Password"
         problems
         return 1
       fi
@@ -171,8 +191,26 @@ function key() {
   case "$sub" in
     create) _key_create "$dir" "$name" "$to" ;;
     cycle) _key_cycle "$dir" "$name" "$to" "$dry" "$yes" ;;
-    sync) _key_sync "$dir" "$name" "$to" "$push" "$local_only" "$yes" "$from" ;;
+    pull) _key_pull "$dir" "$name" "$to" ;;
+    push) _key_push_cmd "$dir" "$name" "$from" "$yes" ;;
+    import) _key_import "$dir" "$name" "$from" "" ;;
+    export) _key_export "$name" "$to" ;;
   esac
+}
+
+# _key_sync_gone name to from push local: the removed `key sync`; prints a
+# problem and the fix that names the new command. The caller returns 2.
+function _key_sync_gone() {
+  local name="$1" to="$2" from="$3" push="$4" local_only="$5" cmd
+  if [[ -n "$local_only" ]]; then cmd="key export $name --to ${to:-FILE}"
+  elif [[ -n "$from" && -n "$push" ]]; then cmd="key push $name --from $from"
+  elif [[ -n "$from" ]]; then cmd="key import $name --from $from"
+  elif [[ -n "$push" ]]; then cmd="key push $name"
+  else cmd="key pull $name${to:+ --to $to}"
+  fi
+  problem "key: sync was split into pull, push, import and export, and nothing was changed"
+  fix "$cmd" "the same thing under its new name"
+  problems
 }
 
 # _key_say ok|info|warn|fail text: say, minus ok and info lines under -q.
@@ -321,7 +359,7 @@ function _key_to_ok() {
 # it fails after the store already holds the new key.
 function _key_to_write() {
   _key_write_to "$@" && return 0
-  _key_say fail "key: the store holds the new $name key but $1 was not written; repair it with: key sync $name -l --to $1"
+  _key_say fail "key: the store holds the new $name key but $1 was not written; repair it with: key export $name --to $1"
   return 1
 }
 
@@ -394,58 +432,61 @@ function _key_cycle() {
   return 0
 }
 
-function _key_sync() {
-  local dir="$1" name="$2" to="$3" push="$4" local_only="$5" yes="$6" from="$7" k
+# _key_have_op: fails with a message when the op binary is missing.
+function _key_have_op() {
   local bin="${KEY_OP_BIN:-op}"
-
-  if [[ -n "$from" ]]; then
-    if [[ -n "$push" && -z "$yes" ]]; then
-      _key_have_tty || { _key_say fail "key: pushing needs a terminal to ask, or -y"; return 1; }
-    fi
-    _key_import "$dir" "$name" "$from" "$to" || return 1
-    [[ -n "$push" ]] || return 0
-  fi
-
-  if [[ -n "$local_only" ]]; then
-    if [[ -z "$to" ]]; then
-      _key_say fail "key: sync --local needs --to FILE"
-      return 2
-    fi
-    if [[ ! -f "$kfile" ]]; then
-      _key_say fail "key: $name has no key; pull it with: key sync $name"
-      return 1
-    fi
-    _key_to_ok "$to" || return 1
-    _key_save_conf || return 1
-    k="$(< "$kfile")"
-    _key_write_to "$to" "$var" "$k" ""
-    return $?
-  fi
-
   if [[ ! -x "$bin" ]] && ! (( $+commands[$bin] )); then
     _key_say fail "key: $bin is not installed, so there is no 1Password to talk to"
     return 1
   fi
-  local tty_msg="key: sync needs a terminal, op waits on the 1Password app prompt (-y skips it for a push)"
+}
 
-  if [[ -n "$push" ]]; then
-    if [[ ! -f "$kfile" ]]; then
-      _key_say fail "key: $name has no key to push; make one with: key create $name"
-      return 1
-    fi
-    if [[ -z "$yes" ]]; then
-      _key_have_tty || { _key_say fail "$tty_msg"; return 1; }
-      _key_ask "Push the $name key to 1Password at $op?" || {
-        _key_say info "pushed nothing"
-        return 1
-      }
-    fi
-    _key_save_conf || return 1
-    _key_push "$dir" "$name" "$bin" "$op"
-    return $?
+# _key_export name to: the stored key into FILE, no 1Password.
+function _key_export() {
+  local name="$1" to="$2" k
+  if [[ ! -f "$kfile" ]]; then
+    _key_say fail "key: $name has no key; pull it with: key pull $name"
+    return 1
   fi
+  _key_to_ok "$to" || return 1
+  _key_save_conf || return 1
+  k="$(< "$kfile")"
+  _key_write_to "$to" "$var" "$k" ""
+}
 
-  _key_have_tty || { _key_say fail "$tty_msg"; return 1; }
+# _key_push_cmd dir name from yes: imports FILE first when given, then sends
+# the stored key to 1Password.
+function _key_push_cmd() {
+  local dir="$1" name="$2" from="$3" yes="$4"
+  local bin="${KEY_OP_BIN:-op}"
+  if [[ -n "$from" ]]; then
+    if [[ -z "$yes" ]]; then
+      _key_have_tty || { _key_say fail "key: pushing needs a terminal to ask, or -y"; return 1; }
+    fi
+    _key_import "$dir" "$name" "$from" "" || return 1
+  fi
+  _key_have_op || return 1
+  if [[ ! -f "$kfile" ]]; then
+    _key_say fail "key: $name has no key to push; make one with: key create $name"
+    return 1
+  fi
+  if [[ -z "$yes" ]]; then
+    _key_have_tty || { _key_say fail "key: push needs a terminal, op waits on the 1Password app prompt (or -y)"; return 1; }
+    _key_ask "Push the $name key to 1Password at $op?" || {
+      _key_say info "pushed nothing"
+      return 1
+    }
+  fi
+  _key_save_conf || return 1
+  _key_push "$dir" "$name" "$bin" "$op"
+}
+
+# _key_pull dir name to: 1Password into the store, then FILE when given.
+function _key_pull() {
+  local dir="$1" name="$2" to="$3" k
+  local bin="${KEY_OP_BIN:-op}"
+  _key_have_op || return 1
+  _key_have_tty || { _key_say fail "key: pull needs a terminal, op waits on the 1Password app prompt"; return 1; }
   _key_to_ok "$to" || return 1
   _key_dir_ready "$dir" || return 1
   _key_say info "asking 1Password: approve the prompt in the 1Password app"

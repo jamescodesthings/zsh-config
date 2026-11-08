@@ -132,8 +132,8 @@ run "key path demo"
 same "path prints store path" "$OUT" "$KD/demo.key"
 run "key path nokey"
 same "path with no key file exits 1, prints nothing" "$CODE|$OUT" "1|"
-has_err=$([[ "$ERR" == *"key sync nokey"* ]] && echo yes)
-same "path with no key file suggests key sync" "$has_err" yes
+has_err=$([[ "$ERR" == *"key pull nokey"* ]] && echo yes)
+same "path with no key file suggests key pull" "$has_err" yes
 : > $KD/empty.key
 run "key path empty"
 same "path with an empty key file exits 1" "$CODE|$OUT" "1|"
@@ -162,59 +162,59 @@ unset STDIN
 
 # --- sync pull
 fresh
-run "key sync demo"
+run "key pull demo"
 same "pull without a terminal exits 1 naming it" "$CODE|${ERR##*needs a terminal*}" "1|"
 same "no op call made without a terminal" "$(cat $OPLOG 2>/dev/null)" ""
-EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull demo"
 same "pull stores the stub key" "$CODE|$(< $KD/demo.key)|$(mode $KD/demo.key)" "0|stub-key-from-op|600"
 same "pull used default ref" "$(< $OPLOG)" "read op://Personal/demo-key/password"
 print -r -- other-key > "$KD/demo.key"
-EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo --to $TMP/work/env --var V"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull demo --to $TMP/work/env --var V"
 same "pull backs a different key up" "$(< $KD/demo.key.1)|$(< $KD/demo.key)" "other-key|stub-key-from-op"
 same "pull writes --to" "$(< $TMP/work/env)" "V=stub-key-from-op"
-EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull demo"
 same "same key: no new backup" "$(ls $KD | grep -c 'key\.')" "1"
 : > "$TMP/stubkey"
-EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull demo"
 same "empty op output exits 1, key kept" "$CODE|$(< $KD/demo.key)" "1|stub-key-from-op"
 touch "$TMP/failread"
-EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull demo"
 same "op read failure exits 1" "$CODE" "1"
 
 # --- sync push
 fresh
 run "key create demo"; K="$(< $KD/demo.key)"; : > $OPLOG
-run "key sync demo --push -y"
+run "key push demo -y"
 same "push with item absent creates" "$CODE|$(grep -c 'item create' $OPLOG)" "0|1"
 same "template holds the key, ref parts" "$([[ $(< $TMP/template.cap) == *\"$K\"* && $(< $TMP/template.cap) == *'"title":"demo-key"'* && $(< $TMP/template.cap) == *'"name":"Personal"'* ]] && echo yes)" "yes"
 same "key never in op argv" "$(grep -cF "$K" $OPLOG)" "0"
 same "no template left behind" "$(ls -A $KD | grep -c tmp\\.\|XXXX)" "0"
 touch "$TMP/exists"; : > $OPLOG
-run "key sync demo --push -y"
+run "key push demo -y"
 same "push with item present edits" "$(grep -c 'item edit' $OPLOG)" "1"
 same "key never in oplog (edit)" "$(grep -cF "$K" $OPLOG)" "0"
-run "key sync demo --push"
+run "key push demo"
 same "push without -y and no tty exits 1" "$CODE" "1"
-STDIN="$TMP/no" EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo --push"
+STDIN="$TMP/no" EXTRA_ENV="KEY_FORCE_TTY=1" run "key push demo"
 same "push answered n exits 1" "$CODE" "1"
-run "key sync nokey --push -y"
+run "key push nokey -y"
 same "push with no stored key exits 1" "$CODE" "1"
-run "key sync demo --push --local -y"
+run "key push demo --local -y"
 same "push and local together exits 2" "$CODE" "2"
 
 touch "$TMP/getfail"; rm -f "$TMP/exists"; : > $OPLOG; rm -f "$TMP/template.cap"
-run "key sync demo --push -y"
+run "key push demo -y"
 same "get failing for another reason: exit 1, no create" "$CODE|$(grep -c 'item create' $OPLOG)|$([[ -e $TMP/template.cap ]] && echo cap)" "1|0|"
 rm -f "$TMP/getfail"; : > $OPLOG
-run "key sync demo --push -y"
+run "key push demo -y"
 same "create argv holds --vault" "$(grep 'item create' $OPLOG | grep -c -- '--vault Personal')" "1"
 
 # --- sync local
 fresh
 run "key create demo"; K="$(< $KD/demo.key)"; : > $OPLOG
-run "key sync demo -l --to $TMP/work/env --var V"
+run "key export demo --to $TMP/work/env --var V"
 same "local writes --to, no op call" "$(< $TMP/work/env)|$(cat $OPLOG)" "V=$K|"
-run "key sync demo -l"
+run "key export demo"
 same "local without --to exits 2" "$CODE" "2"
 
 # --- conf
@@ -222,7 +222,7 @@ fresh
 run "key create demo --op op://Vault/thing/field --var MYV"
 same "conf holds op and var" "$(< $KD/demo.conf)" $'op = op://Vault/thing/field\nvar = MYV'
 same "conf mode 600" "$(mode $KD/demo.conf)" "600"
-EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull demo"
 same "saved op ref used on next call" "$(< $OPLOG)" "read op://Vault/thing/field"
 run "key cycle demo -y --to $TMP/work/e3"
 same "saved var used on next call" "${$(< $TMP/work/e3)%%=*}" "MYV"
@@ -271,7 +271,7 @@ fresh
 run "key create demo"; K1="$(< $KD/demo.key)"
 run "key cycle demo -y --to $TMP/nodir/env"
 same "cycle with bad --to leaves the store key" "$CODE|$(< $KD/demo.key)|$(ls $KD | tr '\n' ' ')" "1|$K1|demo.key "
-EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync demo --to $TMP/nodir/env"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull demo --to $TMP/nodir/env"
 same "pull with bad --to leaves the store key" "$CODE|$(< $KD/demo.key)" "1|$K1"
 chmod 500 "$TMP/work"
 run "key cycle demo -y --to $TMP/work/new"
@@ -290,7 +290,7 @@ same "publish_new refuses an existing file" "$CODE|$(< $KD/demo.key)|$(ls -A $KD
 fresh
 run "key create demo"; K="$(< $KD/demo.key)"
 print -r -- 'a"b\\c' > "$TMP/qk"; cp "$TMP/qk" $KD/demo.key
-run "key sync demo --push -y"
+run "key push demo -y"
 same "quote and backslash in the key escaped in the template" "$(jq -r '.title' $TMP/template.cap 2>/dev/null)|$(jq -r '.fields[0].value' $TMP/template.cap 2>/dev/null)" 'demo-key|a"b\\c'
 
 fresh
@@ -301,64 +301,64 @@ same "set -x in the caller never traces the key" "$([[ $ERR == *$(< $KD/demo.key
 # --- round 2: sync --from
 fresh
 print -r -- $'A=1\nV=first\nB=2\nV="quoted-key"' > "$TMP/work/src"
-run "key sync demo --from $TMP/work/src --var V"
+run "key import demo --from $TMP/work/src --var V"
 same "import takes the last V line, quotes stripped" "$CODE|$(< $KD/demo.key)|$(mode $KD/demo.key)" "0|quoted-key|600"
 same "import makes no op call, no terminal needed" "$(cat $OPLOG 2>/dev/null)" ""
 same "key not in stdout or stderr" "$([[ $OUT$ERR == *quoted-key* ]] && echo leak)" ""
 same "var saved to conf" "$(grep '^var' $KD/demo.conf)" "var = V"
 print -r -- "V='single'" > "$TMP/work/src2"
-run "key sync demo --from $TMP/work/src2 --var NOPE"
+run "key import demo --from $TMP/work/src2 --var NOPE"
 same "missing VAR line exits 1, store and conf untouched" "$CODE|$(< $KD/demo.key)|$(grep '^var' $KD/demo.conf)" "1|quoted-key|var = V"
-run "key sync demo --from $TMP/work/src2 --var V"
+run "key import demo --from $TMP/work/src2 --var V"
 same "different key backs the old one up" "$CODE|$(< $KD/demo.key)|$(< $KD/demo.key.1)" "0|single|quoted-key"
-run "key sync demo --from $TMP/work/src2"
+run "key import demo --from $TMP/work/src2"
 same "identical key is a no-op success" "$CODE|$(ls $KD | tr '\n' ' ')" "0|demo.conf demo.key demo.key.1 "
-run "key sync demo --from $TMP/work/nope"
+run "key import demo --from $TMP/work/nope"
 same "missing file exits 1" "$CODE|$(< $KD/demo.key)" "1|single"
 print -r -- $'V=\nW=3' > "$TMP/work/src3"
-run "key sync demo --from $TMP/work/src3"
+run "key import demo --from $TMP/work/src3"
 same "empty V line exits 1, store untouched" "$CODE|$(< $KD/demo.key)" "1|single"
-run "key sync demo --from $TMP/work/src2 --to $TMP/work/out"
-same "--to still works after import" "$(< $TMP/work/out)" "V=single"
-run "key sync demo --from $TMP/work/src2 -l"
-same "--from with -l exits 2" "$CODE" "2"
+run "key import demo --from $TMP/work/src2 --to $TMP/work/out"
+same "import refuses --to, exit 2, no file" "$CODE|$([[ -e $TMP/work/out ]] && echo made)" "2|"
+run "key import demo --from $TMP/work/src2 -l"
+same "import takes no -l, exit 2" "$CODE" "2"
 
 fresh
 print -r -- "V=pushme-key" > "$TMP/work/src"
-run "key sync demo --from $TMP/work/src --var V --push -y"
+run "key push demo --from $TMP/work/src --var V -y"
 same "--from --push -y creates the item" "$CODE|$(grep -c 'item create' $OPLOG)|$(grep -c 'pushme-key' $OPLOG)" "0|1|0"
 same "template holds the key" "$([[ $(< $TMP/template.cap) == *pushme-key* ]] && echo yes)" "yes"
-run "key sync demo --from $TMP/work/src --push"
+run "key push demo --from $TMP/work/src"
 same "--from --push without -y or tty exits 1" "$CODE" "1"
 
 # --- bare-key files
 fresh
 print -r -- "barekey-one" > "$TMP/work/bare"
-run "key sync demo --from $TMP/work/bare"
+run "key import demo --from $TMP/work/bare"
 same "bare-key file imports" "$CODE|$(< $KD/demo.key)" "0|barekey-one"
 same "bare key not in output" "$([[ $OUT$ERR == *barekey-one* ]] && echo leak)" ""
 fresh
 print -r -- $'\n\n"barekey-two"\n\n' > "$TMP/work/bare"
-run "key sync demo --from $TMP/work/bare"
+run "key import demo --from $TMP/work/bare"
 same "bare key with blank lines, quotes stripped" "$CODE|$(< $KD/demo.key)" "0|barekey-two"
 print -r -- 'abc+/def==' > "$TMP/work/b64"
-run "key sync demo --from $TMP/work/b64"
+run "key import demo --from $TMP/work/b64"
 same "base64 bare key with = padding imports" "$CODE|$(< $KD/demo.key)" "0|abc+/def=="
 same "base64 key not in output" "$([[ $OUT$ERR == *abc+/def* ]] && echo leak)" ""
 print -r -- 'barekey-two' | cp /dev/stdin $KD/demo.key
 print -r -- $'barekey-x\nbarekey-y' > "$TMP/work/bare2"
-run "key sync demo --from $TMP/work/bare2"
+run "key import demo --from $TMP/work/bare2"
 same "two-line file with no VAR line fails, store untouched" "$CODE|$(< $KD/demo.key)" "1|barekey-two"
 same "failure message mentions bare key, no key leak" "$([[ $ERR == *'bare one-line key'* ]] && echo yes)|$([[ $OUT$ERR == *barekey-x* ]] && echo leak)" "yes|"
 print -r -- $'noise\nV=varwins\nmore' > "$TMP/work/mixed"
-run "key sync demo --from $TMP/work/mixed --var V"
+run "key import demo --from $TMP/work/mixed --var V"
 same "VAR line wins over other lines" "$CODE|$(< $KD/demo.key)" "0|varwins"
 print -r -- "V=onlyvar" > "$TMP/work/mixed2"
-run "key sync demo --from $TMP/work/mixed2 --var V"
+run "key import demo --from $TMP/work/mixed2 --var V"
 same "single VAR line is not read as bare" "$(< $KD/demo.key)" "onlyvar"
 fresh
 print -r -- "barepush-key" > "$TMP/work/bare"
-run "key sync demo --from $TMP/work/bare --push -y"
+run "key push demo --from $TMP/work/bare -y"
 same "bare --push -y creates the item, key only in template" "$CODE|$(grep -c 'item create' $OPLOG)|$(grep -c 'barepush-key' $OPLOG)|$([[ $(< $TMP/template.cap) == *barepush-key* ]] && echo yes)" "0|1|0|yes"
 same "no leak in push output" "$([[ $OUT$ERR == *barepush-key* ]] && echo leak)" ""
 
@@ -376,11 +376,11 @@ same "a conf ref wins over KEY_OP_VAULT" "$([[ $OUT == *'"op":"op://Vault/x/pass
 fresh
 run "key create demo"; K="$(< $KD/demo.key)"
 print -r -- $'A=1\nexport V=oldvalue\nB=2' > "$TMP/work/exp"
-run "key sync demo -l --to $TMP/work/exp --var V"
+run "key export demo --to $TMP/work/exp --var V"
 same "--to replaces an export line, keeps the prefix" "$(< $TMP/work/exp)" $'A=1\nexport V='"$K"$'\nB=2'
 fresh
 print -r -- $'A=1\nexport V=fromexport' > "$TMP/work/src"
-run "key sync demo --from $TMP/work/src --var V"
+run "key import demo --from $TMP/work/src --var V"
 same "--from reads an export line" "$CODE|$(< $KD/demo.key)" "0|fromexport"
 
 # --- --op control characters, list --json names
@@ -391,5 +391,64 @@ fresh
 run "key create demo"; print -r -- x > "$KD/Bad\"name.key"
 run "key list --json"
 same "list --json skips bad store names" "$OUT" '[{"name":"demo","stored":true,"backups":0,"op":"op://Personal/demo-key/password","var":"DEMO_KEY"}]'
+
+# --- direction rename: hub's argv forms
+fresh
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull n --var V --op op://Vault/item/field --to $TMP/work/h -y"
+same "hub pull form: stores, writes --to, uses the ref" "$CODE|$(< $KD/n.key)|$(< $TMP/work/h)|$(< $OPLOG)" "0|stub-key-from-op|V=stub-key-from-op|read op://Vault/item/field"
+same "hub pull remembers op and var" "$(< $KD/n.conf)" $'op = op://Vault/item/field\nvar = V'
+: > $OPLOG
+run "key push n --var V --op op://Vault/item/field --from $TMP/work/h -y"
+same "hub push form: creates from the file's key" "$CODE|$(grep -c 'item create --vault Vault' $OPLOG)|$(grep -cF stub-key-from-op $OPLOG)" "0|1|0"
+same "hub push: key in the template only" "$([[ $(< $TMP/template.cap) == *stub-key-from-op* ]] && echo yes)" "yes"
+rm -rf $KD; : > $OPLOG
+print -r -- "V=imported-k" > "$TMP/work/i"
+run "key import n --var V --from $TMP/work/i"
+same "hub import form" "$CODE|$(< $KD/n.key)|$(cat $OPLOG)" "0|imported-k|"
+run "key export n --var V --to $TMP/work/x"
+same "hub export form" "$CODE|$(< $TMP/work/x)|$(cat $OPLOG)" "0|V=imported-k|"
+run "key pull n -y --to=$TMP/work/y --var=V"
+same "pull without a terminal still exits 1 even with -y" "$CODE" "1"
+run "key export --var V n --to $TMP/work/z"
+same "options come in any position" "$CODE|$(< $TMP/work/z)" "0|V=imported-k"
+
+# --- required flags and refused options
+run "key import n"
+same "import without --from exits 2" "$CODE" "2"
+run "key export n"
+same "export without --to exits 2" "$CODE" "2"
+: > $OPLOG
+run "key import n --from $TMP/work/i --op op://V/i/f"
+same "import refuses --op" "$CODE" "2"
+run "key export n --to $TMP/work/z --op op://V/i/f"
+same "export refuses --op" "$CODE" "2"
+run "key export n --to $TMP/work/z --from $TMP/work/i"
+same "export refuses --from" "$CODE" "2"
+EXTRA_ENV="KEY_FORCE_TTY=1" run "key pull n --from $TMP/work/i"
+same "pull refuses --from" "$CODE" "2"
+run "key push n --to $TMP/work/z -y"
+same "push refuses --to" "$CODE" "2"
+run "key create q --from $TMP/work/i"
+same "create refuses --from" "$CODE" "2"
+same "none of those called op" "$(cat $OPLOG)" ""
+run "key import n --var V --from $TMP/work/i"
+same "import takes --var" "$CODE" "0"
+
+# --- old sync forms: exit 2, nothing changed, no op call, a fix naming the new form
+function oldsync() {  # oldsync <args> <expected fix>
+  fresh; mkdir -p $KD; print -r -- keep > $KD/n.key
+  EXTRA_ENV="KEY_FORCE_TTY=1" run "key sync $1"
+  same "key sync $1: exit 2" "$CODE" "2"
+  same "key sync $1: fix names ${2}" "$([[ $ERR == *"$2"* ]] && echo yes)" "yes"
+  same "key sync $1: op never called, store unchanged" "$(cat $OPLOG 2>/dev/null)|$(< $KD/n.key)|$(ls $KD | tr '\n' ' ')" "|keep|n.key "
+}
+oldsync "n" "key pull n"
+oldsync "n --to $TMP/work/f" "key pull n --to $TMP/work/f"
+oldsync "n --push" "key push n"
+oldsync "n --push -y" "key push n"
+oldsync "n -l --to $TMP/work/f" "key export n --to $TMP/work/f"
+oldsync "n --local --to $TMP/work/f" "key export n --to $TMP/work/f"
+oldsync "n --from $TMP/work/f" "key import n --from $TMP/work/f"
+oldsync "n --from $TMP/work/f --push" "key push n --from $TMP/work/f"
 
 exit $failed

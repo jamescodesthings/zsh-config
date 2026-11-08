@@ -12,7 +12,10 @@ _key() {
   subs=(
     'create:make a new key'
     'cycle:replace a key, keeping the old one'
-    'sync:pull the key from 1Password, or push it'
+    'pull:pull the key from 1Password into the store'
+    'push:push the stored key to 1Password'
+    'import:seed the store from a file'
+    'export:write the stored key into a file'
     'list:list the stored keys'
     'path:print where a key is stored'
   )
@@ -30,11 +33,16 @@ _key() {
     cycle)
       _arguments $common '--to[also write the key into a file]:file:_files' '--var[variable name in that file]:variable' \
         '(-n --dry-run)'{-n,--dry-run}'[say what would change]' '(-y --yes)'{-y,--yes}'[do not ask]' '1:key name:_key_names' ;;
-    sync)
-      _arguments $common '--push[push the stored key to 1Password]' '(-l --local)'{-l,--local}'[skip 1Password, only write --to]' \
-        '--from[seed the store from a file instead of 1Password]:file:_files' \
-        '--to[also write the key into a file]:file:_files' '--var[variable name in that file]:variable' \
+    pull)
+      _arguments $common '--to[also write the key into a file]:file:_files' '--var[variable name in that file]:variable' \
+        '--op[1Password reference]:op reference' '(-y --yes)'{-y,--yes}'[accepted, ignored]' '1:key name:_key_names' ;;
+    push)
+      _arguments $common '--from[import this file first]:file:_files' '--var[variable name in that file]:variable' \
         '--op[1Password reference]:op reference' '(-y --yes)'{-y,--yes}'[do not ask]' '1:key name:_key_names' ;;
+    import)
+      _arguments $common '--from[file to read the key from]:file:_files' '--var[variable name in that file]:variable' '1:key name:_key_names' ;;
+    export)
+      _arguments $common '--to[file to write the key into]:file:_files' '--var[variable name in that file]:variable' '1:key name:_key_names' ;;
     list)
       _arguments $common '--json[machine readable]' ;;
     path)
