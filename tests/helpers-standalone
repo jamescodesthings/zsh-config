@@ -13,7 +13,7 @@ echo '{"a": {"default": 1, "meaning": "x"}}' > "$TMP/schema.json"
 # check <helper> <label> <code>: runs code in a fresh zsh -f with only <helper> autoloaded
 function check() {
   local helper="$1" label="$2" code="$3" err
-  env -u COLORTERM -u CLICOLOR_FORCE -u AGENT_FORGE_HUB_WORKER -i \
+  env -u COLORTERM -u CLICOLOR_FORCE -u HUB_WORKER -i \
     HOME="$TMP/home" ZDOTDIR="$TMP/zdot" PATH=/usr/bin:/bin CLI_PLAIN=1 \
     CHEATSHEET_DIR="$REPO_DIR/cheatsheets" CUSTOM_DIR="$REPO_DIR" \
     CLI_LOG_DIR="$TMP/logs" CLI_CONFIG_DIR="$TMP/cfg" KEY_DIR="$TMP/keys" \

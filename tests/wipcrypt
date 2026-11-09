@@ -16,8 +16,8 @@ ZDOTDIR=$(mktemp -d)
 TMPS=("$ZDOTDIR")
 export ZDOTDIR CLI_PLAIN=1
 trap 'rm -rf -- "${TMPS[@]}"' EXIT
-unset AGENT_FORGE_ENV_FILE AGENT_FORGE_WIP_PAIRS AGENT_FORGE_KEY_USERS \
-  AGENT_FORGE_ROOT AGENT_FORGE_CONTENT_ROOT AI_CONFIG_DIR KEY_DIR WIPCRYPT_KEY_CMD
+unset HUB_ENV_FILE HUB_WIP_PAIRS HUB_KEY_USERS \
+  HUB_ROOT HUB_CONTENT_ROOT HUB_DIR KEY_DIR WIPCRYPT_KEY_CMD
 
 check() {
   local name="$1" expected="$2" actual="$3"
@@ -193,14 +193,14 @@ run cycle-key --root "$t" --key p
 check "missing registered root aborts" "1" "$CODE"
 check "the key is unchanged" "$before" "$(<"$KD/p.key")"
 
-# AGENT_FORGE_KEY_USERS still overrides the store registry.
+# HUB_KEY_USERS still overrides the store registry.
 t=$(new_root)
 print -r -- "$(newkey)" > "$KD/q.key"; chmod 600 "$KD/q.key"
 print -r -- "/nonexistent/elsewhere" > "$KD/q.users"
 print -r -- "# none" > "$KD/q.override"
 run encrypt --root "$t" --key q
-AGENT_FORGE_KEY_USERS="$KD/q.override" run cycle-key --root "$t" --key q
-check "AGENT_FORGE_KEY_USERS overrides n.users" "0" "$CODE"
+HUB_KEY_USERS="$KD/q.override" run cycle-key --root "$t" --key q
+check "HUB_KEY_USERS overrides n.users" "0" "$CODE"
 
 # WIPCRYPT_KEY_CMD names the key command; a failing one aborts, hint names key path.
 t=$(new_root)
@@ -226,8 +226,8 @@ check "function call: returns 2 and the shell stays alive" "yes" "$([[ $out == *
 
 
 # ---------------------------------------------------------------------------
-# Ported from agent-forge's test-wipcrypt: the engine without --key. These
-# use agent-forge's layout (zsh/lib/wip-pairs, a .env per root) and a stub
+# Ported from hub's test-wipcrypt: the engine without --key. These
+# use hub's layout (zsh/lib/wip-pairs, a .env per root) and a stub
 # create-key, because the env-file rotation path shells out to the create-key
 # that sits beside the env file.
 # ---------------------------------------------------------------------------
@@ -249,7 +249,7 @@ akey_of() { grep '^SKILLS_ENCRYPTION_KEY=' "$1/.env" | cut -d= -f2- }
 cipher_file_of() { print -r -- "$1"/shared/x-encrypted/**/*(N.) }
 
 # A create-key that backs .env up to .env.1 and writes a fresh key, printing
-# BACKUP_PATH the way agent-forge's does.
+# BACKUP_PATH the way hub's does.
 stub_create_key() {
   cat > "$1/zsh/lib/create-key" <<'STUB'
 #!/usr/bin/env zsh
@@ -451,14 +451,14 @@ rm -rf "$t"
 # what keeps this line out of everything that parses wipcrypt's output.
 
 t=$(new_aroot)
-out=$(cd "$t" && AI_CONFIG_DIR="$t" AGENT_FORGE_ENV_FILE= run_af status 2>&1)
+out=$(cd "$t" && HUB_DIR="$t" HUB_ENV_FILE= run_af status 2>&1)
 check "a fully defaulted call reports the root it resolved" "1" \
   "$(print -r -- "$out" | grep -c "Resolved root $t,")"
 check "a fully defaulted call reports the pairs file it resolved" "1" \
   "$(print -r -- "$out" | grep -c "pairs $t/zsh/lib/wip-pairs,")"
 check "a fully defaulted call reports the env file it resolved" "1" \
   "$(print -r -- "$out" | grep -c "env $t/.env")"
-out=$(cd "$t" && AI_CONFIG_DIR="$t" run_af status --env "$t/.env" 2>&1)
+out=$(cd "$t" && HUB_DIR="$t" run_af status --env "$t/.env" 2>&1)
 check "naming even one of the three suppresses the resolved line" "0" \
   "$(print -r -- "$out" | grep -c 'Resolved root')"
 rm -rf "$t"
@@ -510,7 +510,7 @@ registry="$t/key-users"
 } > "$registry"
 p2_before=$(cd "$p2/.claude/x-encrypted" && print -l **/*(N.) | sort)
 
-AGENT_FORGE_KEY_USERS="$registry" run_af cycle-key --root "$t" \
+HUB_KEY_USERS="$registry" run_af cycle-key --root "$t" \
   --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" > /dev/null 2>&1
 rc=$?
 newkey=$(akey_of "$t")
@@ -549,7 +549,7 @@ registry="$t/key-users"
 print -r -- "$gone" > "$registry"
 before_key=$(akey_of "$t")
 before_sum=$(cat "$t"/shared/x-encrypted/**/*(N.) | md5)
-out=$(AGENT_FORGE_KEY_USERS="$registry" run_af cycle-key --root "$t" \
+out=$(HUB_KEY_USERS="$registry" run_af cycle-key --root "$t" \
   --pairs "$t/zsh/lib/wip-pairs" --env "$t/.env" 2>&1)
 rc=$?
 check "a registered root that is gone aborts the rotation" "nonzero" \
@@ -561,7 +561,7 @@ check "the abort never reaches create-key" "0" \
 
 # ---------------------------------------------------------------------------
 # cycle-key --key: failures after key cycle has replaced the store key. Ported
-# from agent-forge test-cycle-key cases 6-9 (corrupted ciphertext, mktemp
+# from hub test-cycle-key cases 6-9 (corrupted ciphertext, mktemp
 # failure, reseed failure, swap failure) with --key. In each, the key the
 # trees were left under must be recoverable from the named backup.
 # ---------------------------------------------------------------------------
@@ -666,6 +666,8 @@ check "decrypt --env with a wrong key keeps the .env wording" "1" \
 
 # FN_DIR unset: the function-call fallback never becomes /wipcrypt.
 check "guard fallback does not use a bare FN_DIR" "0" "$(grep -c '\$FN_DIR/wipcrypt' "$WIPCRYPT")"
+
+check "wipcrypt reads no agent-forge variable" "0" "$(grep -cE 'AGENT_FORGE_|AI_CONFIG_DIR' "$WIPCRYPT")"
 
 print -r -- ""
 print -r -- "$pass passed, $fail failed"

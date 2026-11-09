@@ -12,7 +12,7 @@
 # Run
 
 - `update <name>...` - only the named updaters, e.g. `update brew tldr`
-- `update projects` - pull and reinstall every installed project, agent-forge included
+- `update projects` - pull and reinstall every installed project, hub included
 - `update [-v|--verbose]` - show each updater's output as it runs instead of the step counter
 - `update [-q|--quiet]` - print only warnings, failures and the log
 - `update --plain` - no colour or animation

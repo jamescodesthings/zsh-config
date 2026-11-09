@@ -16,7 +16,7 @@
 # registered one; status does the same. An unknown subcommand or option
 # prints this usage on stderr and exits 2.
 #
-# zsh-config owns this file and agent-forge calls it. It sources nothing: it
+# zsh-config owns this file and hub calls it. It sources nothing: it
 # runs as a script even when autoloaded, with the painters and the crypto
 # helpers below built in. It has no literal `source` anywhere (tests/wipcrypt
 # asserts that), so load_env reads an env file with `.`, and --key reads the
@@ -42,10 +42,10 @@
 #             SKILLS_ENCRYPTION_KEY with `read`, never from argv. A missing
 #             key exits 1 naming `key pull NAME`; a bad name exits 2. Without
 #             --key the key comes from the env file, as it always has.
-#   --env     defaults to $AGENT_FORGE_ENV_FILE, else $AI_CONFIG_DIR/.env
+#   --env     defaults to $HUB_ENV_FILE, else $HUB_DIR/.env
 #             when that variable is set and the file exists, else
 #             <root>/.env. One key is shared across every tier, so a project
-#             root normally reads agent-forge's .env rather than one of its
+#             root normally reads hub's .env rather than one of its
 #             own.
 #
 # That one shared key is why cycle-key is stricter than the rest. It refuses
@@ -54,7 +54,7 @@
 # re-encrypting only one of them, and it consults a key-users registry so it
 # can re-encrypt the others:
 #
-#   ${AGENT_FORGE_KEY_USERS:-<env file's directory>/.cache/key-users}
+#   ${HUB_KEY_USERS:-<env file's directory>/.cache/key-users}
 #
 # One absolute project root per line, blank lines and # comments allowed. Each
 # listed root contributes its own .claude/wip-pairs (or zsh/lib/wip-pairs)
@@ -76,7 +76,7 @@
 # `key cycle NAME -y` (run with zsh, from WIPCRYPT_KEY_CMD or the `key` file
 # beside this one), --env FILE, when given, is rewritten by key's `--to` as a
 # synced copy, and the key-users registry defaults to $KEY_DIR/NAME.users
-# (AGENT_FORGE_KEY_USERS still overrides).
+# (HUB_KEY_USERS still overrides).
 if [[ $ZSH_EVAL_CONTEXT == *shfunc* ]]; then
   autoload -Uz cheat-help
   cheat-help wipcrypt "$@" && return 0
@@ -112,7 +112,7 @@ usage_error() {
 }
 
 # ---------------------------------------------------------------------------
-# Helpers that began in agent-forge's lib
+# Helpers that began in hub's lib
 # ---------------------------------------------------------------------------
 # This file now owns them, and some wording still refers to lib. Nothing is
 # reworded for its own sake. ROOT_DIR and
@@ -176,7 +176,7 @@ load_env() {
     load_store_key
     return
   fi
-  local env_file="${1:-${AGENT_FORGE_ENV_FILE:-$ROOT_DIR/.env}}"
+  local env_file="${1:-${HUB_ENV_FILE:-$ROOT_DIR/.env}}"
   [[ -f "$env_file" ]] || error "missing $env_file: run key-sync (1Password) or zsh/lib/create-key first"
   set -a
   . "$env_file"
@@ -186,10 +186,10 @@ load_env() {
 
 # Emits "<abs-wip-root> <abs-encrypted-root>" per line, one per registered
 # content-type, resolved against CONTENT_ROOT. Add a pair to
-# zsh/lib/wip-pairs to onboard a new one, or point AGENT_FORGE_WIP_PAIRS
+# zsh/lib/wip-pairs to onboard a new one, or point HUB_WIP_PAIRS
 # at a project's own pairs file.
 wip_pairs() {
-  local pairs_file="${1:-${AGENT_FORGE_WIP_PAIRS:-$ROOT_DIR/zsh/lib/wip-pairs}}"
+  local pairs_file="${1:-${HUB_WIP_PAIRS:-$ROOT_DIR/zsh/lib/wip-pairs}}"
   [[ -f "$pairs_file" ]] || error "missing $pairs_file"
   local line wip enc
   while IFS=':' read -r wip enc || [[ -n "$wip" ]]; do
@@ -1020,7 +1020,7 @@ run_cycle_key() {
 
   # The env file must belong to the root being rotated. Without this, a bare
   # `wipcrypt cycle-key` run from any directory that happens to hold a pairs
-  # file resolves the key from $AI_CONFIG_DIR/.env, mints a new one there, and
+  # file resolves the key from $HUB_DIR/.env, mints a new one there, and
   # re-encrypts only that directory's trees: every other tree the key protects
   # is left as ciphertext nobody holds a key for. Rotation is the one
   # subcommand where reading a key you do not own is destructive rather than
@@ -1053,10 +1053,10 @@ run_cycle_key() {
 
   # Under --key the registry is the store's NAME.users only; the old
   # <env dir>/.cache/key-users is not read. Without --key it is the old --env
-  # contract, <env dir>/.cache/key-users. AGENT_FORGE_KEY_USERS overrides both.
+  # contract, <env dir>/.cache/key-users. HUB_KEY_USERS overrides both.
   local -a key_users_files
-  if [[ -n "$AGENT_FORGE_KEY_USERS" ]]; then
-    key_users_files=("$AGENT_FORGE_KEY_USERS")
+  if [[ -n "$HUB_KEY_USERS" ]]; then
+    key_users_files=("$HUB_KEY_USERS")
   elif [[ -n "$KEY_NAME" ]]; then
     key_users_files=("$KEY_STORE/$KEY_NAME.users")
   else
@@ -1361,8 +1361,8 @@ done
 
 # The same split lib draws: ROOT_DIR is where the tools and their config
 # live, CONTENT_ROOT is where the content they act on lives. They differ only
-# when a caller sets AGENT_FORGE_CONTENT_ROOT.
-CONTENT_ROOT="${AGENT_FORGE_CONTENT_ROOT:-$ROOT_DIR}"
+# when a caller sets HUB_CONTENT_ROOT.
+CONTENT_ROOT="${HUB_CONTENT_ROOT:-$ROOT_DIR}"
 
 # Left empty rather than errored when neither candidate exists: a call that
 # names its pair positionally never reads a pairs file at all, and refusing
@@ -1380,15 +1380,15 @@ require_pairs_file() {
     || error "No wip-pairs file found: looked for $ROOT_DIR/zsh/lib/wip-pairs and $ROOT_DIR/.claude/wip-pairs"
 }
 
-# One key covers every tier, so a project root normally reads agent-forge's
+# One key covers every tier, so a project root normally reads hub's
 # .env rather than one of its own. The wrapper scripts always pass --env
 # explicitly, which is what keeps their behaviour identical to the
 # $ROOT_DIR/.env they have always read.
 if [[ -z "$ENV_FILE" ]]; then
-  if [[ -n "$AGENT_FORGE_ENV_FILE" ]]; then
-    ENV_FILE="$AGENT_FORGE_ENV_FILE"
-  elif [[ -n "$AI_CONFIG_DIR" && -f "$AI_CONFIG_DIR/.env" ]]; then
-    ENV_FILE="$AI_CONFIG_DIR/.env"
+  if [[ -n "$HUB_ENV_FILE" ]]; then
+    ENV_FILE="$HUB_ENV_FILE"
+  elif [[ -n "$HUB_DIR" && -f "$HUB_DIR/.env" ]]; then
+    ENV_FILE="$HUB_DIR/.env"
   else
     ENV_FILE="$ROOT_DIR/.env"
   fi

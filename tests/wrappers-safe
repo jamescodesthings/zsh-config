@@ -19,7 +19,7 @@ chmod +x "$TMP/bin/progress"
 # run <name> <path> <code>: sets OUT, ERR, CODE
 function run() {
   rm -f "$TMP/progress.calls"
-  OUT="$(env -u COLORTERM -u CLICOLOR_FORCE -u AGENT_FORGE_HUB_WORKER -u NO_COLOR \
+  OUT="$(env -u COLORTERM -u CLICOLOR_FORCE -u HUB_WORKER -u NO_COLOR \
     HOME="$TMP" ZDOTDIR="$TMP/zdot" PATH="$2" KEY_DIR="$TMP/keys" TMP="$TMP" \
     CUSTOM_DIR="$REPO_DIR" REPO_DIR="$REPO_DIR" \
     /bin/zsh -f -c '

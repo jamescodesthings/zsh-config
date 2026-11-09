@@ -11,7 +11,7 @@
 
 # Examples
 
-`key export agent-forge --to ~/projects/agent-forge/.env`
+`key export hub --to ~/projects/personal/hub/.env`
 
 # See also
 

@@ -1,7 +1,7 @@
 # wipcrypt
 
 > Encrypts a plaintext tree into a ciphertext tree and back (AES-256-CBC, pbkdf2), for work-in-progress files kept out of a public repo.
-> agent-forge calls it for its WIP tiers.
+> hub calls it for its WIP tiers.
 
 # Getting started
 
@@ -27,7 +27,7 @@
 
 # Examples
 
-`wipcrypt cycle-key --key agent-forge --env ~/projects/agent-forge/.env`
+`wipcrypt cycle-key --key hub --env ~/projects/personal/hub/.env`
 
 # See also
 

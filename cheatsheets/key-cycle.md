@@ -13,9 +13,9 @@
 
 # Examples
 
-`key cycle agent-forge -n`
+`key cycle hub -n`
 
-`key cycle agent-forge -y --to ~/projects/agent-forge/.env`
+`key cycle hub -y --to ~/projects/personal/hub/.env`
 
 # See also
 

@@ -36,7 +36,7 @@
 
 # Repo overview: repo.md
 
-- `cheat zsh-config`, `cheat agent-forge`, `cheat pkms` - the repo as a whole, its tools grouped by job
+- `cheat zsh-config`, `cheat hub`, `cheat pkms` - the repo as a whole, its tools grouped by job
 - Every top sheet of a repo's tools points back to it under `# See also`, as an ordinary aligned row
 
 # Lines

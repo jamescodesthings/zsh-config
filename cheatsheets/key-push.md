@@ -12,11 +12,11 @@
 
 # Examples
 
-`key push agent-forge`
+`key push hub`
 
-`key push agent-forge -y`
+`key push hub -y`
 
-`key push agent-forge --from ~/projects/agent-forge/.env --var SKILLS_ENCRYPTION_KEY -y`
+`key push hub --from ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY -y`
 
 # See also
 

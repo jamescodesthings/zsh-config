@@ -12,9 +12,9 @@
 
 # Examples
 
-`key pull agent-forge`
+`key pull hub`
 
-`key pull agent-forge --to ~/projects/agent-forge/.env --var SKILLS_ENCRYPTION_KEY`
+`key pull hub --to ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY`
 
 # See also
 

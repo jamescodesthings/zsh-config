@@ -11,7 +11,7 @@
 
 # Examples
 
-`key import agent-forge --from ~/projects/agent-forge/.env --var SKILLS_ENCRYPTION_KEY`
+`key import hub --from ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY`
 
 # See also
 
