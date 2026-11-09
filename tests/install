@@ -61,6 +61,43 @@ check "stub: say is our function" '[[ "$OUT" == *"say: function"* ]]'
 run --help
 check "--help exits 0" '(( CODE == 0 ))'
 
+# A fresh box: ./install runs before any .zshenv, so CHEATSHEET_DIR and PATH are
+# unset. _stub must default them. Everything runs under env -i, an empty HOME and
+# a PATH of symlinks to harmless basics, in an empty working folder. _stub's
+# path.zsh can add a real Homebrew bin to that PATH, so the test bodies call
+# only _stub, zsh builtins and link-cheatsheets.
+ZSH_BIN="${commands[zsh]}"
+mkdir -p "$TMP/fresh/bin" "$TMP/fresh/home" "$TMP/fresh/cwd" "$TMP/fresh/sheets" "$TMP/fresh/elsewhere"
+for t in uname mkdir ln rm readlink dirname basename; do
+  ln -s "$(command -v $t)" "$TMP/fresh/bin/$t"
+done
+print -r -- '# demo' > "$TMP/fresh/sheets/demo.md"
+
+# fresh <extra env assignment or -> <zsh code>: sets OUT
+function fresh() {
+  local extra="$1"; shift
+  local -a envx=()
+  [[ "$extra" != - ]] && envx=("$extra")
+  OUT="$(cd "$TMP/fresh/cwd" && env -i HOME="$TMP/fresh/home" PATH="$TMP/fresh/bin" R="$REPO_DIR" T="$TMP/fresh" "${envx[@]}" "$ZSH_BIN" -f -c 'source "$R/installers/_stub" --plain; '"$1" </dev/null 2>&1)"
+}
+
+fresh - 'print -r -- "CS=[$CHEATSHEET_DIR]"'
+check "fresh: _stub defaults CHEATSHEET_DIR" '[[ "$OUT" == *"CS=[$TMP/fresh/home/cheatsheets]"* ]]'
+
+fresh - 'autoload -Uz link-cheatsheets; link-cheatsheets "$T/sheets"'
+check "fresh: link-cheatsheets does not skip" '[[ "$OUT" != *"CHEATSHEET_DIR is not set"* ]]'
+check "fresh: link-cheatsheets links the sheet" '[[ -L "$TMP/fresh/home/cheatsheets/demo.md" ]]'
+
+fresh "CHEATSHEET_DIR=$REPO_DIR/cheatsheets" 'print -r -- "CS=[$CHEATSHEET_DIR]"'
+check "fresh: CHEATSHEET_DIR inside the repo is replaced" '[[ "$OUT" == *"CS=[$TMP/fresh/home/cheatsheets]"* ]]'
+
+fresh "CHEATSHEET_DIR=$TMP/fresh/elsewhere" 'print -r -- "CS=[$CHEATSHEET_DIR]"'
+check "fresh: CHEATSHEET_DIR outside the repo is kept" '[[ "$OUT" == *"CS=[$TMP/fresh/elsewhere]"* ]]'
+
+mkdir -p "$TMP/fresh/home/.local/bin"
+fresh - 'print -r -- "PATH=[$PATH]"'
+check "fresh: ~/.local/bin is on PATH" '[[ "$OUT" == *"$TMP/fresh/home/.local/bin"* ]]'
+
 check "the say binary was never called" '[[ ! -e "$TMP/say-called" ]]'
 
 (( failed )) && exit 1

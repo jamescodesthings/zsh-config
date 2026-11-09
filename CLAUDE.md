@@ -145,6 +145,8 @@ Each file is an independent install script. `_stub` must be sourced first - it s
 
 On Debian, tools that apt packages badly come from their latest GitHub release through `install-release <binary>` (`functions/install-release`). `configs/releases` has one row per tool (tlrc as `tldr`, glow, eza, delta, bat, asdf): repo, asset pattern, per-arch tokens and paths inside the archive. It installs to `~/.local/bin`, completions to `~/.local/share/zsh/site-functions`, and records the tag under `~/.local/share/zsh-config/releases`. macOS uses brew for all of them.
 
+`_stub` also defaults `CHEATSHEET_DIR` and sources `path.zsh`, because no `.zshenv` has run on a fresh box and each installer is its own process.
+
 New installers should start with the lines below, report with `say`, and use `problem` and `fix` for a failure:
 ```zsh
 #!/usr/bin/env zsh

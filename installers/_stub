@@ -49,3 +49,15 @@ if is empty "$HOME"; then
   say fail "\$HOME not set, set it before running this script"
   exit 1
 fi
+
+# No .zshenv has run on a fresh box (./install is the first thing to start), and
+# each installer is its own process, so the defaults it would set are set here.
+# ~/.custom does not exist yet, so compare against this repo, not CUSTOM_DIR.
+if [[ -z "$CHEATSHEET_DIR" || "${CHEATSHEET_DIR:A}" == "${REPO_DIR:A}"/* ]]; then
+  export CHEATSHEET_DIR="$HOME/cheatsheets"
+fi
+
+# Same reason: brew (01-homebrew evals shellenv in its own process) and
+# ~/.local/bin must be on PATH for every later installer. path.zsh is forkless,
+# silent and idempotent.
+source "$REPO_DIR/path.zsh"
