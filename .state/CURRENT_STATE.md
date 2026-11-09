@@ -1,8 +1,8 @@
 # Current Session State & Handoff
 
 - **Active Tool:** Claude Code CLI
-- **Date/Time Stamp:** 2026-11-08 21:00 GMT
-- **Current Task Status:** Hub CLI overhaul, zsh-config part, done (0426901..5b8d15c): `key` (per-project named keys, 1Password sync, import), wipcrypt owned here with `--key`, every CLI helper loads its own dependencies, progress wrappers call the binary, 950-projects runs `hub project update`. Then the CLI and cheat-sheet sweep, done (f749f35..3c4bd58): every tool on cli-init, say and problems, update quiet with a step counter and logs in ~/.custom/logs/update, $c[...] and zpm-zsh-colors retired. Earlier: CLI helper library done (agent-forge docs/cli-spec/helpers-interface.md): palette and col, say and problems, cheat-render replacing tlrc in cheat, logs, pick, progress, run-quiet, config, the Nerd Font step, and every sheet on the new cheatsheet-test rules (See also last, ` - ` rows, 35 lines). Earlier: cheat v4.
+- **Date/Time Stamp:** 2026-11-09 13:54 GMT
+- **Current Task Status:** First `./install` no longer hits CHEATSHEET_DIR unset, and later installers find brew (14ebf2b): `installers/_stub` defaults the variable and sources `path.zsh`; stubbed tests only, no real clean-box run yet. Earlier: Hub CLI overhaul, zsh-config part, done (0426901..5b8d15c): `key` (per-project named keys, 1Password sync, import), wipcrypt owned here with `--key`, every CLI helper loads its own dependencies, progress wrappers call the binary, 950-projects runs `hub project update`. Then the CLI and cheat-sheet sweep, done (f749f35..3c4bd58): every tool on cli-init, say and problems, update quiet with a step counter and logs in ~/.custom/logs/update, $c[...] and zpm-zsh-colors retired. Earlier: CLI helper library done (agent-forge docs/cli-spec/helpers-interface.md): palette and col, say and problems, cheat-render replacing tlrc in cheat, logs, pick, progress, run-quiet, config, the Nerd Font step, and every sheet on the new cheatsheet-test rules (See also last, ` - ` rows, 35 lines). Earlier: cheat v4.
 
 ## Milestone & Phase Progress
 
@@ -93,7 +93,7 @@
 - James: after pulling, `exec zsh`; the first real `update` run is the check of the new quiet runner (sudo prompt, step counter, `update --errors`).
 - With the hub (not here): one manual push of a throwaway key (`key create zz-test`, `key sync zz-test --push` twice, `key sync zz-test`) to confirm `op item edit --template` edits only the field and `item create --vault` with a template works; tests use a stub op.
 
-- Other machines: after pulling, open a new shell and run each project's installer, or `update`, to fill `~/cheatsheets`. `link-cheatsheets` refuses to link while an old in-repo `CHEATSHEET_DIR` is in the environment.
+- Other machines: after pulling, open a new shell and run each project's installer, or `update`, to fill `~/cheatsheets`. A bare `link-cheatsheets` refuses to link while an old in-repo `CHEATSHEET_DIR` is in the environment; installers and updaters replace that value through `_stub`.
 
 - Reading order given to the user for the research docs: improvements (ranked table, then sections 1 to 6), Obsidian alternatives (Recommendation only), macOS workflow (ranked table, then ranks 1 to 9). The user has said they will start on improvements.
 - `xcodes uninstall <version>` with a same-numbered beta installed is untested; no beta is installed, so it cannot be tested here.
@@ -157,3 +157,8 @@
 - f749f35..3c4bd58 (2026-11-03): the CLI sweep; see Decisions 2026-11-03 (CLI sweep).
 - Parked minors: an `export` line with two spaces or a tab is not matched by key; the key-users dedup is exact-string (`/a/b` and `/a/b/` are two roots).
 
+
+## Next up
+
+- [ ] User: read the improvements doc and choose ranks (carried forward from 2026-09-20-18-36-claude.md; may overlap the "choose which ranks" item above)
+- [ ] Research release-download installer stubs (tlrc, asdf, others) (carried forward from 2026-10-06-11-15-claude.md; install-release now exists, so this may already be done)

@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
-# Sourced from .zshenv and .zprofile, so it runs in every zsh, more than once.
+# Sourced from .zshenv and .zprofile, so it runs in every zsh, more than once,
+# and from installers/_stub, because no .zshenv has run on a fresh box.
 # Idempotent, silent, and no forks: only [[ -d ]] tests.
 #
 # Default mode adds only the entries missing from PATH, so a caller's PATH (a
