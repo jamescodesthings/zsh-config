@@ -57,6 +57,8 @@ if is available git; then
 
   alias gsu='git submodule update --init --recursive'
   alias gsa='git submodule add'
+  alias git-skip='git update-index --assume-unchanged'
+  alias git-unskip='git update-index --no-assume-unchanged'
 fi
 
 if is available npm; then

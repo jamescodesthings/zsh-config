@@ -1,6 +1,7 @@
 {
     "autoclose": false,
     "autosu": true,
+    "backup": false,
     "clipboard": "terminal",
     "colorscheme": "night-owl",
     "helpsplit": "vsplit",
