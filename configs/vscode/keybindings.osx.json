@@ -5,7 +5,7 @@
     "command": "workbench.action.quickOpen"
   },
   {
-    "key": "shift shift",
+    "key": "cmd+shift+a",
     "command": "-workbench.action.quickOpen"
   },
   {
