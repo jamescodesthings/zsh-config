@@ -16,6 +16,7 @@ _key() {
     'push:push the stored key to 1Password'
     'import:seed the store from a file'
     'export:write the stored key into a file'
+    'rm:move a key out of the store'
     'list:list the stored keys'
     'path:print where a key is stored'
   )
@@ -43,6 +44,8 @@ _key() {
       _arguments $common '--from[file to read the key from]:file:_files' '--var[variable name in that file]:variable' '1:key name:_key_names' ;;
     export)
       _arguments $common '--to[file to write the key into]:file:_files' '--var[variable name in that file]:variable' '1:key name:_key_names' ;;
+    rm)
+      _arguments $common '(-n --dry-run)'{-n,--dry-run}'[say what would move]' '(-y --yes)'{-y,--yes}'[do not ask]' '1:key name:_key_names' ;;
     list)
       _arguments $common '--json[machine readable]' ;;
     path)

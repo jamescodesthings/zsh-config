@@ -16,6 +16,7 @@
 - `key push <name> [--from FILE] [-y|--yes]` - the store to 1Password; `--from` imports FILE first
 - `key import <name> --from FILE` - FILE's key into the store, no 1Password
 - `key export <name> --to FILE` - the stored key into FILE, no 1Password
+- `key rm <name> [-n|--dry-run] [-y|--yes]` - move a key out of the store, recoverable
 - `key list [--json]` - name, stored or not, backups, op reference, variable; never a key
 - `key path <name> [-p|--previous]` - the key file's path (exit 1 with a `key pull` fix when there is none), or the newest backup's
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-# key create|cycle|pull|push|import|export|list|path <name> [...]: per-project named keys, kept
+# key create|cycle|pull|push|import|export|rm|list|path <name> [...]: per-project named keys, kept
 # in the store ${KEY_DIR:-${CUSTOM_DIR:-$HOME/.custom}/config/keys} (folder
 # 700, files 600). Per key: <name>.key (the key on one line), <name>.key.<n>
 # (older keys, n counting up from 1), <name>.conf (`op = REF`, `var = VAR`)
@@ -12,6 +12,7 @@
 #   key push   <name> [--from FILE] [--var VAR] [--op REF] [-y|--yes]
 #   key import <name> --from FILE [--var VAR]
 #   key export <name> --to FILE [--var VAR]
+#   key rm     <name> [-n|--dry-run] [-y|--yes]
 #   key list   [--json]
 #   key path   <name> [-p|--previous]
 #
@@ -25,6 +26,10 @@
 # key. `import` seeds the store from the last VAR= line of FILE (one pair of
 # surrounding quotes stripped, or a bare one-line key); `export` writes the
 # stored key into FILE. Neither import nor export talks to 1Password.
+# `rm` moves <name>.key, every <name>.key.<n>, <name>.conf and <name>.users
+# into removed/<name>-<YYYYmmdd-HHMMSS>/ in the store (700; -2, -3 when the
+# name is taken), so moving them back restores the key. It warns about each
+# root in <name>.users that still exists and says 1Password is not touched.
 # `key sync` is gone: every old form exits 2 with a fix naming the new command.
 #
 # Every subcommand also takes -v|--verbose, -q|--quiet and --plain. Exit 0
@@ -58,7 +63,7 @@ function key() {
 
   local sub="$1"
   if [[ -z "$sub" ]]; then
-    _key_say fail "key: usage: key create|cycle|pull|push|import|export|list|path <name> (key --help)"
+    _key_say fail "key: usage: key create|cycle|pull|push|import|export|rm|list|path <name> (key --help)"
     return 2
   fi
   shift
@@ -103,7 +108,7 @@ function key() {
       _key_list "$dir" "$json"
       return $?
       ;;
-    create|cycle|pull|push|import|export|path) ;;
+    create|cycle|pull|push|import|export|rm|path) ;;
     *)
       _key_say fail "key: no subcommand called $sub"
       return 2
@@ -122,6 +127,17 @@ function key() {
   if [[ ! "$name" =~ '^[a-z0-9][a-z0-9._-]*$' ]]; then
     _key_say fail "key: $name is not a valid key name (use a-z, 0-9, . _ -)"
     return 2
+  fi
+  if [[ "$sub" == rm ]]; then
+    local bad
+    for bad in "$to" "$from" "$var_opt" "$op_opt" "$json" "$prev"; do
+      if [[ -n "$bad" ]]; then
+        _key_say fail "key: rm takes only a name, -n, -y, -v, -q and --plain"
+        return 2
+      fi
+    done
+    _key_rm "$dir" "$name" "$dry" "$yes"
+    return $?
   fi
   if [[ -n "$from" && "$sub" != (push|import) ]]; then
     _key_say fail "key: --from belongs to push and import"
@@ -430,6 +446,56 @@ function _key_cycle() {
   _key_say ok "cycled key $name"
   [[ -n "$to" ]] && { _key_to_write "$to" "$var" "$k" 1 || return 1; }
   return 0
+}
+
+# _key_rm dir name dry yes: moves the key's files into removed/<name>-<stamp>/.
+function _key_rm() {
+  local dir="$1" name="$2" dry="$3" yes="$4" f root stamp dest n op var
+  local -a files roots
+  files=("$dir/$name.key"(N) "$dir/$name.key."<->(N) "$dir/$name.conf"(N) "$dir/$name.users"(N))
+  if (( ${#files} == 0 )); then
+    problem "key: nothing is stored for $name"
+    fix "key list" "to see the stored keys"
+    problems
+    return 1
+  fi
+  _key_conf "$dir/$name.conf" "$name"
+  for f in "${files[@]}"; do _key_say info "${dry:+would }move ${f:t}"; done
+  if [[ -r "$dir/$name.users" ]]; then
+    while IFS= read -r root || [[ -n "$root" ]]; do
+      [[ -n "$root" && -d "$root" ]] && _key_say warn "$root still uses this key; its encrypted files cannot be decrypted without it"
+    done < "$dir/$name.users"
+  fi
+  _key_say info "1Password is not touched; its item stays at $op"
+  [[ -n "$dry" ]] && return 0
+  if [[ -z "$yes" ]]; then
+    if ! _key_have_tty; then
+      problem "key: rm needs a terminal to ask, or -y"
+      fix "key rm $name -y" "to remove it without asking"
+      problems
+      return 1
+    fi
+    _key_ask "Remove the $name key from the store? The files are moved to removed/, not deleted." || {
+      _key_say info "left $name alone"
+      return 1
+    }
+  fi
+  zmodload -F zsh/datetime b:strftime
+  strftime -s stamp '%Y%m%d-%H%M%S'
+  dest="$dir/removed/$name-$stamp"
+  n=1
+  while [[ -e "$dest" ]]; do (( n++ )); dest="$dir/removed/$name-$stamp-$n"; done
+  command mkdir -p -m 700 "$dir/removed" && command chmod 700 "$dir/removed" && command mkdir -m 700 "$dest" || {
+    _key_say fail "key: could not make $dest"
+    return 1
+  }
+  for f in "${files[@]}"; do
+    command mv "$f" "$dest/" || {
+      _key_say fail "key: could not move ${f:t}; files moved so far are in $dest, move them back to restore $name"
+      return 1
+    }
+  done
+  _key_say ok "removed key $name into ${dest/#$HOME/~}; moving the files back restores it, deleting that folder removes it for good"
 }
 
 # _key_have_op: fails with a message when the op binary is missing.

@@ -451,4 +451,62 @@ oldsync "n --local --to $TMP/work/f" "key export n --to $TMP/work/f"
 oldsync "n --from $TMP/work/f" "key import n --from $TMP/work/f"
 oldsync "n --from $TMP/work/f --push" "key push n --from $TMP/work/f"
 
+# --- rm
+function rmfresh() {
+  fresh
+  run "key create demo --op op://Vault/thing/field"; run "key cycle demo -y"; run "key cycle demo -y"
+  RK="$(< $KD/demo.key)"
+  mkdir -p "$TMP/work/rootA"
+  print -r -- "$TMP/work/rootA"$'\n'"$TMP/work/gone" > "$KD/demo.users"
+  : > $OPLOG
+}
+rmfresh
+run "key rm demo -y"
+RD=("$KD"/removed/demo-*(N/))
+same "rm -y exits 0, one removed folder" "$CODE|${#RD}" "0|1"
+same "rm moved all four kinds of file" "$(ls -A ${RD[1]} | tr '\n' ' ')" "demo.conf demo.key demo.key.1 demo.key.2 demo.users "
+same "rm left nothing at the top level" "$(ls $KD | tr '\n' ' ')" "removed "
+same "removed folder 700, key file 600" "$(mode ${RD[1]})|$(mode ${RD[1]}/demo.key)" "700|600"
+same "removed key text intact" "$(< ${RD[1]}/demo.key)" "$RK"
+same "ok line names the folder and the restore hint" "$([[ $OUT$ERR == *${RD[1]:t}* && $OUT$ERR == *'moving the files back'* ]] && echo yes)" "yes"
+same "rm never leaks the key" "$([[ $OUT$ERR == *$RK* ]] && echo leak)" ""
+run "key list"
+same "list no longer shows the name" "$CODE|$OUT" "0|"
+
+rmfresh
+run "key rm demo -y"
+same "warn for a root that exists" "$([[ $ERR$OUT == *"$TMP/work/rootA still uses this key; its encrypted files cannot be decrypted without it"* ]] && echo yes)" "yes"
+same "no warn for a root that is gone" "$([[ $ERR$OUT == *"$TMP/work/gone"* ]] && echo shown)" ""
+same "output names the op reference" "$([[ $ERR$OUT == *"1Password is not touched"* && $ERR$OUT == *op://Vault/thing/field* ]] && echo yes)" "yes"
+same "op never called" "$(cat $OPLOG)" ""
+rmfresh; rm -f $KD/demo.conf
+run "key rm demo -y"
+same "default op ref named when there is no conf" "$([[ $ERR$OUT == *op://Personal/demo-key/password* ]] && echo yes)" "yes"
+
+rmfresh
+run "key rm demo -n"
+same "dry run exits 0, shows files, changes nothing" "$CODE|$(ls $KD | tr '\n' ' ')|$([[ $ERR$OUT == *demo.key.2* ]] && echo shown)" "0|demo.conf demo.key demo.key.1 demo.key.2 demo.users |shown"
+run "key rm demo"
+same "no terminal and no -y refuses with exit 1" "$CODE|$(ls $KD | tr '\n' ' ')|$([[ $ERR == *-y* ]] && echo hint)" "1|demo.conf demo.key demo.key.1 demo.key.2 demo.users |hint"
+STDIN="$TMP/no" EXTRA_ENV="KEY_FORCE_TTY=1" run "key rm demo"
+same "answering n moves nothing, exit 1" "$CODE|$(ls $KD | tr '\n' ' ')" "1|demo.conf demo.key demo.key.1 demo.key.2 demo.users "
+STDIN="$TMP/yes" EXTRA_ENV="KEY_FORCE_TTY=1" run "key rm demo"
+same "answering y moves the files" "$CODE|$(ls $KD | tr '\n' ' ')" "0|removed "
+unset STDIN
+run "key rm demo -y"
+same "nothing stored exits 1 with a key list fix" "$CODE|$([[ $ERR == *'key list'* ]] && echo yes)" "1|yes"
+rmfresh
+run "key rm demo -y"; run "key create demo"; run "key rm demo -y"
+same "a second rm gets its own folder" "$CODE|$(ls $KD/removed | grep -c '^demo-')" "0|2"
+rmfresh
+run "key rm demo -y; key create demo; key rm demo -y"
+same "same-second rm does not clobber (-2 or later stamp)" "$CODE|$(ls $KD/removed | grep -c '^demo-')" "0|2"
+for bad in "rm" "rm demo other" "rm Bad" "rm demo --to $TMP/work/o" "rm demo --from $TMP/work/o" "rm demo --var V" "rm demo --op op://V/i/f" "rm demo --json" "rm demo -p"; do
+  rmfresh
+  run "key $bad -y"
+  same "key $bad: exit 2, nothing moved" "$CODE|$(ls $KD | tr '\n' ' ')" "2|demo.conf demo.key demo.key.1 demo.key.2 demo.users "
+done
+OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin ZDOTDIR="$TMP/zd" CLI_PLAIN=1 zsh -f "$REPO_DIR/functions/key" rm --help 2>&1)"; CODE=$?
+same "key rm --help exits 0" "$CODE|${OUT:+text}" "0|text"
+
 exit $failed
