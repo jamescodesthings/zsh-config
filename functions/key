@@ -38,6 +38,9 @@
 # with builtins only, and `op` gets a pushed key through a 600 template file.
 # The default 1Password reference is op://${KEY_OP_VAULT:-Personal}/<name>-key/
 # password, read at call time; a ref in <name>.conf or passed with --op wins.
+# KEY_OP_ACCOUNT (a 1Password account URL, ID or email) adds --account to every
+# op call, for a machine signed in to more than one account; unset, op uses
+# whichever account was signed in last.
 # Environment: KEY_DIR (the store), KEY_OP_BIN (the op binary, default op),
 # KEY_OP_VAULT (default vault, default Personal), KEY_FORCE_TTY (tests only).
 #
@@ -556,7 +559,7 @@ function _key_pull() {
   _key_to_ok "$to" || return 1
   _key_dir_ready "$dir" || return 1
   _key_say info "asking 1Password: approve the prompt in the 1Password app"
-  k="$("$bin" read "$op")"
+  k="$("$bin" read "$op" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"})"
   if (( $? != 0 )) || [[ -z "$k" ]]; then
     _key_say fail "key: op gave no key for $op"
     return 1
@@ -634,7 +637,7 @@ function _key_push() {
   local rc=0 exists=0
   {
     local gerr
-    if gerr="$("$bin" item get --vault "${vault}" "${title}" 2>&1 > /dev/null)"; then
+    if gerr="$("$bin" item get --vault "${vault}" "${title}" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"} 2>&1 > /dev/null)"; then
       exists=1
     elif [[ "${(L)gerr}" != *("isn't an item"|"not found")* ]]; then
       rc=2
@@ -643,10 +646,10 @@ function _key_push() {
       :
     elif (( exists )); then
       print -r -- "{\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
-      "$bin" item edit --vault "$vault" "$title" --template="$tmp" > /dev/null || rc=1
+      "$bin" item edit --vault "$vault" "$title" --template="$tmp" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"} > /dev/null || rc=1
     else
       print -r -- "{\"title\":\"$jtitle\",\"category\":\"PASSWORD\",\"vault\":{\"name\":\"$jvault\"},\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
-      "$bin" item create --vault "$vault" --template="$tmp" > /dev/null || rc=1
+      "$bin" item create --vault "$vault" --template="$tmp" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"} > /dev/null || rc=1
     fi
   } always {
     command rm -f "$tmp"

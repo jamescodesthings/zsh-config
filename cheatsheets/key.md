@@ -24,6 +24,7 @@
 
 - `KEY_DIR` - the store (default `~/.custom/config/keys`)
 - `KEY_OP_BIN` - the 1Password CLI (default `op`)
+- `KEY_OP_ACCOUNT` - 1Password account for every op call (URL, ID or email); unset, op uses the last signed in
 - `KEY_OP_VAULT` - the vault in the default reference (default `Personal`)
 
 # See also
