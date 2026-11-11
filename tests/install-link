@@ -1,0 +1,74 @@
+#!/usr/bin/env zsh
+# Tests install-link: links as the user when the target's folder is writable,
+# and reaches for sudo only when it is not. sudo is a stub that logs its
+# arguments and pretends to succeed; every other command is a symlink to a
+# harmless basic in a private PATH, HOME and the working folder are empty temp
+# dirs; nothing real is touched.
+# Run: tests/install-link. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"; TMP="${TMP:A}"
+trap 'chmod -R u+w "$TMP" 2>/dev/null; rm -rf "$TMP"' EXIT
+failed=0
+
+mkdir -p "$TMP/bin" "$TMP/home" "$TMP/work" "$TMP/sheets"
+for c in mkdir ln mv rm readlink dirname basename; do
+  ln -s "$(command -v $c)" "$TMP/bin/$c"
+done
+cat > "$TMP/bin/sudo" <<EOF
+#!/bin/zsh -f
+print -r -- "\$*" >> "$TMP/sudo.log"
+[[ -n "\$SUDO_FAIL" ]] && exit 1
+exit 0
+EOF
+chmod +x "$TMP/bin/sudo"
+printf '# install-link\n\n> sheet install-link\n' > "$TMP/sheets/install-link.md"
+
+SRC="$TMP/src.txt"; echo src > "$SRC"
+H="$TMP/home"
+
+# run <args...>: sets OUT (stdout+stderr), CODE
+function run() {
+  rm -f "$TMP/sudo.log"
+  OUT="$(cd "$TMP/work" && env -i HOME="$H" PATH="$TMP/bin" SUDO_FAIL="$SUDO_FAIL" \
+    CHEATSHEET_DIR="$TMP/sheets" CUSTOM_DIR="$REPO_DIR" /bin/zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is cheat cheat-help cheat-render install-link
+    shift
+    install-link "$@"
+  ' _ "$REPO_DIR" "$@" 2>&1 < /dev/null)"
+  CODE=$?
+}
+
+function check() {
+  if eval "$2"; then print "ok: $1"; else print "FAIL: $1"; print -r -- "    code $CODE: $OUT"; failed=1; fi
+}
+
+run "$SRC" "$H/.rc"
+check "new link in a writable folder, no sudo" '[[ $CODE == 0 && -L $H/.rc && $(readlink $H/.rc) == $SRC && ! -e $TMP/sudo.log ]]'
+
+run "$SRC" "$H/.rc"
+check "replacing a link needs no sudo" '[[ $CODE == 0 && -L $H/.rc && ! -e $TMP/sudo.log ]]'
+
+rm "$H/.rc"; echo mine > "$H/.rc"
+run "$SRC" "$H/.rc"
+check "real file backed up without sudo" '[[ $CODE == 0 && $(< $H/.rc.bak) == mine && -L $H/.rc && ! -e $TMP/sudo.log ]]'
+
+mkdir -p "$H/dir"; echo x > "$H/dir/f"
+run "$SRC" "$H/dir"
+check "real folder backed up without sudo" '[[ $CODE == 0 && -f $H/dir_bak/f && -L $H/dir && ! -e $TMP/sudo.log ]]'
+
+run "$SRC" "$H/new/deep/.rc"
+check "missing parent folder is created" '[[ $CODE == 0 && -L $H/new/deep/.rc && ! -e $TMP/sudo.log ]]'
+
+mkdir -p "$TMP/locked"; chmod a-w "$TMP/locked"
+run "$SRC" "$TMP/locked/.rc"
+check "unwritable folder uses sudo" '[[ $CODE == 0 && $(< $TMP/sudo.log) == "ln -s "* && $OUT == *sudo* ]]'
+
+SUDO_FAIL=1 run "$SRC" "$TMP/locked/.rc"
+check "failed sudo reports and exits 1" '[[ $CODE == 1 && $OUT == *"could not create link"* ]]'
+
+run "$SRC"
+check "one argument is a usage error" '[[ $CODE == 2 ]]'
+
+exit $failed
