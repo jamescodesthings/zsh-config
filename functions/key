@@ -559,7 +559,7 @@ function _key_pull() {
   _key_to_ok "$to" || return 1
   _key_dir_ready "$dir" || return 1
   _key_say info "asking 1Password: approve the prompt in the 1Password app"
-  k="$("$bin" read "$op" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"})"
+  k="$("$bin" read "$op" ${KEY_OP_ACCOUNT:+--account} ${KEY_OP_ACCOUNT:+"$KEY_OP_ACCOUNT"})"
   if (( $? != 0 )) || [[ -z "$k" ]]; then
     _key_say fail "key: op gave no key for $op"
     return 1
@@ -637,7 +637,7 @@ function _key_push() {
   local rc=0 exists=0
   {
     local gerr
-    if gerr="$("$bin" item get --vault "${vault}" "${title}" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"} 2>&1 > /dev/null)"; then
+    if gerr="$("$bin" item get --vault "${vault}" "${title}" ${KEY_OP_ACCOUNT:+--account} ${KEY_OP_ACCOUNT:+"$KEY_OP_ACCOUNT"} 2>&1 > /dev/null)"; then
       exists=1
     elif [[ "${(L)gerr}" != *("isn't an item"|"not found")* ]]; then
       rc=2
@@ -646,10 +646,10 @@ function _key_push() {
       :
     elif (( exists )); then
       print -r -- "{\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
-      "$bin" item edit --vault "$vault" "$title" --template="$tmp" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"} > /dev/null || rc=1
+      "$bin" item edit --vault "$vault" "$title" --template="$tmp" ${KEY_OP_ACCOUNT:+--account} ${KEY_OP_ACCOUNT:+"$KEY_OP_ACCOUNT"} > /dev/null || rc=1
     else
       print -r -- "{\"title\":\"$jtitle\",\"category\":\"PASSWORD\",\"vault\":{\"name\":\"$jvault\"},\"fields\":[{\"id\":\"$jfield\",\"type\":\"CONCEALED\",\"purpose\":\"PASSWORD\",\"value\":\"$k\"}]}" > "$tmp"
-      "$bin" item create --vault "$vault" --template="$tmp" ${KEY_OP_ACCOUNT:+--account "$KEY_OP_ACCOUNT"} > /dev/null || rc=1
+      "$bin" item create --vault "$vault" --template="$tmp" ${KEY_OP_ACCOUNT:+--account} ${KEY_OP_ACCOUNT:+"$KEY_OP_ACCOUNT"} > /dev/null || rc=1
     fi
   } always {
     command rm -f "$tmp"
