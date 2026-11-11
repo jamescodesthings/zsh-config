@@ -162,3 +162,6 @@
 
 - [ ] User: read the improvements doc and choose ranks (carried forward from 2026-09-20-18-36-claude.md; may overlap the "choose which ranks" item above)
 - [ ] Research release-download installer stubs (tlrc, asdf, others) (carried forward from 2026-10-06-11-15-claude.md; install-release now exists, so this may already be done)
+- [ ] User: uConsole key files (carried forward verbatim from 2026-10-07-14-35-claude.md; may overlap "James: fill in uConsole keys" above)
+- [ ] User: migrate other machines (pull, restart terminals, ./install) (carried forward verbatim from 2026-10-07-14-35-claude.md; may overlap "James: on each other machine" above)
+- [ ] Merge branch `worktree-t322-asdf-github-token` into main and push (user, through the hub) (carried forward verbatim from 2026-10-16-11-15-claude.md; CURRENT_STATE records the merge as done and the push as not done, so only the push may be open)
