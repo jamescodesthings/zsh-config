@@ -1,0 +1,79 @@
+#!/usr/bin/env zsh
+# Tests link-blender-scripts against a temp Blender root: links, version-folder
+# matching, .bak handling, reruns, nested paths, usage errors. Every external
+# command is a symlink to a harmless basic in a private PATH, HOME and the
+# working folder are empty temp dirs; nothing real is touched.
+# Run: tests/link-blender-scripts. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"; TMP="${TMP:A}"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+
+mkdir -p "$TMP/bin" "$TMP/home" "$TMP/work" "$TMP/sheets"
+for c in uname mkdir ln mv rm readlink dirname basename mktemp awk; do
+  ln -s "$(command -v $c)" "$TMP/bin/$c"
+done
+printf '# link-blender-scripts\n\n> sheet link-blender-scripts\n' > "$TMP/sheets/link-blender-scripts.md"
+
+SRC="$TMP/src"
+mkdir -p "$SRC/startup" "$SRC/addons"
+echo one > "$SRC/startup/a.py"
+echo two > "$SRC/addons/x.py"
+ROOT="$TMP/root"
+
+function reset() { rm -rf "$ROOT"; mkdir -p "$ROOT/4.5" "$ROOT/5.2" "$ROOT/config" "$ROOT/4.5-old"; }
+
+# run <args...>: sets OUT (stdout+stderr), CODE
+function run() {
+  OUT="$(cd "$TMP/work" && env -i HOME="$TMP/home" PATH="$TMP/bin" BLENDER_USER_DIR="$ROOT" \
+    CHEATSHEET_DIR="$TMP/sheets" CUSTOM_DIR="$REPO_DIR" /bin/zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is cheat cheat-help cheat-render link-blender-scripts
+    shift
+    link-blender-scripts "$@"
+  ' _ "$REPO_DIR" "$@" 2>&1 < /dev/null)"
+  CODE=$?
+}
+
+function check() {
+  if eval "$2"; then print "ok: $1"; else print "FAIL: $1"; print -r -- "    code $CODE: $OUT"; failed=1; fi
+}
+
+reset
+run "$SRC"
+check "links into every version folder" '[[ $CODE == 0 && -L $ROOT/4.5/scripts/startup/a.py && -L $ROOT/5.2/scripts/startup/a.py && $(readlink $ROOT/5.2/scripts/startup/a.py) == $SRC/startup/a.py ]]'
+check "nested files keep their path" '[[ -L $ROOT/4.5/scripts/addons/x.py ]]'
+check "skips non-version folders" '[[ ! -e $ROOT/config/scripts && ! -e $ROOT/4.5-old/scripts ]]'
+check "summary line" '[[ $OUT == *"linked 4, already linked 0, backed up 0"* ]]'
+
+run "$SRC"
+check "rerun is already linked, no bak" '[[ $CODE == 0 && $OUT == *"linked 0, already linked 4, backed up 0"* && -z $(print -l $ROOT/**/*.bak*(N)) ]]'
+
+reset
+mkdir -p "$ROOT/4.5/scripts/startup"; echo mine > "$ROOT/4.5/scripts/startup/a.py"
+run "$SRC"
+check "real file goes to .bak and is reported" '[[ $CODE == 0 && $(< $ROOT/4.5/scripts/startup/a.py.bak) == mine && -L $ROOT/4.5/scripts/startup/a.py && $OUT == *"backing up"* && $OUT == *"backed up 1"* ]]'
+
+reset
+mkdir -p "$ROOT/4.5/scripts/startup"; echo mine > "$ROOT/4.5/scripts/startup/a.py"; echo older > "$ROOT/4.5/scripts/startup/a.py.bak"
+run "$SRC"
+check "existing .bak kept, new backup is .bak.1" '[[ $(< $ROOT/4.5/scripts/startup/a.py.bak) == older && $(< $ROOT/4.5/scripts/startup/a.py.bak.1) == mine ]]'
+
+reset
+mkdir -p "$ROOT/4.5/scripts/startup"; ln -s /nowhere "$ROOT/4.5/scripts/startup/a.py"
+run "$SRC"
+check "link pointing elsewhere is backed up" '[[ -L $ROOT/4.5/scripts/startup/a.py.bak && $(readlink $ROOT/4.5/scripts/startup/a.py) == $SRC/startup/a.py && $OUT == *"backed up 1"* ]]'
+
+rm -rf "$ROOT"
+run "$SRC"
+check "missing root skips with exit 0" '[[ $CODE == 0 && $OUT == *skipping* ]]'
+
+run --help
+check "--help exits 0" '[[ $CODE == 0 && $OUT == *"sheet link-blender-scripts"* ]]'
+run "$TMP/nosuch"
+check "bad source folder exits 2" '[[ $CODE == 2 ]]'
+run
+check "no argument exits 2" '[[ $CODE == 2 ]]'
+
+exit $failed

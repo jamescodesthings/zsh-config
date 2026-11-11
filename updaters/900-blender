@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+# Wrapped in braces so zsh parses the whole file before running it; see ../update.
+{
+source "${0:a:h}/_stub"
+
+autoload -Uz link-blender-scripts
+
+# A version folder made since the install (5.3) gets the links here. A missing
+# settings folder makes the function skip with exit 0.
+link-blender-scripts "$REPO_DIR/configs/blender/scripts" || exit 1
+
+exit 0
+}

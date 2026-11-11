@@ -19,7 +19,7 @@
 - `cheat kitty`, `cheat gnome-bin` - terminal keys; GNOME window scripts
 - Sheets: `cheat cheat`, `cheat cheatsheet-test`, `cheat link-cheatsheets`, `cheat terminal-colors`, `cheat cli`
 - Shell helpers: `cheat is`, `cheat confirm`, `cheat reload`, `cheat deps`, `cheat touch-sudo`, `cheat start-workstation`
-- Installer: `cheat install`, `cheat install-link`, `cheat install-box-config`, `cheat install-release`
+- Installer: `cheat install`, `cheat install-link`, `cheat install-box-config`, `cheat install-release`, `cheat link-blender-scripts`
 - Git helpers: `cheat git-cleanup-branch`, `cheat git-prune-local`, `cheat git-i-really-fucked-up`, `cheat gcod`, `cheat gcom`
 
 # Quick references

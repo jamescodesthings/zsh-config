@@ -1,0 +1,95 @@
+#!/usr/bin/env zsh
+
+function link-blender-scripts() {
+  cheat-help link-blender-scripts "$@" && return 0
+  autoload -Uz cli-init say problem fix problems is
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
+
+  if is not equal "$#" "1"; then
+    problem "link-blender-scripts needs one folder"
+    fix "cheat link-blender-scripts" "how to use it"
+    problems
+    return 2
+  elif is not dir "$1"; then
+    problem "not a folder: $1"
+    fix "cheat link-blender-scripts" "how to use it"
+    problems
+    return 2
+  fi
+
+  setopt localoptions extendedglob noglobdots
+  local dir="${1:A}"
+  local root
+  if is not empty "$BLENDER_USER_DIR"; then
+    root="$BLENDER_USER_DIR"
+  elif is osx; then
+    root="$HOME/Library/Application Support/Blender"
+  else
+    root="$HOME/.config/blender"
+  fi
+
+  if is not dir "$root"; then
+    say info "skipping: no Blender settings folder at $root"
+    return 0
+  fi
+
+  local ver src rel dest bak target
+  local -i linked=0 already=0 backed=0 failed=0 n
+
+  for ver in "$root"/[0-9]##.[0-9]##(N/); do
+    for src in "$dir"/**/*(.N); do
+      rel="${src#"$dir"/}"
+      dest="$ver/scripts/$rel"
+
+      # :A follows the link, so one made through ~/.custom counts as well
+      if [[ -L "$dest" && "${dest:A}" == "${src:A}" ]]; then
+        already+=1
+        continue
+      fi
+
+      if ! command mkdir -p "${dest:h}"; then
+        problem "cannot create ${dest:h}"
+        fix "ls -ld ${(q)dest:h}" "check who owns it"
+        failed+=1
+        continue
+      fi
+
+      if [[ -e "$dest" || -L "$dest" ]]; then
+        bak="$dest.bak"
+        n=0
+        while [[ -e "$bak" || -L "$bak" ]]; do
+          n+=1
+          bak="$dest.bak.$n"
+        done
+        say info "backing up $dest → $bak"
+        if command mv "$dest" "$bak"; then
+          backed+=1
+        else
+          problem "could not back up $dest"
+          fix "ls -l ${(q)dest}" "check who owns it"
+          failed+=1
+          continue
+        fi
+      fi
+
+      say info "linking ${src:A} → $dest"
+      if command ln -s "${src:A}" "$dest"; then
+        linked+=1
+      else
+        problem "could not link $dest"
+        fix "ls -l ${(q)dest}" "check who owns it"
+        failed+=1
+      fi
+    done
+  done
+
+  if (( failed )); then
+    problems
+    return 1
+  fi
+  say ok "linked $linked, already linked $already, backed up $backed"
+}
+
+link-blender-scripts "$@"

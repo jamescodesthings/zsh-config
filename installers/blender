@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load link-blender-scripts
+
+link-blender-scripts "$REPO_DIR/configs/blender/scripts" || exit 1

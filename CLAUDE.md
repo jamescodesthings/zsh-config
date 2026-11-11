@@ -188,6 +188,10 @@ Use `cheat update` for the user-facing reference.
 
 `kitty.conf` holds what is the same on every OS and ends with `include os.${KITTY_OS}.conf` (kitty sets `KITTY_OS` to `macos`, `linux` or `bsd` for include lines), then `include overrides.conf`. Key maps and OS-only settings go in `os.macos.conf` (cmd keys, no ctrl except pane focus and moving) or `os.linux.conf` (ctrl keys); nothing in `kitty.conf` should be OS specific. `overrides.conf` is the per-machine layer, linked by `install-box-config` from `overrides.<hostname>.conf` or `overrides.<os>.conf`; a host file replaces the OS overrides file, so a host that wants the OS overrides too must repeat them, but key maps may live in a host file (`overrides.uconsole.conf` does, and wins because it is included last). `installers/micro` links `settings.json` and `bindings.json` through `install-box-config` as well, so `bindings.<hostname>.json` or `bindings.<os>.json` replaces the default; micro's JSON has no include, so a host file is a full copy. Use `cheat kitty` for the keys.
 
+### `configs/blender/` directory
+
+`scripts/` holds Blender startup scripts in Blender's own layout (`scripts/startup/center-search.py`). `link-blender-scripts <folder>` links every file under it into `<version>/scripts/<same path>` for each version folder (named like `4.5`) of the settings root: `$BLENDER_USER_DIR`, else `~/Library/Application Support/Blender` on macOS or `~/.config/blender` on Linux. Links point at the resolved repo path, a file already there moves to `<name>.bak` (`.bak.1`, `.bak.2` when taken, never overwritten), a link already pointing at the repo file is left alone, and a missing root skips with exit 0. `config/` and `extensions/` are never touched. `installers/blender` and `updaters/900-blender` are thin wrappers around the function, so a version folder made later is linked on the next `update`; `tests/link-blender-scripts` covers it. `cheat link-blender-scripts` is the reference.
+
 ### `configs/gnome/` directory
 
 GNOME-specific config and tools. Only installed on machines running GNOME on Wayland (`is gnome && is wayland`).
