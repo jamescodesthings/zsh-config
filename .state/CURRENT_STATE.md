@@ -165,3 +165,5 @@
 - [ ] User: uConsole key files (carried forward verbatim from 2026-10-07-14-35-claude.md; may overlap "James: fill in uConsole keys" above)
 - [ ] User: migrate other machines (pull, restart terminals, ./install) (carried forward verbatim from 2026-10-07-14-35-claude.md; may overlap "James: on each other machine" above)
 - [ ] Merge branch `worktree-t322-asdf-github-token` into main and push (user, through the hub) (carried forward verbatim from 2026-10-16-11-15-claude.md; CURRENT_STATE records the merge as done and the push as not done, so only the push may be open)
+- [/] t310 open until agent-forge's 5 sheets pass (hub, reminders, skills, trust, update-due) (carried forward from 2026-10-16-11-23-claude.md; CURRENT_STATE line 56 records t310 as [x] with agent-forge's 14 sheets passing, so this may be stale)
+- [ ] t216 next (hub asked) (carried forward from 2026-10-16-11-23-claude.md; not in CURRENT_STATE; 2026-10-16-12-36 lists t216 among finished work, so it may be done)
