@@ -86,6 +86,12 @@ function cheat() {
   case "$subcmd" in
 
     -h|--help|help)
+      # The word help shows the index of our own sheets when there is one;
+      # -h and --help always show cheat's own sheet
+      if [[ "$subcmd" == help ]] && is file "$CHEATSHEET_DIR/help.md"; then
+        cheat-render "$CHEATSHEET_DIR/help.md"
+        return $?
+      fi
       if is file "$CHEATSHEET_DIR/cheat.md"; then
         cheat cheat
         return $?

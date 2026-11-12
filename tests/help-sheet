@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+# Checks that every `cheat <words>` named in cheatsheets/help.md, the index
+# that `cheat help` shows, is a sheet that exists: <words> joined with - must
+# be a file in this repo's cheatsheets/ or in the cheatsheets/ of a sibling
+# repo (../hub, ../readerr, ../pkms, any ../*/cheatsheets). A name found
+# nowhere fails. Reads files only; runs no tool.
+# Run: tests/help-sheet. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+SHEET="$REPO_DIR/cheatsheets/help.md"
+failed=0
+fail() { print -r -- "fail: $1"; failed=1 }
+
+[[ -f "$SHEET" ]] || { fail "cheatsheets/help.md is missing"; exit 1 }
+
+dirs=("$REPO_DIR/cheatsheets" "${REPO_DIR:h}"/*/cheatsheets(N/))
+
+# Every `cheat ...` inside backticks; words stop at a bracket or flag
+names=()
+for ref in ${(f)"$(grep -oE '`cheat [a-z0-9 -]+`' "$SHEET")"}; do
+  local_words="${${ref#\`cheat }%\`}"
+  words=(${=local_words})
+  words=(${words:#-*})
+  (( ${#words} )) || continue
+  names+=("${(j:-:)words}")
+done
+(( ${#names} )) || fail "help.md names no sheets"
+
+unique=(${(u)names})
+for name in $unique; do
+  found=0
+  for d in $dirs; do
+    [[ -f "$d/$name.md" ]] && { found=1; break }
+  done
+  (( found )) || fail "help.md names cheat ${name//-/ }, but no $name.md exists"
+done
+
+(( failed )) && exit 1
+print -r -- "ok: every sheet help.md names exists (${#unique} checked)"

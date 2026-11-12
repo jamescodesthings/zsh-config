@@ -7,7 +7,7 @@
 
 - `./install` - install everything (zsh, brew or apt tools, the `~/.custom` link)
 - `update` - keep the whole machine current
-- `cheat functions` - every function, by group; bare `cheat` lists every sheet
+- `cheat help` - the index of our sheets; `cheat functions` lists every function
 
 # Our tools
 

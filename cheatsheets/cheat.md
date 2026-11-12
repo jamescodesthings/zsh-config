@@ -17,12 +17,12 @@
 - `cheat <tool> --raw` - print the markdown instead of rendering it
 - `<tool> --help` - zsh-config tools show their own sheet
 - `NO_COLOR=1 cheat <tool>` - colour off
-- `cheat [help|-h|--help]` - show this sheet
+- `cheat [-h|--help]` - show this sheet; `cheat help` shows the index of our own sheets
 - `cheat cheat new <name>` - create from the template and link it
 - `cheat cheat edit <name>` - open in `$EDITOR`
 - `cheat cheat raw <name>` - print a sheet's markdown
 - `cheat cheat refresh` - refresh the tldr cache (it also refreshes itself every 7 days)
-- `list`, `search`, `edit`, `new`, `refresh`, `raw` and `help` are reserved: no sheet can have those names
+- `list`, `search`, `edit`, `new`, `refresh`, `raw` are reserved: no sheet can have those names; `help.md` is the index `cheat help` shows
 - `$VAR` names outside backticks expand when shown
 
 # See also

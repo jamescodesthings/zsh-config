@@ -129,6 +129,8 @@ The sheets here are this repo's own. `link-cheatsheets` links each one into `$CH
 
 How `cheat <words>` finds a sheet: every argument starting with `-` is dropped (`--raw` and `-r` print the markdown), the rest join with `-`, and the longest local match wins, so `cheat hub join all` shows `hub-join.md` when there is no `hub-join-all.md`, with a note on stderr. A local parent loses to tldr's page for the exact words (`cheat git commit` is tldr's `git-commit` beside a local `git.md`). With no local match, tldr's pages are tried the same way, longest first. `tests/cheat` covers this.
 
+`cheatsheets/help.md` is the index of the user's own sheets across repos; the word `cheat help` shows it (`-h` and `--help` still show cheat's own sheet). `tests/help-sheet` fails when it names a `cheat <words>` that has no sheet in this repo or a sibling repo's `cheatsheets/`.
+
 `cheatsheets/functions.md` (`cheat functions`) names every command in `functions/`, and its group sheets `functions-<group>.md` give each one row. `tests/functions-sheet` fails when a function has no row, two rows, or a row for a function that does not exist; a function that is not a command (the p10k segment `prompt_my_per_dir_status`) goes in the test's `internal` list.
 
 The `--help` convention for every repo's tools: `<tool> [words...] --help` shows `cheat <tool> [words...]`, every other flag ignored, and cheat's fallback finds the nearest parent sheet. A zsh tool does it with `cheat-help <tool> "$@" && return 0` as its first line (`functions/cheat-help`: it acts on `--help` anywhere or `-h` first, and returns 1 otherwise); a script in another language runs `cheat <tool> <non-flag words>`. zsh-config is installed wherever those tools are, so `cheat` is always there.

@@ -56,6 +56,11 @@ expect "flags are dropped" 0 "sheet a-b" cheat a b --some-option --help
 expect "--raw prints the markdown" 0 "# a-b" cheat a b c --raw
 expect "a name with no sheet anywhere fails" 1 - cheat nosuch
 expect "cheat --help shows the cheat sheet" 0 "sheet cheat" cheat --help
+expect "cheat help with no help sheet shows the cheat sheet" 0 "sheet cheat" cheat help
+printf '# help\n\n> sheet help\n' > "$SHEETS/help.md"
+expect "cheat help shows the help index when there is one" 0 "sheet help" cheat help
+expect "cheat -h still shows the cheat sheet" 0 "sheet cheat" cheat -h
+rm -f "$SHEETS/help.md"
 expect "cheat-help shows the sheet for --help" 0 "sheet a-b" cheat-help a b --help
 expect "cheat-help takes -h as the first word" 0 "sheet a" cheat-help a -h
 expect "cheat-help ignores a call with no --help" 1 - cheat-help a b
