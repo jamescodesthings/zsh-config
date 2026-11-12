@@ -21,6 +21,54 @@ function _md-to-pdf-install() {
   fi
 }
 
+# _md-to-pdf-find <dir>: print every .md under <dir>, one per line, skipping
+# hidden folders (.git and the like) and node_modules. Order: path order,
+# compared byte by byte, except that a folder's README.md or index.md comes
+# before everything else in that folder.
+function _md-to-pdf-find() {
+  setopt localoptions bareglobqual noglobdots
+  local f base key
+  local -a keyed
+  for f in "$1"/**/*.md(N.); do
+    [[ "/$f/" == */node_modules/* ]] && continue
+    base="${(L)f:t}"
+    if [[ "$base" == readme.md || "$base" == index.md ]]; then
+      key="${f:h}/"$'\x01'"${f:t}"
+    else
+      key="$f"
+    fi
+    keyed+=("$key"$'\t'"$f")
+  done
+  (( ${#keyed} )) || return 0
+  local LC_ALL=C
+  print -rl -- "${(@)${(@o)keyed}#*$'\t'}"
+}
+
+# _md-to-pdf-merger: print the merge tool's name, or fail
+function _md-to-pdf-merger() {
+  local join="${MD_TO_PDF_JOIN:-/System/Library/Automator/Combine PDF Pages.action/Contents/MacOS/join}"
+  if is available qpdf; then
+    print -r -- qpdf
+  elif is available pdfunite; then
+    print -r -- pdfunite
+  elif [[ -x "$join" ]]; then
+    print -r -- join
+  else
+    return 1
+  fi
+}
+
+# _md-to-pdf-merge <tool> <output> <pdfs...>
+function _md-to-pdf-merge() {
+  local tool="$1" output="$2"
+  shift 2
+  case "$tool" in
+    qpdf) command qpdf --empty --pages "$@" -- "$output" ;;
+    pdfunite) command pdfunite "$@" "$output" ;;
+    join) "${MD_TO_PDF_JOIN:-/System/Library/Automator/Combine PDF Pages.action/Contents/MacOS/join}" -o "$output" "$@" ;;
+  esac
+}
+
 function md-to-pdf() {
   cheat-help md-to-pdf "$@" && return 0
   autoload -Uz cli-init say problem fix problems
@@ -28,14 +76,68 @@ function md-to-pdf() {
   cli-init "$@"
   set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
-  if is equal "$1" "--"; then
+  local combine=0 force=0
+  local -a dirs files
+  while (( $# )); do
+    case "$1" in
+      --combine) combine=1 ;;
+      -f|--force) force=1 ;;
+      -r|--recursive)
+        if (( $# < 2 )) || is empty "$2"; then
+          say fail "md-to-pdf: $1 needs a folder: md-to-pdf -r [dir]"
+          return 2
+        fi
+        if is not dir "$2"; then
+          say fail "md-to-pdf: not a folder: $2"
+          return 2
+        fi
+        dirs+=("$2")
+        shift
+        ;;
+      --) shift; files+=("$@"); break ;;
+      *) files+=("$1") ;;
+    esac
     shift
-  fi
+  done
+
+  local d found
+  for d in $dirs; do
+    found="$(_md-to-pdf-find "${d%/}")"
+    if is empty "$found"; then
+      say fail "md-to-pdf: no .md files under $d"
+      return 1
+    fi
+    files+=("${(@f)found}")
+  done
+  set -- "${files[@]}"
 
   if (( $# == 0 )); then
     _md-to-pdf-report error "no input file given" "md-to-pdf path/to/file.md" "convert a file"
     problems
     return 2
+  fi
+
+  # --combine checks everything it needs before the first conversion
+  local combined="" merger=""
+  if (( combine )); then
+    combined="$PWD/${PWD:t}.pdf"
+    local f
+    for f in "$@"; do
+      if [[ "${f:A:h}/${${f:t}:r}.pdf" == "$combined" ]]; then
+        say fail "md-to-pdf: $f would be written to ${combined:t}, the combined file; rename it or run from another folder"
+        return 2
+      fi
+    done
+    if is existing "$combined" && (( ! force )); then
+      _md-to-pdf-report error "${combined:t} already exists here" "md-to-pdf --force ${(q)@}" "replace it"
+      problems
+      return 1
+    fi
+    if ! merger="$(_md-to-pdf-merger)"; then
+      _md-to-pdf-report error "no tool to combine pdfs (qpdf, pdfunite)" "$(_md-to-pdf-install qpdf qpdf)" "install qpdf"
+      problems
+      return 1
+    fi
   fi
 
   # A start line so a long run is visibly working.
@@ -45,7 +147,7 @@ function md-to-pdf() {
     say info "converting $# files"
   fi
 
-  local file result failed=() count=0
+  local file result failed=() done_pdfs=() count=0
   for file in "$@"; do
     (( count += 1 ))
     if (( $# > 1 )); then
@@ -66,11 +168,23 @@ function md-to-pdf() {
     fi
     if (( result != 0 )); then
       failed+=("$file")
+    else
+      done_pdfs+=("${file:h}/${${file:t}:r}.pdf")
     fi
   done
 
   if (( $# > 1 && ${#failed} == 0 )); then
     say ok "md-to-pdf converted all $# files"
+  fi
+
+  if (( combine )); then
+    if (( ${#failed} )); then
+      _md-to-pdf-report error "${#failed} files failed, so ${combined:t} was not made" "md-to-pdf --combine ${(q)@}" "rerun once they convert"
+    elif _md-to-pdf-merge "$merger" "$combined" "${done_pdfs[@]}" >/dev/null 2>&1 || (( $? == 3 )); then
+      say ok "combined ${#done_pdfs} pdfs into $combined"
+    else
+      _md-to-pdf-report error "$merger could not combine the pdfs into ${combined:t}" "$merger --help" "check the tool"
+    fi
   fi
 
   local -i rc=0

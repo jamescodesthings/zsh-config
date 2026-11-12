@@ -9,7 +9,7 @@
 - `compress-pdf [file]` - shrink a PDF with Ghostscript into `compressed/`
 - `compress-pdf-all` - compress every PDF here not yet in `compressed/`
 - `md-to-html [file...]` - convert markdown to a styled html page
-- `md-to-pdf [file...]` - convert markdown to an A4 pdf
+- `md-to-pdf [file...]` - convert markdown to an A4 pdf; `-r [dir]` and `--combine` join a folder into one
 
 # See also
 

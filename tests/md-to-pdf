@@ -1,0 +1,145 @@
+#!/usr/bin/env zsh
+# Tests md-to-pdf's -r/--recursive and --combine from a plain zsh -f, with
+# an empty temp HOME, a temp working folder, and PATH holding only stubs:
+# pandoc, file, weasyprint and qpdf are fakes that copy text around and log
+# their calls, plus a few basic commands. No real converter runs.
+# Run: tests/md-to-pdf. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+TMP="${TMP:A}"
+BIN="$TMP/bin"
+mkdir -p "$BIN" "$TMP/home"
+for c in mkdir mv rm cat head mktemp sort cp tr uname; do
+  ln -s "$(command -v $c)" "$BIN/$c"
+done
+
+# pandoc: --version, else write "HTML:<input>" to --output=
+cat > "$BIN/pandoc" <<'S'
+#!/bin/sh
+[ "$1" = --version ] && { echo "pandoc 3.1"; exit 0; }
+in="$1"; out=""
+for a; do case "$a" in --output=*) out="${a#--output=}" ;; esac; done
+printf 'HTML:%s\n' "$in" > "$out"
+S
+# file: everything is text
+printf '#!/bin/sh\necho text/plain\n' > "$BIN/file"
+# weasyprint <html> <pdf>: the pdf holds the html's text
+printf '#!/bin/sh\ncat "$1" > "$2"\n' > "$BIN/weasyprint"
+# qpdf: --empty --pages a b -- out concatenates; anything else copies in to out
+cat > "$BIN/qpdf" <<'S'
+#!/bin/sh
+echo "qpdf $*" >> "$QPDF_LOG"
+if [ "$1" = --empty ]; then
+  shift 2; out=""; : > "$QPDF_TMP"
+  while [ "$1" != -- ]; do cat "$1" >> "$QPDF_TMP"; shift; done
+  shift; cp "$QPDF_TMP" "$1"; exit 0
+fi
+for a; do last2="$last"; last="$a"; done
+cp "$last2" "$last"
+S
+chmod +x "$BIN"/*
+export QPDF_LOG="$TMP/qpdf.log" QPDF_TMP="$TMP/qpdf.tmp"
+# macOS's built-in join script is the last fallback; point it nowhere
+export MD_TO_PDF_JOIN="$TMP/no-join"
+
+failed=0
+function pass() { print -r -- "ok: $1" }
+function fail() { print -r -- "FAIL: $1"; [[ -n "$2" ]] && print -r -- "$2" | sed 's/^/    /' 2>/dev/null || print -r -- "    $2"; failed=1 }
+function check() { if [[ "$2" == "$3" ]]; then pass "$1"; else fail "$1" "got:  $2
+want: $3"; fi }
+
+# run <dir> <args...>: md-to-pdf in <dir>; sets OUT and CODE
+function run() {
+  local dir="$1"; shift
+  OUT="$(cd "$dir" && HOME="$TMP/home" TMPDIR="$TMP" zsh -f -c '
+    path=("$2")
+    fpath=("$1/functions" $fpath)
+    export CUSTOM_DIR="$1"
+    autoload -Uz is md-to-pdf md-to-html cheat-help cli-init say problem fix problems col cli-icon
+    shift 2
+    md-to-pdf --plain "$@"
+  ' _ "$REPO_DIR" "$BIN" "$@" 2>&1)"
+  CODE=$?
+}
+
+function tree() {
+  rm -rf "$TMP/proj"
+  mkdir -p "$TMP/proj/b" "$TMP/proj/a/deep" "$TMP/proj/.git" "$TMP/proj/node_modules/x" "$TMP/proj/.hidden"
+  local f
+  for f in README.md zz.md b/two.md a/one.md a/index.md a/deep/three.md .git/no.md node_modules/x/no.md .hidden/no.md; do
+    print -r -- "# $f" > "$TMP/proj/$f"
+  done
+}
+
+# -r converts every .md under the folder, skipping .git, node_modules and hidden folders
+tree
+run "$TMP/proj" -r .
+check "-r: exit 0" "$CODE" 0
+for f in README zz b/two a/one a/index a/deep/three; do
+  [[ -f "$TMP/proj/$f.pdf" ]] && pass "-r: wrote $f.pdf" || fail "-r: wrote $f.pdf" "$OUT"
+done
+for f in .git/no node_modules/x/no .hidden/no; do
+  [[ ! -f "$TMP/proj/$f.pdf" ]] && pass "-r: skipped $f" || fail "-r: skipped $f"
+done
+
+# --combine with -r: one proj.pdf in the cwd, in path order, except that a
+# folder's README or index comes first in that folder
+tree
+run "$TMP/proj" -r . --combine
+check "-r --combine: exit 0" "$CODE" 0
+check "-r --combine: order" "$(<"$TMP/proj/proj.pdf")" "HTML:./README.md
+HTML:./a/index.md
+HTML:./a/deep/three.md
+HTML:./a/one.md
+HTML:./b/two.md
+HTML:./zz.md"
+[[ -f "$TMP/proj/zz.pdf" ]] && pass "--combine keeps the single pdfs" || fail "--combine keeps the single pdfs"
+
+# --combine with named files, from another folder: name is the cwd's
+mkdir -p "$TMP/out"
+tree
+run "$TMP/out" --combine "$TMP/proj/zz.md" "$TMP/proj/b/two.md"
+check "--combine files: exit 0" "$CODE" 0
+check "--combine files: keeps the given order" "$(<"$TMP/out/out.pdf")" "HTML:$TMP/proj/zz.md
+HTML:$TMP/proj/b/two.md"
+
+# an existing combined pdf is refused before anything converts
+tree
+print old > "$TMP/proj/proj.pdf"
+run "$TMP/proj" -r . --combine
+check "existing output: exit 1" "$CODE" 1
+check "existing output: left alone" "$(<"$TMP/proj/proj.pdf")" old
+[[ ! -f "$TMP/proj/zz.pdf" ]] && pass "existing output: nothing converted" || fail "existing output: nothing converted"
+[[ "$OUT" == *"--force"* ]] && pass "existing output: names --force" || fail "existing output: names --force" "$OUT"
+run "$TMP/proj" -r . --combine --force
+check "--force: exit 0" "$CODE" 0
+[[ "$(<"$TMP/proj/proj.pdf")" == HTML:* ]] && pass "--force: replaced" || fail "--force: replaced"
+
+# a source whose own pdf would be the combined file is refused
+tree
+print "# proj" > "$TMP/proj/proj.md"
+run "$TMP/proj" -r . --combine
+check "clash with a source's pdf: exit 2" "$CODE" 2
+
+# no merge tool: install hint, nothing converted
+tree
+mv "$BIN/qpdf" "$BIN/qpdf.off"
+run "$TMP/proj" -r . --combine
+check "no merge tool: exit 1" "$CODE" 1
+[[ "$OUT" == *"install qpdf"* ]] && pass "no merge tool: install hint" || fail "no merge tool: install hint" "$OUT"
+[[ ! -f "$TMP/proj/zz.pdf" ]] && pass "no merge tool: nothing converted" || fail "no merge tool: nothing converted"
+mv "$BIN/qpdf.off" "$BIN/qpdf"
+
+# usage errors
+run "$TMP/proj" -r
+check "-r without a folder: exit 2" "$CODE" 2
+run "$TMP/proj" -r "$TMP/nope"
+check "-r with a missing folder: exit 2" "$CODE" 2
+mkdir -p "$TMP/empty"
+run "$TMP/empty" -r .
+check "-r with no markdown: exit 1" "$CODE" 1
+
+(( failed )) && exit 1
+print -r -- "ok: md-to-pdf"
