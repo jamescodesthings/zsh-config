@@ -1,5 +1,14 @@
 #compdef j
 
+# Alias names, read straight from the store so completion stays cheap
+_j_alias_names_complete() {
+  local file="${XDG_CONFIG_HOME:-$HOME/.config}/zsh-config/j-aliases"
+  local -a names
+  [[ -f "$file" ]] && names=("${(@)${(@f)$(<"$file")}%%$'\t'*}")
+  names=("${names[@]:#}")
+  (( ${#names} )) && _describe -t aliases 'alias' names
+}
+
 _j() {
   local -a subcommands
   subcommands=(
@@ -13,15 +22,36 @@ _j() {
     'clean:remove entries for missing directories'
     'move:carry a moved folder'"'"'s ranks over'
     'stats:totals, top 5, oldest and newest'
+    'alias:fixed bookmarks to folders'
     'help:show the sheet'
   )
   if (( CURRENT == 2 )); then
     _describe -t subcommands 'subcommand' subcommands
+    _j_alias_names_complete
     _z 2>/dev/null
     return
   fi
   case "$words[2]" in
     add) _arguments ':path:_files -/' ;;
+    alias)
+      local -a alias_subs=(
+        'add:save a bookmark, overwriting one of the same name'
+        'show:print the folder an alias points at'
+        'rename:give an alias a new name'
+        'rm:remove an alias'
+        'list:list every alias'
+      )
+      if (( CURRENT == 3 )); then
+        _describe -t alias-subcommands 'alias subcommand' alias_subs
+      else
+        case "$words[3]" in
+          add) (( CURRENT == 5 )) && _files -/ ;;
+          show|rm) (( CURRENT == 4 )) && _j_alias_names_complete ;;
+          rename) (( CURRENT == 4 )) && _j_alias_names_complete ;;
+          list) _arguments '--json[print JSON]' ;;
+        esac
+      fi
+      ;;
     move) _arguments '--dry-run[show the plan only]' '*:folder:_files -/' ;;
     reorder) _arguments '--count[how many entries]:count: ' ;;
     *) _message 'no more arguments' ;;

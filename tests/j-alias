@@ -1,0 +1,148 @@
+#!/usr/bin/env zsh
+# Tests `j alias` and jumping to an alias with `j <name>`, from a plain
+# `zsh -f -c` with an empty temp HOME, a temp working folder, z stubbed out
+# (_z only records its arguments) and PATH limited to basic commands.
+# Run: tests/j-alias. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+TMP="${TMP:A}"
+
+mkdir -p "$TMP/home" "$TMP/work/tutorial" "$TMP/work/other" "$TMP/bin"
+for c in awk sed sort grep mktemp mv rm mkdir cat tr wc date head touch; do
+  ln -s "$(command -v $c)" "$TMP/bin/$c"
+done
+STORE="$TMP/home/.config/zsh-config/j-aliases"
+
+failed=0
+function pass() { print -r -- "ok: $1" }
+function fail() { print -r -- "FAIL: $1"; [[ -n "$2" ]] && print -r -- "$2" | sed 's/^/    /'; failed=1 }
+
+# run <dir> <args...>: runs j in <dir>; sets OUT (stdout and stderr), CODE and
+# PWD_AFTER (the folder the shell ended in)
+function run() {
+  local dir="$1"; shift
+  OUT="$(cd "$dir" && HOME="$TMP/home" XDG_CONFIG_HOME= zsh -f -c '
+    path=("$2")
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is deps confirm j cheat-help cli-init say problem fix problems col cli-icon pick
+    function _z() { print -r -- "z called: $*" }
+    shift 2
+    j --plain "$@"
+    code=$?
+    print -r -- "PWD=$PWD"
+    exit $code
+  ' _ "$REPO_DIR" "$TMP/bin" "$@" < /dev/null 2>&1)"
+  CODE=$?
+  local -a lines kept
+  local l
+  lines=("${(@f)OUT}")
+  PWD_AFTER=""
+  for l in "${lines[@]}"; do
+    if [[ "$l" == PWD=* ]]; then PWD_AFTER="${l#PWD=}"; else kept+=("$l"); fi
+  done
+  OUT="${(pj:\n:)kept}"
+}
+
+function check() {
+  if [[ "$2" == "$3" ]]; then pass "$1"; else fail "$1" "got:  $2
+want: $3"; fi
+}
+function check_has() {
+  if [[ "$2" == *"$3"* ]]; then pass "$1"; else fail "$1" "got:  $2
+want it to contain: $3"; fi
+}
+
+# add the current folder
+run "$TMP/work/tutorial" alias add tutorial .
+check "add: exit 0" "$CODE" 0
+check "add: stores the absolute path" "$(<"$STORE")" "tutorial	$TMP/work/tutorial"
+
+# add with the path defaulting to the current folder
+run "$TMP/work/other" alias add other
+check "add without a path: stores the current folder" "$(grep '^other	' "$STORE")" "other	$TMP/work/other"
+
+# overwrite
+run "$TMP/work" alias add other tutorial
+check "add again: exit 0" "$CODE" 0
+check "add again: overwrites" "$(grep -c '^other	' "$STORE")" 1
+check "add again: new path" "$(grep '^other	' "$STORE")" "other	$TMP/work/tutorial"
+check_has "add again: says updated" "$OUT" "updated other"
+
+# show
+run "$TMP" alias show tutorial
+check "show: exit 0" "$CODE" 0
+check "show: prints the path" "$OUT" "$TMP/work/tutorial"
+run "$TMP" alias show nope
+check "show missing: exit 1" "$CODE" 1
+
+# list
+run "$TMP" alias list
+check "list: exit 0" "$CODE" 0
+check_has "list: has tutorial" "$OUT" "tutorial"
+check_has "list: has other" "$OUT" "other"
+
+# jump: alias wins over z
+run "$TMP" tutorial
+check "jump: exit 0" "$CODE" 0
+check "jump: cds to the alias" "$PWD_AFTER" "$TMP/work/tutorial"
+[[ "$OUT" != *"z called"* ]] && pass "jump: z is not asked" || fail "jump: z is not asked" "$OUT"
+
+# jump: an unknown word still goes to z
+run "$TMP" somewhere
+check_has "unknown word: passed to z" "$OUT" "z called: somewhere"
+
+# jump: two words go to z even when the first is an alias
+run "$TMP" tutorial extra
+check_has "two words: passed to z" "$OUT" "z called: tutorial extra"
+
+# rename
+run "$TMP" alias rename other second
+check "rename: exit 0" "$CODE" 0
+check "rename: old name gone" "$(grep -c '^other	' "$STORE")" 0
+check "rename: new name kept the path" "$(grep '^second	' "$STORE")" "second	$TMP/work/tutorial"
+run "$TMP" alias rename second tutorial
+check "rename onto an existing name: exit 1" "$CODE" 1
+
+# missing folder
+mkdir -p "$TMP/work/gone"
+run "$TMP/work/gone" alias add gone
+command rm -r "$TMP/work/gone"
+run "$TMP" gone
+check "jump to a missing folder: exit 1" "$CODE" 1
+check "jump to a missing folder: stays put" "$PWD_AFTER" "$TMP"
+check_has "jump to a missing folder: names the fix" "$OUT" "j alias rm gone"
+[[ "$OUT" != *"z called"* ]] && pass "missing folder: z is not asked" || fail "missing folder: z is not asked" "$OUT"
+
+# rm
+run "$TMP" alias rm gone
+check "rm: exit 0" "$CODE" 0
+check "rm: gone from the store" "$(grep -c '^gone	' "$STORE")" 0
+run "$TMP" alias rm gone
+check "rm missing: exit 1" "$CODE" 1
+
+# usage errors
+run "$TMP" alias add list .
+check "reserved name: exit 2" "$CODE" 2
+run "$TMP" alias add "a/b" .
+check "name with a slash: exit 2" "$CODE" 2
+run "$TMP" alias add bad "$TMP/no/such"
+check "add a missing folder: exit 1" "$CODE" 1
+run "$TMP" alias lst
+check "unknown subcommand: exit 2" "$CODE" 2
+check_has "unknown subcommand: did you mean" "$OUT" "did you mean list"
+run "$TMP" alias rm
+check "rm with no name and no terminal: exit 2" "$CODE" 2
+
+# --json
+run "$TMP" alias list --json
+check "list --json: exit 0" "$CODE" 0
+check_has "list --json: an object" "$OUT" "{\"name\":\"tutorial\",\"path\":\"$TMP/work/tutorial\"}"
+
+# completion offers alias names
+run "$TMP" alias _names
+check "_names: one per line" "$OUT" $'second\ntutorial'
+
+(( failed )) && exit 1
+print -r -- "ok: j alias"

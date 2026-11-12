@@ -94,6 +94,8 @@ is existing $path    # -e test
 is not empty "$var"  # -z test (negated)
 ```
 
+`j` is the z directory jumper. `j alias add|show|rename|rm|list` keeps fixed bookmarks as `name<TAB>path` lines in `${XDG_CONFIG_HOME:-$HOME/.config}/zsh-config/j-aliases`; a lone `j <name>` that names an alias jumps there before z is asked, and an alias whose folder is gone fails with fixes rather than falling back to z. `tests/j-alias` covers it (`cheat j alias`).
+
 `md-to-html` and `md-to-pdf` convert markdown with pandoc and WeasyPrint, styled by `configs/md/md.css`. Both take any number of files and convert each through a per-file helper (`_md-to-html-one`, `_md-to-pdf-one`), carrying on past a failure and stopping on an interrupt. `md-to-html -o <out.html>` names the output for a single file. `md-to-pdf` calls `md-to-html -o <tmp>.html -- <input>` with the dynamically scoped `MD_CALLER=md-to-pdf`, which makes `md-to-html` label its errors as `md-to-pdf` and skip its own success line.
 
 ### CLI helper library

@@ -117,6 +117,213 @@ function _j_move() {
   rm -f "$report"
 }
 
+# Aliases: fixed bookmarks, one "name<TAB>path" line each, sorted by name, in
+# ${XDG_CONFIG_HOME:-$HOME/.config}/zsh-config/j-aliases.
+function _j_alias_file() {
+  print -r -- "${XDG_CONFIG_HOME:-$HOME/.config}/zsh-config/j-aliases"
+}
+
+# _j_alias_get <name>: print the path stored for <name>; return 1 when unknown
+function _j_alias_get() {
+  local file; file="$(_j_alias_file)"
+  is file "$file" || return 1
+  local n p
+  while IFS=$'\t' read -r n p; do
+    if [[ "$n" == "$1" ]]; then
+      print -r -- "$p"
+      return 0
+    fi
+  done < "$file"
+  return 1
+}
+
+function _j_alias_names() {
+  local file; file="$(_j_alias_file)"
+  is file "$file" || return 0
+  local n p
+  while IFS=$'\t' read -r n p; do print -r -- "$n"; done < "$file"
+}
+
+# _j_alias_write <drop-name> [<name> <path>]: rewrite the store without
+# <drop-name>, adding <name> <path> when given, sorted, written atomically
+function _j_alias_write() {
+  local file; file="$(_j_alias_file)"
+  command mkdir -p "${file:h}" || return 1
+  local tmp; tmp="$(mktemp "${file}.XXXXXX")" || return 1
+  {
+    if is file "$file"; then
+      local n p
+      while IFS=$'\t' read -r n p; do
+        [[ "$n" == "$1" || ( -n "$2" && "$n" == "$2" ) ]] && continue
+        print -r -- "$n"$'\t'"$p"
+      done < "$file"
+    fi
+    [[ -n "$2" ]] && print -r -- "$2"$'\t'"$3"
+  } | LC_ALL=C sort -t $'\t' -k1,1 > "$tmp" && command mv "$tmp" "$file" || {
+    command rm -f "$tmp"
+    return 1
+  }
+}
+
+# _j_alias_check_name <name>: exit 2 for a name j could not jump to
+function _j_alias_check_name() {
+  local -a reserved=(list search add bump reorder edit delete clean move stats help alias)
+  if is empty "$1" || [[ "$1" == -* || "$1" == *[/[:space:]]* ]]; then
+    say fail "j alias: a name has no spaces or slashes and does not start with -: $1"
+    return 2
+  fi
+  if (( ${reserved[(Ie)$1]} )); then
+    say fail "j alias: $1 is a j command, pick another name"
+    return 2
+  fi
+}
+
+# _j_alias_pick <what> -v VAR: ask for a missing alias name
+function _j_alias_pick() {
+  local -a names=("${(@f)$(_j_alias_names)}")
+  names=("${names[@]:#}")
+  if (( ${#names} == 0 )); then
+    say fail "j alias: no aliases yet; add one with j alias add <name> [path]"
+    return 1
+  fi
+  autoload -Uz pick
+  pick "$1" "${names[@]}" -v "$2"
+}
+
+# _j_distance <a> <b>: print the edit distance between two words
+function _j_distance() {
+  local a="$1" b="$2"
+  local -a prev cur
+  local i j cost
+  for (( j = 0; j <= ${#b}; j++ )); do prev[j+1]=$j; done
+  for (( i = 1; i <= ${#a}; i++ )); do
+    cur=($i)
+    for (( j = 1; j <= ${#b}; j++ )); do
+      [[ "${a[i]}" == "${b[j]}" ]] && cost=0 || cost=1
+      cur[j+1]=$(( prev[j+1] + 1 ))
+      (( cur[j] + 1 < cur[j+1] )) && cur[j+1]=$(( cur[j] + 1 ))
+      (( prev[j] + cost < cur[j+1] )) && cur[j+1]=$(( prev[j] + cost ))
+    done
+    prev=("${cur[@]}")
+  done
+  print -r -- "${prev[-1]}"
+}
+
+function _j_alias() {
+  local sub="$1"
+  (( $# )) && shift
+  local name dir old file
+  case "$sub" in
+    add)
+      name="$1"
+      if is empty "$name"; then
+        say fail "j alias add needs a name: j alias add <name> [path]"
+        return 2
+      fi
+      _j_alias_check_name "$name" || return $?
+      dir="${${2:-.}:A}"
+      if is not dir "$dir"; then
+        say fail "not a folder: ${2:-.}"
+        return 1
+      fi
+      old="$(_j_alias_get "$name")"
+      _j_alias_write "$name" "$name" "$dir" || { say fail "cannot write $(_j_alias_file)"; return 1 }
+      if is not empty "$old"; then
+        say ok "updated $name: $dir"
+      else
+        say ok "added $name: $dir"
+      fi
+      ;;
+    show)
+      name="$1"
+      if is empty "$name"; then
+        _j_alias_pick "show which alias" name || return $?
+      fi
+      if ! dir="$(_j_alias_get "$name")"; then
+        say fail "no alias called $name"
+        return 1
+      fi
+      print -r -- "$dir"
+      ;;
+    rename)
+      if is empty "$1" || is empty "$2"; then
+        say fail "j alias rename needs two names: j alias rename <old> <new>"
+        return 2
+      fi
+      _j_alias_check_name "$2" || return $?
+      if ! dir="$(_j_alias_get "$1")"; then
+        say fail "no alias called $1"
+        return 1
+      fi
+      if _j_alias_get "$2" > /dev/null; then
+        say fail "an alias called $2 already exists; remove it first: j alias rm $2"
+        return 1
+      fi
+      _j_alias_write "$1" "$2" "$dir" || { say fail "cannot write $(_j_alias_file)"; return 1 }
+      say ok "renamed $1 to $2"
+      ;;
+    rm)
+      name="$1"
+      if is empty "$name"; then
+        _j_alias_pick "remove which alias" name || return $?
+      fi
+      if ! _j_alias_get "$name" > /dev/null; then
+        say fail "no alias called $name"
+        return 1
+      fi
+      _j_alias_write "$name" || { say fail "cannot write $(_j_alias_file)"; return 1 }
+      say ok "removed $name"
+      ;;
+    list|"")
+      file="$(_j_alias_file)"
+      local json=0 n p first=1
+      [[ "$1" == --json ]] && json=1
+      if (( json )); then
+        printf '['
+        if is file "$file"; then
+          while IFS=$'\t' read -r n p; do
+            (( first )) || printf ','
+            first=0
+            n="${n//\\/\\\\}"; n="${n//\"/\\\"}"
+            p="${p//\\/\\\\}"; p="${p//\"/\\\"}"
+            printf '{"name":"%s","path":"%s"}' "$n" "$p"
+          done < "$file"
+        fi
+        printf ']\n'
+        return 0
+      fi
+      if ! is file "$file" || ! is not empty "$(<"$file")"; then
+        say info "no aliases yet; add one with j alias add <name> [path]"
+        return 0
+      fi
+      while IFS=$'\t' read -r n p; do
+        if is dir "$p"; then
+          print -r -- "  ${_T}${n}${_R} $p"
+        else
+          print -r -- "  ${_T}${n}${_R} ${_W}${p} (missing)${_R}"
+        fi
+      done < "$file"
+      ;;
+    _names)
+      _j_alias_names
+      ;;
+    *)
+      local -a subs=(add show rename rm list)
+      local s guess best=99 d
+      for s in $subs; do
+        d="$(_j_distance "$sub" "$s")"
+        (( d < best )) && { best=$d; guess=$s }
+      done
+      if (( best <= 2 )); then
+        say fail "j alias: no subcommand called $sub; did you mean $guess?"
+      else
+        say fail "j alias: no subcommand called $sub; use add, show, rename, rm or list"
+      fi
+      return 2
+      ;;
+  esac
+}
+
 function j() {
   cheat-help j "$@" && return 0
   autoload -Uz cli-init say problem fix problems col
@@ -297,6 +504,11 @@ function j() {
       fi
       ;;
 
+    alias)
+      _j_alias "$@"
+      return $?
+      ;;
+
     move)
       _j_move "$@"
       return $?
@@ -330,6 +542,19 @@ function j() {
       ;;
 
     *)
+      # A lone word that names an alias jumps there before z is asked
+      local alias_path
+      if (( $# == 0 )) && alias_path="$(_j_alias_get "$subcmd")"; then
+        if is not dir "$alias_path"; then
+          problem "alias $subcmd points at a missing folder: $alias_path"
+          fix "j alias add $subcmd <path>" "point it somewhere else"
+          fix "j alias rm $subcmd" "remove it"
+          problems
+          return 1
+        fi
+        cd -- "$alias_path"
+        return $?
+      fi
       _z "$subcmd" "$@"
       return $?
       ;;

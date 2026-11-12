@@ -4,7 +4,7 @@
 
 # Usage
 
-- `j [query]` - jump to a folder from z's history
+- `j [alias|query]` - jump to an alias, or a folder from z's history
 - `hist [query]` - search and tidy shell history
 - `md [dir]` - make a folder with parents and cd into it
 - `oh [dir]` - open a folder in QSpace Pro, Finder or `xdg-open`

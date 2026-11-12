@@ -1,13 +1,14 @@
 # j
 
 > Directory jumper over rupa/z, with commands to manage z's history.
-> Needs the z plugin loaded. Bare `j` lists z's ranks; an unknown word is passed to z as a query.
+> Needs the z plugin loaded. Bare `j` lists z's ranks; a lone alias name jumps there, any other word goes to z.
 
 # Getting started
 
 - `j <query>` - jump to the best match; several terms narrow it, e.g. `j projects zsh`
 - `j list` - list every entry by rank
 - `j stats` - totals, top 5, oldest and newest
+- `j alias add [name] [path]` - a fixed bookmark; `j [name]` jumps to it
 
 # Change and tidy
 
@@ -25,7 +26,6 @@
 
 - `_Z_DATA` - z data file (default `~/.z`)
 - `EDITOR` - used by `reorder` and `edit` (default `micro`)
-- `j [help|-h|--help]` - show usage
 
 # See also
 
