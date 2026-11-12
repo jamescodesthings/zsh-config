@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 function link-cheatsheets() {
+  setopt localoptions bareglobqual
   cheat-help link-cheatsheets "$@" && return 0
   autoload -Uz cli-init say problem fix problems
   local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"

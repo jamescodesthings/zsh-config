@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 compress-pdf-all() {
+  setopt localoptions bareglobqual
   cheat-help compress-pdf-all "$@" && return 0
   local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"

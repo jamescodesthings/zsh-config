@@ -34,6 +34,7 @@ function _cheat_expand_vars() {
 }
 
 function cheat() {
+  setopt localoptions bareglobqual
   autoload -Uz is cheat-render link-cheatsheets
   autoload -Uz cli-init say problem fix problems col
   local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"

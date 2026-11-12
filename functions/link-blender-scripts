@@ -19,7 +19,7 @@ function link-blender-scripts() {
     return 2
   fi
 
-  setopt localoptions extendedglob noglobdots
+  setopt localoptions extendedglob noglobdots bareglobqual
   local dir="${1:A}"
   local root
   if is not empty "$BLENDER_USER_DIR"; then

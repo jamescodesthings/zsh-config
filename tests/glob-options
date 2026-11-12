@@ -1,0 +1,43 @@
+#!/usr/bin/env zsh
+# Checks that functions using (N) glob qualifiers still work when the caller's
+# shell has `setopt nobareglobqual`: link-cheatsheets must link real sheets and
+# never make a link named after the literal pattern. Also checks that every
+# function in functions/ that uses a bare (N...) qualifier sets bareglobqual
+# for itself. Runs in a plain zsh -f with an empty temp HOME and a PATH of
+# basic commands only; no real tool runs. Run: tests/glob-options.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+mkdir -p "$TMP/home" "$TMP/src" "$TMP/sheets" "$TMP/bin"
+for c in mkdir ln rm readlink; do
+  ln -s "$(command -v $c)" "$TMP/bin/$c"
+done
+printf '# a\n' > "$TMP/src/a.md"
+printf '# b\n' > "$TMP/src/b.md"
+
+failed=0
+fail() { print -r -- "fail: $1"; failed=1 }
+
+HOME="$TMP/home" zsh -f -c '
+  setopt nobareglobqual
+  path=("$2")
+  fpath=("$1/functions" $fpath)
+  autoload -Uz link-cheatsheets is cheat-help cli-init say problem fix problems col cli-icon
+  CHEATSHEET_DIR="$3" CUSTOM_DIR="$1" link-cheatsheets --plain "$4"
+' _ "$REPO_DIR" "$TMP/bin" "$TMP/sheets" "$TMP/src" > "$TMP/out" 2>&1
+
+[[ -L "$TMP/sheets/a.md" && -L "$TMP/sheets/b.md" ]] || fail "link-cheatsheets under nobareglobqual did not link a.md and b.md: $(<"$TMP/out")"
+for l in "$TMP/sheets"/*(N); do
+  [[ "${l:t}" == *'('* ]] && fail "link-cheatsheets made a literal glob link: ${l:t}"
+done
+
+for f in "$REPO_DIR"/functions/*; do
+  [[ -f "$f" ]] || continue
+  grep -vE '^[[:space:]]*#' "$f" | grep -qE '[^ ($"'"'"']\([.@/-]*N[-.@/]*\)' || continue
+  grep -qE 'emulate -L zsh|setopt +localoptions.*bareglobqual' "$f" || fail "${f:t} uses a (N) glob qualifier without setting bareglobqual"
+done
+
+(( failed )) && exit 1
+print -r -- "ok: glob qualifiers work under nobareglobqual"
