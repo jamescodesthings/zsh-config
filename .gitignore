@@ -64,3 +64,7 @@ Temporary Items
 
 # Hub per-repo cache (hub v3)
 .hub/
+.vscode/
+.idea/
+*.swp
+.claude/settings.local.json
