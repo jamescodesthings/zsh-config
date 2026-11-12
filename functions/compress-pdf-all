@@ -7,33 +7,64 @@ compress-pdf-all() {
   cli-init "$@"
   set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
-  if [[ -n "$1" ]]; then
-    say fail "unknown argument: $1"
+  local recursive=0 root="."
+  while (( $# )); do
+    case "$1" in
+      -r|--recursive)
+        recursive=1
+        if (( $# > 1 )) && [[ "$2" != -* ]]; then
+          root="$2"
+          shift
+        fi
+        ;;
+      *)
+        say fail "unknown argument: $1"
+        return 2
+        ;;
+    esac
+    shift
+  done
+  if is not dir "$root"; then
+    say fail "not a folder: $root"
     return 2
   fi
 
-  # Find all PDFs using the (N) flag to prevent errors if empty
-  local pdfs=( *.pdf(N) )
+  # The folders to look in: this one, or with -r every folder below the
+  # root too, skipping hidden folders, node_modules and compressed/ itself
+  local -a folders=("${root%/}")
+  local d
+  if (( recursive )); then
+    setopt localoptions noglobdots
+    for d in "${root%/}"/**/*(N/); do
+      [[ "/$d/" == */node_modules/* || "/$d/" == */compressed/* ]] && continue
+      folders+=("$d")
+    done
+  fi
 
-  # Filter out files that are already compressed
+  # Every pdf in those folders with no copy in its folder's compressed/
   local target_pdfs=() f file
-  for f in "${pdfs[@]}"; do
-    if [[ ! -f "compressed/$f" ]]; then
-      target_pdfs+=("$f")
-    fi
+  for d in $folders; do
+    for f in "$d"/*.pdf(N.); do
+      [[ -f "$d/compressed/${f:t}" ]] || target_pdfs+=("$f")
+    done
   done
 
   if (( ${#target_pdfs} == 0 )); then
-    say info "no uncompressed PDFs found in this folder"
+    if (( recursive )); then
+      say info "no uncompressed PDFs found under $root"
+    else
+      say info "no uncompressed PDFs found in this folder"
+    fi
     return 0
   fi
 
-  # Hand off each file to compress-pdf; a failure is recorded and the loop
-  # carries on.
+  # compress-pdf writes compressed/ in the folder it runs in, so each file is
+  # compressed from its own folder, in a subshell. A failure is recorded and
+  # the loop carries on.
   for file in "${target_pdfs[@]}"; do
-    if ! compress-pdf "$file"; then
+    if ! ( cd -- "${file:h}" && compress-pdf "${file:t}" ); then
       problem "could not compress $file"
-      fix "compress-pdf $file" "run it alone to see the error"
+      fix "cd ${(q)file:h} && compress-pdf ${(q)file:t}" "run it alone to see the error"
     fi
   done
 

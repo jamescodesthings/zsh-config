@@ -1,0 +1,81 @@
+#!/usr/bin/env zsh
+# Tests compress-pdf-all, with and without -r, from a plain zsh -f with an
+# empty temp HOME and working folder. gs is a stub that copies its input to
+# -sOutputFile; PATH holds only it and a few basic commands.
+# Run: tests/compress-pdf-all. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+TMP="${TMP:A}"
+BIN="$TMP/bin"
+mkdir -p "$BIN" "$TMP/home"
+for c in mkdir cat cp rm uname; do ln -s "$(command -v $c)" "$BIN/$c"; done
+cat > "$BIN/gs" <<'S'
+#!/bin/sh
+out=""; for a; do case "$a" in -sOutputFile=*) out="${a#-sOutputFile=}" ;; esac; last="$a"; done
+cp "$last" "$out"
+S
+chmod +x "$BIN/gs"
+
+failed=0
+function check() { if [[ "$2" == "$3" ]]; then print -r -- "ok: $1"; else print -r -- "FAIL: $1"; print -r -- "    got:  $2"; print -r -- "    want: $3"; failed=1; fi }
+function has() { [[ -f "$TMP/w/$2" ]] && print -r -- "ok: $1" || { print -r -- "FAIL: $1 ($2 missing)"; print -r -- "$OUT" | sed 's/^/    /'; failed=1 } }
+function hasnt() { [[ ! -e "$TMP/w/$2" ]] && print -r -- "ok: $1" || { print -r -- "FAIL: $1 ($2 exists)"; failed=1 } }
+
+function run() {
+  OUT="$(cd "$TMP/w" && HOME="$TMP/home" zsh -f -c '
+    path=("$2")
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is deps compress-pdf compress-pdf-all cheat-help cli-init say problem fix problems col cli-icon
+    shift 2
+    compress-pdf-all --plain "$@"
+  ' _ "$REPO_DIR" "$BIN" "$@" 2>&1)"
+  CODE=$?
+}
+
+function tree() {
+  rm -rf "$TMP/w"
+  mkdir -p "$TMP/w/a/b" "$TMP/w/.git" "$TMP/w/node_modules/x" "$TMP/w/compressed" "$TMP/w/a/compressed"
+  local f
+  for f in top.pdf a/one.pdf a/b/two.pdf .git/no.pdf node_modules/x/no.pdf compressed/old.pdf; do
+    print -r -- "$f" > "$TMP/w/$f"
+  done
+  # a/one.pdf already has a compressed copy
+  print -r -- done > "$TMP/w/a/compressed/one.pdf"
+}
+
+# without -r: only this folder, as before
+tree
+run
+check "plain: exit 0" "$CODE" 0
+has "plain: compressed top.pdf" compressed/top.pdf
+hasnt "plain: left subfolders alone" a/b/compressed
+
+# -r: every folder below, beside its own pdfs
+tree
+run -r
+check "-r: exit 0" "$CODE" 0
+has "-r: top folder" compressed/top.pdf
+has "-r: nested folder" a/b/compressed/two.pdf
+check "-r: an existing copy is kept" "$(<"$TMP/w/a/compressed/one.pdf")" done
+hasnt "-r: skips .git" .git/compressed
+hasnt "-r: skips node_modules" node_modules/x/compressed
+hasnt "-r: never descends into compressed/" compressed/compressed
+
+# -r with a folder
+tree
+run --recursive a
+check "-r a: exit 0" "$CODE" 0
+has "-r a: nested folder" a/b/compressed/two.pdf
+hasnt "-r a: not the top" compressed/top.pdf
+
+# usage
+tree
+run -r nope
+check "-r with a missing folder: exit 2" "$CODE" 2
+run --bogus
+check "unknown flag: exit 2" "$CODE" 2
+
+(( failed )) && exit 1
+print -r -- "ok: compress-pdf-all"
