@@ -1,0 +1,48 @@
+#!/usr/bin/env zsh
+# Checks that cheatsheets/functions.md and its group sheets
+# (cheatsheets/functions-*.md) list every function in functions/: each one
+# named on the top sheet and given exactly one row in a group sheet, and no row
+# for a function that does not exist. Reads files only; runs no tool.
+# Run: tests/functions-sheet. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+SHEETS="$REPO_DIR/cheatsheets"
+
+# Functions that are not commands a person runs
+internal=(prompt_my_per_dir_status)
+
+failed=0
+fail() { print -r -- "fail: $1"; failed=1 }
+
+[[ -f "$SHEETS/functions.md" ]] || { fail "cheatsheets/functions.md is missing"; exit 1 }
+groups=("$SHEETS"/functions-*.md(N))
+(( ${#groups} )) || { fail "no cheatsheets/functions-*.md group sheets"; exit 1 }
+
+top="$(<"$SHEETS/functions.md")"
+rows=()
+for g in $groups; do
+  section=""
+  while IFS= read -r line; do
+    [[ "$line" == '# '* ]] && section="${line#\# }"
+    [[ "$section" == "See also" ]] && continue
+    [[ "$line" == '- `'* ]] || continue
+    name="${${line#- \`}%%[\` ]*}"
+    rows+=("$name")
+  done < "$g"
+done
+
+for f in "$REPO_DIR"/functions/*(N.); do
+  name="${f:t}"
+  (( ${internal[(Ie)$name]} )) && continue
+  count=${#${(M)rows:#$name}}
+  (( count == 0 )) && fail "$name has no row in cheatsheets/functions-*.md"
+  (( count > 1 )) && fail "$name has $count rows in cheatsheets/functions-*.md"
+  [[ "$top" == *"\`$name\`"* ]] || fail "$name is not named in cheatsheets/functions.md"
+done
+
+for name in ${(u)rows}; do
+  [[ -f "$REPO_DIR/functions/$name" ]] || fail "row for $name, but functions/$name does not exist"
+done
+
+(( failed )) && exit 1
+print -r -- "ok: functions sheets cover every function"
