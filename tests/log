@@ -120,8 +120,17 @@ same "log open --editor child" "$OUT" "$LOGS/children/2026-10-30-144102-hub-down
 # colour: the helpers go plain when stdout is not a terminal, so run under a pty
 if (( $+commands[script] )); then
   OUT="$(env -i HOME="$TMP" PATH=/usr/bin:/bin CLI_LOG_DIR="$LOGS" CUSTOM_DIR="$REPO_DIR" COLORTERM=truecolor script -q /dev/null \
-    zsh -f -c 'fpath=("$1/functions" $fpath); autoload -Uz col cli-init cli-icon say cheat-help log; log open last' _ "$REPO_DIR" 2>&1)"
-  [[ "$OUT" == *$'\e[38;2;'*"13:14:02"* ]] && echo "ok: log open colours on a terminal" || { echo "FAIL: log open colour: ${(q+)OUT}"; failed=1; }
+    zsh -f -c '[[ -t 1 ]] && print -r -- PTY-OK; fpath=("$1/functions" $fpath); autoload -Uz col cli-init cli-icon say cheat-help log; log open last' _ "$REPO_DIR" < /dev/null 2>&1)"
+  # script cannot always get a pty (a busy machine runs out, or a sandbox
+  # has none); without one the helpers rightly go plain, so that is a skip,
+  # not a failure of log
+  if [[ "$OUT" != *PTY-OK* ]]; then
+    echo "skip: log open colour: script got no terminal: ${(q+)OUT[1,200]}"
+  elif [[ "$OUT" == *$'\e[38;2;'*"13:14:02"* ]]; then
+    echo "ok: log open colours on a terminal"
+  else
+    echo "FAIL: log open colour: ${(q+)OUT}"; failed=1
+  fi
 fi
 
 # empty store
