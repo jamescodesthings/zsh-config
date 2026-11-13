@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `j alias add tutorial .` - 2026-11-12, fixed bookmarks to folders; then `j tutorial` jumps there. More: `cheat j alias`
 - `cheat functions` - 2026-11-12, every zsh-config function, one row each in groups. More: `cheat functions`
 - `cheat aliases` - 2026-11-12, every alias, most used first. More: `cheat aliases`
 - `readerr speak` - 2026-11-12, with nothing selected, reads the front window's whole document, PDFs included. More: `cheat readerr speak`

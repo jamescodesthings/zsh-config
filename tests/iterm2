@@ -63,8 +63,11 @@ done
 check "hotkey profile present" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Dynamic Profile Parent Name\": \"zsh-config\""* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Has Hotkey\": true"* ]]'
 check "no status bar" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Show Status Bar\": false"* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" != *"Status Bar Layout"* ]]'
 
+# ctrl+shift+arrows swap panes (iTerm2 actions 53 to 56, read from a key map made in its settings)
+check "ctrl+shift+arrows swap panes" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));k=d[\"Profiles\"][0][\"Keyboard Map\"];print(*[k[x][\"Action\"] for x in [\"0xf702-0x260000-0x7b-0x1\",\"0xf703-0x260000-0x7c-0x1\",\"0xf700-0x260000-0x7e-0x1\",\"0xf701-0x260000-0x7d-0x1\"]])")" == "53 54 55 56" ]]'
+
 # the micro profile inherits the main one, switches on for the micro job, and sends ctrl keys
-check "micro profile inherits" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));p=[x for x in d[\"Profiles\"] if x[\"Name\"]==\"zsh-config micro\"][0];print(p[\"Dynamic Profile Parent Name\"],p[\"Bound Hosts\"][0],p[\"Keyboard Map\"][\"0x73-0x100000\"][\"Text\"],p[\"Keyboard Map\"][\"0x7f-0x100000\"][\"Text\"])")" == "zsh-config &micro 0x13 0x0b" ]]'
+check "micro profile inherits" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));p=[x for x in d[\"Profiles\"] if x[\"Name\"]==\"zsh-config micro\"][0];print(p[\"Dynamic Profile Parent Name\"],p[\"Bound Hosts\"][0],p[\"Keyboard Map\"][\"0x73-0x100000\"][\"Text\"],p[\"Keyboard Map\"][\"0x7f-0x100000\"][\"Text\"],p[\"Keyboard Map\"][\"0x64-0x100000\"][\"Text\"])")" == "zsh-config &micro 0x13 [3;5~ 0x04" ]]'
 
 # Linux: skipped, nothing written
 FAKE_OS=Linux run
@@ -77,7 +80,7 @@ check "mac: exit 0" '(( CODE == 0 ))'
 check "mac: profile linked" '[[ -L "$PROFILE" && "$(readlink "$PROFILE")" == "$REPO_DIR/configs/iterm2/zsh-config.json" ]]'
 check "mac: default profile set" '[[ "$(<"$TMP/prefs/Default Bookmark Guid")" == "$GUID" ]]'
 check "mac: counts the settings it wrote" '[[ "$OUT" == *" 21 settings written"* ]]'
-check "mac: inactive panes barely dimmed" '[[ "$(<"$TMP/prefs/SplitPaneDimmingAmount")" == 0.1 && "$(<"$TMP/prefs/DimBackgroundWindows")" == 0 ]]'
+check "mac: inactive panes barely dimmed" '[[ "$(<"$TMP/prefs/SplitPaneDimmingAmount")" == 0.05 && "$(<"$TMP/prefs/DimBackgroundWindows")" == 0 ]]'
 check "mac: copy on select" '[[ "$(<"$TMP/prefs/CopySelection")" == 1 ]]'
 check "mac: backup before the first write" '[[ "$(grep -E "defaults (export|write)" "$TMP/prefs/log" | head -1)" == "defaults export com.googlecode.iterm2 "* ]]'
 check "mac: backup file kept" '[[ -n "$(echo "$TMP"/home/.local/state/zsh-config/iterm2-backups/*.plist(N))" ]]'

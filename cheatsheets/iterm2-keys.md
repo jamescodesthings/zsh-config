@@ -9,6 +9,7 @@
 - `cmd+[`, `cmd+]` - previous or next pane
 - `cmd+opt+enter` - zoom the pane and back
 - `ctrl+opt+arrows` - resize the pane
+- `ctrl+shift+arrows` - swap the pane with the one in that direction
 - `cmd+w` - close the pane
 
 # Tabs and windows
@@ -31,7 +32,7 @@
 
 # Notes
 
-- Swapping panes has no menu item and needs iTerm2's key-binding action; set it in Settings, Keys, Key Bindings if wanted
+- In micro its own profile sends cmd+s/z/c/v/x/a/f as the ctrl keys, cmd+d duplicates the line and cmd+backspace deletes it
 - `ctrl+up` and `ctrl+down` stay with Mission Control and App Exposé
 
 # See also

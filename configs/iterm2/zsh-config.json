@@ -167,6 +167,27 @@
           "Action": 11,
           "Text": "0x17"
         },
+        "0xf700-0x260000-0x7e-0x1": {
+          "Action": 55,
+          "Apply Mode": 0,
+          "Escaping": 2,
+          "Text": "",
+          "Version": 2
+        },
+        "0xf701-0x260000-0x7d-0x1": {
+          "Action": 56,
+          "Apply Mode": 0,
+          "Escaping": 2,
+          "Text": "",
+          "Version": 2
+        },
+        "0xf702-0x260000-0x7b-0x1": {
+          "Action": 53,
+          "Apply Mode": 0,
+          "Escaping": 2,
+          "Text": "",
+          "Version": 2
+        },
         "0xf702-0x280000": {
           "Action": 10,
           "Text": "b"
@@ -174,6 +195,13 @@
         "0xf702-0x300000": {
           "Action": 11,
           "Text": "0x01"
+        },
+        "0xf703-0x260000-0x7c-0x1": {
+          "Action": 54,
+          "Apply Mode": 0,
+          "Escaping": 2,
+          "Text": "",
+          "Version": 2
         },
         "0xf703-0x280000": {
           "Action": 10,
@@ -264,6 +292,10 @@
           "Action": 11,
           "Text": "0x03"
         },
+        "0x64-0x100000": {
+          "Action": 11,
+          "Text": "0x04"
+        },
         "0x66-0x100000": {
           "Action": 11,
           "Text": "0x06"
@@ -285,8 +317,8 @@
           "Text": "0x1a"
         },
         "0x7f-0x100000": {
-          "Action": 11,
-          "Text": "0x0b"
+          "Action": 10,
+          "Text": "[3;5~"
         }
       },
       "Name": "zsh-config micro"

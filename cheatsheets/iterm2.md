@@ -12,7 +12,7 @@
 # Panes and tabs
 
 - `cmd+opt+enter`, `cmd+w` - zoom the pane and back; close the pane or tab
-- `ctrl+opt+arrows` - resize the pane
+- `ctrl+opt+arrows`, `ctrl+shift+arrows` - resize the pane; swap it with its neighbour
 - `cmd+t`, `cmd+n` - new tab here; new window
 - `cmd+shift+[`, `cmd+shift+]`, `cmd+1` to `cmd+9` - previous or next tab; pick a tab
 - `cmd+ctrl+f` - full screen (`cmd+enter` splits now)
@@ -21,7 +21,7 @@
 
 - `cmd+;`, `cmd+shift+;`, `cmd+opt+b` - autocomplete; command history; instant replay
 - `imgcat [file]`, `it2copy`, `it2dl [file]` - show an image; copy to the clipboard, even over ssh; download a file
-- micro - its own profile switches on while micro runs, so cmd+s, cmd+z, cmd+c and the rest reach it
+- micro - its own profile switches on while micro runs, so cmd+s, cmd+z, cmd+c and the rest reach it, cmd+d duplicates the line and cmd+backspace deletes it
 
 # Setup
 
