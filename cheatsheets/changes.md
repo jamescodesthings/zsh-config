@@ -10,6 +10,7 @@
 
 # Latest
 
+- `installers/iterm2` - 2026-11-13, iTerm2 opens full screen with a status bar at the bottom: folder, branch, job, held tasks, snippets, actions and clock; notifications on. More: `cheat iterm2`
 - `cmd+shift+a` - 2026-11-13, iTerm2's Open Quickly is on kitty's command palette key; select last output moves to cmd+shift+o. More: `cheat iterm2 keys`
 - `ctrl+shift+arrows` - 2026-11-13, swap iTerm2 panes; in micro cmd+d duplicates the line and cmd+backspace deletes it; inactive panes dimmed less. More: `cheat iterm2 keys`
 - `cmd+enter` - 2026-11-13, iTerm2 keys like kitty: split with cmd+enter, panes on cmd+ctrl+arrows, resize on ctrl+opt+arrows, a micro profile, lighter dimming, and `cheat iterm`. More: `cheat iterm2 keys`
@@ -20,7 +21,6 @@
 - `installers/iterm2` - 2026-11-13, iTerm2 replaces kitty on macOS as a trial: Night Owl profile, option as meta, mouse for micro, shell integration. More: `cheat iterm2`
 - `osascript meet-mute-unmute.scpt` - 2026-11-12, the Stream Deck Meet buttons bring the Meet window forward first, so they work with several displays. More: `cheat apple-scripts`
 - `compress-pdf-all -r` - 2026-11-12, compress the PDFs in every folder below, each into its own compressed/. More: `cheat compress-pdf-all`
-- `md-to-pdf -r . --combine` - 2026-11-12, convert every .md under a folder and join them into one pdf named after this folder. More: `cheat md-to-pdf`
 
 # See also
 

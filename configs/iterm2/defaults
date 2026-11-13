@@ -17,3 +17,7 @@ DimInactiveSplitPanes|bool|true
 SplitPaneDimmingAmount|float|0.05
 DimOnlyText|bool|false
 DimBackgroundWindows|bool|false
+# The status bar sits at the bottom (the user's choice, set in iTerm2's
+# settings and adopted here); iTerm2 opens a window at launch
+StatusBarPosition|int|1
+OpenNoWindowsAtStartup|bool|false

@@ -61,7 +61,9 @@ done
 
 # the hotkey profile inherits the main one and has a hotkey; the main one has no status bar
 check "hotkey profile present" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Dynamic Profile Parent Name\": \"zsh-config\""* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Has Hotkey\": true"* ]]'
-check "no status bar" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Show Status Bar\": false"* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" != *"Status Bar Layout"* ]]'
+check "status bar on, full screen, notifications on" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));p=d[\"Profiles\"][0];print(p[\"Show Status Bar\"],p[\"Window Type\"],p[\"BM Growl\"])")" == "True 1 True" ]]'
+check "status bar components" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));print(*[c[\"class\"][14:-9] for c in d[\"Profiles\"][0][\"Status Bar Layout\"][\"components\"]])")" == "WorkingDirectory SwiftyString Job Spring SwiftyString SnippetMenu ActionMenu Clock" ]]'
+check "hotkey window stays a top-of-screen window" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));print(d[\"Profiles\"][1][\"Window Type\"])")" == 2 ]]'
 
 # ctrl+shift+arrows swap panes (iTerm2 actions 53 to 56, read from a key map made in its settings)
 check "ctrl+shift+arrows swap panes" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));k=d[\"Profiles\"][0][\"Keyboard Map\"];print(*[k[x][\"Action\"] for x in [\"0xf702-0x260000-0x7b-0x1\",\"0xf703-0x260000-0x7c-0x1\",\"0xf700-0x260000-0x7e-0x1\",\"0xf701-0x260000-0x7d-0x1\"]])")" == "53 54 55 56" ]]'
@@ -79,8 +81,9 @@ run
 check "mac: exit 0" '(( CODE == 0 ))'
 check "mac: profile linked" '[[ -L "$PROFILE" && "$(readlink "$PROFILE")" == "$REPO_DIR/configs/iterm2/zsh-config.json" ]]'
 check "mac: default profile set" '[[ "$(<"$TMP/prefs/Default Bookmark Guid")" == "$GUID" ]]'
-check "mac: counts the settings it wrote" '[[ "$OUT" == *" 23 settings written"* ]]'
+check "mac: counts the settings it wrote" '[[ "$OUT" == *" 25 settings written"* ]]'
 check "mac: inactive panes barely dimmed" '[[ "$(<"$TMP/prefs/SplitPaneDimmingAmount")" == 0.05 && "$(<"$TMP/prefs/DimBackgroundWindows")" == 0 ]]'
+check "mac: status bar at the bottom" '[[ "$(<"$TMP/prefs/StatusBarPosition")" == 1 && "$(<"$TMP/prefs/OpenNoWindowsAtStartup")" == 0 ]]'
 check "mac: copy on select" '[[ "$(<"$TMP/prefs/CopySelection")" == 1 ]]'
 check "mac: backup before the first write" '[[ "$(grep -E "defaults (export|write)" "$TMP/prefs/log" | head -1)" == "defaults export com.googlecode.iterm2 "* ]]'
 check "mac: backup file kept" '[[ -n "$(echo "$TMP"/home/.local/state/zsh-config/iterm2-backups/*.plist(N))" ]]'
@@ -128,6 +131,18 @@ loads() {
 }
 check "iTerm2 on macOS loads the integration" '[[ "$(loads Darwin iTerm.app)" == *"zinit snippet"*"shell_integration/zsh"* ]]'
 check "kitty on macOS does not" '[[ -z "$(loads Darwin kitty)" ]]'
+check "iTerm2 sets the status bar user variables" '[[ "$(<"$REPO_DIR/load-iterm2.zsh")" == *"iterm2_set_user_var gitBranch"* && "$(<"$REPO_DIR/load-iterm2.zsh")" == *"iterm2_set_user_var tasks"* ]]'
+# the status bar variables: branch from .git/HEAD and this repo's held tasks
+mkdir -p "$TMP/myrepo/.git" "$TMP/myrepo/sub" "$TMP/state/hub"
+print -r -- "ref: refs/heads/feature/x" > "$TMP/myrepo/.git/HEAD"
+print -r -- '{"repos":{"myrepo":{"priority":3,"manual":2,"other":0},"zz":{"priority":0,"manual":1,"other":0}}}' > "$TMP/state/hub/task-counts.json"
+vars="$(cd "$TMP/myrepo/sub" && env -i HOME="$TMP/home" PATH="$BIN" FAKE_OS=Darwin TERM_PROGRAM=iTerm.app XDG_STATE_HOME="$TMP/state" CUSTOM_DIR="$REPO_DIR" "${commands[zsh]:-/bin/zsh}" -f -c '
+  fpath=("$CUSTOM_DIR/functions" $fpath); autoload -Uz is
+  function zinit() { : }
+  function iterm2_set_user_var() { print -r -- "$1=$2" }
+  source "$CUSTOM_DIR/load-iterm2.zsh"; _iterm2_status_vars' 2>&1)"
+check "status vars: branch" '[[ "$vars" == *"gitBranch=feature/x"* ]]'
+check "status vars: tasks" '[[ "$vars" == *"tasks=P3 M2"* ]]'
 check "Linux does not" '[[ -z "$(loads Linux iTerm.app)" ]]'
 
 exit $failed

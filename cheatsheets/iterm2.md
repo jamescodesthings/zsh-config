@@ -1,6 +1,6 @@
 # iterm2
 
-> The macOS terminal, on trial in place of kitty: Night Owl colours, the Nerd Font at 14, truecolor, option as meta.
+> The macOS terminal, on trial in place of kitty: opens full screen, Night Owl colours, the Nerd Font at 14, option as meta.
 > `cheat iterm` works too. The profile is `configs/iterm2/zsh-config.json`; settings and menu keys are in `configs/iterm2`.
 
 # Getting started
@@ -22,6 +22,7 @@
 - `cmd+;`, `cmd+shift+;`, `cmd+opt+b` - autocomplete; command history; instant replay
 - `cmd+shift+a` - Open Quickly, to find a session, tab, command or setting
 - `imgcat [file]`, `it2copy`, `it2dl [file]` - show an image; copy to the clipboard, even over ssh; download a file
+- Status bar, at the bottom - folder, branch (read from .git, fast in any repo), job, held hub tasks, snippets, actions, clock
 - micro - its own profile switches on while micro runs, so cmd+s, cmd+z, cmd+c and the rest reach it, cmd+d duplicates the line and cmd+backspace deletes it
 
 # Setup
@@ -31,5 +32,4 @@
 # See also
 
 - `cheat iterm2 keys`, `cheat iterm2-settings` - every key; keeping settings changed in iTerm2
-- `cheat keys` - every key binding
-- `cheat kitty` - the kitty keys, while kitty stays installed
+- `cheat keys`, `cheat kitty` - every key binding; the kitty keys, while kitty stays

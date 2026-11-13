@@ -113,7 +113,7 @@
         "Green Component": 0.32549,
         "Red Component": 0.937255
       },
-      "BM Growl": false,
+      "BM Growl": true,
       "Background Color": {
         "Alpha Component": 1,
         "Blue Component": 0.152941,
@@ -246,15 +246,141 @@
         "Green Component": 0.231373,
         "Red Component": 0.113725
       },
-      "Show Status Bar": false,
+      "Show Status Bar": true,
       "Silence Bell": true,
+      "Status Bar Layout": {
+        "advanced configuration": {
+          "algorithm": 0,
+          "auto-rainbow style": 0,
+          "font": "DejaVuSansMNFM 12",
+          "remove empty components": true
+        },
+        "components": [
+          {
+            "class": "iTermStatusBarWorkingDirectoryComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarSwiftyStringComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "expression": "\\(user.gitBranch)"
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarJobComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarSpringComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarSwiftyStringComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "expression": "\\(user.tasks)"
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarSnippetMenuComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarActionMenuComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarClockComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "format": "HH:mm"
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          }
+        ]
+      },
       "Terminal Type": "xterm-256color",
       "Transparency": 0.05,
       "Unicode Version": 9,
       "Unlimited Scrollback": true,
       "Use Bold Font": true,
       "Use Non-ASCII Font": false,
-      "Visual Bell": true
+      "Visual Bell": true,
+      "Window Type": 1
     },
     {
       "Dynamic Profile Parent Name": "zsh-config",
