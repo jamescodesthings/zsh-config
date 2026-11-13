@@ -36,7 +36,8 @@ if [[ -f "$HUB_ALIASES" ]]; then
 else
   print -r -- "note: no hub checkout at $HUB_ALIASES; checking zsh-config only"
 fi
-defined=(${(u)defined})
+# Names starting with _ are internal helpers, not aliases a person types
+defined=(${(u)defined:#_*})
 
 # Names given a row
 rowed=()
