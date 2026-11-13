@@ -1,0 +1,152 @@
+#!/usr/bin/env zsh
+
+# iterm2-settings status|diff|baseline|adopt|drop: brings settings changed in
+# iTerm2's UI under the management of configs/iterm2/defaults (which
+# installers/iterm2 applies). `baseline` saves a snapshot of the live global
+# settings; `diff` lists what changed since then and is not managed yet;
+# `adopt KEY[,KEY]` copies a key's live value into the managed list;
+# `drop KEY[,KEY]` takes it out again (the live value is left as it is);
+# `status` checks every managed key against the live value. Only plain
+# values (bool, int, float, string) can be adopted; profile changes belong in
+# the Dynamic Profile (Profiles, Other Actions, Save Profile as JSON).
+function iterm2-settings() {
+  cheat-help iterm2-settings "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
+
+  local domain=com.googlecode.iterm2
+  local managed="${ITERM2_SETTINGS_FILE:-$CUSTOM_DIR/configs/iterm2/defaults}"
+  local ignore="${ITERM2_SETTINGS_IGNORE:-$CUSTOM_DIR/configs/iterm2/ignore}"
+  local state="${XDG_STATE_HOME:-$HOME/.local/state}/zsh-config"
+  local baseline="$state/iterm2-baseline.json"
+  local sub="$1"
+  (( $# )) && shift
+
+  # _live <out.json>: the live settings as JSON
+  _iterm2_settings_live() {
+    local plist; plist="$(command mktemp)" || return 1
+    command defaults export "$domain" "$plist" 2>/dev/null \
+      && command plutil -convert json -o - "$plist" > "$1" 2>/dev/null
+    local rc=$?
+    command rm -f "$plist"
+    return $rc
+  }
+  # managed keys, one per line
+  local -a keys
+  keys=(${(f)"$(command grep -v '^#' "$managed" 2>/dev/null | command grep . | while IFS='|' read -r k _; do print -r -- "$k"; done)"})
+
+  case "$sub" in
+    baseline)
+      command mkdir -p "$state"
+      if ! _iterm2_settings_live "$baseline.part"; then
+        command rm -f "$baseline.part"
+        say fail "could not read the iTerm2 settings"
+        return 1
+      fi
+      command mv -f "$baseline.part" "$baseline"
+      say ok "saved a baseline of the iTerm2 settings; iterm2-settings diff lists changes made after this"
+      ;;
+
+    diff)
+      if [[ ! -f "$baseline" ]]; then
+        problem "no baseline yet"
+        fix "iterm2-settings baseline" "snapshot the settings, then change things in iTerm2"
+        problems
+        return 1
+      fi
+      local live; live="$(command mktemp)"
+      _iterm2_settings_live "$live" || { command rm -f "$live"; say fail "could not read the iTerm2 settings"; return 1; }
+      local -a pats=(${(f)"$(command grep -v '^#' "$ignore" 2>/dev/null | command grep .)"})
+      local ign="^(${(j:|:)pats})\$"
+      local -i n=0
+      local line key kind value
+      while IFS=$'\t' read -r key kind value; do
+        [[ -n "$ign" && "$ign" != '^()$' ]] && [[ "$key" =~ $ign ]] && continue
+        (( ${keys[(Ie)$key]} )) && continue
+        n+=1
+        if [[ "$kind" == object || "$kind" == array ]]; then
+          print -r -- "  not adoptable: $key (a profile or list; for a profile use Save Profile as JSON)"
+        else
+          print -r -- "  new: $key = $value"
+        fi
+      done < <(command jq -r --slurpfile b "$baseline" '
+        to_entries[] | select(.value != ($b[0][.key])) |
+        [.key, (.value|type), (.value|if type=="object" or type=="array" then "…" else tostring end)] | @tsv' "$live")
+      command rm -f "$live"
+      if (( n )); then
+        say info "iterm2-settings adopt KEY[,KEY] puts a key under management"
+      else
+        say ok "nothing changed since the baseline that is not managed already"
+      fi
+      ;;
+
+    adopt|drop)
+      if (( ! $# )) || [[ -z "$1" ]]; then
+        say fail "iterm2-settings $sub needs a key: iterm2-settings $sub KEY[,KEY]"
+        return 2
+      fi
+      local -a want=("${(@s:,:)1}")
+      local key
+      if [[ "$sub" == drop ]]; then
+        for key in $want; do
+          if ! (( ${keys[(Ie)$key]} )); then
+            say warn "$key is not managed"
+            continue
+          fi
+          command grep -v "^${(b)key}|" "$managed" > "$managed.part" && command mv -f "$managed.part" "$managed"
+          say ok "dropped $key; its live value is unchanged"
+        done
+        return 0
+      fi
+      local live; live="$(command mktemp)"
+      _iterm2_settings_live "$live" || { command rm -f "$live"; say fail "could not read the iTerm2 settings"; return 1; }
+      local kind value type
+      local -i rc=0
+      for key in $want; do
+        kind="$(command jq -r --arg k "$key" '.[$k] | type' "$live")"
+        case "$kind" in
+          null) say fail "no iTerm2 setting called $key"; rc=1; continue ;;
+          object|array) say fail "$key is a profile or list; save the profile as JSON instead"; command rm -f "$live"; return 2 ;;
+          boolean) type=bool ;;
+          number) type=int; [[ "$(command jq -r --arg k "$key" '.[$k]' "$live")" == *.* ]] && type=float ;;
+          *) type=string ;;
+        esac
+        value="$(command jq -r --arg k "$key" '.[$k]|tostring' "$live")"
+        { command grep -v "^${(b)key}|" "$managed"; print -r -- "$key|$type|$value"; } > "$managed.part" \
+          && command mv -f "$managed.part" "$managed"
+        say ok "adopted $key ($type $value) into ${managed:t}"
+      done
+      command rm -f "$live"
+      return $rc
+      ;;
+
+    status|"")
+      local line key type value current want
+      local -i drift=0
+      while IFS= read -r line; do
+        [[ -z "$line" || "$line" == \#* ]] && continue
+        key="${line%%|*}"; line="${line#*|}"; type="${line%%|*}"; value="${line#*|}"
+        want="$value"
+        [[ "$type" == bool ]] && { [[ "$value" == true ]] && want=1 || want=0 }
+        current="$(command defaults read "$domain" "$key" 2>/dev/null)"
+        if [[ "$current" == "$want" ]]; then
+          print -r -- "  ok: $key"
+        else
+          print -r -- "  drifted: $key is ${current:-unset}, managed $value"
+          drift+=1
+        fi
+      done < "$managed"
+      (( drift )) && say info "installers/iterm2 puts the managed values back; iterm2-settings adopt KEY keeps the live one"
+      return 0
+      ;;
+
+    *)
+      say fail "iterm2-settings: no subcommand called $sub; use status, diff, baseline, adopt or drop"
+      return 2
+      ;;
+  esac
+}
+
+iterm2-settings "$@"

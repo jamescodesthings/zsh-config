@@ -14,7 +14,7 @@
 - `cheat functions files` - `compress-jpg`, `compress-jpg-all`, `compress-pdf`, `compress-pdf-all`, `md-to-html`, `md-to-pdf`
 - `cheat functions git` - `git-branch`, `git-cleanup-branch`, `git-prune-local`, `git-i-really-fucked-up`, `gcod`, `gcom`, `git-speedup`
 - `cheat functions system` - `update`, `asdf-cleanup`, `npm-update-latest`, `aptr`, `dsp`, `touch-sudo`, `steamos-install`, `get-hostname`, `key`, `wipcrypt`
-- `cheat functions setup` - `install-link`, `install-box-config`, `install-release`, `link-cheatsheets`, `link-blender-scripts`
+- `cheat functions setup` - `install-link`, `install-box-config`, `install-release`, `link-cheatsheets`, `link-blender-scripts`, `iterm2-settings`
 - `cheat functions cheat` - `cheat`, `cheat-help`, `cheat-render`, `cheatsheet-test`
 - `cheat functions cli` - `is`, `confirm`, `deps`, `cli-init`, `cli-icon`, `col`, `say`, `problem`, `fix`, `problems`, `pick`, `progress`, `run-quiet`, `log`, `log-start`, `log-line`, `config`
 

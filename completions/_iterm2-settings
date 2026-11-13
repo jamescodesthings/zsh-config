@@ -1,0 +1,20 @@
+#compdef iterm2-settings
+
+_iterm2-settings() {
+  local -a subs=(
+    'status:check every managed setting against iTerm2'
+    'diff:settings changed since the baseline that are not managed'
+    'baseline:snapshot the live settings'
+    'adopt:put a setting under management'
+    'drop:take a setting out of management'
+  )
+  if (( CURRENT == 2 )); then
+    _describe -t subcommands 'subcommand' subs
+  elif [[ "$words[2]" == drop ]]; then
+    local f="${CUSTOM_DIR:-$HOME/.custom}/configs/iterm2/defaults"
+    local -a keys=(${${(M)${(f)"$(<$f)"}:#[^#]*}%%|*})
+    _describe -t keys 'managed key' keys
+  fi
+}
+
+_iterm2-settings "$@"

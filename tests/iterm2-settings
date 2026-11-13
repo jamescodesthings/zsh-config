@@ -1,0 +1,89 @@
+#!/usr/bin/env zsh
+# Tests iterm2-settings from a plain zsh -f with an empty temp HOME and
+# working folder. defaults and plutil are stubs: the live iTerm2 settings are
+# a JSON file in a temp folder, `defaults export` copies it, `plutil -convert
+# json` passes it through, and `defaults write/delete` edit it with jq. The
+# real iTerm2 prefs are never read or written. Run: tests/iterm2-settings.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"; TMP="${TMP:A}"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+BIN="$TMP/bin"; LIVE="$TMP/live.json"; MANAGED="$TMP/defaults"
+mkdir -p "$BIN" "$TMP/home" "$TMP/work"
+for c in cat cp mv rm mkdir mktemp jq sort grep date; do ln -s "$(command -v $c)" "$BIN/$c"; done
+cat > "$BIN/defaults" <<'S'
+#!/bin/sh
+cmd="$1"; shift; shift
+case "$cmd" in
+  export) cp "$LIVE" "$1" ;;
+  read) jq -er --arg k "$1" '.[$k] | if type=="boolean" then (if . then 1 else 0 end) else . end' "$LIVE" ;;
+  write) k="$1"; t="$2"; v="$3"
+    case "$t" in -bool) j=$([ "$v" = true ] && echo true || echo false) ;; -int|-float) j="$v" ;; *) j="$(jq -n --arg v "$v" '$v')" ;; esac
+    jq --arg k "$k" --argjson v "$j" '.[$k]=$v' "$LIVE" > "$LIVE.t" && mv "$LIVE.t" "$LIVE" ;;
+  delete) jq --arg k "$1" 'del(.[$k])' "$LIVE" > "$LIVE.t" && mv "$LIVE.t" "$LIVE" ;;
+esac
+S
+# plutil -convert json -o - FILE: the stub's plists are already JSON
+printf '#!/bin/sh\nfor a; do f="$a"; done\ncat "$f"\n' > "$BIN/plutil"
+chmod +x "$BIN"/*
+
+check() { if eval "$2"; then print "ok: $1"; else print "FAIL: $1"; print -r -- "    code $CODE: $OUT"; failed=1; fi }
+run() {
+  OUT="$(cd "$TMP/work" && env -i HOME="$TMP/home" PATH="$BIN" LIVE="$LIVE" ITERM2_SETTINGS_FILE="$MANAGED" \
+    CUSTOM_DIR="$REPO_DIR" CLI_PLAIN=1 "${commands[zsh]:-/bin/zsh}" -f -c '
+    fpath=("$1/functions" $fpath); autoload -Uz is iterm2-settings cheat-help cli-init say problem fix problems col cli-icon
+    shift; iterm2-settings "$@"' _ "$REPO_DIR" "$@" 2>&1 < /dev/null)"
+  CODE=$?
+}
+
+print -r -- '{"CopySelection":true,"FontSize":12,"NSWindow Frame iTerm":"1 2 3 4","New Bookmarks":[{"Name":"x"}],"TabStyle":0}' > "$LIVE"
+printf '%s\n' '# managed' 'CopySelection|bool|true' > "$MANAGED"
+
+# no baseline yet: diff refuses and names the fix
+run diff
+check "diff without a baseline: exit 1" '(( CODE == 1 ))'
+check "diff without a baseline: names baseline" '[[ "$OUT" == *"iterm2-settings baseline"* ]]'
+
+run baseline
+check "baseline: exit 0" '(( CODE == 0 ))'
+check "baseline: saved" '[[ -f "$TMP/home/.local/state/zsh-config/iterm2-baseline.json" ]]'
+
+# change things in the "UI"
+jq '.TabStyle=5 | .HideScrollbar=true | .["NSWindow Frame iTerm"]="9 9 9 9" | .["New Bookmarks"]=[{"Name":"y"}]' "$LIVE" > "$LIVE.t" && mv "$LIVE.t" "$LIVE"
+
+run diff
+check "diff: exit 0" '(( CODE == 0 ))'
+check "diff: a changed key" '[[ "$OUT" == *"TabStyle"*"5"* ]]'
+check "diff: a new key" '[[ "$OUT" == *"HideScrollbar"* ]]'
+check "diff: ignores window frames" '[[ "$OUT" != *"NSWindow Frame"* ]]'
+check "diff: profiles are not adoptable here" '[[ "$OUT" == *"New Bookmarks"*"Save Profile as JSON"* ]]'
+check "diff: managed keys are not listed as new" '[[ "$OUT" != *"new: CopySelection"* ]]'
+
+run adopt TabStyle,HideScrollbar
+check "adopt: exit 0" '(( CODE == 0 ))'
+check "adopt: int written" 'grep -qx "TabStyle|int|5" "$MANAGED"'
+check "adopt: bool written" 'grep -qx "HideScrollbar|bool|true" "$MANAGED"'
+run adopt TabStyle
+check "adopt again: one line only" '[[ "$(grep -c "^TabStyle|" "$MANAGED")" == 1 ]]'
+run adopt "New Bookmarks"
+check "adopt a profile key: exit 2" '(( CODE == 2 ))'
+run adopt NoSuchKey
+check "adopt a missing key: exit 1" '(( CODE == 1 ))'
+
+run status
+check "status: exit 0" '(( CODE == 0 ))'
+check "status: managed key matches" '[[ "$OUT" == *"ok: TabStyle"* ]]'
+jq '.CopySelection=false' "$LIVE" > "$LIVE.t" && mv "$LIVE.t" "$LIVE"
+run status
+check "status: drift shown" '[[ "$OUT" == *"drifted: CopySelection"* ]]'
+
+run drop HideScrollbar
+check "drop: exit 0" '(( CODE == 0 ))'
+check "drop: line gone" '! grep -q "^HideScrollbar|" "$MANAGED"'
+check "drop: live value left alone" '[[ "$(jq -r .HideScrollbar "$LIVE")" == true ]]'
+
+run frobnicate
+check "unknown subcommand: exit 2" '(( CODE == 2 ))'
+
+exit $failed

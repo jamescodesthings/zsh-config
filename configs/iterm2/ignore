@@ -1,0 +1,19 @@
+# iTerm2 settings keys iterm2-settings never offers to adopt: window
+# positions, timestamps, update bookkeeping and one-time tips. One extended
+# regular expression per line, matched against the whole key.
+NSWindow.*
+NSSplitView.*
+NSTableView.*
+NSNavLastRootDirectory
+NSStatusItem.*
+NoSync.*
+SU.*
+Window Arrangements
+iTerm Version
+LastUpdate.*
+TipOfTheDay.*
+kCPKSelectionViewPreferredModeKey
+.*Frame.*
+.*Timestamp.*
+.*LastShown.*
+.*Count

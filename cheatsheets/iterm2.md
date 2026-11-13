@@ -22,7 +22,7 @@
 
 # See also
 
-- `cheat iterm2 keys` - every pane, tab, editing and finding key
+- `cheat iterm2 keys`, `cheat iterm2-settings` - every key; keeping settings changed in iTerm2
 - `cheat keys` - every key binding
 - `cheat kitty` - the kitty keys, while kitty stays installed
 - `cheat setup` - how the config fits together

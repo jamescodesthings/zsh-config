@@ -9,6 +9,7 @@
 - `install-release [binary]` - install a GitHub release into `~/.local/bin`
 - `link-cheatsheets [dir]` - link sheets into `$CHEATSHEET_DIR`
 - `link-blender-scripts [dir]` - link scripts into each Blender version
+- `iterm2-settings [status|diff|baseline|adopt|drop]` - bring iTerm2 settings changed in its window under management
 
 # See also
 
