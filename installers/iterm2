@@ -33,6 +33,25 @@ source "${0:a:h}/_stub"
     fix "ls -ld ${(q)profiles}" "check the folder"
   }
 
+  # The iTerm2 utilities (imgcat, it2copy and the rest), fetched once each into
+  # ~/.iterm2; path.zsh puts that folder on PATH. iTerm2's own installer is not
+  # run, since it also appends to ~/.zshrc, which is this repo's file.
+  local utildir="$HOME/.iterm2" u tmp
+  local -i fetched=0
+  command mkdir -p "$utildir"
+  for u in ${(f)"$(<"$src/utilities")"}; do
+    [[ -z "$u" || "$u" == \#* || -x "$utildir/$u" ]] && continue
+    tmp="$utildir/.$u.part"
+    if command curl -fsSL "https://iterm2.com/utilities/$u" -o "$tmp" && command chmod +x "$tmp" && command mv -f "$tmp" "$utildir/$u"; then
+      fetched+=1
+    else
+      command rm -f "$tmp"
+      problem "could not fetch the iTerm2 utility $u"
+      fix "curl -fsSL https://iterm2.com/utilities/$u -o ~/.iterm2/$u" "fetch it by hand"
+    fi
+  done
+  (( fetched )) && say ok "installed $fetched iTerm2 utilities into $utildir"
+
   # Global settings, written only where they differ, after one backup
   local line key type value current
   local -i backed_up=0 changed=0

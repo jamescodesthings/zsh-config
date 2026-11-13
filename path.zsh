@@ -53,5 +53,7 @@ else
 fi
 
 # JetBrains Toolbox launchers, last
+# iTerm2 utilities (imgcat, it2copy and the rest), from installers/iterm2
+[[ -d $HOME/.iterm2 ]] && path+=("$HOME/.iterm2")
 [[ -d $HOME/Library/Application\ Support/JetBrains/Toolbox/scripts ]] && path+=("$HOME/Library/Application Support/JetBrains/Toolbox/scripts")
 unset _path_new _path_missing _p

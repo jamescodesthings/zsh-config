@@ -1,0 +1,18 @@
+# iTerm2 utilities installers/iterm2 fetches from https://iterm2.com/utilities/<name>
+# into ~/.iterm2, which path.zsh puts on PATH when it exists.
+imgcat
+imgls
+it2api
+it2attention
+it2cat
+it2check
+it2copy
+it2dl
+it2getvar
+it2git
+it2profile
+it2setcolor
+it2setkeylabel
+it2tip
+it2ul
+it2universion

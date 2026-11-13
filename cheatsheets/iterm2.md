@@ -7,20 +7,13 @@
 
 - `cmd+t`, `cmd+d`, `cmd+shift+d` - new tab; split side by side; split top and bottom
 - `cmd+opt+arrows`, `cmd+[`, `cmd+]` - move between panes
+- `opt+space` - the hotkey window: a terminal that drops down from the top, from anywhere
 - iTerm2 menu, Make iTerm2 Default Term - once, by hand
 
-# Panes and tabs
+# Extras
 
-- `cmd+shift+enter`, `cmd+w` - zoom the pane and back; close the pane or tab
-- `cmd+1` to `cmd+9`, `cmd+shift+[`, `cmd+shift+]` - pick a tab; previous or next tab
-
-# Editing and finding
-
-- `opt+left`, `opt+right`, `opt+backspace` - back, forward or delete one word
-- `cmd+left`, `cmd+right`, `cmd+backspace` - start or end of the line; delete to the start
-- `cmd+f`, `cmd+k`, `cmd+shift+h` - search the scrollback; clear; paste history
-- `cmd+shift+up`, `cmd+shift+down` - jump between prompts (shell integration)
-- `cmd+click` - open a link or file; select to copy
+- `imgcat [file]`, `it2copy`, `it2dl [file]` - show an image; copy to the clipboard, even over ssh; download a file
+- Status bar - folder, git branch, CPU, memory and the clock along the bottom
 
 # Setup
 
@@ -29,6 +22,7 @@
 
 # See also
 
+- `cheat iterm2 keys` - every pane, tab, editing and finding key
 - `cheat keys` - every key binding
 - `cheat kitty` - the kitty keys, while kitty stays installed
 - `cheat setup` - how the config fits together

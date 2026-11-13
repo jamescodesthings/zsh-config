@@ -29,6 +29,15 @@ case "$cmd" in
   export) echo "PLIST" > "$1" ;;
 esac
 S
+# curl -fsSL <url> -o <file>: writes a fake script, logs the url
+cat > "$BIN/curl" <<'S'
+#!/bin/sh
+out=""; url=""
+while [ $# -gt 0 ]; do case "$1" in -o) out="$2"; shift ;; -*) ;; *) url="$1" ;; esac; shift; done
+echo "$url" >> "$PREFS/curl.log"
+printf '#!/bin/sh\necho fake\n' > "$out"
+S
+ln -s "$(command -v chmod)" "$BIN/chmod"
 chmod +x "$BIN"/*
 
 check() { if eval "$2"; then print "ok: $1"; else print "FAIL: $1"; print -r -- "    code $CODE: $OUT"; failed=1; fi }
@@ -39,12 +48,18 @@ run() {
   CODE=$?
 }
 PROFILE="$TMP/home/Library/Application Support/iTerm2/DynamicProfiles/zsh-config.json"
-GUID="$(sed -n 's/.*"Guid": "\(.*\)".*/\1/p' "$REPO_DIR/configs/iterm2/zsh-config.json" 2>/dev/null)"
+GUID="$(sed -n '/^Default Bookmark Guid|/s/.*|//p' "$REPO_DIR/configs/iterm2/defaults")"
 
 # the profile in the repo is valid JSON with the fields the sheet promises
 check "profile is valid json" '/usr/bin/plutil -lint "$REPO_DIR/configs/iterm2/zsh-config.json" >/dev/null 2>&1 || python3 -m json.tool "$REPO_DIR/configs/iterm2/zsh-config.json" >/dev/null'
 for want in '"Terminal Type": "xterm-256color"' '"Option Key Sends": 2' '"Mouse Reporting": true' '"Unlimited Scrollback": true' '"Silence Bell": true' '"Normal Font": "DejaVuSansMNFM 12"'; do
   check "profile has $want" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"$want"* ]]'
+done
+
+# the hotkey profile inherits the main one and has a hotkey; the main one has a status bar
+check "hotkey profile present" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Dynamic Profile Parent Name\": \"zsh-config\""* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Has Hotkey\": true"* ]]'
+for comp in Git WorkingDirectory CPUUtilization MemoryUtilization Clock; do
+  check "status bar has $comp" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"iTermStatusBar${comp}Component"* ]]'
 done
 
 # Linux: skipped, nothing written
@@ -63,11 +78,18 @@ check "mac: backup before the first write" '[[ "$(grep -E "defaults (export|writ
 check "mac: backup file kept" '[[ -n "$(echo "$TMP"/home/.local/state/zsh-config/iterm2-backups/*.plist(N))" ]]'
 check "mac: names the default-terminal step" '[[ "$OUT" == *"Make iTerm2 Default Term"* ]]'
 
+# the utilities: every one in configs/iterm2/utilities, executable, in ~/.iterm2
+for u in ${(f)"$(grep -v '^#' "$REPO_DIR/configs/iterm2/utilities")"}; do
+  check "utility $u installed" '[[ -x "$TMP/home/.iterm2/$u" ]]'
+done
+check "utilities fetched from iterm2.com" 'grep -q "^https://iterm2.com/utilities/imgcat$" "$TMP/prefs/curl.log"'
+
 # rerun: nothing changes, no new backup, no writes
 : > "$TMP/prefs/log"
 run
 check "rerun: exit 0" '(( CODE == 0 ))'
 check "rerun: no writes" '! grep -q "defaults write" "$TMP/prefs/log"'
+check "rerun: utilities not fetched again" '[[ "$(grep -c . "$TMP/prefs/curl.log")" == "$(grep -vc "^#" "$REPO_DIR/configs/iterm2/utilities")" ]]'
 check "rerun: no backup when nothing changes" '! grep -q "defaults export" "$TMP/prefs/log"'
 
 # never the custom prefs folder: iTerm2 would write its whole plist into the repo
