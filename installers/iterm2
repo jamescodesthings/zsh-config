@@ -107,6 +107,47 @@ source "${0:a:h}/_stub"
     command mkdir -p "${applied:h}" && command cp "$menukeys" "$applied"
   fi
 
+  # Actions (configs/iterm2/actions.json): the managed ones by title, plus any
+  # the user made in iTerm2 that the file does not name, written as one
+  # array once per change of the file, after the backup
+  local actions="$src/actions.json" actions_applied="${XDG_STATE_HOME:-$HOME/.local/state}/zsh-config/iterm2-actions.applied"
+  if [[ -f "$actions" ]] && ! { [[ -f "$actions_applied" ]] && [[ "$(<"$actions_applied")" == "$(<"$actions")" ]] }; then
+    if (( ! backed_up )); then
+      command mkdir -p "$backups"
+      local backup="$backups/$(command date +%Y-%m-%d-%H%M%S).plist"
+      if ! command defaults export "$domain" "$backup" 2>/dev/null; then
+        problem "could not back up the iTerm2 settings, so the actions were not changed"
+        fix "defaults export $domain ~/iterm2-backup.plist" "take a backup by hand"
+        problems
+        exit 1
+      fi
+      say info "backed up the iTerm2 settings to $backup"
+      backed_up=1
+    fi
+    local live; live="$(command mktemp)"
+    command defaults export "$domain" "$live" 2>/dev/null
+    local xml
+    xml="$(command python3 -I -c '
+import json, plistlib, sys
+managed = json.load(open(sys.argv[1]))
+try:
+    current = plistlib.load(open(sys.argv[2], "rb")).get("Actions", [])
+except Exception:
+    current = []
+titles = {a["title"] for a in managed}
+merged = [a for a in current if a.get("title") not in titles] + managed
+sys.stdout.write(plistlib.dumps(merged).decode())
+' "$actions" "$live")"
+    command rm -f "$live"
+    if [[ -n "$xml" ]] && command defaults write "$domain" Actions "$xml"; then
+      changed+=1
+      command mkdir -p "${actions_applied:h}" && command cp "$actions" "$actions_applied"
+    else
+      problem "could not write the iTerm2 actions"
+      fix "python3 -m json.tool ${(q)actions}" "check the file"
+    fi
+  fi
+
   if (( changed )); then
     say ok "iTerm2: profile linked, $changed settings written; quit and reopen iTerm2 to pick them up"
   else
