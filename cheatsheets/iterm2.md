@@ -20,6 +20,7 @@
 # Extras
 
 - `cmd+;`, `cmd+shift+;`, `cmd+opt+b` - autocomplete; command history; instant replay
+- `cmd+shift+a` - Open Quickly, to find a session, tab, command or setting
 - `imgcat [file]`, `it2copy`, `it2dl [file]` - show an image; copy to the clipboard, even over ssh; download a file
 - micro - its own profile switches on while micro runs, so cmd+s, cmd+z, cmd+c and the rest reach it, cmd+d duplicates the line and cmd+backspace deletes it
 

@@ -15,3 +15,5 @@ Select Pane Left|@^←
 Select Pane Right|@^→
 Select Pane Above|@^↑
 Select Pane Below|@^↓
+Open Quickly|@$a
+Select Output of Last Command|@$o

@@ -27,6 +27,7 @@
 - `cmd+f`, `cmd+k` - search the scrollback; clear
 - `cmd+;`, `cmd+shift+;`, `cmd+shift+h` - autocomplete; command history; paste history
 - `cmd+opt+b` - instant replay
+- `cmd+shift+a`, `cmd+shift+o` - Open Quickly, as kitty's command palette; select the last command's output (the two swapped)
 - `cmd+shift+up`, `cmd+shift+down` - jump between prompts (shell integration)
 - `cmd+click` - open a link or file; select to copy
 

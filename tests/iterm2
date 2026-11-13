@@ -79,7 +79,7 @@ run
 check "mac: exit 0" '(( CODE == 0 ))'
 check "mac: profile linked" '[[ -L "$PROFILE" && "$(readlink "$PROFILE")" == "$REPO_DIR/configs/iterm2/zsh-config.json" ]]'
 check "mac: default profile set" '[[ "$(<"$TMP/prefs/Default Bookmark Guid")" == "$GUID" ]]'
-check "mac: counts the settings it wrote" '[[ "$OUT" == *" 21 settings written"* ]]'
+check "mac: counts the settings it wrote" '[[ "$OUT" == *" 23 settings written"* ]]'
 check "mac: inactive panes barely dimmed" '[[ "$(<"$TMP/prefs/SplitPaneDimmingAmount")" == 0.05 && "$(<"$TMP/prefs/DimBackgroundWindows")" == 0 ]]'
 check "mac: copy on select" '[[ "$(<"$TMP/prefs/CopySelection")" == 1 ]]'
 check "mac: backup before the first write" '[[ "$(grep -E "defaults (export|write)" "$TMP/prefs/log" | head -1)" == "defaults export com.googlecode.iterm2 "* ]]'
@@ -98,6 +98,7 @@ while IFS='|' read -r title spec; do
   want="$spec"
   check "menu key $title" '[[ "$(<"$TMP/prefs/NSUserKeyEquivalents.d/$title")" == "$want" ]]'
 done < "$REPO_DIR/configs/iterm2/menu-keys"
+check "Open Quickly is cmd+shift+a" 'grep -qx "Open Quickly|@\$a" "$REPO_DIR/configs/iterm2/menu-keys"'
 check "split side by side is cmd+enter" '[[ "$(grep "^Split Vertically with Current Profile|" "$REPO_DIR/configs/iterm2/menu-keys")" == *"|@↩" ]]'
 
 # rerun: nothing changes, no new backup, no writes
