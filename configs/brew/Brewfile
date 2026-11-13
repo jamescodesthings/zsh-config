@@ -28,7 +28,12 @@ brew "httpie"
 brew "progress"
 brew "direnv"
 
-# The Nerd Font kitty asks for, so the CLI helpers' icons render
+# The terminal on macOS (a trial replacing kitty; kitty is no longer installed
+# here, but its config in configs/kitty stays linked). installers/iterm2 links
+# its profile and settings.
+cask "iterm2"
+
+# The Nerd Font the terminal profiles use, so the CLI helpers' icons render
 # (installers/fonts does the same on Debian)
 cask "font-dejavu-sans-mono-nerd-font"
 

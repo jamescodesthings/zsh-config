@@ -1,0 +1,12 @@
+# iTerm2 global settings that installers/iterm2 writes with `defaults write
+# com.googlecode.iterm2`, one per line: key|type|value (type is bool, int,
+# float or string). The profile itself is the Dynamic Profile zsh-config.json.
+# Default profile: the zsh-config Dynamic Profile
+Default Bookmark Guid|string|6F1D3A52-4C2B-4E8A-9B1E-2A7C5D9E0F11
+# Copy on select, without the trailing newline
+CopySelection|bool|true
+CopyLastNewline|bool|false
+# Let programs (micro, tmux, ssh sessions) set the clipboard with OSC 52
+AllowClipboardAccess|bool|true
+# Keep checking for updates
+SUEnableAutomaticChecks|bool|true

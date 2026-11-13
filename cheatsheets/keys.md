@@ -6,7 +6,7 @@
 
 - `ctrl+r` - fuzzy-search shell history
 - `tab` - completion in fzf (fzf-tab); type to filter, enter picks
-- `cmd+enter` - new kitty pane in this folder; `ctrl+arrows` move between panes
+- `cmd+d`, `cmd+opt+arrows` - split the iTerm2 pane; move between panes
 
 # fzf
 
@@ -16,13 +16,13 @@
 # Shell line
 
 - `ctrl+a`, `ctrl+e` - start or end of the line
-- `opt+left`, `opt+right` - back or forward one word (kitty, macOS)
+- `opt+left`, `opt+right` - back or forward one word
 - `ctrl+w`, `ctrl+u`, `ctrl+l` - delete the word before the cursor; the line before it; clear the screen
 
-# kitty
+# iTerm2
 
 - `cmd+t`, `cmd+w` - new tab here; close it
-- `cmd+shift+w`, `cmd+shift+enter` - close the other panes; zoom the pane and back
+- `cmd+shift+enter`, `cmd+shift+up` - zoom the pane; jump to the last prompt
 
 # Stream Deck
 
@@ -30,6 +30,6 @@
 
 # See also
 
-- `cheat kitty` - every kitty key
+- `cheat iterm2` - every iTerm2 key; `cheat kitty` for kitty
 - `cheat fzf` - fzf in full
 - `cheat help` - the index of our sheets

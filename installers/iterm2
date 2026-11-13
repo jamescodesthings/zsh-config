@@ -1,0 +1,73 @@
+#!/usr/bin/env zsh
+# iTerm2 on macOS: links the zsh-config Dynamic Profile into iTerm2's
+# DynamicProfiles folder and writes the global settings in
+# configs/iterm2/defaults, taking a backup of the current settings first when
+# anything will change. iTerm2 itself comes from the Brewfile. Linux skips.
+
+source "${0:a:h}/_stub"
+
+{
+  if ! is osx; then
+    say info "skipping: iTerm2 is macOS only"
+    exit 0
+  fi
+
+  check-or-load install-link
+
+  local app="${ITERM2_APP:-/Applications/iTerm.app}"
+  local domain=com.googlecode.iterm2
+  local src="$REPO_DIR/configs/iterm2"
+  local profiles="$HOME/Library/Application Support/iTerm2/DynamicProfiles"
+  local backups="${XDG_STATE_HOME:-$HOME/.local/state}/zsh-config/iterm2-backups"
+
+  if [[ ! -d "$app" ]]; then
+    problem "iTerm2 is not installed"
+    fix "brew install --cask iterm2" "install it, or run update to install the Brewfile"
+    problems
+    exit 1
+  fi
+
+  # The profile: a Dynamic Profile, which iTerm2 reloads when the file changes
+  install-link "$src/zsh-config.json" "$profiles/zsh-config.json" || {
+    problem "could not link the iTerm2 profile"
+    fix "ls -ld ${(q)profiles}" "check the folder"
+  }
+
+  # Global settings, written only where they differ, after one backup
+  local line key type value current backed_up=0 changed=0
+  while IFS= read -r line; do
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    key="${line%%|*}"; line="${line#*|}"
+    type="${line%%|*}"; value="${line#*|}"
+    current="$(command defaults read "$domain" "$key" 2>/dev/null)"
+    local want="$value"
+    if [[ "$type" == bool ]]; then
+      [[ "$value" == true ]] && want=1 || want=0
+    fi
+    [[ "$current" == "$want" ]] && continue
+    if (( ! backed_up )); then
+      command mkdir -p "$backups"
+      local backup="$backups/$(command date +%Y-%m-%d-%H%M%S).plist"
+      if ! command defaults export "$domain" "$backup" 2>/dev/null; then
+        problem "could not back up the iTerm2 settings, so none were changed"
+        fix "defaults export $domain ~/iterm2-backup.plist" "take a backup by hand"
+        problems
+        exit 1
+      fi
+      say info "backed up the iTerm2 settings to $backup"
+      backed_up=1
+    fi
+    command defaults write "$domain" "$key" "-$type" "$value"
+    changed+=1
+  done < "$src/defaults"
+
+  if (( changed )); then
+    say ok "iTerm2: profile linked, $changed settings written; quit and reopen iTerm2 to pick them up"
+  else
+    say ok "iTerm2: profile linked, settings already current"
+  fi
+  say info "to make iTerm2 the default terminal: iTerm2 menu, Make iTerm2 Default Term"
+
+  problems || exit 1
+  exit 0
+}

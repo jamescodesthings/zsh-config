@@ -9,7 +9,7 @@
 REPO_DIR="${0:a:h:h}"
 SHEET="$REPO_DIR/cheatsheets/help.md"
 # Index sheets whose cheat pointers are checked
-INDEXES=("$REPO_DIR"/cheatsheets/{help,changes,changes-older,aliases,aliases-*,setup,troubleshoot,keys}.md(N))
+INDEXES=("$REPO_DIR"/cheatsheets/{help,changes,changes-older,aliases,aliases-*,setup,troubleshoot,keys,iterm2,iterm2-*}.md(N))
 failed=0
 fail() { print -r -- "fail: $1"; failed=1 }
 

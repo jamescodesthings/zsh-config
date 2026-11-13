@@ -1,0 +1,93 @@
+#!/usr/bin/env zsh
+# Tests installers/iterm2 and load-iterm2.zsh from a plain zsh, with an empty
+# temp HOME and working folder. uname and defaults are stubs: defaults keeps
+# its values in a temp folder and logs every call, so the real iTerm2 prefs
+# are never read or written. ITERM2_APP points at a temp folder for the app.
+# Run: tests/iterm2. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"; TMP="${TMP:A}"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+BIN="$TMP/bin"
+mkdir -p "$BIN" "$TMP/home" "$TMP/work" "$TMP/prefs" "$TMP/app"
+for c in mkdir ln mv rm readlink dirname basename cat date head; do
+  ln -s "$(command -v $c)" "$BIN/$c"
+done
+cat > "$BIN/uname" <<'S'
+#!/bin/sh
+case "$1" in -m) echo arm64 ;; *) echo "${FAKE_OS:-Darwin}" ;; esac
+S
+# defaults read|write|export <domain> <key> [-type value]
+cat > "$BIN/defaults" <<'S'
+#!/bin/sh
+echo "defaults $*" >> "$PREFS/log"
+cmd="$1"; shift; domain="$1"; shift
+case "$cmd" in
+  read) [ -f "$PREFS/$1" ] && cat "$PREFS/$1" && exit 0; exit 1 ;;
+  write) key="$1"; shift; shift; v="$1"; [ "$v" = true ] && v=1; [ "$v" = false ] && v=0; printf '%s\n' "$v" > "$PREFS/$key" ;;
+  export) echo "PLIST" > "$1" ;;
+esac
+S
+chmod +x "$BIN"/*
+
+check() { if eval "$2"; then print "ok: $1"; else print "FAIL: $1"; print -r -- "    code $CODE: $OUT"; failed=1; fi }
+
+run() {
+  OUT="$(cd "$TMP/work" && env -i HOME="$TMP/home" PATH="$BIN" PREFS="$TMP/prefs" FAKE_OS="${FAKE_OS:-Darwin}" \
+    ITERM2_APP="$TMP/app" CUSTOM_DIR="$REPO_DIR" CLI_PLAIN=1 "${commands[zsh]:-/bin/zsh}" "$REPO_DIR/installers/iterm2" "$@" 2>&1 < /dev/null)"
+  CODE=$?
+}
+PROFILE="$TMP/home/Library/Application Support/iTerm2/DynamicProfiles/zsh-config.json"
+GUID="$(sed -n 's/.*"Guid": "\(.*\)".*/\1/p' "$REPO_DIR/configs/iterm2/zsh-config.json" 2>/dev/null)"
+
+# the profile in the repo is valid JSON with the fields the sheet promises
+check "profile is valid json" '/usr/bin/plutil -lint "$REPO_DIR/configs/iterm2/zsh-config.json" >/dev/null 2>&1 || python3 -m json.tool "$REPO_DIR/configs/iterm2/zsh-config.json" >/dev/null'
+for want in '"Terminal Type": "xterm-256color"' '"Option Key Sends": 2' '"Mouse Reporting": true' '"Unlimited Scrollback": true' '"Silence Bell": true' '"Normal Font": "DejaVuSansMNFM 12"'; do
+  check "profile has $want" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"$want"* ]]'
+done
+
+# Linux: skipped, nothing written
+FAKE_OS=Linux run
+# (_stub refuses a Linux that is not Debian; either way nothing is written)
+check "linux: no defaults calls" '[[ ! -f "$TMP/prefs/log" ]]'
+
+# macOS: profile linked, prefs written, a backup taken first
+run
+check "mac: exit 0" '(( CODE == 0 ))'
+check "mac: profile linked" '[[ -L "$PROFILE" && "$(readlink "$PROFILE")" == "$REPO_DIR/configs/iterm2/zsh-config.json" ]]'
+check "mac: default profile set" '[[ "$(<"$TMP/prefs/Default Bookmark Guid")" == "$GUID" ]]'
+check "mac: copy on select" '[[ "$(<"$TMP/prefs/CopySelection")" == 1 ]]'
+check "mac: backup before the first write" '[[ "$(grep -E "defaults (export|write)" "$TMP/prefs/log" | head -1)" == "defaults export com.googlecode.iterm2 "* ]]'
+check "mac: backup file kept" '[[ -n "$(echo "$TMP"/home/.local/state/zsh-config/iterm2-backups/*.plist(N))" ]]'
+check "mac: names the default-terminal step" '[[ "$OUT" == *"Make iTerm2 Default Term"* ]]'
+
+# rerun: nothing changes, no new backup, no writes
+: > "$TMP/prefs/log"
+run
+check "rerun: exit 0" '(( CODE == 0 ))'
+check "rerun: no writes" '! grep -q "defaults write" "$TMP/prefs/log"'
+check "rerun: no backup when nothing changes" '! grep -q "defaults export" "$TMP/prefs/log"'
+
+# never the custom prefs folder: iTerm2 would write its whole plist into the repo
+check "never sets LoadPrefsFromCustomFolder" '[[ ! -f "$TMP/prefs/LoadPrefsFromCustomFolder" ]]'
+
+# iTerm2 missing: a problem with the brew fix
+rm -rf "$TMP/app"
+run
+check "no app: exit 1" '(( CODE == 1 ))'
+check "no app: names brew" '[[ "$OUT" == *"brew install --cask iterm2"* ]]'
+mkdir -p "$TMP/app"
+
+# load-iterm2.zsh: loads only on macOS inside iTerm2
+loads() {
+  env -i HOME="$TMP/home" PATH="$BIN" FAKE_OS="$1" TERM_PROGRAM="$2" CUSTOM_DIR="$REPO_DIR" "${commands[zsh]:-/bin/zsh}" -f -c '
+    fpath=("$CUSTOM_DIR/functions" $fpath); autoload -Uz is
+    function zinit() { print -r -- "zinit $*" }
+    source "$CUSTOM_DIR/load-iterm2.zsh"' 2>&1
+}
+check "iTerm2 on macOS loads the integration" '[[ "$(loads Darwin iTerm.app)" == *"zinit snippet"*"shell_integration/zsh"* ]]'
+check "kitty on macOS does not" '[[ -z "$(loads Darwin kitty)" ]]'
+check "Linux does not" '[[ -z "$(loads Linux iTerm.app)" ]]'
+
+exit $failed

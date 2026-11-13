@@ -20,11 +20,11 @@
 
 - `exec zsh` - after `update`, or a change to zsh-config or `private.zsh`
 - `/exit`, then `cldr` - after `hub install` changes skills, hooks or settings, so Claude reads them again
+- Quit and reopen iTerm2 - after `installers/iterm2` writes settings; the terminal is iTerm2 now, see `cheat iterm2`
 
 # Order for a full refresh
 
-- `hub down` - safe point and stop every session
-- `update`, then `hub` - update the machine, then bring the hub back
+- `hub down`, `update`, `hub` - stop every session at a safe point; update the machine; bring the hub back
 
 # See also
 

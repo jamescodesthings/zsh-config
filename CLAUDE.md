@@ -64,7 +64,7 @@ macOS `/etc/zprofile` runs `path_helper` after `.zshenv` and pushes the system p
 7. `completions.zsh` - adds `completions/` and asdf's completions to `fpath` and runs the one `compinit`, which nothing else may call
 8. `aliases.zsh` - conditional aliases (checks `is available <tool>` before defining)
 9. `wrap-progress.zsh` - when `progress` is installed, autoloads the `wrappers/` versions of `cp`, `mv`, `tar` and similar, and aliases the originals as `cpo`, `mvo` and so on
-10. `load-direnv.zsh`, `load-fzf.zsh`, `configs/ls_colors/ls-colors.sh`
+10. `load-direnv.zsh`, `load-fzf.zsh`, `load-iterm2.zsh` (iTerm2's shell integration through a zinit snippet, only on macOS with `TERM_PROGRAM=iTerm.app`), `configs/ls_colors/ls-colors.sh`
 11. `load-projects.zsh` - sources every `projects/*.zsh` except `*.env.zsh`
 
 ### Project drop-ins (`projects/`)
@@ -195,6 +195,10 @@ Use `cheat update` for the user-facing reference.
 ### `configs/kitty/` directory
 
 `kitty.conf` holds what is the same on every OS and ends with `include os.${KITTY_OS}.conf` (kitty sets `KITTY_OS` to `macos`, `linux` or `bsd` for include lines), then `include overrides.conf`. Key maps and OS-only settings go in `os.macos.conf` (cmd keys, no ctrl except pane focus and moving) or `os.linux.conf` (ctrl keys); nothing in `kitty.conf` should be OS specific. `overrides.conf` is the per-machine layer, linked by `install-box-config` from `overrides.<hostname>.conf` or `overrides.<os>.conf`; a host file replaces the OS overrides file, so a host that wants the OS overrides too must repeat them, but key maps may live in a host file (`overrides.uconsole.conf` does, and wins because it is included last). `installers/micro` links `settings.json` and `bindings.json` through `install-box-config` as well, so `bindings.<hostname>.json` or `bindings.<os>.json` replaces the default; micro's JSON has no include, so a host file is a full copy. Use `cheat kitty` for the keys.
+
+### `configs/iterm2/` directory
+
+iTerm2 is the macOS terminal, on trial in place of kitty: the Brewfile installs it and `installers/kitty` no longer installs kitty on macOS, though it still links kitty's config. `zsh-config.json` is a Dynamic Profile (Night Owl colours from kitty's theme, DejaVuSansM Nerd Font Mono, `xterm-256color` with iTerm2's own `COLORTERM=truecolor`, option as Esc+, mouse reporting, unlimited scrollback, silent bell, reuse of the previous session's folder, word and line keys), linked into `~/Library/Application Support/iTerm2/DynamicProfiles/`. `defaults` lists the global settings `installers/iterm2` writes with `defaults write com.googlecode.iterm2` (the default profile's GUID, copy on select, OSC 52 clipboard access), only where they differ and after a `defaults export` backup to `~/.local/state/zsh-config/iterm2-backups/`. iTerm2's custom prefs folder is deliberately not used: iTerm2 would then own and rewrite a whole plist inside the repo. `ITERM2_APP` points the installer at another app folder for tests; `tests/iterm2` covers the installer with a stub `defaults` and `load-iterm2.zsh`. The hub's `kitten @ send-text` paths (`hub sudo`, `hub remote`) need kitty and do not reach sessions in iTerm2. `cheat iterm2` is the reference.
 
 ### `configs/blender/` directory
 

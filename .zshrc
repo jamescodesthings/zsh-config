@@ -18,6 +18,8 @@ source $CUSTOM_DIR/wrap-progress.zsh
 
 source $CUSTOM_DIR/load-direnv.zsh
 source $CUSTOM_DIR/load-fzf.zsh
+# iTerm2 shell integration, on macOS inside iTerm2 only
+source $CUSTOM_DIR/load-iterm2.zsh
 source $CUSTOM_DIR/configs/ls_colors/ls-colors.sh
 
 

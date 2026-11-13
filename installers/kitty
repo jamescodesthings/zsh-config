@@ -6,11 +6,6 @@ check-or-load install-link
 check-or-load install-box-config
 check-or-load confirm
 
-if is tty; then
-  say info "skipping: kitty is a terminal emulator and cannot be installed from a terminal session"
-  exit 0
-fi
-
 INSTALL_SCRIPT_SOURCE="https://sw.kovidgoyal.net/kitty/installer.sh"
 CONFIG_SOURCE="$REPO_DIR/configs/kitty"
 
@@ -20,23 +15,36 @@ LINUX_INSTALL_LOCATION="$HOME/.local/kitty.app"
 OSX_CONFIG_DEST="$HOME/Library/Preferences/kitty"
 LINUX_CONFIG_DEST="$HOME/.config/kitty"
 
-if is not available curl; then
-  say fail "curl is required to install kitty, please install it and try again"
-  exit 1
-fi
+# On macOS kitty is no longer installed here (iTerm2 is on trial, see
+# installers/iterm2); its config is still linked below, so a kitty already on
+# the machine keeps working until it is removed by hand.
+if is osx; then
+  say info "skipping the kitty install on macOS (iTerm2 is the terminal); linking its config only"
+else
+  if is tty; then
+    say info "skipping: kitty is a terminal emulator and cannot be installed from a terminal session"
+    exit 0
+  fi
 
-if is available kitty || is existing "$OSX_INSTALL_LOCATION" || is dir "$LINUX_INSTALL_LOCATION"; then
-  say info "kitty is already installed"
-  if confirm "kitty is already installed, do you want to check for updates?"; then
+  if is not available curl; then
+    say fail "curl is required to install kitty, please install it and try again"
+    exit 1
+  fi
+
+  if is available kitty || is existing "$OSX_INSTALL_LOCATION" || is dir "$LINUX_INSTALL_LOCATION"; then
+    say info "kitty is already installed"
+    if confirm "kitty is already installed, do you want to check for updates?"; then
+      curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
+      say ok "kitty installed"
+    fi
+  else
+    say info "installing: kitty from $INSTALL_SCRIPT_SOURCE"
     curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
     say ok "kitty installed"
   fi
-else
-  say info "installing: kitty from $INSTALL_SCRIPT_SOURCE"
-  curl -fsSL "$INSTALL_SCRIPT_SOURCE" | sh
-  say ok "kitty installed"
-fi
 
+
+fi
 
 if is linux && is dir "$LINUX_INSTALL_LOCATION"; then
   ln -sf ~/.local/kitty.app/bin/kitty ~/.local/kitty.app/bin/kitten ~/.local/bin/
