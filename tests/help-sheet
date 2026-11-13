@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # Checks that every `cheat <words>` named in the index sheets (help.md, which
-# `cheat help` shows, changes*.md and aliases*.md) is a sheet that exists: <words> joined with - must
+# `cheat help` shows, changes*.md, aliases*.md, setup, troubleshoot and keys) is a sheet that exists: <words> joined with - must
 # be a file in this repo's cheatsheets/ or in the cheatsheets/ of a sibling
 # repo (../hub, ../readerr, ../pkms, any ../*/cheatsheets). A name found
 # nowhere fails. Reads files only; runs no tool.
@@ -9,7 +9,7 @@
 REPO_DIR="${0:a:h:h}"
 SHEET="$REPO_DIR/cheatsheets/help.md"
 # Index sheets whose cheat pointers are checked
-INDEXES=("$REPO_DIR"/cheatsheets/{help,changes,changes-older,aliases,aliases-*}.md(N))
+INDEXES=("$REPO_DIR"/cheatsheets/{help,changes,changes-older,aliases,aliases-*,setup,troubleshoot,keys}.md(N))
 failed=0
 fail() { print -r -- "fail: $1"; failed=1 }
 

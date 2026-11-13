@@ -5,6 +5,8 @@
 
 # Getting started
 
+- `cheat setup`, `cheat keys` - how the config fits together; every key binding
+- `cheat troubleshoot` - fixes for problems seen before
 - `cheat` - list every sheet; `cheat search [word]` finds one; `[tool] --help` shows its own
 - `ctrl+r` - fuzzy-search history for a command you ran before
 - `j [name]` - jump to a folder: an alias, or z's best match
@@ -16,7 +18,6 @@
 - `ctrl+t`, `alt+c` - fzf: insert a path; cd into a subfolder
 - `j alias add [name] .` - bookmark this folder, then `j [name]` jumps there
 - `update` - keep the whole machine current
-- `cheat hist`, `cheat md`, `cheat oh` - history; make a folder; open one
 
 # Our tools
 
