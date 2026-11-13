@@ -24,11 +24,21 @@ function iterm2-settings() {
   local sub="$1"
   (( $# )) && shift
 
+  # plist to JSON: plutil refuses the binary (data) and date values iTerm2
+  # keeps, so they become short strings here; they are never adoptable anyway
+  local _iterm2_settings_py='import json,plistlib,sys,datetime
+def c(v):
+    if isinstance(v,dict): return {k:c(x) for k,x in v.items()}
+    if isinstance(v,list): return [c(x) for x in v]
+    if isinstance(v,(bytes,bytearray)): return "<data %d bytes>" % len(v)
+    if isinstance(v,datetime.datetime): return v.isoformat()
+    return v
+print(json.dumps(c(plistlib.load(open(sys.argv[1],"rb")))))'
   # _live <out.json>: the live settings as JSON
   _iterm2_settings_live() {
     local plist; plist="$(command mktemp)" || return 1
     command defaults export "$domain" "$plist" 2>/dev/null \
-      && command plutil -convert json -o - "$plist" > "$1" 2>/dev/null
+      && command python3 -I -c "$_iterm2_settings_py" "$plist" > "$1" 2>/dev/null
     local rc=$?
     command rm -f "$plist"
     return $rc

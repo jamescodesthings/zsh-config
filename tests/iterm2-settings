@@ -1,8 +1,8 @@
 #!/usr/bin/env zsh
 # Tests iterm2-settings from a plain zsh -f with an empty temp HOME and
-# working folder. defaults and plutil are stubs: the live iTerm2 settings are
-# a JSON file in a temp folder, `defaults export` copies it, `plutil -convert
-# json` passes it through, and `defaults write/delete` edit it with jq. The
+# working folder. defaults and python3 are stubs: the live iTerm2 settings are
+# a JSON file in a temp folder, `defaults export` copies it, the python3 plist
+# converter passes it through, and `defaults write/delete` edit it with jq. The
 # real iTerm2 prefs are never read or written. Run: tests/iterm2-settings.
 
 REPO_DIR="${0:a:h:h}"
@@ -24,8 +24,8 @@ case "$cmd" in
   delete) jq --arg k "$1" 'del(.[$k])' "$LIVE" > "$LIVE.t" && mv "$LIVE.t" "$LIVE" ;;
 esac
 S
-# plutil -convert json -o - FILE: the stub's plists are already JSON
-printf '#!/bin/sh\nfor a; do f="$a"; done\ncat "$f"\n' > "$BIN/plutil"
+# python3 -I -c <converter> FILE: the stub's plists are already JSON
+printf '#!/bin/sh\nfor a; do f="$a"; done\ncat "$f"\n' > "$BIN/python3"
 chmod +x "$BIN"/*
 
 check() { if eval "$2"; then print "ok: $1"; else print "FAIL: $1"; print -r -- "    code $CODE: $OUT"; failed=1; fi }
