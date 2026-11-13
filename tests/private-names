@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+# Checks that no work-only name reaches the personal repo: greps every
+# tracked file at a ref (default HEAD; .state/ and this file left out) and
+# the messages of the commits not yet on upstream/main. The patterns are
+# built from pieces so this file does not match itself.
+# In a checkout whose origin is a work fork the check skips, since the fork
+# is meant to hold those names; pass a ref (tests/private-names port/x) or
+# set PRIVATE_NAMES_CHECK=1 to run it there before an upstream push.
+# Read-only: runs git grep and git log. Exit 1 when anything matches.
+
+REPO_DIR="${0:a:h:h}"
+cd "$REPO_DIR" || exit 1
+ref="${1:-HEAD}"
+origin="$(git remote get-url origin 2>/dev/null)"
+if [[ -z "$1" && -z "$PRIVATE_NAMES_CHECK" && "$origin" == *-spot"ify"* ]]; then
+  print -r -- "skip: origin is the work fork; run tests/private-names <ref> before an upstream push"
+  exit 0
+fi
+
+w=spot; w+=ify
+pattern="${w}|\\bspt\\b|xi""rp|\\bx""rp\\b|ch""irp\\b|\\bho""nk\\b|\\bai""ka\\b|back""stage|hdw7""mwj3v7|src/back""end|back""end/master|fvp""234"
+failed=0
+
+hits="$(git grep -inE "$pattern" "$ref" -- . ':!.state' ':!tests/private-names' 2>/dev/null)"
+if [[ -n "$hits" ]]; then
+  print -r -- "fail: work-only names in files at $ref:"
+  print -r -- "$hits" | head -20 | sed 's/^/    /'
+  failed=1
+fi
+
+if git rev-parse --verify -q upstream/main >/dev/null; then
+  msgs="$(git log --format='%h %B' "upstream/main..$ref" 2>/dev/null | grep -inE "$pattern")"
+  if [[ -n "$msgs" ]]; then
+    print -r -- "fail: work-only names in commit messages since upstream/main:"
+    print -r -- "$msgs" | head -20 | sed 's/^/    /'
+    failed=1
+  fi
+fi
+
+(( failed )) && exit 1
+print -r -- "ok: no work-only names at $ref"

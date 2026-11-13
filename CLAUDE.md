@@ -245,6 +245,8 @@ tests/cheatsheet-test
 tests/hist-j-move
 ```
 
+`tests/private-names [ref]` greps the tracked files and the commit messages since `upstream/main` for names from the work fork, so nothing work-only reaches this repo; run it on a branch before pushing it here. In a checkout whose origin is the work fork it skips unless given a ref.
+
 A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.
 
 In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`configs/vscode/tasks.json`), which puts `zsh -n` errors in the Problems panel. ShellCheck does not support zsh, so Bash IDE's ShellCheck integration is switched off in `configs/vscode/settings.osx.json`.
