@@ -13,7 +13,6 @@
 # Extras
 
 - `imgcat [file]`, `it2copy`, `it2dl [file]` - show an image; copy to the clipboard, even over ssh; download a file
-- Status bar - folder, git branch, CPU, memory and the clock along the bottom
 
 # Setup
 

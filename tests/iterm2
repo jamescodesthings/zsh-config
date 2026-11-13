@@ -56,11 +56,9 @@ for want in '"Terminal Type": "xterm-256color"' '"Option Key Sends": 2' '"Mouse 
   check "profile has $want" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"$want"* ]]'
 done
 
-# the hotkey profile inherits the main one and has a hotkey; the main one has a status bar
+# the hotkey profile inherits the main one and has a hotkey; the main one has no status bar
 check "hotkey profile present" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Dynamic Profile Parent Name\": \"zsh-config\""* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Has Hotkey\": true"* ]]'
-for comp in Git WorkingDirectory CPUUtilization MemoryUtilization Clock; do
-  check "status bar has $comp" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"iTermStatusBar${comp}Component"* ]]'
-done
+check "no status bar" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Show Status Bar\": false"* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" != *"Status Bar Layout"* ]]'
 
 # Linux: skipped, nothing written
 FAKE_OS=Linux run

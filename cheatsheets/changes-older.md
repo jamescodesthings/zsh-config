@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `cheat aliases` - 2026-11-12, every alias, most used first. More: `cheat aliases`
 - `readerr speak` - 2026-11-12, with nothing selected, reads the front window's whole document, PDFs included. More: `cheat readerr speak`
 - `readerr config set volume 0.6` - 2026-11-12, a playback volume setting. More: `cheat readerr config`
 - `link-blender-scripts` - 2026-11-11, Blender startup scripts linked into every Blender version. More: `cheat link-blender-scripts`
