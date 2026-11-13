@@ -22,6 +22,9 @@ brew "aria2"       # xcodes downloads Xcode 3 to 5 times faster through it
 brew "glow"
 brew "eza"
 brew "git-delta"
+# git helpers: a terminal UI, and fixups folded into the right commits
+brew "lazygit"
+brew "git-absorb"
 brew "bat"
 brew "micro"
 brew "httpie"

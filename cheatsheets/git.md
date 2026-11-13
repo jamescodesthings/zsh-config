@@ -26,6 +26,7 @@
 
 # See also
 
+- `cheat git lazygit`, `cheat git absorb` - the git terminal UI; fixups folded into the right commits
 - `cheat git cleanup-branch` - tidy a branch
 - `cheat git prune-local` - delete local branches whose origin is gone
 - `cheat git i-really-fucked-up` - the bigger undo
