@@ -110,8 +110,12 @@ source "${0:a:h}/_stub"
   # Actions (configs/iterm2/actions.json): the managed ones by title, plus any
   # the user made in iTerm2 that the file does not name, written as one
   # array once per change of the file, after the backup
+  # (plus actions.fork.json where a fork keeps its own)
   local actions="$src/actions.json" actions_applied="${XDG_STATE_HOME:-$HOME/.local/state}/zsh-config/iterm2-actions.applied"
-  if [[ -f "$actions" ]] && ! { [[ -f "$actions_applied" ]] && [[ "$(<"$actions_applied")" == "$(<"$actions")" ]] }; then
+  local -a actionsrc=("$src"/actions.json(N) "$src"/actions.fork.json(N))
+  local actionsum=""
+  (( ${#actionsrc} )) && actionsum="$(command cat "${actionsrc[@]}")"
+  if (( ${#actionsrc} )) && ! { [[ -f "$actions_applied" ]] && [[ "$(<"$actions_applied")" == "$actionsum" ]] }; then
     if (( ! backed_up )); then
       command mkdir -p "$backups"
       local backup="$backups/$(command date +%Y-%m-%d-%H%M%S).plist"
@@ -129,19 +133,21 @@ source "${0:a:h}/_stub"
     local xml
     xml="$(command python3 -I -c '
 import json, plistlib, sys
-managed = json.load(open(sys.argv[1]))
+managed = []
+for f in sys.argv[2:]:
+    managed += json.load(open(f))
 try:
-    current = plistlib.load(open(sys.argv[2], "rb")).get("Actions", [])
+    current = plistlib.load(open(sys.argv[1], "rb")).get("Actions", [])
 except Exception:
     current = []
 titles = {a["title"] for a in managed}
 merged = [a for a in current if a.get("title") not in titles] + managed
 sys.stdout.write(plistlib.dumps(merged).decode())
-' "$actions" "$live")"
+' "$live" "${actionsrc[@]}")"
     command rm -f "$live"
     if [[ -n "$xml" ]] && command defaults write "$domain" Actions "$xml"; then
       changed+=1
-      command mkdir -p "${actions_applied:h}" && command cp "$actions" "$actions_applied"
+      command mkdir -p "${actions_applied:h}" && print -r -- "$actionsum" > "$actions_applied"
     else
       problem "could not write the iTerm2 actions"
       fix "python3 -m json.tool ${(q)actions}" "check the file"

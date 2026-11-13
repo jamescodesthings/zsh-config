@@ -1,4 +1,8 @@
 [
   {"title": "Copy the branch", "action": 12, "parameter": "git branch --show-current | tr -d '\\n' | pbcopy\n", "escaping": 2, "applyMode": 0, "version": 2},
-  {"title": "Open the repo in the browser", "action": 12, "parameter": "gh browse\n", "escaping": 2, "applyMode": 0, "version": 2}
+  {"title": "Open the repo in the browser", "action": 12, "parameter": "gh browse\n", "escaping": 2, "applyMode": 0, "version": 2},
+  {"title": "Open this branch's PR in the browser", "action": 12, "parameter": "gh pr view --web\n", "escaping": 2, "applyMode": 0, "version": 2},
+  {"title": "Watch this PR's checks", "action": 12, "parameter": "gh pr checks --watch\n", "escaping": 2, "applyMode": 0, "version": 2},
+  {"title": "Open lazygit", "action": 12, "parameter": "lazygit\n", "escaping": 2, "applyMode": 0, "version": 2},
+  {"title": "Fold fixups into their commits", "action": 12, "parameter": "git absorb --and-rebase\n", "escaping": 2, "applyMode": 0, "version": 2}
 ]

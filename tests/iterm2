@@ -115,11 +115,14 @@ check "split side by side is cmd+enter" '[[ "$(grep "^Split Vertically with Curr
 # Actions from configs/iterm2/actions.json land in the live Actions array
 check "actions: copy the branch" 'grep -q "Copy the branch" "$TMP/prefs/Actions"'
 check "actions: open the repo" 'grep -q "Open the repo in the browser" "$TMP/prefs/Actions"'
+check "actions: the PR in the browser" 'grep -q "gh pr view --web" "$TMP/prefs/Actions"'
+[[ -f "$REPO_DIR/configs/iterm2/actions.fork.json" ]] && check "actions: the fork's own file is merged in" 'grep -q "$(python3 -c "import json;print(json.load(open(\"$REPO_DIR/configs/iterm2/actions.fork.json\"))[0][\"title\"])")" "$TMP/prefs/Actions"'
 
 # Snippets: managed ones added to iTerm2's snippets.plist, the user's kept,
 # one with the same command as a user's snippet not added twice, a backup first
 check "snippets: user's own kept" '[[ "$(snips)" == *"Mine=echo mine"* ]]'
 check "snippets: lazygit added" '[[ "$(snips)" == *"=lazygit"* ]]'
+check "snippets: tags make folders" '[[ "$(python3 -c "import plistlib,sys;print(*sorted({t for s in plistlib.load(open(sys.argv[1],\"rb\"))[\"snippets\"] for t in s.get(\"tags\",[])}))" "$SNIPS")" == *"git/pr"* ]]'
 check "snippets: git-speedup added" '[[ "$(snips)" == *"=git-speedup"* ]]'
 check "snippets: the user's Hub Status kept as theirs" '[[ "$(snips)" == *"Hub Status=hub status"* ]]'
 check "snippets: hub status not doubled" '[[ "$(snips | grep -c "=hub status")" == 1 ]]'

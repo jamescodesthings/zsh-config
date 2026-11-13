@@ -1,7 +1,14 @@
 [
   {"title": "Hub status", "value": "hub status", "tags": ["hub"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000001"},
-  {"title": "Resume Claude", "value": "cldr", "tags": ["claude"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000002"},
-  {"title": "Git status", "value": "gst", "tags": ["git"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000003"},
-  {"title": "Check git speed settings", "value": "git-speedup", "tags": ["git"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000004"},
-  {"title": "lazygit", "value": "lazygit", "tags": ["git"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000005"}
+  {"title": "Resume Claude", "value": "cldr", "tags": ["agent/claude"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000002"},
+  {"title": "New Claude session", "value": "cld", "tags": ["agent/claude"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000006"},
+  {"title": "Git status", "value": "gst", "tags": ["git/status"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000003"},
+  {"title": "Git status without untracked files", "value": "gstu", "tags": ["git/status"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000007"},
+  {"title": "Check git speed settings", "value": "git-speedup", "tags": ["git/speed"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000004"},
+  {"title": "lazygit", "value": "lazygit", "tags": ["git/tools"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000005"},
+  {"title": "Fold fixups into their commits", "value": "git absorb --and-rebase", "tags": ["git/tools"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000008"},
+  {"title": "Open a PR from this branch", "value": "gh pr create --fill", "tags": ["git/pr"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000009"},
+  {"title": "Open this branch's PR in the browser", "value": "gh pr view --web", "tags": ["git/pr"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-00000000000A"},
+  {"title": "Watch this PR's checks", "value": "gh pr checks --watch", "tags": ["git/pr"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-00000000000B"},
+  {"title": "Watch the latest CI run", "value": "gh run watch", "tags": ["git/pr"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-00000000000C"}
 ]
