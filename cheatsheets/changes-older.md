@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `compress-pdf-all -r` - 2026-11-12, compress the PDFs in every folder below, each into its own compressed/. More: `cheat compress-pdf-all`
 - `md-to-pdf -r . --combine` - 2026-11-12, convert every .md under a folder and join them into one pdf named after this folder. More: `cheat md-to-pdf`
 - `cheat help` - 2026-11-12, an index of our own sheets, basics first. More: `cheat help`
 - `j alias add tutorial .` - 2026-11-12, fixed bookmarks to folders; then `j tutorial` jumps there. More: `cheat j alias`

@@ -63,6 +63,7 @@ done
 check "hotkey profile present" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Dynamic Profile Parent Name\": \"zsh-config\""* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Has Hotkey\": true"* ]]'
 check "status bar on, full screen, notifications on" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));p=d[\"Profiles\"][0];print(p[\"Show Status Bar\"],p[\"Window Type\"],p[\"BM Growl\"])")" == "True 1 True" ]]'
 check "status bar components" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));print(*[c[\"class\"][14:-9] for c in d[\"Profiles\"][0][\"Status Bar Layout\"][\"components\"]])")" == "WorkingDirectory SwiftyString Job Spring SwiftyString SnippetMenu ActionMenu Clock" ]]'
+check "status bar blends with Night Owl" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));a=d[\"Profiles\"][0][\"Status Bar Layout\"][\"advanced configuration\"];h=lambda c:\"%02x%02x%02x\"%tuple(round(c[k]*255) for k in (\"Red Component\",\"Green Component\",\"Blue Component\"));print(h(a[\"background color\"]),\"text\" if \"default text color\" in a else \"\")")" == "0b2942 text" ]]'
 check "hotkey window stays a top-of-screen window" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));print(d[\"Profiles\"][1][\"Window Type\"])")" == 2 ]]'
 
 # ctrl+shift+arrows swap panes (iTerm2 actions 53 to 56, read from a key map made in its settings)
