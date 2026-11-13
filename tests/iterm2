@@ -143,6 +143,20 @@ vars="$(cd "$TMP/myrepo/sub" && env -i HOME="$TMP/home" PATH="$BIN" FAKE_OS=Darw
   source "$CUSTOM_DIR/load-iterm2.zsh"; _iterm2_status_vars' 2>&1)"
 check "status vars: branch" '[[ "$vars" == *"gitBranch=feature/x"* ]]'
 check "status vars: tasks" '[[ "$vars" == *"tasks=P3 M2"* ]]'
+# the real counts file's shapes: no repos at all, a repo without our name,
+# and keys in another order; never an error, and both variables always set
+for counts in '{"generated":"2026-11-13T15:01:21Z","repos":{}}' '{"generated":"x","repos":{"other":{"priority":1,"manual":1,"other":0}}}' '{"repos":{"myrepo":{"other":0,"manual":4,"priority":0}}}' 'not json'; do
+  print -r -- "$counts" > "$TMP/state/hub/task-counts.json"
+  touch -t 202601010000 "$TMP/state/hub/task-counts.json" 2>/dev/null
+  vars="$(cd "$TMP/myrepo/sub" && env -i HOME="$TMP/home" PATH="$BIN" FAKE_OS=Darwin TERM_PROGRAM=iTerm.app XDG_STATE_HOME="$TMP/state" CUSTOM_DIR="$REPO_DIR" "${commands[zsh]:-/bin/zsh}" -f -c '
+    fpath=("$CUSTOM_DIR/functions" $fpath); autoload -Uz is
+    function zinit() { : }
+    function iterm2_set_user_var() { print -r -- "$1=$2" }
+    source "$CUSTOM_DIR/load-iterm2.zsh"; _iterm2_status_vars' 2>&1)"
+  check "counts ${counts[1,30]}: no error" '[[ "$vars" != *"bad math"* && "$vars" != *"_iterm2_status_vars:"* ]]'
+  check "counts ${counts[1,30]}: both set" '[[ "$vars" == *"gitBranch=feature/x"* && "$vars" == *"tasks="* ]]'
+  [[ "$counts" == *'"manual":4'* ]] && check "counts with keys reordered: tasks=M4" '[[ "$vars" == *"tasks=M4"* ]]'
+done
 check "Linux does not" '[[ -z "$(loads Linux iTerm.app)" ]]'
 
 exit $failed

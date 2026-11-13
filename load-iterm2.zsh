@@ -39,8 +39,10 @@ if is osx && [[ "$TERM_PROGRAM" == iTerm.app ]]; then
     fi
     iterm2_set_user_var gitBranch "$branch"
 
-    # Held tasks for this repo: "P3 M2" for priority and manual counts
-    local tasks=""
+    # Held tasks for this repo: "P3 M2" for priority and manual counts. The
+    # repo's object is matched strictly, and each count only when it is
+    # digits, so any other shape (no repos, another repo, not JSON) is "".
+    local tasks="" block="" pri="" man=""
     if [[ -n "$repo" && -f "$_iterm2_counts_file" ]]; then
       zmodload -F zsh/stat b:zstat 2>/dev/null
       local -a mt; zstat -A mt +mtime -- "$_iterm2_counts_file" 2>/dev/null
@@ -48,15 +50,19 @@ if is osx && [[ "$TERM_PROGRAM" == iTerm.app ]]; then
         _iterm2_counts_mtime="${mt[1]}"
         _iterm2_counts="$(<"$_iterm2_counts_file")"
       fi
-      local block="${${_iterm2_counts#*\"$repo\":\{}%%\}*}"
-      if [[ "$block" != "$_iterm2_counts" ]]; then
-        local pri="${${block#*\"priority\":}%%[,\}]*}" man="${${block#*\"manual\":}%%[,\}]*}"
-        (( pri > 0 )) && tasks+="P$pri "
-        (( man > 0 )) && tasks+="M$man"
+      local -a match mbegin mend
+      if [[ "$_iterm2_counts" =~ "\"${repo}\":[[:space:]]*\{([^}]*)\}" ]]; then
+        block="${match[1]}"
+        [[ "$block" =~ '"priority":[[:space:]]*([0-9]+)' ]] && pri="${match[1]}"
+        [[ "$block" =~ '"manual":[[:space:]]*([0-9]+)' ]] && man="${match[1]}"
       fi
+      [[ "$pri" == <-> ]] && (( pri > 0 )) && tasks+="P$pri "
+      [[ "$man" == <-> ]] && (( man > 0 )) && tasks+="M$man"
     fi
     iterm2_set_user_var tasks "${tasks% }"
   }
   autoload -Uz add-zsh-hook
   add-zsh-hook precmd _iterm2_status_vars
+  # Set both at once too, so the bar never shows [undef] before a prompt
+  _iterm2_status_vars
 fi
