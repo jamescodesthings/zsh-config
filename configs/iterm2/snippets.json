@@ -1,0 +1,7 @@
+[
+  {"title": "Hub status", "value": "hub status", "tags": ["hub"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000001"},
+  {"title": "Resume Claude", "value": "cldr", "tags": ["claude"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000002"},
+  {"title": "Git status", "value": "gst", "tags": ["git"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000003"},
+  {"title": "Check git speed settings", "value": "git-speedup", "tags": ["git"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000004"},
+  {"title": "lazygit", "value": "lazygit", "tags": ["git"], "escaping": 2, "version": 2, "guid": "7C1E0A10-5B2D-4E8F-9A11-000000000005"}
+]

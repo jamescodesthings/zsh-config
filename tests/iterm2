@@ -78,12 +78,18 @@ FAKE_OS=Linux run
 # (_stub refuses a Linux that is not Debian; either way nothing is written)
 check "linux: no defaults calls" '[[ ! -f "$TMP/prefs/log" ]]'
 
+# a snippet the user made in iTerm2, and one that matches a managed one by value
+SNIPS="$TMP/home/Library/Application Support/iTerm2/snippets.plist"
+mkdir -p "${SNIPS:h}"
+python3 -c 'import plistlib,sys; plistlib.dump({"snippets":[{"version":2,"escaping":2,"tags":["hub"],"title":"Hub Status","value":"hub status","guid":"U1"},{"version":2,"escaping":0,"tags":[],"title":"Mine","value":"echo mine","guid":"U2"}]},open(sys.argv[1],"wb"))' "$SNIPS"
+snips() { python3 -c 'import plistlib,sys; print(*[s["title"]+"="+s["value"] for s in plistlib.load(open(sys.argv[1],"rb"))["snippets"]], sep="\n")' "$SNIPS"; }
+
 # macOS: profile linked, prefs written, a backup taken first
 run
 check "mac: exit 0" '(( CODE == 0 ))'
 check "mac: profile linked" '[[ -L "$PROFILE" && "$(readlink "$PROFILE")" == "$REPO_DIR/configs/iterm2/zsh-config.json" ]]'
 check "mac: default profile set" '[[ "$(<"$TMP/prefs/Default Bookmark Guid")" == "$GUID" ]]'
-check "mac: counts the settings it wrote" '[[ "$OUT" == *" 26 settings written"* ]]'
+check "mac: counts the settings it wrote" '[[ "$OUT" == *" 27 settings written"* ]]'
 check "mac: inactive panes barely dimmed" '[[ "$(<"$TMP/prefs/SplitPaneDimmingAmount")" == 0.05 && "$(<"$TMP/prefs/DimBackgroundWindows")" == 0 ]]'
 check "mac: status bar at the bottom" '[[ "$(<"$TMP/prefs/StatusBarPosition")" == 1 && "$(<"$TMP/prefs/OpenNoWindowsAtStartup")" == 0 ]]'
 check "mac: copy on select" '[[ "$(<"$TMP/prefs/CopySelection")" == 1 ]]'
@@ -110,10 +116,21 @@ check "split side by side is cmd+enter" '[[ "$(grep "^Split Vertically with Curr
 check "actions: copy the branch" 'grep -q "Copy the branch" "$TMP/prefs/Actions"'
 check "actions: open the repo" 'grep -q "Open the repo in the browser" "$TMP/prefs/Actions"'
 
+# Snippets: managed ones added to iTerm2's snippets.plist, the user's kept,
+# one with the same command as a user's snippet not added twice, a backup first
+check "snippets: user's own kept" '[[ "$(snips)" == *"Mine=echo mine"* ]]'
+check "snippets: lazygit added" '[[ "$(snips)" == *"=lazygit"* ]]'
+check "snippets: git-speedup added" '[[ "$(snips)" == *"=git-speedup"* ]]'
+check "snippets: the user's Hub Status kept as theirs" '[[ "$(snips)" == *"Hub Status=hub status"* ]]'
+check "snippets: hub status not doubled" '[[ "$(snips | grep -c "=hub status")" == 1 ]]'
+check "snippets: backup taken" '[[ -n "$(echo "$TMP"/home/.local/state/zsh-config/iterm2-backups/*snippets*.plist(N))" ]]'
+
 # rerun: nothing changes, no new backup, no writes
+SNIPS_BEFORE="$(snips)"
 : > "$TMP/prefs/log"
 run
 check "rerun: exit 0" '(( CODE == 0 ))'
+check "rerun: snippets unchanged" '[[ "$(snips)" == "$SNIPS_BEFORE" ]]'
 check "rerun: no writes" '! grep -q "defaults write" "$TMP/prefs/log"'
 check "rerun: utilities not fetched again" '[[ "$(grep -c . "$TMP/prefs/curl.log")" == "$(grep -vc "^#" "$REPO_DIR/configs/iterm2/utilities")" ]]'
 check "rerun: no backup when nothing changes" '! grep -q "defaults export" "$TMP/prefs/log"'

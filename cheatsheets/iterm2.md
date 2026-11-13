@@ -22,12 +22,12 @@
 - `cmd+;`, `cmd+shift+;`, `cmd+opt+b` - autocomplete; command history; instant replay
 - `cmd+shift+a` - Open Quickly, to find a session, tab, command or setting
 - `imgcat [file]`, `it2copy`, `it2dl [file]` - show an image; copy to the clipboard, even over ssh; download a file
-- Status bar, at the bottom in Night Owl blue - folder, branch, job, held hub tasks, snippets, clock, and actions: copy the branch, open the repo in the browser
+- Status bar, at the bottom in Night Owl blue - folder, branch, job, held hub tasks, clock; the Snippets menu (hub status, cldr, gst, git-speedup, lazygit) and actions: copy the branch, open the repo in the browser
 - micro - its own profile switches on while micro runs, so cmd+s, cmd+z, cmd+c and the rest reach it, cmd+d duplicates the line and cmd+backspace deletes it
 
 # Setup
 
-- `installers/iterm2` - link the profile, write the settings and menu keys; old settings go to `~/.local/state/zsh-config/iterm2-backups` first
+- `installers/iterm2` - link the profile, write the settings, menu keys and snippets (yours are kept); old ones go to `~/.local/state/zsh-config/iterm2-backups` first
 
 # See also
 

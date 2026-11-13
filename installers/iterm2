@@ -148,6 +148,50 @@ sys.stdout.write(plistlib.dumps(merged).decode())
     fi
   fi
 
+  # Snippets live in iTerm2's own file, not in its settings. The managed ones
+  # (configs/iterm2/snippets.json, plus snippets.fork.json where a fork keeps
+  # its own) are known by guid; a user's snippet is never changed, and a managed
+  # one sharing its title or command is left out, so none is doubled. Once
+  # per change of the files, after a backup of the snippets file.
+  local snipfile="$HOME/Library/Application Support/iTerm2/snippets.plist"
+  local -a snipsrc=("$src"/snippets.json(N) "$src"/snippets.fork.json(N))
+  local snips_applied="${XDG_STATE_HOME:-$HOME/.local/state}/zsh-config/iterm2-snippets.applied"
+  local snipsum=""
+  (( ${#snipsrc} )) && snipsum="$(command cat "${snipsrc[@]}")"
+  if (( ${#snipsrc} )) && ! { [[ -f "$snips_applied" ]] && [[ "$(<"$snips_applied")" == "$snipsum" ]] }; then
+    command mkdir -p "$backups" "${snipfile:h}"
+    if [[ -f "$snipfile" ]]; then
+      command cp "$snipfile" "$backups/$(command date +%Y-%m-%d-%H%M%S).snippets.plist"
+    fi
+    if command python3 -I -c '
+import json, plistlib, sys, os
+out = sys.argv[1]
+managed = []
+for f in sys.argv[2:]:
+    managed += json.load(open(f))
+try:
+    current = plistlib.load(open(out, "rb")).get("snippets", [])
+except Exception:
+    current = []
+# ours are known by guid; everything else belongs to the user and stays as it is
+ours = {m["guid"] for m in managed}
+kept = [s for s in current if s.get("guid") not in ours]
+taken_titles = {s.get("title", "").lower() for s in kept}
+taken_values = {s.get("value", "").strip() for s in kept}
+merged = kept + [m for m in managed
+                 if m["title"].lower() not in taken_titles and m["value"].strip() not in taken_values]
+tmp = out + ".part"
+plistlib.dump({"snippets": merged}, open(tmp, "wb"))
+os.replace(tmp, out)
+' "$snipfile" "${snipsrc[@]}"; then
+      changed+=1
+      command mkdir -p "${snips_applied:h}" && print -r -- "$snipsum" > "$snips_applied"
+    else
+      problem "could not write the iTerm2 snippets"
+      fix "python3 -m json.tool ${(q)src}/snippets.json" "check the file"
+    fi
+  fi
+
   if (( changed )); then
     say ok "iTerm2: profile linked, $changed settings written; quit and reopen iTerm2 to pick them up"
   else
