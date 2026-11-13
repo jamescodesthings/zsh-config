@@ -22,7 +22,7 @@
 - `cmd+;`, `cmd+shift+;`, `cmd+opt+b` - autocomplete; command history; instant replay
 - `cmd+shift+a` - Open Quickly, to find a session, tab, command or setting
 - `imgcat [file]`, `it2copy`, `it2dl [file]` - show an image; copy to the clipboard, even over ssh; download a file
-- Status bar, at the bottom in Night Owl blue - folder, branch, job, held hub tasks, clock; the Snippets menu (hub status, cldr, gst, git-speedup, lazygit) and actions: copy the branch, open the repo in the browser
+- Status bar, at the bottom in Night Owl blue - host (over ssh only), folder, branch, last command's exit code and time (hidden when it succeeded in under 5 s), CPU, memory, network, battery; then the Snippets menu (hub status, cldr, gst, git-speedup, lazygit), actions (copy the branch, open the repo in the browser) and the clock
 - micro - its own profile switches on while micro runs, so cmd+s, cmd+z, cmd+c and the rest reach it, cmd+d duplicates the line and cmd+backspace deletes it
 
 # Setup

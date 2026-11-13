@@ -271,6 +271,28 @@
         },
         "components": [
           {
+            "class": "iTermStatusBarSwiftyStringComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "expression": "\\(user.sshHost)",
+                "shared text color": {
+                  "Alpha Component": 1,
+                  "Blue Component": 0.917647,
+                  "Color Space": "sRGB",
+                  "Green Component": 0.572549,
+                  "Red Component": 0.780392
+                }
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
             "class": "iTermStatusBarWorkingDirectoryComponent",
             "configuration": {
               "knobs": {
@@ -314,17 +336,102 @@
             }
           },
           {
-            "class": "iTermStatusBarJobComponent",
+            "class": "iTermStatusBarSwiftyStringComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "expression": "\\(user.lastCmd)",
+                "shared text color": {
+                  "Alpha Component": 1,
+                  "Blue Component": 0.423529,
+                  "Color Space": "sRGB",
+                  "Green Component": 0.54902,
+                  "Red Component": 0.968627
+                }
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarCPUUtilizationComponent",
             "configuration": {
               "knobs": {
                 "base: compression resistance": 1,
                 "base: priority": 5,
                 "shared text color": {
                   "Alpha Component": 1,
-                  "Blue Component": 0.956863,
+                  "Blue Component": 0.517647,
                   "Color Space": "sRGB",
-                  "Green Component": 0.768627,
-                  "Red Component": 0.423529
+                  "Green Component": 0.439216,
+                  "Red Component": 0.34902
+                }
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarMemoryUtilizationComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "shared text color": {
+                  "Alpha Component": 1,
+                  "Blue Component": 0.517647,
+                  "Color Space": "sRGB",
+                  "Green Component": 0.439216,
+                  "Red Component": 0.34902
+                }
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarNetworkUtilizationComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "shared text color": {
+                  "Alpha Component": 1,
+                  "Blue Component": 0.517647,
+                  "Color Space": "sRGB",
+                  "Green Component": 0.439216,
+                  "Red Component": 0.34902
+                }
+              },
+              "layout advanced configuration dictionary value": {
+                "algorithm": 0,
+                "auto-rainbow style": 0,
+                "remove empty components": true
+              }
+            }
+          },
+          {
+            "class": "iTermStatusBarBatteryComponent",
+            "configuration": {
+              "knobs": {
+                "base: compression resistance": 1,
+                "base: priority": 5,
+                "shared text color": {
+                  "Alpha Component": 1,
+                  "Blue Component": 0.517647,
+                  "Color Space": "sRGB",
+                  "Green Component": 0.439216,
+                  "Red Component": 0.34902
                 }
               },
               "layout advanced configuration dictionary value": {
@@ -340,28 +447,6 @@
               "knobs": {
                 "base: compression resistance": 1,
                 "base: priority": 5
-              },
-              "layout advanced configuration dictionary value": {
-                "algorithm": 0,
-                "auto-rainbow style": 0,
-                "remove empty components": true
-              }
-            }
-          },
-          {
-            "class": "iTermStatusBarSwiftyStringComponent",
-            "configuration": {
-              "knobs": {
-                "base: compression resistance": 1,
-                "base: priority": 5,
-                "expression": "\\(user.tasks)",
-                "shared text color": {
-                  "Alpha Component": 1,
-                  "Blue Component": 0.423529,
-                  "Color Space": "sRGB",
-                  "Green Component": 0.54902,
-                  "Red Component": 0.968627
-                }
               },
               "layout advanced configuration dictionary value": {
                 "algorithm": 0,

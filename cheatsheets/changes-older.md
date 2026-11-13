@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `imgcat photo.png` - 2026-11-13, iTerm2 extras: an opt+space hotkey window, a status bar (folder, git, CPU, memory, clock) and the iTerm2 utilities. More: `cheat iterm2`
 - `installers/iterm2` - 2026-11-13, iTerm2 replaces kitty on macOS as a trial: Night Owl profile, option as meta, mouse for micro, shell integration. More: `cheat iterm2`
 - `compress-pdf-all -r` - 2026-11-12, compress the PDFs in every folder below, each into its own compressed/. More: `cheat compress-pdf-all`
 - `md-to-pdf -r . --combine` - 2026-11-12, convert every .md under a folder and join them into one pdf named after this folder. More: `cheat md-to-pdf`

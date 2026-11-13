@@ -63,7 +63,7 @@ done
 # the hotkey profile inherits the main one and has a hotkey; the main one has no status bar
 check "hotkey profile present" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Dynamic Profile Parent Name\": \"zsh-config\""* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Has Hotkey\": true"* ]]'
 check "status bar on, full screen, notifications on" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));p=d[\"Profiles\"][0];print(p[\"Show Status Bar\"],p[\"Window Type\"],p[\"BM Growl\"])")" == "True 1 True" ]]'
-check "status bar components" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));print(*[c[\"class\"][14:-9] for c in d[\"Profiles\"][0][\"Status Bar Layout\"][\"components\"]])")" == "WorkingDirectory SwiftyString Job Spring SwiftyString SnippetMenu ActionMenu Clock" ]]'
+check "status bar components" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));print(*[c[\"class\"][14:-9] for c in d[\"Profiles\"][0][\"Status Bar Layout\"][\"components\"]])")" == "SwiftyString WorkingDirectory SwiftyString SwiftyString CPUUtilization MemoryUtilization NetworkUtilization Battery Spring SnippetMenu ActionMenu Clock" ]]'
 check "status bar blends with Night Owl" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));a=d[\"Profiles\"][0][\"Status Bar Layout\"][\"advanced configuration\"];h=lambda c:\"%02x%02x%02x\"%tuple(round(c[k]*255) for k in (\"Red Component\",\"Green Component\",\"Blue Component\"));print(h(a[\"background color\"]),\"text\" if \"default text color\" in a else \"\")")" == "0b2942 text" ]]'
 check "hotkey window stays a top-of-screen window" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));print(d[\"Profiles\"][1][\"Window Type\"])")" == 2 ]]'
 
@@ -154,32 +154,36 @@ loads() {
 }
 check "iTerm2 on macOS loads the integration" '[[ "$(loads Darwin iTerm.app)" == *"zinit snippet"*"shell_integration/zsh"* ]]'
 check "kitty on macOS does not" '[[ -z "$(loads Darwin kitty)" ]]'
-check "iTerm2 sets the status bar user variables" '[[ "$(<"$REPO_DIR/load-iterm2.zsh")" == *"iterm2_set_user_var gitBranch"* && "$(<"$REPO_DIR/load-iterm2.zsh")" == *"iterm2_set_user_var tasks"* ]]'
-# the status bar variables: branch from .git/HEAD and this repo's held tasks
-mkdir -p "$TMP/myrepo/.git" "$TMP/myrepo/sub" "$TMP/state/hub"
+check "iTerm2 sets the status bar user variables" '[[ "$(<"$REPO_DIR/load-iterm2.zsh")" == *"iterm2_set_user_var gitBranch"* && "$(<"$REPO_DIR/load-iterm2.zsh")" == *"iterm2_set_user_var lastCmd"* && "$(<"$REPO_DIR/load-iterm2.zsh")" == *"iterm2_set_user_var sshHost"* ]]'
+check "the held-tasks variable is gone" '[[ "$(<"$REPO_DIR/load-iterm2.zsh")" != *"user_var tasks"* ]]'
+# the status bar variables. svars <ssh connection> <code> <seconds ago> [no-command]
+mkdir -p "$TMP/myrepo/.git" "$TMP/myrepo/sub"
 print -r -- "ref: refs/heads/feature/x" > "$TMP/myrepo/.git/HEAD"
-print -r -- '{"repos":{"myrepo":{"priority":3,"manual":2,"other":0},"zz":{"priority":0,"manual":1,"other":0}}}' > "$TMP/state/hub/task-counts.json"
-vars="$(cd "$TMP/myrepo/sub" && env -i HOME="$TMP/home" PATH="$BIN" FAKE_OS=Darwin TERM_PROGRAM=iTerm.app XDG_STATE_HOME="$TMP/state" CUSTOM_DIR="$REPO_DIR" "${commands[zsh]:-/bin/zsh}" -f -c '
-  fpath=("$CUSTOM_DIR/functions" $fpath); autoload -Uz is
-  function zinit() { : }
-  function iterm2_set_user_var() { print -r -- "$1=$2" }
-  source "$CUSTOM_DIR/load-iterm2.zsh"; _iterm2_status_vars' 2>&1)"
-check "status vars: branch" '[[ "$vars" == *"gitBranch=feature/x"* ]]'
-check "status vars: tasks" '[[ "$vars" == *"tasks=P3 M2"* ]]'
-# the real counts file's shapes: no repos at all, a repo without our name,
-# and keys in another order; never an error, and both variables always set
-for counts in '{"generated":"2026-11-13T15:01:21Z","repos":{}}' '{"generated":"x","repos":{"other":{"priority":1,"manual":1,"other":0}}}' '{"repos":{"myrepo":{"other":0,"manual":4,"priority":0}}}' 'not json'; do
-  print -r -- "$counts" > "$TMP/state/hub/task-counts.json"
-  touch -t 202601010000 "$TMP/state/hub/task-counts.json" 2>/dev/null
-  vars="$(cd "$TMP/myrepo/sub" && env -i HOME="$TMP/home" PATH="$BIN" FAKE_OS=Darwin TERM_PROGRAM=iTerm.app XDG_STATE_HOME="$TMP/state" CUSTOM_DIR="$REPO_DIR" "${commands[zsh]:-/bin/zsh}" -f -c '
+svars() {
+  (cd "$TMP/myrepo/sub" && env -i HOME="$TMP/home" PATH="$BIN" FAKE_OS=Darwin TERM_PROGRAM=iTerm.app HOST=box.example.net SSH_CONNECTION="$1" CUSTOM_DIR="$REPO_DIR" "${commands[zsh]:-/bin/zsh}" -f -c '
     fpath=("$CUSTOM_DIR/functions" $fpath); autoload -Uz is
     function zinit() { : }
     function iterm2_set_user_var() { print -r -- "$1=$2" }
-    source "$CUSTOM_DIR/load-iterm2.zsh"; _iterm2_status_vars' 2>&1)"
-  check "counts ${counts[1,30]}: no error" '[[ "$vars" != *"bad math"* && "$vars" != *"_iterm2_status_vars:"* ]]'
-  check "counts ${counts[1,30]}: both set" '[[ "$vars" == *"gitBranch=feature/x"* && "$vars" == *"tasks="* ]]'
-  [[ "$counts" == *'"manual":4'* ]] && check "counts with keys reordered: tasks=M4" '[[ "$vars" == *"tasks=M4"* ]]'
-done
+    source "$CUSTOM_DIR/load-iterm2.zsh" >/dev/null
+    zmodload zsh/datetime
+    [[ -z "$4" ]] && { _iterm2_preexec; _iterm2_cmd_start=$(( EPOCHREALTIME - $3 )) }
+    ( exit $2 ); _iterm2_capture; _iterm2_status_vars' _ "$1" "$2" "$3" "$4" 2>&1)
+}
+vars="$(svars "" 0 1)"
+check "status vars: branch" '[[ "$vars" == *"gitBranch=feature/x"* ]]'
+check "status vars: no host off ssh" '(( ${${(f)vars}[(Ie)sshHost=]} ))'
+check "status vars: a quick success shows nothing" '(( ${${(f)vars}[(Ie)lastCmd=]} ))'
+vars="$(svars "1.2.3.4 5 6.7.8.9 22" 0 1)"
+check "status vars: host over ssh" '[[ "$vars" == *"sshHost=box"* ]]'
+vars="$(svars "" 3 1)"
+check "status vars: a failure shows its code" '[[ "$vars" == *"lastCmd=exit 3"* ]]'
+vars="$(svars "" 0 12)"
+check "status vars: a long success shows its time" '[[ "$vars" == *"lastCmd=12s"* ]]'
+vars="$(svars "" 1 125)"
+check "status vars: code and minutes" '[[ "$vars" == *"lastCmd=exit 1 · 2m05s"* ]]'
+vars="$(svars "" 0 0 nocmd)"
+check "status vars: an empty prompt clears it" '(( ${${(f)vars}[(Ie)lastCmd=]} ))'
+check "status vars: no errors" '[[ "$vars" != *"_iterm2_"*":"* ]]'
 check "Linux does not" '[[ -z "$(loads Linux iTerm.app)" ]]'
 
 exit $failed
