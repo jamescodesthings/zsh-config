@@ -52,7 +52,7 @@ GUID="$(sed -n '/^Default Bookmark Guid|/s/.*|//p' "$REPO_DIR/configs/iterm2/def
 
 # the profile in the repo is valid JSON with the fields the sheet promises
 check "profile is valid json" '/usr/bin/plutil -lint "$REPO_DIR/configs/iterm2/zsh-config.json" >/dev/null 2>&1 || python3 -m json.tool "$REPO_DIR/configs/iterm2/zsh-config.json" >/dev/null'
-for want in '"Terminal Type": "xterm-256color"' '"Option Key Sends": 2' '"Mouse Reporting": true' '"Unlimited Scrollback": true' '"Silence Bell": true' '"Normal Font": "DejaVuSansMNFM 12"'; do
+for want in '"Terminal Type": "xterm-256color"' '"Option Key Sends": 2' '"Mouse Reporting": true' '"Unlimited Scrollback": true' '"Silence Bell": true' '"Normal Font": "DejaVuSansMNFM 14"'; do
   check "profile has $want" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"$want"* ]]'
 done
 

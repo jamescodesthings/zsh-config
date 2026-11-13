@@ -199,8 +199,8 @@
       "Mouse Reporting": true,
       "Mouse Reporting allow mouse wheel": true,
       "Name": "zsh-config",
-      "Non Ascii Font": "DejaVuSansMNFM 12",
-      "Normal Font": "DejaVuSansMNFM 12",
+      "Non Ascii Font": "DejaVuSansMNFM 14",
+      "Normal Font": "DejaVuSansMNFM 14",
       "Option Key Sends": 2,
       "Right Option Key Sends": 2,
       "Scrollback Lines": 0,
@@ -224,7 +224,7 @@
         "advanced configuration": {
           "algorithm": 0,
           "auto-rainbow style": 0,
-          "font": "DejaVuSansMNFM 11",
+          "font": "DejaVuSansMNFM 12",
           "remove empty components": true
         },
         "components": [
