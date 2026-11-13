@@ -34,7 +34,8 @@ source "${0:a:h}/_stub"
   }
 
   # Global settings, written only where they differ, after one backup
-  local line key type value current backed_up=0 changed=0
+  local line key type value current
+  local -i backed_up=0 changed=0
   while IFS= read -r line; do
     [[ -z "$line" || "$line" == \#* ]] && continue
     key="${line%%|*}"; line="${line#*|}"
