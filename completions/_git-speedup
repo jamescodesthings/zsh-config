@@ -1,0 +1,10 @@
+#compdef git-speedup
+
+_git-speedup() {
+  _arguments \
+    '--apply[write the settings to this repo and start maintenance]' \
+    '--plain[no colour]' \
+    '(-h --help)'{-h,--help}'[show the sheet]'
+}
+
+_git-speedup "$@"

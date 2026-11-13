@@ -54,6 +54,8 @@ if is available git; then
   alias git-i-fucked-up='git reset HEAD~1'
 
   alias gap='git add -p'
+  # status without the untracked scan, fast in a monorepo
+  alias gstu='git status -uno'
 
   alias gsu='git submodule update --init --recursive'
   alias gsa='git submodule add'

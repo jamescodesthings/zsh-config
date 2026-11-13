@@ -1,0 +1,56 @@
+#!/usr/bin/env zsh
+
+# git-speedup [--apply]: check this repo's local git settings for a big
+# working tree (filesystem monitor, untracked cache, manyFiles) and print the
+# command for each one missing; --apply writes them to this repo's config and
+# runs `git maintenance start`. Nothing is written without --apply.
+function git-speedup() {
+  cheat-help git-speedup "$@" && return 0
+  autoload -Uz cli-init say problem fix problems
+  local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
+  cli-init "$@"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
+
+  local -i apply=0
+  case "$1" in
+    "") ;;
+    --apply) apply=1 ;;
+    *) say fail "git-speedup: unknown argument: $1"; return 2 ;;
+  esac
+  if ! command git rev-parse --show-toplevel >/dev/null 2>&1; then
+    say fail "git-speedup: not inside a git repository"
+    return 2
+  fi
+
+  # key value: the settings that make status fast in a big tree.
+  # feature.manyFiles turns on index v4 and the skip-hash index.
+  local -a want=(
+    core.fsmonitor true
+    core.untrackedCache true
+    feature.manyFiles true
+  )
+  local key value current
+  local -i missing=0
+  for key value in $want; do
+    current="$(command git config --get "$key" 2>/dev/null)"
+    [[ "$current" == "$value" ]] && continue
+    missing+=1
+    if (( apply )); then
+      command git config --local "$key" "$value" && say ok "set $key $value"
+    else
+      say info "missing: git config $key $value"
+    fi
+  done
+
+  if (( apply )); then
+    command git maintenance start >/dev/null 2>&1 && say ok "background maintenance on (git maintenance start)"
+    return 0
+  fi
+  if (( missing )); then
+    say info "run git-speedup --apply to set these in this repo only"
+  else
+    say ok "already set: fsmonitor, untracked cache and manyFiles"
+  fi
+}
+
+git-speedup "$@"

@@ -12,7 +12,7 @@
 
 - `cheat functions everyday` - `j`, `hist`, `md`, `oh`, `zshconfig`, `zshenv`, `reload`, `picoh`, `start-workstation`, `test-color-24bit`
 - `cheat functions files` - `compress-jpg`, `compress-jpg-all`, `compress-pdf`, `compress-pdf-all`, `md-to-html`, `md-to-pdf`
-- `cheat functions git` - `git-branch`, `git-cleanup-branch`, `git-prune-local`, `git-i-really-fucked-up`, `gcod`, `gcom`
+- `cheat functions git` - `git-branch`, `git-cleanup-branch`, `git-prune-local`, `git-i-really-fucked-up`, `gcod`, `gcom`, `git-speedup`
 - `cheat functions system` - `update`, `asdf-cleanup`, `npm-update-latest`, `aptr`, `dsp`, `touch-sudo`, `steamos-install`, `get-hostname`, `key`, `wipcrypt`
 - `cheat functions setup` - `install-link`, `install-box-config`, `install-release`, `link-cheatsheets`, `link-blender-scripts`
 - `cheat functions cheat` - `cheat`, `cheat-help`, `cheat-render`, `cheatsheet-test`

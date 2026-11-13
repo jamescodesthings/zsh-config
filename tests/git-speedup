@@ -1,0 +1,61 @@
+#!/usr/bin/env zsh
+# Tests git-speedup from a plain zsh -f with an empty temp HOME and working
+# folder. git is a stub that keeps config values in a temp folder and logs
+# every call; no real repo is read or written. Run: tests/git-speedup.
+
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"; TMP="${TMP:A}"
+trap 'rm -rf "$TMP"' EXIT
+failed=0
+BIN="$TMP/bin"; CFG="$TMP/cfg"
+mkdir -p "$BIN" "$TMP/home" "$TMP/work" "$CFG"
+for c in cat rm; do ln -s "$(command -v $c)" "$BIN/$c"; done
+cat > "$BIN/git" <<'S'
+#!/bin/sh
+echo "git $*" >> "$CFG/log"
+case "$1" in
+  rev-parse) [ -n "$NOT_A_REPO" ] && exit 128; echo "$PWD"; exit 0 ;;
+  ls-files) i=0; while [ $i -lt "${FILES:-10}" ]; do echo f; i=$((i+1)); done; exit 0 ;;
+  config)
+    shift; [ "$1" = --local ] && shift
+    if [ "$1" = --get ]; then [ -f "$CFG/$2" ] && cat "$CFG/$2" && exit 0; exit 1; fi
+    printf '%s\n' "$2" > "$CFG/$1"; exit 0 ;;
+  maintenance) exit 0 ;;
+esac
+S
+chmod +x "$BIN/git"
+check() { if eval "$2"; then print "ok: $1"; else print "FAIL: $1"; print -r -- "    code $CODE: $OUT"; failed=1; fi }
+run() {
+  OUT="$(cd "$TMP/work" && env -i HOME="$TMP/home" PATH="$BIN" CFG="$CFG" FILES="${FILES:-10}" NOT_A_REPO="$NOT_A_REPO" \
+    CUSTOM_DIR="$REPO_DIR" CLI_PLAIN=1 "${commands[zsh]:-/bin/zsh}" -f -c '
+    fpath=("$1/functions" $fpath); autoload -Uz is git-speedup cheat-help cli-init say problem fix problems col cli-icon
+    shift; git-speedup "$@"' _ "$REPO_DIR" "$@" 2>&1 < /dev/null)"
+  CODE=$?
+}
+
+# report only: names what is missing, writes nothing
+run
+check "report: exit 0" '(( CODE == 0 ))'
+check "report: names core.fsmonitor" '[[ "$OUT" == *"core.fsmonitor"* ]]'
+check "report: prints the command" '[[ "$OUT" == *"git config core.fsmonitor true"* ]]'
+check "report: writes nothing" '! grep -qE "git config [a-z]+\.[A-Za-z]+ " "$CFG/log"'
+
+# --apply writes the settings and starts maintenance
+: > "$CFG/log"
+run --apply
+check "apply: exit 0" '(( CODE == 0 ))'
+check "apply: fsmonitor on" '[[ "$(<"$CFG/core.fsmonitor")" == true ]]'
+check "apply: untracked cache on" '[[ "$(<"$CFG/core.untrackedCache")" == true ]]'
+check "apply: manyFiles on" '[[ "$(<"$CFG/feature.manyFiles")" == true ]]'
+check "apply: maintenance started" 'grep -q "git maintenance start" "$CFG/log"'
+
+# rerun: everything already set
+: > "$CFG/log"
+run
+check "rerun: all set" '[[ "$OUT" == *"already set"* ]]'
+
+# outside a repo: usage error
+NOT_A_REPO=1 run
+check "not a repo: exit 2" '(( CODE == 2 ))'
+
+exit $failed

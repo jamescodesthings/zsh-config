@@ -6,6 +6,7 @@
 
 - `gst` - git status (oh-my-zsh)
 - `gss` - git status --short (oh-my-zsh)
+- `gstu` - git status without untracked files, fast in a monorepo
 - `ga [file]`, `gaa` - git add; git add --all (oh-my-zsh)
 - `gap` - git add -p, stage hunk by hunk
 - `gc` - git commit --verbose (oh-my-zsh)

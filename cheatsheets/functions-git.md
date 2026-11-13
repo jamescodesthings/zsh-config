@@ -10,6 +10,7 @@
 - `git-i-really-fucked-up` - [reset --hard to origin, asks first]{.warn}
 - `gcod` - check out the gitflow develop branch
 - `gcom` - check out the gitflow main branch
+- `git-speedup [--apply]` - check, or set, this repo's settings for a big working tree
 
 # See also
 
