@@ -1,0 +1,59 @@
+#!/usr/bin/env zsh
+# Checks that cheatsheets/aliases-*.md give a row to every alias zsh-config
+# defines (every *.zsh in the repo except projects/, with wrap-progress.zsh's
+# generated <command>o names) and every alias or function the hub's
+# zsh/aliases.zsh defines, when the hub is checked out beside this repo.
+# A name counts as covered when it is a backticked command, first word, in
+# the command cell of a "- `...` - ..." row. Reads files only; runs no tool.
+# Run: tests/aliases-sheet. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+HUB_ALIASES="${HUB_ALIASES_FILE:-${REPO_DIR:h}/hub/zsh/aliases.zsh}"
+failed=0
+fail() { print -r -- "fail: $1"; failed=1 }
+
+# alias_names <file>: the name of every "alias name=" line, comments skipped
+alias_names() {
+  grep -E '^[[:space:]]*alias [A-Za-z0-9_.-]+=' "$1" | sed -E 's/^[[:space:]]*alias ([A-Za-z0-9_.-]+)=.*/\1/'
+}
+
+# Names defined
+defined=()
+for f in "$REPO_DIR"/**/*.zsh(N.); do
+  [[ "$f" == "$REPO_DIR"/projects/* ]] && continue
+  defined+=(${(f)"$(alias_names "$f")"})
+done
+# wrap-progress.zsh builds "<cmd>o" from its _progress_cmds list
+cmds_line="$(grep -E '^_progress_cmds=\(' "$REPO_DIR/wrap-progress.zsh")"
+cmds=(${=${${cmds_line#*\(}%\)*}})
+(( ${#cmds} )) || fail "could not read _progress_cmds from wrap-progress.zsh"
+for c in $cmds; do defined+=("${c}o"); done
+if [[ -f "$HUB_ALIASES" ]]; then
+  defined+=(${(f)"$(alias_names "$HUB_ALIASES")"})
+  for line in ${(f)"$(grep -E '^[A-Za-z0-9_-]+\(\) *\{' "$HUB_ALIASES")"}; do
+    defined+=("${line%%\(*}")
+  done
+else
+  print -r -- "note: no hub checkout at $HUB_ALIASES; checking zsh-config only"
+fi
+defined=(${(u)defined})
+
+# Names given a row
+rowed=()
+for g in "$REPO_DIR"/cheatsheets/aliases-*.md(N); do
+  while IFS= read -r line; do
+    [[ "$line" == '- `'*'` - '* ]] || continue
+    cell="${line%% - *}"
+    parts=("${(@ps:\x60:)cell}")
+    for (( i = 2; i <= ${#parts}; i += 2 )); do
+      rowed+=("${${parts[i]}%% *}")
+    done
+  done < "$g"
+done
+
+for name in $defined; do
+  (( ${rowed[(Ie)$name]} )) || fail "alias $name has no row in cheatsheets/aliases-*.md"
+done
+
+(( failed )) && exit 1
+print -r -- "ok: aliases sheets cover all ${#defined} aliases"

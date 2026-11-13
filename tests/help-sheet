@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
-# Checks that every `cheat <words>` named in cheatsheets/help.md, the index
-# that `cheat help` shows, is a sheet that exists: <words> joined with - must
+# Checks that every `cheat <words>` named in the index sheets (help.md, which
+# `cheat help` shows, changes*.md and aliases*.md) is a sheet that exists: <words> joined with - must
 # be a file in this repo's cheatsheets/ or in the cheatsheets/ of a sibling
 # repo (../hub, ../readerr, ../pkms, any ../*/cheatsheets). A name found
 # nowhere fails. Reads files only; runs no tool.
@@ -8,6 +8,8 @@
 
 REPO_DIR="${0:a:h:h}"
 SHEET="$REPO_DIR/cheatsheets/help.md"
+# Index sheets whose cheat pointers are checked
+INDEXES=("$REPO_DIR"/cheatsheets/{help,changes,changes-older,aliases,aliases-*}.md(N))
 failed=0
 fail() { print -r -- "fail: $1"; failed=1 }
 
@@ -17,7 +19,7 @@ dirs=("$REPO_DIR/cheatsheets" "${REPO_DIR:h}"/*/cheatsheets(N/))
 
 # Every `cheat ...` inside backticks; words stop at a bracket or flag
 names=()
-for ref in ${(f)"$(grep -oE '`cheat [a-z0-9 -]+`' "$SHEET")"}; do
+for ref in ${(f)"$(grep -ohE '`cheat [a-z0-9 -]+`' $INDEXES)"}; do
   local_words="${${ref#\`cheat }%\`}"
   words=(${=local_words})
   words=(${words:#-*})
@@ -32,8 +34,8 @@ for name in $unique; do
   for d in $dirs; do
     [[ -f "$d/$name.md" ]] && { found=1; break }
   done
-  (( found )) || fail "help.md names cheat ${name//-/ }, but no $name.md exists"
+  (( found )) || fail "an index sheet names cheat ${name//-/ }, but no $name.md exists"
 done
 
 (( failed )) && exit 1
-print -r -- "ok: every sheet help.md names exists (${#unique} checked)"
+print -r -- "ok: every sheet the index sheets name exists (${#unique} checked)"

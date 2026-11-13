@@ -24,12 +24,11 @@
 - `cheat hub task`, `cheat hub project` - Anytype tasks; projects and their map
 - `cheat hub overview` - install, update, doctor, and the `cld` and `cldr` aliases
 - `cheat skill` - the Claude skills, one sheet each
-- `cheat readerr` - hear any selected text read aloud
-- `cheat pkms` - the Anytype knowledge system
+- `cheat readerr`, `cheat pkms` - hear selected text read aloud; the Anytype knowledge system
 - `cheat zsh-config`, `cheat cli` - this shell setup; the house CLI helpers
 - Third-party: `cheat fzf`, `cheat git`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat docker`, `cheat npm`, `cheat asdf`, `cheat apt`, `cheat zinit`, `cheat kitty`
 
 # See also
 
-- `cheat cheat` - the sheet viewer and its subcommands
-- `cheat cheat format` - how every sheet is written
+- `cheat aliases` - every alias, most used first
+- `cheat cheat`, `cheat cheat format` - the sheet viewer; how every sheet is written

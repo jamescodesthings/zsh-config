@@ -131,6 +131,8 @@ How `cheat <words>` finds a sheet: every argument starting with `-` is dropped (
 
 `cheatsheets/help.md` is the index of the user's own sheets across repos; the word `cheat help` shows it (`-h` and `--help` still show cheat's own sheet). `tests/help-sheet` fails when it names a `cheat <words>` that has no sheet in this repo or a sibling repo's `cheatsheets/`.
 
+`cheat changes` (`changes.md`, then `changes-older.md`) is the user-facing changelog across our repos, newest first: add a row at the top of Latest whenever a change is something the user will notice, with an example, the date and `More: \`cheat <sheet>\``. `cheat aliases` (`aliases.md` and `aliases-<group>.md`) lists every alias from this repo and the hub's `zsh/aliases.zsh`; `tests/aliases-sheet` fails when one has no row. `tests/help-sheet` also checks the cheat pointers in these sheets.
+
 `cheatsheets/functions.md` (`cheat functions`) names every command in `functions/`, and its group sheets `functions-<group>.md` give each one row. `tests/functions-sheet` fails when a function has no row, two rows, or a row for a function that does not exist; a function that is not a command (the p10k segment `prompt_my_per_dir_status`) goes in the test's `internal` list.
 
 The `--help` convention for every repo's tools: `<tool> [words...] --help` shows `cheat <tool> [words...]`, every other flag ignored, and cheat's fallback finds the nearest parent sheet. A zsh tool does it with `cheat-help <tool> "$@" && return 0` as its first line (`functions/cheat-help`: it acts on `--help` anywhere or `-h` first, and returns 1 otherwise); a script in another language runs `cheat <tool> <non-flag words>`. zsh-config is installed wherever those tools are, so `cheat` is always there.
