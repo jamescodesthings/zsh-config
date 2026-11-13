@@ -5,7 +5,7 @@
 
 # Getting started
 
-- `cheat setup`, `cheat keys` - how the config fits together; every key binding
+- `cheat setup`, `cheat keys`, `cheat iterm` - how the config fits together; every key binding; the terminal
 - `cheat troubleshoot` - fixes for problems seen before
 - `cheat` - list every sheet; `cheat search [word]` finds one; `[tool] --help` shows its own
 - `ctrl+r` - fuzzy-search history for a command you ran before

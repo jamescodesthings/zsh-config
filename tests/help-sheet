@@ -34,6 +34,16 @@ for name in $unique; do
   for d in $dirs; do
     [[ -f "$d/$name.md" ]] && { found=1; break }
   done
+  # cheat also takes a unique prefix of a top sheet's name for the first word
+  if (( ! found )); then
+    first="${name%%-*}" rest="${name#$first}"
+    cands=()
+    for d in $dirs; do cands+=("$d"/${first}*.md(N)); done
+    cands=(${(u)${cands:t:r}}); cands=(${cands:#*-*})
+    if (( $#cands == 1 )); then
+      for d in $dirs; do [[ -f "$d/${cands[1]}$rest.md" ]] && { found=1; break }; done
+    fi
+  fi
   (( found )) || fail "an index sheet names cheat ${name//-/ }, but no $name.md exists"
 done
 

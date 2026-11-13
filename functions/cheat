@@ -253,6 +253,25 @@ TEMPLATE
         fi
       done
 
+      # No sheet for the first word: a unique prefix of a top sheet's name
+      # stands for it, so `cheat iterm` finds iterm2.md and `cheat iterm keys`
+      # iterm2-keys.md. Top sheets only (no - in the name), and only when one
+      # matches; an exact sheet always wins, since it was found above.
+      if is empty "$sheet"; then
+        local -a cands=("$CHEATSHEET_DIR"/${words[1]}*.md(N))
+        cands=(${cands:t:r}); cands=(${cands:#*-*})
+        if (( $#cands == 1 )); then
+          print -r -u2 -- "${_D}\"${words[1]}\" is short for \"${cands[1]}\"${_R}"
+          words[1]="${cands[1]}"
+          for (( n = $#words; n > 0; n-- )); do
+            if is file "$CHEATSHEET_DIR/${(j:-:)words[1,n]}.md"; then
+              sheet="$CHEATSHEET_DIR/${(j:-:)words[1,n]}.md"
+              break
+            fi
+          done
+        fi
+      fi
+
       # A local parent loses to tldr's page for the exact words, so
       # `cheat git commit` still finds tldr's git-commit beside a local git.md
       if is not empty "$sheet" && (( n < $#words )) && is available tldr; then

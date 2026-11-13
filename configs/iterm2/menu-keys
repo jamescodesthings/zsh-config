@@ -1,0 +1,17 @@
+# iTerm2 menu shortcuts installers/iterm2 sets in NSUserKeyEquivalents, one
+# per line: exact menu title|key. In the key, @ is cmd, ^ ctrl, ~ opt, $ shift;
+# ↩ is return and ← → ↑ ↓ the arrows, written as the characters themselves. A menu
+# shortcut set here replaces the item's default, so cmd+d and cmd+shift+d no
+# longer split, and cmd+ctrl+arrows no longer move the divider.
+Split Vertically with Current Profile|@↩
+Split Horizontally with Current Profile|@$↩
+Maximize Active Pane|@~↩
+Toggle Full Screen|@^f
+Move Divider Left|^~←
+Move Divider Right|^~→
+Move Divider Up|^~↑
+Move Divider Down|^~↓
+Select Pane Left|@^←
+Select Pane Right|@^→
+Select Pane Above|@^↑
+Select Pane Below|@^↓

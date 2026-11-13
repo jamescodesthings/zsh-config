@@ -10,6 +10,7 @@
 
 # Latest
 
+- `cmd+enter` - 2026-11-13, iTerm2 keys like kitty: split with cmd+enter, panes on cmd+ctrl+arrows, resize on ctrl+opt+arrows, a micro profile, lighter dimming, and `cheat iterm`. More: `cheat iterm2 keys`
 - `installers/iterm2` - 2026-11-13, the iTerm2 status bar is gone, and the font is 14 point. More: `cheat iterm2`
 - `git absorb --and-rebase` - 2026-11-13, lazygit and git-absorb come with the Brewfile. More: `cheat git absorb`
 - `iterm2-settings diff` - 2026-11-13, settings changed in iTerm2's window can be adopted into the repo, or dropped. More: `cheat iterm2-settings`
@@ -20,7 +21,6 @@
 - `md-to-pdf -r . --combine` - 2026-11-12, convert every .md under a folder and join them into one pdf named after this folder. More: `cheat md-to-pdf`
 - `cheat help` - 2026-11-12, an index of our own sheets, basics first. More: `cheat help`
 - `j alias add tutorial .` - 2026-11-12, fixed bookmarks to folders; then `j tutorial` jumps there. More: `cheat j alias`
-- `cheat functions` - 2026-11-12, every zsh-config function, one row each in groups. More: `cheat functions`
 
 # See also
 

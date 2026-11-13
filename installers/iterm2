@@ -81,6 +81,32 @@ source "${0:a:h}/_stub"
     changed+=1
   done < "$src/defaults"
 
+  # Menu shortcuts (configs/iterm2/menu-keys) go into NSUserKeyEquivalents one
+  # title at a time with -dict-add, so shortcuts set elsewhere stay. The file's
+  # content is remembered once applied, so a rerun writes nothing.
+  local menukeys="$src/menu-keys" applied="${XDG_STATE_HOME:-$HOME/.local/state}/zsh-config/iterm2-menu-keys.applied"
+  if [[ -f "$menukeys" ]] && ! { [[ -f "$applied" ]] && [[ "$(<"$applied")" == "$(<"$menukeys")" ]] }; then
+    if (( ! backed_up )); then
+      command mkdir -p "$backups"
+      local backup="$backups/$(command date +%Y-%m-%d-%H%M%S).plist"
+      if ! command defaults export "$domain" "$backup" 2>/dev/null; then
+        problem "could not back up the iTerm2 settings, so the menu shortcuts were not changed"
+        fix "defaults export $domain ~/iterm2-backup.plist" "take a backup by hand"
+        problems
+        exit 1
+      fi
+      say info "backed up the iTerm2 settings to $backup"
+      backed_up=1
+    fi
+    local title spec
+    while IFS='|' read -r title spec; do
+      [[ -z "$title" || "$title" == \#* ]] && continue
+      command defaults write "$domain" NSUserKeyEquivalents -dict-add "$title" "$spec"
+      changed+=1
+    done < "$menukeys"
+    command mkdir -p "${applied:h}" && command cp "$menukeys" "$applied"
+  fi
+
   if (( changed )); then
     say ok "iTerm2: profile linked, $changed settings written; quit and reopen iTerm2 to pick them up"
   else

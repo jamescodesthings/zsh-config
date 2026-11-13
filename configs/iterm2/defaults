@@ -10,3 +10,10 @@ CopyLastNewline|bool|false
 AllowClipboardAccess|bool|true
 # Keep checking for updates
 SUEnableAutomaticChecks|bool|true
+# Inactive split panes: dimmed a little, text and background together, so
+# they stay readable (iTerm2's default dims far more); background windows
+# are not dimmed
+DimInactiveSplitPanes|bool|true
+SplitPaneDimmingAmount|float|0.1
+DimOnlyText|bool|false
+DimBackgroundWindows|bool|false

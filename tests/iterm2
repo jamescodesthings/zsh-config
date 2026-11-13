@@ -11,7 +11,7 @@ trap 'rm -rf "$TMP"' EXIT
 failed=0
 BIN="$TMP/bin"
 mkdir -p "$BIN" "$TMP/home" "$TMP/work" "$TMP/prefs" "$TMP/app"
-for c in mkdir ln mv rm readlink dirname basename cat date head; do
+for c in mkdir ln mv rm readlink dirname basename cat date head cp; do
   ln -s "$(command -v $c)" "$BIN/$c"
 done
 cat > "$BIN/uname" <<'S'
@@ -24,8 +24,11 @@ cat > "$BIN/defaults" <<'S'
 echo "defaults $*" >> "$PREFS/log"
 cmd="$1"; shift; domain="$1"; shift
 case "$cmd" in
-  read) [ -f "$PREFS/$1" ] && cat "$PREFS/$1" && exit 0; exit 1 ;;
-  write) key="$1"; shift; shift; v="$1"; [ "$v" = true ] && v=1; [ "$v" = false ] && v=0; printf '%s\n' "$v" > "$PREFS/$key" ;;
+  read) if [ -d "$PREFS/$1.d" ]; then echo "{"; for f in "$PREFS/$1.d"/*; do printf '    "%s" = "%s";\n' "$(basename "$f")" "$(cat "$f")"; done; echo "}"; exit 0; fi
+    [ -f "$PREFS/$1" ] && cat "$PREFS/$1" && exit 0; exit 1 ;;
+  write) key="$1"; shift
+    if [ "$1" = -dict-add ]; then shift; mkdir -p "$PREFS/$key.d"; printf '%s\n' "$2" > "$PREFS/$key.d/$1"; exit 0; fi
+    shift; v="$1"; [ "$v" = true ] && v=1; [ "$v" = false ] && v=0; printf '%s\n' "$v" > "$PREFS/$key" ;;
   export) echo "PLIST" > "$1" ;;
 esac
 S
@@ -60,6 +63,9 @@ done
 check "hotkey profile present" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Dynamic Profile Parent Name\": \"zsh-config\""* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Has Hotkey\": true"* ]]'
 check "no status bar" '[[ "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" == *"\"Show Status Bar\": false"* && "$(<"$REPO_DIR/configs/iterm2/zsh-config.json")" != *"Status Bar Layout"* ]]'
 
+# the micro profile inherits the main one, switches on for the micro job, and sends ctrl keys
+check "micro profile inherits" '[[ "$(python3 -c "import json;d=json.load(open(\"$REPO_DIR/configs/iterm2/zsh-config.json\"));p=[x for x in d[\"Profiles\"] if x[\"Name\"]==\"zsh-config micro\"][0];print(p[\"Dynamic Profile Parent Name\"],p[\"Bound Hosts\"][0],p[\"Keyboard Map\"][\"0x73-0x100000\"][\"Text\"],p[\"Keyboard Map\"][\"0x7f-0x100000\"][\"Text\"])")" == "zsh-config &micro 0x13 0x0b" ]]'
+
 # Linux: skipped, nothing written
 FAKE_OS=Linux run
 # (_stub refuses a Linux that is not Debian; either way nothing is written)
@@ -70,7 +76,8 @@ run
 check "mac: exit 0" '(( CODE == 0 ))'
 check "mac: profile linked" '[[ -L "$PROFILE" && "$(readlink "$PROFILE")" == "$REPO_DIR/configs/iterm2/zsh-config.json" ]]'
 check "mac: default profile set" '[[ "$(<"$TMP/prefs/Default Bookmark Guid")" == "$GUID" ]]'
-check "mac: counts the settings it wrote" '[[ "$OUT" == *" 5 settings written"* ]]'
+check "mac: counts the settings it wrote" '[[ "$OUT" == *" 21 settings written"* ]]'
+check "mac: inactive panes barely dimmed" '[[ "$(<"$TMP/prefs/SplitPaneDimmingAmount")" == 0.1 && "$(<"$TMP/prefs/DimBackgroundWindows")" == 0 ]]'
 check "mac: copy on select" '[[ "$(<"$TMP/prefs/CopySelection")" == 1 ]]'
 check "mac: backup before the first write" '[[ "$(grep -E "defaults (export|write)" "$TMP/prefs/log" | head -1)" == "defaults export com.googlecode.iterm2 "* ]]'
 check "mac: backup file kept" '[[ -n "$(echo "$TMP"/home/.local/state/zsh-config/iterm2-backups/*.plist(N))" ]]'
@@ -81,6 +88,14 @@ for u in ${(f)"$(grep -v '^#' "$REPO_DIR/configs/iterm2/utilities")"}; do
   check "utility $u installed" '[[ -x "$TMP/home/.iterm2/$u" ]]'
 done
 check "utilities fetched from iterm2.com" 'grep -q "^https://iterm2.com/utilities/imgcat$" "$TMP/prefs/curl.log"'
+
+# menu shortcuts: every line of configs/iterm2/menu-keys lands in NSUserKeyEquivalents
+while IFS='|' read -r title spec; do
+  [[ -z "$title" || "$title" == \#* ]] && continue
+  want="$spec"
+  check "menu key $title" '[[ "$(<"$TMP/prefs/NSUserKeyEquivalents.d/$title")" == "$want" ]]'
+done < "$REPO_DIR/configs/iterm2/menu-keys"
+check "split side by side is cmd+enter" '[[ "$(grep "^Split Vertically with Current Profile|" "$REPO_DIR/configs/iterm2/menu-keys")" == *"|@↩" ]]'
 
 # rerun: nothing changes, no new backup, no writes
 : > "$TMP/prefs/log"

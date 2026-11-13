@@ -6,7 +6,7 @@
 
 - `ctrl+r` - fuzzy-search shell history
 - `tab` - completion in fzf (fzf-tab); type to filter, enter picks
-- `cmd+d`, `cmd+opt+arrows` - split the iTerm2 pane; move between panes
+- `cmd+enter`, `cmd+ctrl+arrows` - split the iTerm2 pane; move between panes
 
 # fzf
 
@@ -22,7 +22,7 @@
 # iTerm2
 
 - `cmd+t`, `cmd+w` - new tab here; close it
-- `cmd+shift+enter`, `cmd+shift+up` - zoom the pane; jump to the last prompt
+- `cmd+opt+enter`, `cmd+shift+up` - zoom the pane; jump to the last prompt
 
 # Stream Deck
 
