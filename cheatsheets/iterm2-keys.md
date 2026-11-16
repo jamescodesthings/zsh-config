@@ -4,9 +4,9 @@
 
 # Panes
 
-- `cmd+enter`, `cmd+shift+enter` - split side by side; split top and bottom (replacing `cmd+d` and `cmd+shift+d`)
 - `cmd+ctrl+arrows` - go to the pane in that direction
 - `cmd+[`, `cmd+]` - previous or next pane
+- `cmd+enter`, `cmd+shift+enter` - split side by side; split top and bottom (replacing `cmd+d` and `cmd+shift+d`)
 - `cmd+opt+enter` - zoom the pane and back
 - `ctrl+opt+arrows` - resize the pane
 - `ctrl+shift+arrows` - swap the pane with the one in that direction
@@ -22,6 +22,7 @@
 
 # Editing and finding
 
+- Scroll wheel or touchpad - scrolls pagers too (git diff, delta, less, man); dragging still selects text
 - `opt+left`, `opt+right`, `opt+backspace` - back, forward or delete one word
 - `cmd+left`, `cmd+right`, `cmd+backspace` - start or end of the line; delete to the start
 - `cmd+f`, `cmd+k` - search the scrollback; clear

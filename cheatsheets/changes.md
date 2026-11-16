@@ -10,6 +10,8 @@
 
 # Latest
 
+- `git diff` - 2026-11-16, the scroll wheel and touchpad scroll pagers in iTerm2 (git, delta, less, man), and text selection still works. More: `cheat iterm2 keys`
+- `update` - 2026-11-16, stops before pulling when zsh-config has local changes or unpushed commits, shows them, and on a terminal offers to commit and push them first (default no). More: `cheat update`
 - `gh pr view --web` - 2026-11-13, many more iTerm2 snippets and actions, in tag folders: git, gh PRs and runs, Claude, lazygit and absorb. More: `cheat iterm2`
 - `false` - 2026-11-13, the iTerm2 status bar now shows the last command's exit code and time (only when it failed or took 5 s or more), the host over ssh, and CPU, memory, network and battery meters; the job and held-tasks items are gone. More: `cheat iterm2`
 - `installers/iterm2` - 2026-11-13, iTerm2 snippets in the status bar's Snippets menu: hub status, cldr, gst, git-speedup and lazygit; your own snippets stay. More: `cheat iterm2`
@@ -19,8 +21,6 @@
 - `cmd+shift+a` - 2026-11-13, iTerm2's Open Quickly is on kitty's command palette key; select last output moves to cmd+shift+o. More: `cheat iterm2 keys`
 - `ctrl+shift+arrows` - 2026-11-13, swap iTerm2 panes; in micro cmd+d duplicates the line and cmd+backspace deletes it; inactive panes dimmed less. More: `cheat iterm2 keys`
 - `cmd+enter` - 2026-11-13, iTerm2 keys like kitty: split with cmd+enter, panes on cmd+ctrl+arrows, resize on ctrl+opt+arrows, a micro profile, lighter dimming, and `cheat iterm`. More: `cheat iterm2 keys`
-- `installers/iterm2` - 2026-11-13, the iTerm2 status bar is gone, and the font is 14 point. More: `cheat iterm2`
-- `git absorb --and-rebase` - 2026-11-13, lazygit and git-absorb come with the Brewfile. More: `cheat git absorb`
 
 # See also
 

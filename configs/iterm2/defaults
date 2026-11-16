@@ -21,3 +21,7 @@ DimBackgroundWindows|bool|false
 # settings and adopted here); iTerm2 opens a window at launch
 StatusBarPosition|int|1
 OpenNoWindowsAtStartup|bool|false
+# Mouse wheel and touchpad scroll pagers (less under git, delta, man) by
+# sending arrow keys in the alternate screen; text selection stays normal,
+# unlike less --mouse, which takes over dragging
+AlternateMouseScroll|bool|true

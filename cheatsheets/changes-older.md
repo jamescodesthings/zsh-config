@@ -4,6 +4,8 @@
 
 # Earlier
 
+- `installers/iterm2` - 2026-11-13, the iTerm2 status bar is gone, and the font is 14 point. More: `cheat iterm2`
+- `git absorb --and-rebase` - 2026-11-13, lazygit and git-absorb come with the Brewfile. More: `cheat git absorb`
 - `iterm2-settings diff` - 2026-11-13, settings changed in iTerm2's window can be adopted into the repo, or dropped. More: `cheat iterm2-settings`
 - `imgcat photo.png` - 2026-11-13, iTerm2 extras: an opt+space hotkey window, a status bar (folder, git, CPU, memory, clock) and the iTerm2 utilities. More: `cheat iterm2`
 - `installers/iterm2` - 2026-11-13, iTerm2 replaces kitty on macOS as a trial: Night Owl profile, option as meta, mouse for micro, shell integration. More: `cheat iterm2`

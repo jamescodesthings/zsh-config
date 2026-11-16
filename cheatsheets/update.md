@@ -2,6 +2,7 @@
 
 > Pull zsh-config, then run every script in `updaters/` in number order, quietly, with a step counter.
 > Asks for sudo once (again if the ticket lapses mid-run); a failed updater is listed at the end and the exit code is 1.
+> Stops first if zsh-config has local changes or unpushed commits, showing them; on a terminal it offers to commit and push them (default no).
 
 # Getting started
 

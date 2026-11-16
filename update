@@ -150,9 +150,61 @@ function collect-log() {
   rm -f "$plain"
 }
 
+# Before the pull: a zsh-config checkout with local changes or unpushed
+# commits, or one that cannot fast-forward, stops the run. On a terminal it
+# offers to commit and push them first (default no); never forced.
+function update-check-repo() {
+  local repo="$REPO_DIR" upstream
+  upstream="$(command git -C "$repo" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)" || return 0
+  command git -C "$repo" fetch --quiet 2>/dev/null
+  local changes ahead behind
+  changes="$(command git -C "$repo" status --porcelain 2>/dev/null)"
+  ahead="$(command git -C "$repo" rev-list --count '@{u}..HEAD' 2>/dev/null)"
+  behind="$(command git -C "$repo" rev-list --count 'HEAD..@{u}' 2>/dev/null)"
+  [[ -z "$changes" && "${ahead:-0}" == 0 ]] && return 0
+
+  if (( ${ahead:-0} > 0 && ${behind:-0} > 0 )); then
+    say fail "zsh-config cannot fast-forward: $ahead local and $behind new commits on $upstream; it has local changes or unpushed commits, so update stops before pulling"
+  else
+    say fail "zsh-config has local changes or unpushed commits, so update stops before pulling"
+  fi
+  if [[ -n "$changes" ]]; then
+    print -r -- "  git status --short:" >&2
+    command git -C "$repo" status --short 2>/dev/null | sed 's/^/    /' >&2
+  fi
+  if (( ${ahead:-0} > 0 )); then
+    print -r -- "  not on $upstream yet:" >&2
+    command git -C "$repo" log --oneline '@{u}..HEAD' 2>/dev/null | sed 's/^/    /' >&2
+  fi
+
+  # The offer: a terminal only, never in a non-interactive run, default no
+  if { [[ -t 0 && -t 2 ]] || [[ -n "$UPDATE_TTY_FORCE" ]]; } && \
+     CLI_YES= confirm "commit and push them first?" < "${UPDATE_TTY:-/dev/tty}"; then
+    if [[ -n "$changes" ]]; then
+      command git -C "$repo" add -A && \
+        command git -C "$repo" commit -q -m "sync prior to update $(command date '+%Y-%m-%d %H:%M')" || {
+        say fail "could not commit the local changes"
+        return 1
+      }
+    fi
+    if ! command git -C "$repo" push --quiet 2>/dev/null; then
+      say fail "the push was rejected, so update stops; pull or rebase by hand, then run update again"
+      return 1
+    fi
+    say ok "committed and pushed; carrying on"
+    return 0
+  fi
+  problem "zsh-config has local changes or unpushed commits"
+  fix "git -C ${(q)repo} status" "see them, then commit and push, or stash"
+  problems
+  return 1
+}
+
 # Pull this repo first, then start again from the top so the rest of the run
 # uses the updaters that were just pulled. A failed pull is a warning.
 if is empty "$UPDATE_SELF_UPDATED"; then
+  autoload -Uz confirm
+  update-check-repo || exit 1
   say info "updating zsh-config"
   SELF_OUT="$(mktemp)"
   if [[ -n "$CLI_VERBOSE" ]]; then

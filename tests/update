@@ -170,6 +170,85 @@ run UPDATE_SELF_UPDATED= -- 010-ok
 same "self-update failure still runs the rest" "$CODE" 0
 has "self-update failure warns" "$ALL" "could not pull zsh-config"
 
+# --- the zsh-config repo itself: local changes or unpushed commits stop the
+# run before the pull. git is a stub here (GIT_STATUS, GIT_AHEAD, GIT_BEHIND,
+# GIT_PUSH_RC; every call logged to GIT_LOG); the answer to the offer comes
+# from UPDATE_TTY, a file standing in for the terminal.
+mkdir -p "$TMP/gitbin"
+cat > "$TMP/gitbin/git" <<'S'
+#!/bin/sh
+echo "git $*" >> "$GIT_LOG"
+[ "$1" = -C ] && shift 2
+case "$1" in
+  rev-parse) [ -n "$GIT_NOREPO" ] && exit 128; echo origin/main ;;
+  fetch) ;;
+  status) [ -n "$GIT_STATUS" ] && printf '%s\n' "$GIT_STATUS" ;;
+  rev-list)
+    case "$*" in *"HEAD..@{u}"*) echo "${GIT_BEHIND:-0}" ;; *) echo "${GIT_AHEAD:-0}" ;; esac ;;
+  log) i=0; while [ "$i" -lt "${GIT_AHEAD:-0}" ]; do echo "abc123$i local commit $i"; i=$((i+1)); done ;;
+  add|commit) ;;
+  push) exit "${GIT_PUSH_RC:-0}" ;;
+  pull) ;;
+esac
+exit 0
+S
+chmod +x "$TMP/gitbin/git"
+GIT_LOG="$TMP/git.log"
+# path.zsh puts ~/.local/bin (here $TMP/.local/bin) ahead of everything, so
+# the git stub sits there only while these runs go
+function rungit() {
+  mkdir -p "$TMP/.local/bin"; cp "$TMP/gitbin/git" "$TMP/.local/bin/git"
+  : > "$GIT_LOG"
+  run GIT_LOG="$GIT_LOG" UPDATE_SELF_UPDATED= "$@" -- 010-ok
+  rm -f "$TMP/.local/bin/git"
+}
+
+# clean and level: the run goes on
+rungit
+same "clean repo: exit 0" "$CODE" 0
+lacks "clean repo: no stop" "$ALL" "unpushed"
+
+# local changes: stops, shows the short status, offers nothing without a terminal
+rungit GIT_STATUS=" M aliases.zsh"
+same "local changes: exit 1" "$CODE" 1
+has "local changes: says why" "$ALL" "local changes or unpushed commits"
+has "local changes: shows git status" "$ALL" "M aliases.zsh"
+lacks "local changes: no offer without a terminal" "$ALL" "commit and push them"
+has "local changes: nothing updated" "$(grep -c 'pull' "$GIT_LOG")" "0"
+
+# unpushed commits: listed
+rungit GIT_AHEAD=2
+same "unpushed: exit 1" "$CODE" 1
+has "unpushed: lists the commits" "$ALL" "local commit 1"
+
+# can't fast-forward: ahead and behind
+rungit GIT_AHEAD=1 GIT_BEHIND=3
+same "diverged: exit 1" "$CODE" 1
+has "diverged: says it cannot fast-forward" "$ALL" "fast-forward"
+
+# on a terminal the default answer is no
+print -r -- "" > "$TMP/tty"
+rungit GIT_STATUS=" M aliases.zsh" UPDATE_TTY="$TMP/tty" UPDATE_TTY_FORCE=1
+same "offer, enter: exit 1" "$CODE" 1
+lacks "offer, enter: nothing committed" "$(<"$GIT_LOG")" "commit -m"
+
+# yes: commits with the dated message, pushes without force, and carries on
+print -r -- "y" > "$TMP/tty"
+rungit GIT_STATUS=" M aliases.zsh" UPDATE_TTY="$TMP/tty" UPDATE_TTY_FORCE=1
+same "offer, yes: exit 0" "$CODE" 0
+has "offer, yes: dated message" "$(<"$GIT_LOG")" "sync prior to update 20"
+has "offer, yes: pushed" "$(<"$GIT_LOG")" "push"
+lacks "offer, yes: never forced" "$(<"$GIT_LOG")" "force"
+
+# yes but the push is rejected: stops and says so
+rungit GIT_AHEAD=1 GIT_PUSH_RC=1 UPDATE_TTY="$TMP/tty" UPDATE_TTY_FORCE=1
+same "push rejected: exit 1" "$CODE" 1
+has "push rejected: says so" "$ALL" "push was rejected"
+
+# not a repo: no check
+rungit GIT_NOREPO=1
+same "not a repo: exit 0" "$CODE" 0
+
 # --- a failed updater's fix opens its own child log, not the newest
 run -- 030-fail 040-err
 has "fix names the failed updater's log" "$ERR" "-update-030-fail.log"
