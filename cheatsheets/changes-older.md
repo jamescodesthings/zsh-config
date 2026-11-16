@@ -21,7 +21,7 @@
 - `link-blender-scripts` - 2026-11-11, Blender startup scripts linked into every Blender version. More: `cheat link-blender-scripts`
 - `key pull myproj` - 2026-11-08, key names its direction: pull, push, import, export. More: `cheat key`
 - `hub` - 2026-11-08, agent-forge is now called hub. More: `cheat hub`
-- `hub task list` - 2026-11-07, hub task: the Claude-tagged Anytype tasks from the shell, replacing the old any CLI. More: `cheat hub task`
+- `hub task list` - 2026-11-07, hub task: the Claude-tagged Anytype tasks from the shell, replacing the old any CLI. More: `cheat hub action`
 - `hub resolve` - 2026-11-04, resolve every Claude task across the repos in rounds. More: `cheat hub resolve`
 - `readerr speak` - 2026-11-04, readerr reads headings, lists, tables and code by their shape, at terse, normal or detailed level. More: `cheat readerr speak`
 - `update` - 2026-11-03, the updater runs quietly with a step counter and keeps an error log; `update --errors` shows it. More: `cheat update`

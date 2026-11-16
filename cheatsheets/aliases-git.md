@@ -22,6 +22,7 @@
 - `gbD [branch]` - force-delete a local branch
 - `gsu`, `gsa [url]` - submodule update --init --recursive; submodule add
 - `git-skip [file]`, `git-unskip [file]` - stop and restart tracking local changes to a file
+- `my-prs`, `create-pr`, `open-pr`, `prst` - your open PRs; gh pr create; open this branch's PR in the browser; gh pr status
 - `git-i-fucked-up` - undo the last commit, keep its changes (reset HEAD~1)
 - `root` - cd to the top of this git repo
 

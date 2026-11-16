@@ -12,7 +12,7 @@
 
 - `~/projects/personal/zsh-config` - the shell, linked as `~/.custom`
 - `~/projects/personal/hub` - hub, skills and Claude config
-- `~/projects/personal/pkms` - the Anytype knowledge system
+- `~/projects/personal/pkms` - the knowledge system
 - `~/projects/personal/readerr` - text to speech
 - `~/projects/personal/apple-scripts` - Google Meet scripts for the Stream Deck
 

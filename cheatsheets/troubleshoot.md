@@ -4,7 +4,7 @@
 
 # Getting started
 
-- `hub doctor` - checks hub, keys, Anytype and context cost; start here
+- `hub doctor` - checks hub, keys and context cost; start here
 - `update --errors` - what the last `update` run logged
 - `log open last` - the last run's log of any house tool
 

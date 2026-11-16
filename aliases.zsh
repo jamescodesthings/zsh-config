@@ -61,6 +61,10 @@ if is available git; then
   alias gsa='git submodule add'
   alias git-skip='git update-index --assume-unchanged'
   alias git-unskip='git update-index --no-assume-unchanged'
+  alias my-prs='gh pr list --author "@me"'
+  alias create-pr='gh pr create'
+  alias open-pr='gh pr view --web'
+  alias prst='gh pr status'
 fi
 
 if is available npm; then

@@ -22,10 +22,10 @@
 # Our tools
 
 - `cheat hub` - the hub: one session steering a Claude session per repo
-- `cheat hub task`, `cheat hub project` - Anytype tasks; projects and their map
+- `cheat hub action`, `cheat hub project` - actions waiting on you; projects and their map
 - `cheat hub overview` - install, update, doctor, and the `cld` and `cldr` aliases
 - `cheat skill` - the Claude skills, one sheet each
-- `cheat readerr`, `cheat pkms` - hear selected text read aloud; the Anytype knowledge system
+- `cheat readerr`, `cheat pkms` - hear selected text read aloud; the knowledge system
 - `cheat zsh-config`, `cheat apple-scripts` - this shell setup; the Stream Deck buttons for Google Meet
 - Third-party: `cheat fzf`, `cheat git`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat docker`, `cheat npm`, `cheat asdf`, `cheat apt`, `cheat zinit`, `cheat kitty`
 
