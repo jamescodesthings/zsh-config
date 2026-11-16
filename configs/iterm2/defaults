@@ -25,3 +25,6 @@ OpenNoWindowsAtStartup|bool|false
 # sending arrow keys in the alternate screen; text selection stays normal,
 # unlike less --mouse, which takes over dragging
 AlternateMouseScroll|bool|true
+# No per-pane title bar (title and close cross) on split panes; the bottom
+# status bar is the profile's own and stays
+ShowPaneTitles|bool|false
