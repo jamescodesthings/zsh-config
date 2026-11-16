@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+# Tests the prompt's git formatter in p10k.zsh from a plain zsh -f: in a repo
+# above POWERLEVEL9K_VCS_MAX_INDEX_SIZE_DIRTY (gitstatusd reports the dirty
+# state as unknown, -1) no counts show, the staged one included, since
+# gitstatusd's staged count can be stale there; in a normal repo every count
+# shows. Sources p10k.zsh only; runs no git and no gitstatusd.
+# Run: tests/p10k-git-format. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+failed=0
+fmt() {
+  zsh -f -c '
+    source "$1/p10k.zsh" 2>/dev/null
+    VCS_STATUS_LOCAL_BRANCH=master VCS_STATUS_NUM_STAGED=$2 VCS_STATUS_NUM_UNSTAGED=$3
+    VCS_STATUS_HAS_UNSTAGED=$4 VCS_STATUS_NUM_UNTRACKED=0 VCS_STATUS_NUM_CONFLICTED=0
+    my_git_formatter 1; print -r -- "$my_git_format"' _ "$REPO_DIR" "$@" | sed $'s/\e\\[[0-9;]*m//g; s/%[0-9]*F//g; s/%f//g; s/%[{}]//g'
+}
+out="$(fmt 891 0 -1)"
+[[ "$out" != *"+891"* ]] && print "ok: huge repo: no staged count" || { print "FAIL: huge repo shows the staged count: $out"; failed=1 }
+[[ "$out" == *"─"* ]] && print "ok: huge repo: the unknown mark" || { print "FAIL: huge repo lacks the unknown mark: $out"; failed=1 }
+out="$(fmt 3 2 1)"
+[[ "$out" == *"+3"* && "$out" == *"!2"* ]] && print "ok: normal repo: staged and unstaged counts" || { print "FAIL: normal repo counts: $out"; failed=1 }
+exit $failed

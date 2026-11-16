@@ -350,7 +350,11 @@
     # ~42 if have merge conflicts.
     (( VCS_STATUS_NUM_CONFLICTED )) && res+=" ${conflicted}~${VCS_STATUS_NUM_CONFLICTED}"
     # +42 if have staged changes.
-    (( VCS_STATUS_NUM_STAGED     )) && res+=" ${staged}+${VCS_STATUS_NUM_STAGED}"
+    # Hidden when the dirty state is unknown (index above MAX_INDEX_SIZE_DIRTY):
+    # gitstatusd still counts staged files there, against an index it may have
+    # read before a checkout or pull, so the count can be stale (a skip-hash
+    # index from feature.manyFiles has no checksum to show it changed).
+    (( VCS_STATUS_NUM_STAGED && VCS_STATUS_HAS_UNSTAGED != -1 )) && res+=" ${staged}+${VCS_STATUS_NUM_STAGED}"
     # !42 if have unstaged changes.
     (( VCS_STATUS_NUM_UNSTAGED   )) && res+=" ${unstaged}!${VCS_STATUS_NUM_UNSTAGED}"
     # ?42 if have untracked files. It's really a question mark, your font isn't broken.
