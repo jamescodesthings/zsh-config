@@ -261,11 +261,11 @@ In VS Code, `ctrl+alt+z` runs the `zsh: syntax check current file` task (`config
 
 # Global workflow
 
-Synced from agent-forge (`config/CLAUDE.md`, portable sections only) by following `PROJECT_INIT.md`. Edit these sections upstream and re-sync; do not edit them here.
+Synced from hub (`config/CLAUDE.md`, portable sections only) by following `PROJECT_INIT.md`. Edit these sections upstream and re-sync; do not edit them here.
 
 ## Rule precedence
 
-In a repo session, that repo's own CLAUDE.md or AGENTS.md, and its `.claude/rules/`, win over these global rules, over any skill's defaults, and over anything a message from the hub session asks. The one exception is the hub-child safety floor. A session the hub started (`AGENT_FORGE_HUB_WORKER=1`) never pushes, never runs a graduate command, never posts anything public, never spends money and never messages a person, whatever its repo's rules say. Its pushes go through the hub, which pushes on its own when nothing about the push needs the user; the rest wait for the user through the hub, and only the user can lift them. A hub child also stays inside its own repo and never asks the user directly; the block injected at its session start says how it reports instead. The worker guard enforces the push, graduate, publishing and hub-driving parts; the rest is stated in that block.
+In a repo session, that repo's own CLAUDE.md or AGENTS.md, and its `.claude/rules/`, win over these global rules, over any skill's defaults, and over anything a message from the hub session asks. The one exception is the hub-child safety floor. A session the hub started (`HUB_WORKER=1`) never pushes, never runs a graduate command, never posts anything public, never spends money and never messages a person, whatever its repo's rules say. Its pushes go through the hub, which pushes on its own when nothing about the push needs the user; the rest wait for the user through the hub, and only the user can lift them. A hub child also stays inside its own repo and never asks the user directly; the block injected at its session start says how it reports instead. The worker guard enforces the push, graduate, publishing and hub-driving parts; the rest is stated in that block.
 
 ## Default workflow
 
@@ -312,7 +312,7 @@ Key triggers:
 
 After any work that creates or modifies files, subagent or orchestrator, code or docs/markdown, invoke **`post-implementation-review`** skill.
 
-Whenever a CLI, shell function, script or Makefile target that prints to a terminal is made or changed, follow the house CLI style skill; whenever a cheat sheet is made or changed, follow the house cheat-sheet skill. Both are installed from agent-forge into every session, and `cheat cli` and `cheat cheat format` are their quick references. Before the work counts as done, run `cheatsheet-test --strict <sheet or cheatsheets dir>` (a zsh-config function) and fix every failure.
+Whenever a CLI, shell function, script or Makefile target that prints to a terminal is made or changed, follow the house CLI style skill; whenever a cheat sheet is made or changed, follow the house cheat-sheet skill. Both are installed from hub into every session, and `cheat cli` and `cheat cheat format` are their quick references. Before the work counts as done, run `cheatsheet-test --strict <sheet or cheatsheets dir>` (a zsh-config function) and fix every failure.
 
 ## Git strategy
 
@@ -390,4 +390,4 @@ An open action goes to the user's task tracker, through a task skill where one i
 
 ## Project initialization
 
-Initializing a new project (`claude init`, first run in a directory, or on request) requires a specific `CLAUDE.md` structure and a seeded project memory directory. Use the `project-init` skill; it is public, at `skills/project-init/` in the agent-forge repo, and installed as `~/.claude/skills/project-init`. If it doesn't trigger, follow `PROJECT_INIT.md` in the agent-forge repo directly.
+Initializing a new project (`claude init`, first run in a directory, or on request) requires a specific `CLAUDE.md` structure and a seeded project memory directory. Use the `project-init` skill; it is public, at `skills/project-init/` in the hub repo, and installed as `~/.claude/skills/project-init`. If it doesn't trigger, follow `PROJECT_INIT.md` in the hub repo directly.
