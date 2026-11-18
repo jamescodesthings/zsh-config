@@ -2,6 +2,13 @@
 # List all open window WM_CLASS values, one per line (sorted, unique).
 # Usage: list-window-classes
 
+case "${1:-}" in
+    -h|--help)
+        if command -v cheat >/dev/null 2>&1; then exec cheat gnome-bin; fi
+        sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'
+        exit 0 ;;
+esac
+
 _extension_list() {
     command -v gdbus &>/dev/null || return 1
     local result

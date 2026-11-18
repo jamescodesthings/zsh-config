@@ -1,6 +1,6 @@
 # keys
 
-> Key bindings across the terminal: kitty, fzf, the shell line, and the Stream Deck buttons.
+> Key bindings across the terminal: iTerm2 on macOS, kitty on Linux, fzf, the shell line, and the Stream Deck buttons.
 
 # Getting started
 
@@ -30,6 +30,6 @@
 
 # See also
 
-- `cheat iterm2` - every iTerm2 key; `cheat kitty` for kitty
+- `cheat iterm2` - every iTerm2 key (macOS); `cheat kitty` for kitty (Linux)
 - `cheat fzf` - fzf in full
 - `cheat help` - the index of our sheets

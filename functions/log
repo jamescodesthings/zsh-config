@@ -182,7 +182,7 @@ function log() {
   cheat-help log "$@" && return 0
   local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
-  set -- "${@:#--plain}"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   local sub="${1:-list}"
   (( $# )) && shift

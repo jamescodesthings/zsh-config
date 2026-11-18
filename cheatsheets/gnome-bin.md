@@ -1,7 +1,8 @@
 # gnome-bin
 
 > Window scripts for GNOME on Wayland, in `configs/gnome/bin/`, linked to `~/.local/bin/` by `./installers/gnome`.
-> Need the `window-list@personal` extension. Focus scripts exit 0 if focused, 1 if not found; they skip minimised windows.
+> Need the `window-list@personal` extension. Focus scripts exit 0 if focused, 1 if not found, 2 on a missing argument; they skip minimised windows.
+> Each script answers `-h|--help` with this sheet.
 
 # Getting started
 
@@ -30,5 +31,4 @@
 
 # See also
 
-- `cheat is` - the predicate the scripts use
 - `cheat zsh-config` - everything zsh-config gives you

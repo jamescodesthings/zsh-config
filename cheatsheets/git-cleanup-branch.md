@@ -7,7 +7,7 @@
 
 - `--plain` - no colour or animation
 - `-q`, `--quiet` - print only warnings and errors
-- Exit: 0 done, 1 failed, 2 wrong usage
+- Exit: 0 done, 1 refused or failed, 2 wrong usage
 
 # Examples
 
@@ -18,6 +18,5 @@
 # See also
 
 - `cheat git`
+- `cheat git-prune-local` - drop branches whose origin is gone
 - `cheat zsh-config` - everything zsh-config gives you
-- `cheat git-prune-local`
-- Exit 1 on refusal or failure

@@ -10,3 +10,4 @@ httpie
 progress
 direnv
 build-essential
+fzf

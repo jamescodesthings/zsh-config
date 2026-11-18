@@ -10,7 +10,7 @@
 - `gcm [message]` - git commit with a message
 - `gco [branch]`, `gd` - git checkout; git diff
 - `root` - cd to the top of this git repo
-- `lla`, `l` - list with hidden files; list as a tree
+- `lla`, `l` - list with hidden files; list long, git-aware (`k -h`)
 - `cht [name]`, `zshc` - cheat; jump to the zsh config
 
 # Groups

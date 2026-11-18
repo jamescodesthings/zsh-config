@@ -3,6 +3,13 @@
 # Prints a fix command if the extension is not working.
 # Usage: window-debug-env
 
+case "${1:-}" in
+    -h|--help)
+        if command -v cheat >/dev/null 2>&1; then exec cheat gnome-bin; fi
+        sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'
+        exit 0 ;;
+esac
+
 ok()   { printf "  [ok]   %s\n" "$*"; }
 warn() { printf "  [warn] %s\n" "$*"; }
 fail() { printf "  [fail] %s\n" "$*"; }
@@ -111,7 +118,7 @@ else
     echo "  Fix:"
     if [[ ! -e "$EXT_PATH" ]]; then
         echo "    Run the installer (from your zsh-config repo):"
-        echo "      ./installers/gnome-extension-window-list"
+        echo "      ./installers/gnome"
         echo "    Then log out and back in."
     else
         echo "    Extension is installed but not responding."

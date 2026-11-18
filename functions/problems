@@ -17,7 +17,7 @@ function problems() {
   col -v faint err-60
   col -v cmd cmd
   col -v dim dim
-  [[ -n "$err" ]] && off=$'\e[0m'
+  col -v off reset
   local icon step
   cli-icon -v icon err
   cli-icon -v step step

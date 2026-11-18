@@ -6,8 +6,8 @@ function install-box-config() {
   local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
   set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
-  if is empty "$@"; then
-    problem "install-box-config needs a source and a destination"
+  if (( $# != 2 )); then
+    problem "install-box-config needs exactly a source and a destination"
     fix "cheat install-box-config" "how to use it"
     problems
     return 2
@@ -30,7 +30,7 @@ function install-box-config() {
   if is file "$host_overridden_config"; then
     say info "installing host specific config: $host_overridden_config"
     install-link "$host_overridden_config" "$config_destination"
-    return 0
+    return $?
   fi
 
   local os=""
@@ -47,13 +47,13 @@ function install-box-config() {
   if is file "$os_overridden_config"; then
     say info "installing OS specific config: $os_overridden_config"
     install-link "$os_overridden_config" "$config_destination"
-    return 0
+    return $?
   fi
 
   if is file "$config_source"; then
     say info "installing default config: $config_source"
     install-link "$config_source" "$config_destination"
-    return 0
+    return $?
   fi
 
   if is file "$config_destination"; then
@@ -61,7 +61,7 @@ function install-box-config() {
     say info "moving config into $host_overridden_config and symlinking it to the destination"
     command mv "$config_destination" "$host_overridden_config"
     install-link "$host_overridden_config" "$config_destination"
-    return 0
+    return $?
   fi
 
   say warn "no config file found for $config_destination"

@@ -36,7 +36,7 @@
 
 # Repo overview: repo.md
 
-- `cheat zsh-config`, `cheat hub`, `cheat pkms` - the repo as a whole, its tools grouped by job
+- `cheat zsh-config`, `cheat hub`, `cheat readerr` - the repo as a whole, its tools grouped by job
 - Every top sheet of a repo's tools points back to it under `# See also`, as an ordinary aligned row
 
 # Lines
@@ -63,5 +63,5 @@
 
 - `cheat cli sheets` - writing for the renderer
 - `cheat cheatsheet-test` - the line and structure checks
-- `cheat cheat new` - start a sheet from the template
+- `cheat new <name>` - start a sheet from the template
 - `cheat zsh-config` - the repo overview

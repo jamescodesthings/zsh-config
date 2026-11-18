@@ -1,14 +1,14 @@
 # cheat
 
 > Show a personal cheatsheet from `~/cheatsheets`, falling back to tldr when none matches.
-> Renders with tldr, then glow, bat, cat. Needs `CHEATSHEET_DIR` set. Exit: 0 done, 1 error.
+> Renders local sheets with `cheat-render`, tldr pages with tldr. Needs `CHEATSHEET_DIR` set. Exit: 0 done, 1 error.
 
 # Getting started
 
 - `cheat <tool>` - show a sheet, e.g. `cheat git`
 - `cheat` - list every local sheet
 - `cheat search <query>` - find a sheet by part of its name
-- `cheat cheat new <name>` - make a sheet of your own
+- `cheat new <name>` - make a sheet of your own
 
 # Show and make sheets
 
@@ -18,10 +18,10 @@
 - `<tool> --help` - zsh-config tools show their own sheet
 - `NO_COLOR=1 cheat <tool>` - colour off
 - `cheat [-h|--help]` - show this sheet; `cheat help` shows the index of our own sheets
-- `cheat cheat new <name>` - create from the template and link it
-- `cheat cheat edit <name>` - open in `$EDITOR`
-- `cheat cheat raw <name>` - print a sheet's markdown
-- `cheat cheat refresh` - refresh the tldr cache (it also refreshes itself every 7 days)
+- `cheat new <name>` - create from the template and link it
+- `cheat edit <name>` - open in `$EDITOR`
+- `cheat raw <name>` - print a sheet's markdown
+- `cheat refresh` - refresh the tldr cache (it also refreshes itself every 7 days)
 - `list`, `search`, `edit`, `new`, `refresh`, `raw` are reserved: no sheet can have those names; `help.md` is the index `cheat help` shows
 - `$VAR` names outside backticks expand when shown
 

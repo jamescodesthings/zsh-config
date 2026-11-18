@@ -1,7 +1,7 @@
 # install-box-config
 
 > Install a per-machine config by symlink, picking the best variant for this machine.
-> Exit 2 on no arguments; 1 on no hostname or an unsupported OS.
+> Needs exactly 2 arguments (exit 2 otherwise); 1 on no hostname or an unsupported OS; else `install-link`'s status.
 
 # Getting started
 

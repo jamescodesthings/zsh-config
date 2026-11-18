@@ -1,7 +1,7 @@
 # log
 
 > Read the logs that zsh-config tools write: one file per run, plus the output of the commands they ran quietly.
-> Logs live in `~/.custom/logs/commands` and `children`; the newest 50 of each are kept.
+> Logs live in `~/.custom/logs/commands` and `children`; the newest 50 of each are kept. Exit 2 on bad usage; `-q`, `-v`, `--plain` accepted.
 
 # Getting started
 

@@ -32,4 +32,4 @@
 # See also
 
 - `cheat iterm2 keys`, `cheat iterm2-settings` - every key; keeping settings changed in iTerm2
-- `cheat keys`, `cheat kitty` - every key binding; the kitty keys, while kitty stays
+- `cheat keys`, `cheat kitty` - every key binding; the kitty keys (Linux)

@@ -23,7 +23,7 @@ function say() {
 
   local on off
   col -v on "$role"
-  [[ -n "$on" ]] && off=$'\e[0m'
+  col -v off reset
   if [[ "$kind" == fail ]]; then
     print -r -u2 -- "${on}${icon}  $*${off}"
   else

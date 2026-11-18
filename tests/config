@@ -102,4 +102,9 @@ for v in 01 1. .5 +1; do stored $v; same "$v is stored as a string" "$OUT" "\"$v
 run "config $S set verbose true"
 same "config file mode is 0644" "$(stat -f %Lp $TMP/cfg/demo.json 2>/dev/null || stat -c %a $TMP/cfg/demo.json)" "644"
 
+run "config -q $S list"
+same "config -q is the shared flag, not an unknown option" "$CODE" "0"
+run "config --verbose $S get clear-timeout"
+same "config --verbose works" "$CODE" "0"
+
 exit $failed

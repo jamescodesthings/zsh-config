@@ -15,5 +15,5 @@
 
 # See also
 
-- `cheat cheat new` - create a sheet first
+- `cheat new <name>` - create a sheet first
 - `cheat cheatsheet-test` - check it after editing

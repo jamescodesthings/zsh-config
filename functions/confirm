@@ -13,7 +13,7 @@ function confirm() {
   local warn dim off MESSAGE=${1:-are you sure?}
   col -v warn warn
   col -v dim dim
-  [[ -n "$warn" ]] && off=$'\e[0m'
+  col -v off reset
   read "confirmed?${warn}${MESSAGE}${off} ${dim}[y/n]${off} "
   if [[ "$confirmed" =~ ^[Yy]$ ]]; then
     return 0

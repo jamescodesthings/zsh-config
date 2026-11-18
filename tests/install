@@ -61,6 +61,11 @@ check "stub: say is our function" '[[ "$OUT" == *"say: function"* ]]'
 run --help
 check "--help exits 0" '(( CODE == 0 ))'
 
+run --bogus
+check "unknown flag exits 2" '(( CODE == 2 ))'
+check "unknown flag is named on stderr" '[[ "$ERR" == *"--bogus"* ]]'
+check "unknown flag runs no installer" '[[ "$OUT" != *"stub one ran"* ]]'
+
 # A fresh box: ./install runs before any .zshenv, so CHEATSHEET_DIR and PATH are
 # unset. _stub must default them. Everything runs under env -i, an empty HOME and
 # a PATH of symlinks to harmless basics, in an empty working folder. _stub's

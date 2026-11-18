@@ -14,6 +14,7 @@
 - `[-q|--quiet]` - hide ok and info lines, keep warnings and failures
 - `--plain` - no colour or animation, icons stay
 - `--help` - show this sheet
+- Exit: 2 on an unknown flag
 
 # Examples
 

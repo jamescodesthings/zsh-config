@@ -20,7 +20,7 @@ if asdf which uv > /dev/null 2>&1; then
       rm -f "$old"
     fi
   done
-  if is osx && is available brew && brew list uv > /dev/null 2>&1; then
+  if is osx && is available brew && brew-isolated list uv > /dev/null 2>&1; then
     say info "removing the homebrew uv"
     brew-isolated uninstall uv
     if is not equal "$?" "0"; then

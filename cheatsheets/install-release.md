@@ -11,8 +11,8 @@
 
 # Output
 
-- `installed:` - new release placed, completion linked when the tool has one
-- `current:` - already on the latest tag
+- `installed <tool> <tag>` - new release placed, completion linked when the tool has one
+- `<tool> <tag> is current` - already on the latest tag
 
 # Options
 

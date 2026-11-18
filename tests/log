@@ -146,4 +146,10 @@ same "unknown subcommand suggests" "$CODE|$ERR" "2|${I_ERR}  log: no subcommand 
 run CLI_PLAIN=1 -- 'log zzz'
 same "unknown subcommand without a near match" "$CODE|$ERR" "2|${I_ERR}  log: no subcommand called zzz; use list or open"
 
+# -q and -v are the shared flags: dropped, not "unknown option"
+run CLI_PLAIN=1 -- 'log -q list -n 1'
+same "log -q list works" "$CODE" "0"
+run CLI_PLAIN=1 -- 'log list --verbose'
+same "log list --verbose works" "$CODE" "0"
+
 exit $failed

@@ -7,9 +7,10 @@
 
 - `iterm2-settings baseline` - snapshot the live settings; do this before changing things in iTerm2
 - `iterm2-settings diff` - what changed since the snapshot and is not managed yet
-- `iterm2-settings adopt [key,key]` - copy a setting's live value into the managed list
-- `iterm2-settings drop [key,key]` - take a setting out of the list; iTerm2 keeps its value
+- `iterm2-settings adopt <key[,key]>` - copy a setting's live value into the managed list
+- `iterm2-settings drop <key[,key]>` - take a setting out of the list; iTerm2 keeps its value
 - `iterm2-settings status` - every managed setting, ok or drifted
+- `adopt` and `drop` need a key; without one the exit is 2
 
 # Examples
 

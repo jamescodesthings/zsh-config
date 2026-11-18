@@ -11,12 +11,12 @@ function picoh() {
     return 1
   fi
 
-  local extra_params=""
+  local -a extra_params=()
   if is not equal "$(get-hostname)" "zerocalc"; then
-    extra_params="-width 512 -height 512 -window_x 0 -window_y 0"
+    extra_params=(-width 512 -height 512 -window_x 0 -window_y 0)
   fi
 
-  $PICO8 $extra_params -root_path "$(pwd)" &
+  $PICO8 "${extra_params[@]}" -root_path "$(pwd)" &
 }
 
 picoh "$@"

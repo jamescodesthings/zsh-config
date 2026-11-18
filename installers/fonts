@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# Installs the Nerd Font kitty asks for (configs/kitty/kitty.conf:
+# Installs the Nerd Font the terminal (kitty or iTerm2) asks for (configs/kitty/kitty.conf:
 # DejaVuSansM Nerd Font Mono), so the nf-md icons the CLI helpers print
 # (cli-icon) render instead of showing as boxes. Skips when it is there.
 # Also run by updaters/125-fonts, so existing machines get it through update.
@@ -54,7 +54,7 @@ else
 fi
 
 if font-installed; then
-  say ok "$FONT_NAME installed; restart kitty to use it"
+  say ok "$FONT_NAME installed; restart the terminal (kitty or iTerm2) to use it"
   exit 0
 fi
 say fail "$FONT_NAME still not found after installing"

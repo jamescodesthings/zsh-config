@@ -23,7 +23,7 @@
 - `--skill` - treat every sheet in the run as a skill sheet
 - `--plain` - no colour or animation
 - `-q`, `--quiet` - print only warnings and errors
-- Exit: 0 done, 1 failed, 2 wrong usage
+- Exit: 0 done, 1 failed; extra arguments are ignored
 
 # See also
 

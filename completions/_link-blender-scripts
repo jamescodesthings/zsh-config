@@ -1,0 +1,12 @@
+#compdef link-blender-scripts
+
+_link-blender-scripts() {
+  _arguments \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-v --verbose)'{-v,--verbose}'[say more]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    ':scripts folder:_files -/'
+}
+
+_link-blender-scripts "$@"

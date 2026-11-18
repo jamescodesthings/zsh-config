@@ -5,7 +5,7 @@
 
 # Getting started
 
-- `cheat setup`, `cheat keys`, `cheat iterm` - how the config fits together; every key binding; the terminal
+- `cheat setup`, `cheat keys`, `cheat iterm` - how the config fits together; every key binding; the macOS terminal (kitty on Linux)
 - `cheat troubleshoot` - fixes for problems seen before
 - `cheat` - list every sheet; `cheat search [word]` finds one; `[tool] --help` shows its own
 - `ctrl+r` - fuzzy-search history for a command you ran before
@@ -25,9 +25,9 @@
 - `cheat hub action`, `cheat hub project` - actions waiting on you; projects and their map
 - `cheat hub overview` - install, update, doctor, and the `cld` and `cldr` aliases
 - `cheat skill` - the Claude skills, one sheet each
-- `cheat readerr`, `cheat pkms` - hear selected text read aloud; the knowledge system
+- `cheat readerr` - hear selected text read aloud
 - `cheat zsh-config`, `cheat apple-scripts` - this shell setup; the Stream Deck buttons for Google Meet
-- Third-party: `cheat fzf`, `cheat git`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat docker`, `cheat npm`, `cheat asdf`, `cheat apt`, `cheat zinit`, `cheat kitty`
+- Third-party: `cheat fzf`, `cheat git`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat docker`, `cheat npm`, `cheat asdf`, `cheat apt`, `cheat zinit`, `cheat kitty` (the Linux terminal)
 
 # See also
 

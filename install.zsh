@@ -12,6 +12,13 @@ cheat-help install "$@" && exit 0
 export CLI_PLAIN CLI_QUIET CLI_VERBOSE
 set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
+for arg in "$@"; do
+  if [[ "$arg" == -* ]]; then
+    say fail "install: unknown flag $arg, try install --help"
+    exit 2
+  fi
+done
+
 # INSTALL_INSTALLERS_DIR points the run at another folder (tests/install)
 dir="${INSTALL_INSTALLERS_DIR:-$INSTALLER_DIR}"
 

@@ -2,10 +2,10 @@
 
 declare -A steps
 
-steps[asdf]="run zshconfig/install to install asdf"
+steps[asdf]="run $CUSTOM_DIR/installers/asdf to install asdf"
 steps[eza]="$CUSTOM_DIR/installers/eza"
 steps[gh]="install github cli: https://cli.github.com/"
-steps[http]="run zshconfig/install to install httpie"
+steps[http]="run $CUSTOM_DIR/installers/httpie to install httpie"
 steps[python]="asdf plugin add python && asdf install python latest && asdf set -u python latest"
 
 function deps-command() {

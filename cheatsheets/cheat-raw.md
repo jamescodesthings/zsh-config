@@ -19,4 +19,4 @@
 
 # See also
 
-- `cheat cheat edit`
+- `cheat edit <name>` - change the sheet

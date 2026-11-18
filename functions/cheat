@@ -43,7 +43,7 @@ function cheat() {
   local _H _F _T _N _W _O _P _D _R
   col -v _H heading; col -v _F flag; col -v _T target; col -v _N num
   col -v _W warn; col -v _O ok; col -v _P prose; col -v _D dim
-  [[ -n "$_H" ]] && _R=$'\e[0m'
+  col -v _R reset
   if is empty "$CHEATSHEET_DIR"; then
     say fail "CHEATSHEET_DIR not set, run zsh-config/install to install it"
     return 1
@@ -127,7 +127,7 @@ function cheat() {
       local query="$1"
       if is empty "$query"; then
         say fail "search requires a query"
-        return 1
+        return 2
       fi
       local -a local_results=() tldr_only=()
       for f in "$CHEATSHEET_DIR"/*.md(N-.); do
@@ -155,7 +155,7 @@ function cheat() {
     edit)
       if is empty "$1"; then
         say fail "edit requires a sheet name"
-        return 1
+        return 2
       fi
       local sheet_name="${(j:-:)@}"
       sheet_name="${sheet_name%.md}"
@@ -170,7 +170,7 @@ function cheat() {
     new)
       if is empty "$1"; then
         say fail "new requires a name"
-        return 1
+        return 2
       fi
       local new_name="${1%.md}"
       local new_file="$CUSTOM_DIR/cheatsheets/$new_name.md"
@@ -191,20 +191,20 @@ function cheat() {
 
 - Next: what to do once that works
 
-# Everyday
+# Usage
 
-- \`$new_name <command> [target] [--flag]\`: what it does
+- \`$new_name <command> [target] [--flag]\` - what it does
 
 # See also
 
-- \`cheat $new_name <command>\`: every option of a command
-- \`cheat zsh-config\`: everything zsh-config gives you
+- \`cheat $new_name <command>\` - every option of a command
+- \`cheat zsh-config\` - everything zsh-config gives you
 TEMPLATE
       say ok "created $new_file"
       if ! link-cheatsheets "$CUSTOM_DIR/cheatsheets"; then
         say warn "$new_name was created but not linked into $CHEATSHEET_DIR"
       fi
-      echo "run ${_F}cheat edit $new_name${_R} to fill it in, then ${_F}cheatsheet-test $new_file${_R}"
+      say info "next: cheat edit $new_name to fill it in, then cheatsheet-test --strict $new_file"
       ;;
 
     refresh)
@@ -219,7 +219,7 @@ TEMPLATE
     raw)
       if is empty "$1"; then
         say fail "raw requires a sheet name"
-        return 1
+        return 2
       fi
       cheat "$@" --raw
       return $?

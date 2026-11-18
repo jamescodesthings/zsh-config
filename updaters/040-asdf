@@ -317,7 +317,7 @@ if is not equal "$POLICY[bun]" "remove" && asdf which bun > /dev/null 2>&1; then
       run rm -f "$old"
     fi
   done
-  if is osx && is available brew && { brew list bun > /dev/null 2>&1 || brew list oven-sh/bun/bun > /dev/null 2>&1 }; then
+  if is osx && is available brew && { brew-isolated list bun > /dev/null 2>&1 || brew-isolated list oven-sh/bun/bun > /dev/null 2>&1 }; then
     say info "removing the homebrew bun"
     run brew-isolated uninstall bun
     if is not equal "$?" "0"; then

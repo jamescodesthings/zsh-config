@@ -8,7 +8,7 @@ function zshenv() {
     micro "$CUSTOM_DIR/env.$(get-hostname).zsh"
     return 0
   fi
-  say fail "no editor found: run $CUSTOM_DIR/install-micro to install micro"
+  say fail "no editor found: run $CUSTOM_DIR/installers/micro to install micro"
   return 1
 }
 

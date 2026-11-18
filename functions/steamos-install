@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 DESKTOP="${DESKTOP:-"$HOME/Desktop"}"
-CUSTOM_STEAM="${CUSTOM_STEAM:-"$CUSTOM_DIR/steamos"}"
+CUSTOM_STEAM="${CUSTOM_STEAM:-"$CUSTOM_DIR/configs/steamos"}"
 
 # _steamos_try <label> <command...>: run a step; a failure is recorded with
 # the command to retry and the run carries on.
@@ -53,9 +53,8 @@ function _steamos_install_subfn() {
   if is not available "zsh"; then
     if _steamos_try "zsh install" sudo pacman -S --overwrite \* zsh --noconfirm; then
       ZSH=$(which zsh)
-      cat /etc/shells | grep $(which zsh)
-      if is not equal "$?" "0"; then
-        sudo echo "$ZSH" >> /etc/shells
+      if ! command grep -qxF "$ZSH" /etc/shells; then
+        print -r -- "$ZSH" | sudo tee -a /etc/shells >/dev/null
       fi
       chsh -s "$ZSH"
       sudo chsh -s "$ZSH"

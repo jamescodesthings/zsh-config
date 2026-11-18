@@ -19,8 +19,6 @@ if is existing $HOME/.asdf/plugins/java/set-java-home.zsh; then
   source $HOME/.asdf/plugins/java/set-java-home.zsh
 fi
 
-export FIG_DIR=$CUSTOM_DIR/autocomplete
-
 # Ensures partial word completion does not skip over folders/dashes
 export WORDCHARS=${WORDCHARS/\/}
 export WORDCHARS=${WORDCHARS/-/}

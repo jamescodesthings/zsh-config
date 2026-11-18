@@ -1,6 +1,6 @@
 # is
 
-> Predicates for shell conditionals. Exit 0 true, 1 false.
+> Predicates for shell conditionals. Exit 0 true, 1 false; every predicate is silent.
 > `is not <predicate>` negates; `a`, `an` and `the` are allowed before it (`is an existing <path>`).
 
 # Getting started

@@ -20,7 +20,7 @@
 # See also
 
 - `cheat cheat format` - the structure a sheet should follow
-- `cheat cheat edit`
+- `cheat edit <name>` - fill it in
 - `cheat cheatsheet-test`
 - `cheat link-cheatsheets`
 - The template is a stub (title, `>` line, `# Usage`, `# Related commands`); reshape it to the format

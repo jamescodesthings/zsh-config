@@ -1,7 +1,7 @@
 # hist
 
 > Search and tidy history across the global file and the per-directory files.
-> Bare `hist` is `hist list`. Exit: 0 done, 1 bad query or regex.
+> Bare `hist` is `hist list`. Takes `-v` and `--plain`. Exit: 0 done, 1 invalid regex, 2 missing query or unknown subcommand.
 
 # Getting started
 
@@ -22,6 +22,8 @@
 - `PER_DIRECTORY_HISTORY_FILE` - per-directory file name (default `zsh-per-directory-history`)
 - `_per_directory_history_main_histfile` - global file (default `~/.zsh_history`)
 - `hist [help|-h|--help]` - show usage
+- `[--plain|-v|--verbose]` - accepted
+- Exit: 2 on an unknown subcommand, or a search or delete with no query
 
 # See also
 

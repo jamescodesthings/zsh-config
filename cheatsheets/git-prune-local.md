@@ -7,17 +7,16 @@
 
 - `--plain` - no colour or animation
 - `-q`, `--quiet` - print only warnings and errors
-- Exit: 0 done, 1 failed, 2 wrong usage
+- Exit: 0 done, 1 failed; extra arguments are ignored
 
 # Examples
 
-- List and prune:
+- Run `git fetch --prune` first so gone branches show, then list and prune:
 
 `git-prune-local`
 
 # See also
 
 - `cheat git`
+- `cheat git-cleanup-branch` - delete one named branch
 - `cheat zsh-config` - everything zsh-config gives you
-- `cheat git-cleanup-branch`
-- Run git fetch --prune first so gone branches show

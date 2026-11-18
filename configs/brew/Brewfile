@@ -30,6 +30,7 @@ brew "micro"
 brew "httpie"
 brew "progress"
 brew "direnv"
+brew "fzf"
 
 # The terminal on macOS (a trial replacing kitty; kitty is no longer installed
 # here, but its config in configs/kitty stays linked). installers/iterm2 links

@@ -23,7 +23,7 @@ function config() {
   setopt extended_glob
   local CLI_PLAIN="$CLI_PLAIN" CLI_QUIET="$CLI_QUIET" CLI_VERBOSE="$CLI_VERBOSE"
   cli-init "$@"
-  set -- "${@:#--plain}"
+  set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
   local schema=""
   while [[ "$1" == -* ]]; do
@@ -165,7 +165,7 @@ function _config_list() {
     (( ${#fields[3]} > mw )) && mw=${#fields[3]}
   done
   col -v kc cmd; col -v vc num; col -v dc num-60; col -v pc prose
-  [[ -n "$kc" ]] && off=$'\e[0m'
+  col -v off reset
   for row in "${rows[@]}"; do
     fields=("${(@s:	:)row}")
     key="${(r:kw:)fields[1]}" val="${(r:vw:)fields[2]}" mark="${(r:mw:)fields[3]}" meaning="${fields[4]}"

@@ -1,7 +1,7 @@
 # config
 
 > Read and change a zsh-config tool's settings, kept as JSON in `~/.custom/config/<tool>.json`.
-> Needs jq. Each tool ships a schema of its settings, defaults and meanings.
+> Needs jq. Each tool ships a schema of its settings, defaults and meanings. Exit 2 on bad usage; `-q`, `-v`, `--plain` accepted.
 
 # Getting started
 
@@ -14,11 +14,11 @@
 - `config <tool> get <key>` - the value, or the default when unset
 - `config <tool> unset <key>` - back to the default
 - `config <tool> edit` - open the JSON file in `$EDITOR`
-- `config <tool> list` - unset settings show `(default)`; no fzf or plain mode: `config <tool>` lists too
+- `config <tool> list` - unset settings show `(default)`; `pick` is the fzf picker; without fzf or in plain mode `config <tool>` lists
 
 # For tool authors
 
-- `config --schema <file> <tool> ...` - pass the schema on each call
+- `config [-s|--schema] <file> <tool> ...` - pass the schema on each call
 - `<config dir>/<tool>.schema.json` - or link the schema there once
 - `{"key": {"default": 1, "meaning": "one line"}}` - the schema shape
 - `set` turns `true`/`false` and numbers into JSON ones; other values stay strings

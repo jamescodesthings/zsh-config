@@ -11,7 +11,7 @@ function npm-update-latest() {
     return 2
   fi
 
-  local DEPS=(npm)
+  local DEPS=(npm python3 confirm)
   if ! deps $DEPS; then
     return 1
   fi
@@ -39,7 +39,7 @@ for pkg in data:
 
   local total=${#packages[@]}
   say warn "found $total outdated package(s)"
-  echo ""
+  print
 
   echo "$outdated_json" | python3 -c "
 import json, sys
@@ -54,7 +54,7 @@ for pkg, info in data.items():
     print(f'    current: {current}  ->  wanted: {wanted}  ->  latest: {latest}')
 " 2>/dev/null
 
-  echo ""
+  print
 
   local updated=0
   local skipped=0
@@ -72,7 +72,7 @@ for pkg, info in data.items():
       type_flag="--save"
     fi
 
-    print -r -- "$pkg  $current -> $latest"
+    say info "$pkg  $current -> $latest"
 
     if confirm "  update ${pkg}@latest ($type_flag)?"; then
       say info "running: npm install ${pkg}@latest $type_flag"
@@ -83,7 +83,7 @@ for pkg, info in data.items():
         say ok "updated $pkg to latest"
         (( updated++ ))
       else
-        print -r -- "$npm_output"
+        print -r -u2 -- "$npm_output"
         problem "could not update $pkg"
         fix "npm install ${pkg}@latest $type_flag" "run it by hand to see the error"
       fi
@@ -92,7 +92,7 @@ for pkg, info in data.items():
       (( skipped++ ))
     fi
 
-    echo ""
+    print
   done
 
   say ok "updated: $updated, skipped: $skipped"

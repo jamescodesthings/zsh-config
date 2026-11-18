@@ -7,7 +7,7 @@
 - `ls` - eza with folders first, when eza is installed
 - `lla`, `la` - list everything, long; list everything
 - `l1`, `l1a`, `la1` - one per line; one per line with hidden files
-- `l` - tree view through k
+- `l` - long listing with git status, through `k -h`
 - `cx [file]` - make a file executable
 - `cpo`, `mvo`, `ddo`, `taro`, `rsynco`, `gzipo`, `gunzipo`, `bzip2o`, `bunzip2o`, `xzo`, `unxzo`, `zipo`, `unzipo` - the original command, past the progress wrapper
 - `copy`, `paste` - the clipboard (pbcopy or xclip)

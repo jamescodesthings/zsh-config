@@ -7,6 +7,7 @@
 
 - `-n, --lines N` - show the newest N logs (default 20; N must be a positive number)
 - `--plain` - no colour
+- `[-q|--quiet|-v|--verbose]` - accepted
 
 # Examples
 

@@ -49,7 +49,7 @@ function _progress_anim() {
   col -v head heading
   col -v num num
   col -v dim prose-60
-  [[ -n "$spin" ]] && off=$'\e[0m'
+  col -v off reset
 
   trap - EXIT
   trap 'exit 0' TERM INT HUP
@@ -111,7 +111,7 @@ function _progress_finish() {
   cli-icon -v icon "$([[ "$role" == ok ]] && print done || print fail)"
   col -v on "$role"
   col -v head heading
-  [[ -n "$on" ]] && off=$'\e[0m'
+  col -v off reset
   local elapsed
   printf -v elapsed '%.1f' $(( EPOCHREALTIME - _PROGRESS_START ))
   print -r -- "${on}${icon}  ${word}${off}  ${head}${_PROGRESS_TITLE}${off}  ${on}${detail//@elapsed@/${elapsed}s}${off}" >&2
@@ -120,7 +120,7 @@ function _progress_finish() {
 function progress() {
   autoload -Uz cheat-help cli-icon col say
   emulate -L zsh
-  cheat-help progress "$@" && return 0
+  cheat-help cli progress "$@" && return 0
   zmodload zsh/datetime 2> /dev/null
   local sub="$1"
   shift

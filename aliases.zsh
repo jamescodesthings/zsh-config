@@ -133,19 +133,12 @@ fi
 
 if is not empty "$PICO8"; then
   EXTRA_PARAMS=""
-  BACKGROUND=0
 
-  if is equal "$(get-hostname)" "zerocalc"; then
-    BACKGROUND=0
-  else
+  if is not equal "$(get-hostname)" "zerocalc"; then
     EXTRA_PARAMS="-width 512 -height 512 -window_x 0 -window_y 0"
   fi
 
-  if [ $BACKGROUND -eq 1 ]; then
-    alias pico="nohup $PICO8 $EXTRA_PARAMS &"
-  else
-    alias pico="$PICO8 $EXTRA_PARAMS"
-  fi
+  alias pico="$PICO8 $EXTRA_PARAMS"
   alias pico-8="pico"
   alias pico8="pico"
 
@@ -191,6 +184,4 @@ if is osx; then
   if is existing "/Applications/QSpace Pro.app"; then
     alias qspace="open -a '/Applications/QSpace Pro.app'"
   fi
-elif is linux; then
-  alias open="xdg-open"
 fi

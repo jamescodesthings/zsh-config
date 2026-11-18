@@ -1,0 +1,33 @@
+#compdef log
+
+_log() {
+  local -a subs
+  subs=(
+    'list:list the logs, newest last'
+    'open:view a log'
+  )
+  local -a common=(
+    '--plain[no colour or animation]'
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]'
+    '(-v --verbose)'{-v,--verbose}'[say more]'
+    '(-h --help)'{-h,--help}'[show the sheet]'
+  )
+
+  if (( CURRENT == 2 )); then
+    _describe -t commands 'log command' subs
+    _arguments -s $common
+    return
+  fi
+
+  case "$words[2]" in
+    list)
+      _arguments -s $common '(-n --lines)'{-n,--lines}'[how many logs to show]:lines:' ;;
+    open)
+      local -a which=('last:the newest log' 'child:the newest child log' '~1:the one before the newest')
+      _arguments -s $common '(-e --editor)'{-e,--editor}'[edit the log instead of viewing it]' \
+        '1:log:->which'
+      [[ "$state" == which ]] && _describe -t logs 'log' which ;;
+  esac
+}
+
+_log "$@"

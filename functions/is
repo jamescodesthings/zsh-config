@@ -111,9 +111,9 @@ function is() {
         m1)
             [[ "$(uname)" == "Darwin" && "$(uname -m)" == "arm64" ]]; return $?;;
         windows)
-            echo $(uname) | grep "MINGW"; return $?;;
+            [[ "$(uname)" == *MINGW* ]]; return $?;;
         ubuntu)
-            echo $(uname -a) | grep "Ubuntu"; return $?;;
+            [[ "$(uname -a)" == *Ubuntu* ]]; return $?;;
         tty)
             [[ "$(uname)" == "Linux" && -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" ]]; return $?;;
         gnome)

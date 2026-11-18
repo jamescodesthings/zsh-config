@@ -1,8 +1,8 @@
 #!/usr/bin/env zsh
 
-# Checks that cheatsheets render with cheat. tldr (tlrc) is cheat's first
-# renderer, and it refuses a page with any line it does not understand, so a
-# sheet that looks fine in an editor can still error when shown.
+# Checks that cheatsheets render with cheat. cheat-render, cheat's renderer,
+# reads a subset of markdown, so a sheet that looks fine in an editor can
+# still show badly or fail when shown.
 function cheatsheet-test() {
   # The caller's options must not matter: other projects call this from their
   # own scripts, where glob qualifiers or extended globs may be switched off.

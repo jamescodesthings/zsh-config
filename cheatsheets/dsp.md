@@ -12,6 +12,8 @@
 
 - `[-h|--help]` - show this sheet
 - `[--plain]` - no colour
+- `[-q|--quiet|-v|--verbose]` - accepted, not passed to docker
+- Exit: 1 when docker is missing
 
 # See also
 

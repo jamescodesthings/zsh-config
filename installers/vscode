@@ -3,7 +3,7 @@
 source "${0:a:h}/_stub"
 
 check-or-load install-link
-check-or-load install-link
+check-or-load install-box-config
 
 CONFIG_DIR="$REPO_DIR/configs/vscode"
 
@@ -27,7 +27,7 @@ if is linux; then
 fi
 
 if [ "$DEST_DIR" = "" ]; then
-  echo "Could not identify system, update ./install"
+  say fail "Could not identify system, update ./installers/vscode"
   exit 1
 fi
 

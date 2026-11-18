@@ -2,7 +2,15 @@
 # Focus visible window matching WM_CLASS. Returns 0 if focused, 1 if not found.
 # Usage: focus-window-by-class <class>
 
-CLASS="${1:?Usage: focus-window-by-class <class>}"
+case "${1:-}" in
+    -h|--help)
+        if command -v cheat >/dev/null 2>&1; then exec cheat gnome-bin; fi
+        sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'
+        exit 0 ;;
+esac
+
+CLASS="${1:-}"
+if [ -z "$CLASS" ]; then echo "Usage: focus-window-by-class <class>" >&2; exit 2; fi
 
 _extension_focus() {
     command -v gdbus &>/dev/null || return 1

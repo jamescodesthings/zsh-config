@@ -333,7 +333,7 @@ function j() {
   local _H _F _T _N _W _O _P _D _R
   col -v _H heading; col -v _F flag; col -v _T target; col -v _N num
   col -v _W warn; col -v _O ok; col -v _P prose; col -v _D dim
-  [[ -n "$_H" ]] && _R=$'\e[0m'
+  col -v _R reset
   if (( ! $+functions[_z] )); then
     say fail "z plugin not loaded (rupa/z required)"
     return 1
@@ -405,7 +405,10 @@ function j() {
       echo ""
       if confirm "Delete ${#matches[@]} entries?"; then
         local query_escaped="${query//\//\\/}"
-        LC_ALL=C sed -i -E "/$query_escaped/d" "$data_file"
+        # no sed -i: its argument differs between BSD and GNU sed
+        local sedtmp; sedtmp=$(mktemp) || return 1
+        LC_ALL=C command sed -E "/$query_escaped/d" "$data_file" >| "$sedtmp" && command cat "$sedtmp" >| "$data_file"
+        command rm -f "$sedtmp"
         say ok "deleted ${#matches[@]} entries"
       else
         say warn "cancelled"

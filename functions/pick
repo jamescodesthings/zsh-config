@@ -12,7 +12,7 @@
 function pick() {
   autoload -Uz cheat-help col say
   emulate -L zsh
-  cheat-help pick "$@" && return 0
+  cheat-help cli pick "$@" && return 0
 
   local var=""
   while (( $# )); do

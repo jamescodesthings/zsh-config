@@ -56,7 +56,7 @@ function print-error-log() {
   col -v errc err
   col -v warnc warn
   col -v dimc dim
-  [[ -n "$errc" ]] && off=$'\e[0m'
+  [[ -n "$errc" ]] && col -v off reset
   cli-icon -v wi warn
   cli-icon -v ei err
   for line in "${(@f)$(< "$1")}"; do
@@ -384,7 +384,7 @@ RUN_STARTED="${UPDATE_ERROR_LOG:t:r:r}"
 if [[ -s "$UPDATE_ERROR_LOG" ]]; then
   echo "$RUN_STARTED logged" > "$LOG_DIR/last-run"
   col -v HEAD heading
-  [[ -n "$HEAD" ]] && HEAD_OFF=$'\e[0m'
+  [[ -n "$HEAD" ]] && col -v HEAD_OFF reset
   print -r -- "${HEAD}errors and warnings from this run${HEAD_OFF}"
   print-error-log "$UPDATE_ERROR_LOG"
   say info "error log: $UPDATE_ERROR_LOG"

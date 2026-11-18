@@ -5,7 +5,7 @@
 # Getting started
 
 - `zshconfig` - change into the config directory
-- `zshconfig -e` or `zshconfig --edit`: open it in VS Code, else micro on `.zshrc`
+- `zshconfig [-e|--edit]` - open it in VS Code, else micro on `.zshrc`
 - `zshenv` - edit this machine's env file (`env.<hostname>.zsh`, in micro)
 - Next: `reload <function>` picks up a function you changed
 
@@ -25,7 +25,8 @@
 
 - `--plain` - no colour or animation
 - `-q`, `--quiet` - print only warnings and errors
-- Exit: 0 done, 1 failed, 2 wrong usage
+- `-v`, `--verbose` - accepted
+- Exit: 0 done, 1 no editor found, 2 unknown argument
 
 # See also
 

@@ -144,4 +144,36 @@ expect_error "j move: same path" j move /a/p /a/p/
 expect_error "j move: new inside old" j move /a/p /a/p/sub
 expect_error "j move: nothing to move" j move /nothing /elsewhere
 
+# ---- delete works with BSD and GNU sed: no backup file, only matches go ----
+reset_hist
+put "$(hfile /a/proj)" ': 100:0;ls\n: 101:0;rm secret\n: 102:0;pwd\n'
+export CLI_YES=1
+run hist delete secret
+check "hist delete: exit 0" "$CODE" 0
+check "hist delete: matching line gone" "$(cat "$(hfile /a/proj)")" ': 100:0;ls
+: 102:0;pwd'
+check "hist delete: no sed backup left" "$(ls "$HB/a/proj")" "$HF"
+run hist delete
+check "hist delete: no query is a usage error (2)" "$CODE" 2
+run hist search
+check "hist search: no query is a usage error (2)" "$CODE" 2
+run hist nonsense
+check "hist unknown subcommand is a usage error (2)" "$CODE" 2
+
+put "$_Z_DATA" '/x|1|5\n/gone/p|10|1000\n/y|2|6\n'
+run j delete gone
+check "j delete: exit 0" "$CODE" 0
+check "j delete: matching entry gone" "$(cat "$_Z_DATA")" '/x|1|5
+/y|2|6'
+check "j delete: no sed backup left" "$(ls "$TMP" | grep -c '^z-E$')" 0
+# hist list -q and hist search -q print commands only, with no headers
+mkdir -p "$TMP/home"; printf ': 1:0;echo hi\n' > "$TMP/home/.zsh_history"
+reset_hist
+HOME="$TMP/home" run hist list -q
+check "hist list -q: commands only" "$([[ $OUT == *"echo hi"* && $OUT != *"(global)"* ]] && echo yes)" yes
+HOME="$TMP/home" run hist search hi -q
+check "hist search -q: commands only" "$([[ $OUT == *echo* && $OUT != *"(global)"* ]] && echo yes)" yes
+
+unset CLI_YES
+
 exit $failed

@@ -32,6 +32,10 @@ function zshconfig() {
     problems
     return 1
   fi
+
+  say fail "zshconfig: unknown argument $1"
+  say info "see: cheat zshconfig"
+  return 2
 }
 
 zshconfig "$@"

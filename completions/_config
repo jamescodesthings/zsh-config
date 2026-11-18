@@ -1,0 +1,29 @@
+#compdef config
+
+_config() {
+  local -a subs
+  subs=(
+    'list:show every setting with its value'
+    'get:print one setting'
+    'set:change one setting'
+    'unset:go back to the default'
+    'edit:open the config file'
+    'pick:choose a setting with fzf'
+  )
+
+  _arguments -s \
+    '--plain[no colour or animation]' \
+    '(-q --quiet)'{-q,--quiet}'[print only warnings and errors]' \
+    '(-v --verbose)'{-v,--verbose}'[say more]' \
+    '(-h --help)'{-h,--help}'[show the sheet]' \
+    '(-s --schema)'{-s,--schema}'[the tool'\''s schema file]:schema:_files' \
+    '1:tool:' \
+    '2:subcommand:->sub' \
+    '*::setting:->key'
+
+  case "$state" in
+    sub) _describe -t commands 'config command' subs ;;
+  esac
+}
+
+_config "$@"

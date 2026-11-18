@@ -5,7 +5,7 @@
 
 # Getting started
 
-- `install-link <from> <to>` - e.g. `install-link ./configs/asdf/.asdfrc ~/.asdfrc`
+- `install-link <from> <to>` - e.g. `install-link ./configs/micro/settings.json ~/.config/micro/settings.json`
 - Next: `install-box-config` picks a per-machine `<from>` for you
 
 # Existing target

@@ -5,7 +5,7 @@
 
 # Options
 
-- `[-r|--recursive] [dir]` - every .md under dir; skips hidden folders such as .git, and node_modules
+- `[-r|--recursive] <dir>` - every .md under dir (the folder is required); skips hidden folders such as .git, and node_modules
 - `--combine` - also join the pdfs, in order, into `<this folder's name>.pdf` in this folder
 - `[-f|--force]` - replace that combined pdf when it exists
 - `--plain` - no colour or animation

@@ -12,12 +12,12 @@ function git-i-really-fucked-up() {
   )
 
   if ! deps $DEPS; then
-    return
+    return 1
   fi
 
   local BRANCH="origin/$(git-branch)"
   if confirm "are you sure you want to reset to $BRANCH?"; then
-    git reset --hard $BRANCH || { say fail "could not reset to $BRANCH"; return 1 }
+    git reset --hard "$BRANCH" || { say fail "could not reset to $BRANCH"; return 1 }
     say ok "reset to $BRANCH"
   fi
 }

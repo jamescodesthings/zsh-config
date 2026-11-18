@@ -36,7 +36,7 @@ function _run_quiet_log() {
 function run-quiet() {
   autoload -Uz cheat-help say problem fix progress
   emulate -L zsh
-  cheat-help run-quiet "$@" && return 0
+  cheat-help cli run-quiet "$@" && return 0
 
   if (( $# < 2 )); then
     say fail "run-quiet: needs a label and a command"

@@ -31,5 +31,5 @@
 
 # See also
 
-- One sheet each: `cheat cli col`, `cheat cli progress`, `cheat cli sheets`
+- One sheet each: `cheat cli col`, `cheat cli pick`, `cheat cli progress`, `cheat cli run-quiet`, `cheat cli sheets`
 - `cheat zsh-config` - everything zsh-config gives you
