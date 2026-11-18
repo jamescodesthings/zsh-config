@@ -185,15 +185,16 @@ function cheat() {
 
 # Getting started
 
-- The first thing to run:
-
-\`$new_name\`
-
+- \`$new_name\` - the first thing to run
 - Next: what to do once that works
 
 # Usage
 
 - \`$new_name <command> [target] [--flag]\` - what it does
+
+# Examples
+
+- \`$new_name <command> now\` - what this example does
 
 # See also
 

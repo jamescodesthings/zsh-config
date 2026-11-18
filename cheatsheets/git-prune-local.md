@@ -11,9 +11,7 @@
 
 # Examples
 
-- Run `git fetch --prune` first so gone branches show, then list and prune:
-
-`git-prune-local`
+- `git-prune-local` - run `git fetch --prune` first so gone branches show, then list and prune
 
 # See also
 

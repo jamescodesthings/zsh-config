@@ -5,17 +5,9 @@
 
 # Examples
 
-- Print a sheet's markdown:
-
-`cheat raw git`
-
-- Several words join with `-`:
-
-`cheat raw git commit`
-
-- The same through the show form:
-
-`cheat git --raw`
+- `cheat raw git` - print a sheet's markdown
+- `cheat raw git commit` - several words join with `-`
+- `cheat git --raw` - the same through the show form
 
 # See also
 

@@ -4,9 +4,7 @@
 
 # Examples
 
-- Show stats:
-
-`j stats`
+- `j stats` - show stats
 
 # See also
 

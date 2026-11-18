@@ -12,11 +12,9 @@
 
 # Examples
 
-`key push hub`
-
-`key push hub -y`
-
-`key push hub --from ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY -y`
+- `key push hub` - send the stored key to 1Password, asking first
+- `key push hub -y` - send it without asking
+- `key push hub --from ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY -y` - import the key from that file, then send it without asking
 
 # See also
 

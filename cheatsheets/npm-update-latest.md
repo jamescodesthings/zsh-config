@@ -10,9 +10,7 @@
 
 # Examples
 
-- Walk the outdated packages:
-
-`npm-update-latest`
+- `npm-update-latest` - walk the outdated packages
 
 # See also
 

@@ -9,17 +9,15 @@
 
 # Examples
 
-- Move entries:
+- `j move <old> <new>` - move entries
+- `j move --dry-run <old> <new>` - preview only
 
-`j move <old> <new>`
+# Notes
 
-- Preview only:
-
-`j move --dry-run <old> <new>`
+- Exit: 0 done, 1 bad arguments or nothing to move
 
 # See also
 
 - `cheat j` - the top sheet
 - `cheat j clean`
 - `cheat hist move`
-- Exit: 0 done, 1 bad arguments or nothing to move

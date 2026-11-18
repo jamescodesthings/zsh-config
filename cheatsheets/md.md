@@ -20,13 +20,8 @@
 
 # Examples
 
-- Make and enter:
-
-`md ~/projects/my-app`
-
-- Make without entering:
-
-`md --no-follow dist/assets`
+- `md ~/projects/my-app` - make and enter
+- `md --no-follow dist/assets` - make without entering
 
 # See also
 

@@ -5,9 +5,7 @@
 
 # Examples
 
-- Delete matching entries:
-
-`j delete <regex>`
+- `j delete <regex>` - delete matching entries
 
 # See also
 

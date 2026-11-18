@@ -4,9 +4,7 @@
 
 # Examples
 
-- Show counts:
-
-`hist stats`
+- `hist stats` - show counts
 
 # See also
 

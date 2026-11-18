@@ -11,9 +11,7 @@
 
 # Examples
 
-- Delete the branch:
-
-`git-cleanup-branch <branch>`
+- `git-cleanup-branch <branch>` - delete the branch
 
 # See also
 

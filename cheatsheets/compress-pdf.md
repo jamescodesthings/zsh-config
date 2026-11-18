@@ -15,9 +15,7 @@
 
 # Examples
 
-- One document:
-
-`compress-pdf report.pdf`
+- `compress-pdf report.pdf` - one document
 
 # See also
 

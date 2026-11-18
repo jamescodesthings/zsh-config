@@ -11,17 +11,18 @@
 
 # Examples
 
-- The newest 20:
+- `log list` - the newest 20
+- `log list -n 50` - the newest 50
 
-`log list`
+# Notes
 
-- The newest 50:
+- Exit: 0 done, 2 bad option
 
-`log list -n 50`
+# Variables
+
+- `CLI_LOG_DIR` - moves the log folder
 
 # See also
 
 - `cheat log` - the top sheet
 - `cheat log open` - view a log by its handle
-- `CLI_LOG_DIR` - moves the log folder
-- Exit: 0 done, 2 bad option

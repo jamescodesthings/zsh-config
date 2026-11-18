@@ -13,9 +13,8 @@
 
 # Examples
 
-`key cycle hub -n`
-
-`key cycle hub -y --to ~/projects/personal/hub/.env`
+- `key cycle hub -n` - say what a cycle would do, change nothing
+- `key cycle hub -y --to ~/projects/personal/hub/.env` - cycle without asking and rewrite the key line in that file
 
 # See also
 

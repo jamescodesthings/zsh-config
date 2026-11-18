@@ -15,6 +15,7 @@
 - `problem <text>`, `fix <cmd> [why]` - collect; `problems` prints
 - `col [-v VAR] <name>` - a palette colour escape
 - `-q`, `-v` - `cli-init` sets `CLI_QUIET` (silences ok, info) and `CLI_VERBOSE`
+- `--plain`, `NO_COLOR`, no tty: no colour or animation; `CLICOLOR_FORCE=1` keeps colour
 
 # Work
 
@@ -25,11 +26,10 @@
 - `log-start <command>`, `log-line <text>` - open a log, add to it
 - `config [--schema FILE] <tool>` - the tool's settings
 
-# Plain mode
-
-- `--plain`, `NO_COLOR`, no tty: no colour or animation; `CLICOLOR_FORCE=1` keeps colour
-
 # See also
 
-- One sheet each: `cheat cli col`, `cheat cli pick`, `cheat cli progress`, `cheat cli run-quiet`, `cheat cli sheets`
+- `cheat cli col`, `cheat cli pick` - colours and the picker
+- `cheat cli progress` - spinner and steps
+- `cheat cli run-quiet` - quiet runs
+- `cheat cli sheets` - writing a sheet
 - `cheat zsh-config` - everything zsh-config gives you

@@ -14,9 +14,7 @@
 
 # Examples
 
-- Remove vim and its orphans:
-
-`aptr vim`
+- `aptr vim` - remove vim and its orphans
 
 # See also
 

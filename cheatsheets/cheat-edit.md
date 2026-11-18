@@ -5,13 +5,8 @@
 
 # Examples
 
-- Edit a sheet:
-
-`cheat edit git`
-
-- Several words join with `-`, so this opens `git-commit.md`:
-
-`cheat edit git commit`
+- `cheat edit git` - edit a sheet
+- `cheat edit git commit` - several words join with `-`, so this opens `git-commit.md`
 
 # See also
 

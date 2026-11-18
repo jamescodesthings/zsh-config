@@ -24,8 +24,11 @@
 - Third-party tools: `cheat git`, `cheat docker`, `cheat fzf`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat npm`, `cheat apt`, `cheat asdf`, `cheat zinit`
 - Small tools: `cheat aptr`, `cheat dsp`, `cheat picoh`, `cheat zshenv`, `cheat test-color-24bit`; notes: `cheat pico-8`, `cheat raspi`, `cheat zerocalc`
 
+# Notes
+
+- `CLAUDE.md` - how agents work in the repo
+
 # See also
 
 - `cheat cheat format` - the sheet format every repo follows
 - `cheat zshconfig` - edit the config
-- `CLAUDE.md` - how agents work in the repo

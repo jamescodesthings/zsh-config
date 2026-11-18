@@ -11,7 +11,7 @@
 
 # Examples
 
-`key import hub --from ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY`
+- `key import hub --from ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY` - store the key held in that file's `SKILLS_ENCRYPTION_KEY` line
 
 # See also
 

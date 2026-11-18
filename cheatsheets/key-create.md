@@ -12,9 +12,8 @@
 
 # Examples
 
-`key create hub`
-
-`key create hub --to ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY`
+- `key create hub` - make the key `hub` in the store
+- `key create hub --to ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY` - make it and also write `SKILLS_ENCRYPTION_KEY=key` into that file
 
 # See also
 

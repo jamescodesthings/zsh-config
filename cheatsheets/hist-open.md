@@ -4,9 +4,7 @@
 
 # Examples
 
-- Open the folder:
-
-`hist open`
+- `hist open` - open the folder
 
 # See also
 

@@ -11,7 +11,7 @@
 
 # Examples
 
-`key export hub --to ~/projects/personal/hub/.env`
+- `key export hub --to ~/projects/personal/hub/.env` - write the stored key into that file
 
 # See also
 

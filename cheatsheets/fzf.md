@@ -15,9 +15,7 @@
 - `fzf` - filter lines from stdin, prints the pick
 - `ls | fzf -m` - multi-select, tab marks, enter confirms
 - `fzf --preview 'bat --color=always {}'` - preview the file under the cursor
-- Check out a branch:
-
-`git branch | fzf | xargs git checkout`
+- `git branch | fzf | xargs git checkout` - check out a branch
 
 # See also
 

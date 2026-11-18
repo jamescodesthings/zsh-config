@@ -20,20 +20,15 @@
 
 # Examples
 
-- Set a variable:
+- `col -v on err` - set a variable
+- `col --list` - look at the whole palette
+- `col --hex blue-75` - resolve a mix
 
-`col -v on err`
+# Notes
 
-- Look at the whole palette:
-
-`col --list`
-
-- Resolve a mix:
-
-`col --hex blue-75`
+- Exit: 0 done, 1 unknown colour or alias loop, 2 bad option
 
 # See also
 
 - `cheat cli` - the top sheet
 - `cheat cli sheets` - colour spans in a sheet
-- Exit: 0 done, 1 unknown colour or alias loop, 2 bad option

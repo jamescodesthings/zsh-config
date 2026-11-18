@@ -5,17 +5,13 @@
 
 # Examples
 
-- Create a sheet:
+- `cheat new my-tool` - create a sheet
+- `cheat edit my-tool` - fill it in
+- `cheatsheet-test cheatsheets/my-tool.md` - check it
 
-`cheat new my-tool`
+# Notes
 
-- Fill it in:
-
-`cheat edit my-tool`
-
-- Check it:
-
-`cheatsheet-test cheatsheets/my-tool.md`
+- The template follows the format and passes `--strict`: title, `>` line, Getting started, Usage, Examples as rows, See also with pointers
 
 # See also
 
@@ -23,4 +19,3 @@
 - `cheat edit <name>` - fill it in
 - `cheat cheatsheet-test`
 - `cheat link-cheatsheets`
-- The template is a stub (title, `>` line, `# Usage`, `# Related commands`); reshape it to the format

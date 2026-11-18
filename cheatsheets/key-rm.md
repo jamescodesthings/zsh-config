@@ -11,9 +11,8 @@
 
 # Examples
 
-`key rm hub -n`
-
-`key rm hub -y`
+- `key rm hub -n` - list the files and warnings, move nothing
+- `key rm hub -y` - move the key's files to `removed/` without asking
 
 # See also
 

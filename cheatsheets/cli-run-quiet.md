@@ -11,17 +11,15 @@
 
 # Examples
 
-- Run one command quietly:
+- `run-quiet "brew" brew update` - run one command quietly
+- `problems` - show what failed at the end
 
-`run-quiet "brew" brew update`
+# Notes
 
-- Show what failed at the end:
-
-`problems`
+- Exit: the command's own code, 1 when the log cannot be made, 2 without a label and a command
 
 # See also
 
 - `cheat cli` - the top sheet
 - `cheat cli progress` - the spinner it advances
 - `cheat log` - read the child logs
-- Exit: the command's own code, 1 when the log cannot be made, 2 without a label and a command

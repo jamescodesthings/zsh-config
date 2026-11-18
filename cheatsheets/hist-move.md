@@ -9,17 +9,15 @@
 
 # Examples
 
-- Move history:
+- `hist move <old> <new>` - move history
+- `hist move --dry-run <old> <new>` - preview only
 
-`hist move <old> <new>`
+# Notes
 
-- Preview only:
-
-`hist move --dry-run <old> <new>`
+- Exit: 0 done, 1 bad arguments or nothing to move
 
 # See also
 
 - `cheat hist` - the top sheet
 - `cheat hist clean`
 - `cheat j move`
-- Exit: 0 done, 1 bad arguments or nothing to move

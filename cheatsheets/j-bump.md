@@ -5,9 +5,7 @@
 
 # Examples
 
-- Bump the matching entry:
-
-`j bump <regex>`
+- `j bump <regex>` - bump the matching entry
 
 # See also
 

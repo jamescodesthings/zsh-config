@@ -12,9 +12,9 @@
 
 # Examples
 
-`key pull hub`
+- `key pull hub` - read the key from 1Password into the store
 
-`key pull hub --to ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY`
+- `key pull hub --to ~/projects/personal/hub/.env --var SKILLS_ENCRYPTION_KEY` - pull it and also write it into that file
 
 # See also
 

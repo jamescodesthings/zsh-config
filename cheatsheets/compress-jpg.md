@@ -15,9 +15,7 @@
 
 # Examples
 
-- One photo:
-
-`compress-jpg holiday.jpg`
+- `compress-jpg holiday.jpg` - one photo
 
 # See also
 

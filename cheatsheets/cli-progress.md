@@ -15,22 +15,17 @@
 
 # Examples
 
-- Five steps:
+- `progress start "update" 5` - five steps
+- `run-quiet "brew" brew update` - run one quietly
+- `progress done` - finish
 
-`progress start "update" 5`
+# Notes
 
-- Run one quietly:
-
-`run-quiet "brew" brew update`
-
-- Finish:
-
-`progress done`
+- In kitty the tab shows a progress bar after 2 seconds
+- A failed `run-quiet` records a `problem` and a `fix`; print them with `problems`
+- Exit: 0 done, 1 no run active, 2 bad arguments
 
 # See also
 
 - `cheat cli` - the top sheet
 - `cheat log` - read the child logs
-- In kitty the tab shows a progress bar after 2 seconds
-- A failed `run-quiet` records a `problem` and a `fix`; print them with `problems`
-- Exit: 0 done, 1 no run active, 2 bad arguments

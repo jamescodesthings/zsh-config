@@ -8,7 +8,7 @@
 - `# heading` - a section
 - `> text` - prose under the title
 - `- text` - a prose item
-- A backtick line - an example, alone on its line, ending in a backtick
+- An example is a row, `command` - what it does; a bare backtick line fails `--strict`
 
 # Rows
 
@@ -25,7 +25,8 @@
 
 # Order
 
-- `# Getting started` first, `# See also` last, exactly
+- `# Getting started` first, `# See also` last, exactly, with `cheat` or `tldr` pointers only
+- Quirks go in `# Notes` above See also
 - `# Variables`, when present, just before the last section
 
 # See also

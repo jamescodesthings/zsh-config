@@ -13,9 +13,12 @@
 - `git-speedup` - what is missing in this repo
 - `git-speedup --apply` - set it all
 
+# Notes
+
+- `scalar register` - does more for one repo; `git sparse-checkout` cuts the tree itself
+- The prompt hides dirty counts above 100k files, since gitstatusd cannot use fsmonitor
+
 # See also
 
 - `cheat functions git` - the other git functions
 - `cheat aliases git` - git aliases; `gstu` is a fast `git status`
-- `scalar register` - does more for one repo; `git sparse-checkout` cuts the tree itself
-- The prompt hides dirty counts above 100k files, since gitstatusd cannot use fsmonitor

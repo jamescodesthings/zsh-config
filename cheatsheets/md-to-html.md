@@ -13,17 +13,9 @@
 
 # Examples
 
-- Convert one file:
-
-`md-to-html notes.md`
-
-- Convert several:
-
-`md-to-html *.md`
-
-- Write elsewhere:
-
-`md-to-html notes.md -o ~/Desktop/notes.html`
+- `md-to-html notes.md` - convert one file
+- `md-to-html *.md` - convert several
+- `md-to-html notes.md -o ~/Desktop/notes.html` - write elsewhere
 
 # See also
 

@@ -10,9 +10,7 @@
 
 # Examples
 
-- Clean every plugin:
-
-`asdf-cleanup`
+- `asdf-cleanup` - clean every plugin
 
 # See also
 

@@ -4,9 +4,7 @@
 
 # Examples
 
-- List entries:
-
-`j list`
+- `j list` - list entries
 
 # See also
 

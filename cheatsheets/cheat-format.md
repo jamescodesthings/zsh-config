@@ -11,7 +11,8 @@
 - A row is `- `, the command in backticks, ` - `, then what it does; options and targets show in the command
 - Flag alternatives go in brackets: `[-n|--lines N]`
 - `# Variables` - when present, just before the last section
-- `# See also` last, exactly - `cheat tool <command>`, the topic sheets, and the repo as an ordinary row
+- `# See also` last, exactly - only `cheat` or `tldr` pointers, one row each: the command and topic sheets, and the repo as an ordinary row
+- Quirks (exit codes, notes, caveats) go in `# Notes` above it, never in See also
 - Fits half a kitty window split horizontally: 35 rendered lines
 
 # Rows and spans
@@ -26,13 +27,14 @@
 
 - `# tool command`, then what it does and why in 2 `>` lines at most
 - `# Options` - every option and flag, one line each
-- `# Examples` - a description line, then the command in backticks
-- `# See also` - related sheets, then any quirks, one line each
+- `# Examples` - rows: the command in backticks, ` - `, what it does
+- `# Notes` - quirks, one line each, when there are any
+- `# See also` last - pointers only, the parent sheet as an ordinary row
 
 # Topic sheet: tool-topic.md
 
 - For a subject rather than a command (`cheat hub target`, `cheat hub messages`)
-- `# Examples` of what to run, how and why, then `# See also`
+- `# Examples` of what to run, as rows, then `# See also` with pointers only
 
 # Repo overview: repo.md
 
@@ -41,23 +43,20 @@
 
 # Lines
 
-- A line starts with `# `, `> `, `- ` or a backtick; an example line is one command ending in a backtick
+- A line starts with `# `, `> `, `- ` or a backtick; an example is a row, and a bare backtick line fails `--strict`
+- `# See also` rows are `cheat <words>` or `tldr <page>` pointers; any other row there fails `--strict`
 - No `##`, no code fences, no indenting, no wrapped lines
 - Headings are plain words; the renderer colours them, so no icons
 - Standard headings, spelled exactly and in this order, others allowed between: Getting started, Usage, Options, Examples, Variables, See also
 - A row may list several commands, each in its own backticks, joined by commas; a long list reads better as a prose item that starts with words, such as Git helpers, then the sheets
 - A word after the tool is a subcommand only when its sheet exists (`hub-join.md`); other words colour as targets
-- Colour off:
-
-`NO_COLOR=1 cheat hub`
+- `NO_COLOR=1 cheat hub` - colour off
 
 # --help
 
 - `tool [words...] --help` shows `cheat tool [words...]`, all other flags ignored
 - A word with no sheet falls back to the nearest parent: `cheat hub join all` shows `cheat hub join`
-- In a zsh tool, as its first line:
-
-`cheat-help tool "$@" && return 0`
+- `cheat-help tool "$@" && return 0` - in a zsh tool, as its first line
 
 # See also
 

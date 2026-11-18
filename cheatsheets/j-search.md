@@ -5,9 +5,7 @@
 
 # Examples
 
-- Filter entries:
-
-`j search <regex>`
+- `j search <regex>` - filter entries
 
 # See also
 

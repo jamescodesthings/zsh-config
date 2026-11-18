@@ -14,20 +14,15 @@
 
 # Examples
 
-- The latest log:
+- `log open last` - the latest log
+- `log open 1` - the one before it
+- `log open child --editor` - edit the latest child log
 
-`log open last`
+# Notes
 
-- The one before it:
-
-`log open 1`
-
-- Edit the latest child log:
-
-`log open child --editor`
+- Exit: 0 done, 1 no such log, 2 bad option
 
 # See also
 
 - `cheat log` - the top sheet
 - `cheat log list` - see the handles
-- Exit: 0 done, 1 no such log, 2 bad option

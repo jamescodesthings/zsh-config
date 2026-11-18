@@ -9,13 +9,8 @@
 
 # Examples
 
-- List all history:
-
-`hist list`
-
-- Commands only:
-
-`hist list -q`
+- `hist list` - list all history
+- `hist list -q` - commands only
 
 # See also
 

@@ -4,9 +4,7 @@
 
 # Examples
 
-- Clean stale entries:
-
-`j clean`
+- `j clean` - clean stale entries
 
 # See also
 

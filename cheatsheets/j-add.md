@@ -5,9 +5,7 @@
 
 # Examples
 
-- Add a path:
-
-`j add <path>`
+- `j add <path>` - add a path
 
 # See also
 

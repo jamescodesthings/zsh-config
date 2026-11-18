@@ -9,13 +9,8 @@
 
 # Examples
 
-- Search:
-
-`hist search <regex>`
-
-- Commands only:
-
-`hist search <regex> -q`
+- `hist search <regex>` - search
+- `hist search <regex> -q` - commands only
 
 # See also
 

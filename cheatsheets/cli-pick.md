@@ -13,16 +13,14 @@
 
 # Examples
 
-- Print the choice:
+- `pick "which branch to delete" main dev topic` - print the choice
+- `pick -v branch "which branch to delete" main dev topic` - store it
 
-`pick "which branch to delete" main dev topic`
+# Notes
 
-- Store it:
-
-`pick -v branch "which branch to delete" main dev topic`
+- Exit: 0 chosen, 1 escape or ctrl-c (prints nothing), 2 missing header, items or variable name, or no way to ask
 
 # See also
 
 - `cheat cli` - the top sheet
 - `cheat cli run-quiet` - run a command quietly
-- Exit: 0 chosen, 1 escape or ctrl-c (prints nothing), 2 missing header, items or variable name, or no way to ask

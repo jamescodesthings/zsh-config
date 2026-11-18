@@ -4,9 +4,7 @@
 
 # Examples
 
-- Clean stale files:
-
-`hist clean`
+- `hist clean` - clean stale files
 
 # See also
 

@@ -10,9 +10,7 @@
 
 # Examples
 
-- Compress the folder:
-
-`compress-jpg-all`
+- `compress-jpg-all` - compress the folder
 
 # See also
 

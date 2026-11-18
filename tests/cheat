@@ -124,4 +124,22 @@ else
   failed=1
 fi
 
+# cheat new writes a sheet that passes --strict unchanged (temp folders only)
+NEWTMP="$TMP/new"
+mkdir -p "$NEWTMP/custom/cheatsheets" "$NEWTMP/sheets" "$NEWTMP/home"
+NEWOUT="$(HOME="$NEWTMP/home" zsh -f -c '
+  fpath=("$1/functions" $fpath)
+  autoload -Uz is cheat cheat-help cheat-render cheatsheet-test link-cheatsheets say cli-init cli-icon col problem fix problems
+  export CHEATSHEET_DIR="$2/sheets" CUSTOM_DIR="$2/custom" HOME="$2/home"
+  path=(/usr/bin /bin)
+  cheat new mytool && cheatsheet-test --strict "$CUSTOM_DIR/cheatsheets/mytool.md"
+' _ "$REPO_DIR" "$NEWTMP" 2>&1)"
+if [[ $? == 0 ]]; then
+  echo "ok: cheat new makes a sheet that passes cheatsheet-test --strict"
+else
+  echo "FAIL: cheat new makes a sheet that passes cheatsheet-test --strict:"
+  print -r -- "$NEWOUT" | sed 's/^/    /'
+  failed=1
+fi
+
 exit $failed

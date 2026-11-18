@@ -18,7 +18,7 @@
 
 # Examples
 
-`./install --plain`
+- `./install --plain` - run every installer with no colour or animation
 
 # See also
 

@@ -9,13 +9,8 @@
 
 # Examples
 
-- Reorder the top 10:
-
-`j reorder`
-
-- Reorder the top N:
-
-`j reorder --count 20`
+- `j reorder` - reorder the top 10
+- `j reorder --count 20` - reorder the top N
 
 # See also
 

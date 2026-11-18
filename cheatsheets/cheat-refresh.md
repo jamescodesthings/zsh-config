@@ -5,9 +5,7 @@
 
 # Examples
 
-- Update the cache:
-
-`cheat refresh`
+- `cheat refresh` - update the cache
 
 # See also
 

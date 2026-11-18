@@ -8,9 +8,7 @@
 
 # Examples
 
-- Use it in a script:
-
-`git push origin "$(git-branch)"`
+- `git push origin "$(git-branch)"` - use it in a script
 
 # See also
 

@@ -182,9 +182,18 @@ function cheatsheet-test() {
     # the source never pads it, and flag alternatives sit in [ ].
     local row_pat='(#b)- (`[^`]##`(, `[^`]##`)#)( - |: )*' colon_pat='- `[^`]##`(, `[^`]##`)#: *'
     local pad_pat='- `[^`]##`(, `[^`]##`)#(  ## - *|:  ##*)'
+    # Examples are rows, and See also holds only cheat or tldr pointers.
+    local in_section="" pointer_pat='- `(cheat|tldr) *'
     number=0
     while IFS= read -r line || is not empty "$line"; do
       number+=1
+      [[ "$line" == '# '* ]] && in_section="${line#\# }"
+      if [[ "$line" == '`'* ]]; then
+        # a skill sheet keeps its lighter rules: bare example lines stay allowed
+        (( skill )) || warnings+=("line $number: an example is a row, \`command\` - what it does, not a bare line")
+      elif [[ "$in_section" == "See also" && "$line" == '- '* && "$line" != ${~pointer_pat} ]]; then
+        warnings+=("line $number: See also holds only \`cheat ...\` or \`tldr ...\` pointers; move this to a Notes section above it")
+      fi
       if [[ "$line" == ${~pad_pat} ]]; then
         warnings+=("line $number: do not pad a row by hand; the renderer aligns the second column")
       elif [[ "$line" == ${~colon_pat} ]]; then

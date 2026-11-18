@@ -4,9 +4,7 @@
 
 # Examples
 
-- Open $_Z_DATA (default ~/.z):
-
-`j edit`
+- `j edit` - open $_Z_DATA (default ~/.z)
 
 # See also
 

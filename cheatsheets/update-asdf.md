@@ -11,11 +11,11 @@
 
 # Examples
 
-`UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf`
-`ASDF_PIN_ROOTS="$HOME/projects:$HOME/work" update asdf`
-`gh auth login`
-`xcodes install --latest`
-`brew upgrade --cask <name>`
+- `UPDATE_ASDF_DRY_RUN=1 ~/.custom/updaters/040-asdf` - print what the updater would do
+- `ASDF_PIN_ROOTS="$HOME/projects:$HOME/work" update asdf` - also protect versions pinned under another folder
+- `gh auth login` - log gh in, so the GitHub API limit stops biting
+- `xcodes install --latest` - install Xcode by hand when its updater cannot
+- `brew upgrade --cask <name>` - upgrade a cask that needs root, outside the update run
 
 # See also
 

@@ -11,9 +11,7 @@
 
 # Examples
 
-- Reset to origin:
-
-`git-i-really-fucked-up`
+- `git-i-really-fucked-up` - reset to origin
 
 # See also
 

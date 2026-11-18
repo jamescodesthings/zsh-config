@@ -27,7 +27,7 @@
 
 # Examples
 
-`wipcrypt cycle-key --key hub --env ~/projects/personal/hub/.env`
+- `wipcrypt cycle-key --key hub` - cycle the key and re-encrypt every pair
 
 # See also
 

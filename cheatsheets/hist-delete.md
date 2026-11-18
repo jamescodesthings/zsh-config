@@ -5,9 +5,7 @@
 
 # Examples
 
-- Delete matching lines:
-
-`hist delete <regex>`
+- `hist delete <regex>` - delete matching lines
 
 # See also
 

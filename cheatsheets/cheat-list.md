@@ -4,13 +4,8 @@
 
 # Examples
 
-- List local sheets:
-
-`cheat list`
-
-- Bare `cheat` does the same:
-
-`cheat`
+- `cheat list` - list local sheets
+- `cheat` - bare `cheat` does the same
 
 # See also
 
