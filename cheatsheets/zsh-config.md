@@ -18,7 +18,7 @@
 - Linux: `cheat kitty` (terminal), `cheat gnome-bin` (window scripts)
 - Reference: `cheat keys`, `cheat setup`, `cheat troubleshoot`, `cheat aliases`, `cheat changes`
 - Sheets: `cheat cheat`, `cheat cheatsheet-test`, `cheat link-cheatsheets`, `cheat terminal-colors`, `cheat cli`
-- Shell helpers: `cheat is`, `cheat confirm`, `cheat reload`, `cheat deps`, `cheat touch-sudo`, `cheat start-workstation`
+- Shell helpers: `cheat is`, `cheat confirm`, `cheat reload`, `cheat deps`, `cheat touch-sudo`
 - Installer: `cheat install`, `cheat install-link`, `cheat install-box-config`, `cheat install-release`, `cheat link-blender-scripts`
 - Git helpers: `cheat git-cleanup-branch`, `cheat git-prune-local`, `cheat git-i-really-fucked-up`, `cheat gcod`, `cheat gcom`
 - Third-party tools: `cheat git`, `cheat docker`, `cheat fzf`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat npm`, `cheat apt`, `cheat asdf`, `cheat zinit`

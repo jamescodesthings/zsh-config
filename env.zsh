@@ -25,13 +25,8 @@ export WORDCHARS=${WORDCHARS/-/}
 
 export POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
 
-# NNN Plugins
-export NNN_PLUG='j:autojump'
-
 # Gcloud use local packages
 export CLOUDSDK_PYTHON_SITEPACKAGES=1
-
-export DEFAULT_MODEL=gpt-4o-mini
 
 export GOOGLE_CLOUD_PROJECT=467061286120
 

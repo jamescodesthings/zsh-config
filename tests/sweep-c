@@ -11,7 +11,7 @@ E=$'\e'
 
 SHEETS="$TMP/sheets"
 mkdir -p "$SHEETS"
-for name in install-release md-to-pdf md-to-html install-link cheatsheet-test link-cheatsheets touch-sudo start-workstation install-box-config git-cleanup-branch md git-prune-local confirm deps reload zshconfig git-i-really-fucked-up oh; do
+for name in install-release md-to-pdf md-to-html install-link cheatsheet-test link-cheatsheets touch-sudo install-box-config git-cleanup-branch md git-prune-local confirm deps reload zshconfig git-i-really-fucked-up oh; do
   printf '# %s\n\n> sheet %s\n' "$name" "$name" > "$SHEETS/$name.md"
 done
 mkdir -p "$TMP/good" "$TMP/links"
@@ -40,7 +40,7 @@ function bad() { echo "FAIL: $1"; [[ -n "$2" ]] && echo "$2" | sed 's/^/    /'; 
 function check() { if eval "$2"; then ok "$1"; else bad "$1" "$3"; fi }
 
 # --help shows the sheet and exits 0 for every tool
-for t in install-release md-to-pdf md-to-html install-link cheatsheet-test link-cheatsheets touch-sudo start-workstation install-box-config git-cleanup-branch md git-prune-local deps reload zshconfig git-i-really-fucked-up oh; do
+for t in install-release md-to-pdf md-to-html install-link cheatsheet-test link-cheatsheets touch-sudo install-box-config git-cleanup-branch md git-prune-local deps reload zshconfig git-i-really-fucked-up oh; do
   run CHEATSHEET_DIR="$SHEETS" -- $t --help
   check "$t --help exits 0 and shows its sheet" '[[ $CODE == 0 && $OUT == *"sheet $t"* ]]' "code $CODE: $OUT $ERR"
 done

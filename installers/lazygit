@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-release
+
+# macOS gets lazygit from the Brewfile; Debian's apt has no lazygit before
+# trixie, so it comes from the latest GitHub release.
+if is debian; then
+  install-release lazygit || exit 1
+  exit 0
+fi
+
+if is available lazygit; then
+  say info "skipping: lazygit already installed"
+  exit 0
+fi
+
+say info "installing: lazygit via homebrew"
+if brew install lazygit; then
+  say ok "lazygit installed"
+  exit 0
+fi
+
+say fail "homebrew install failed"
+say info "install instructions: https://github.com/jesseduffield/lazygit"
+exit 1

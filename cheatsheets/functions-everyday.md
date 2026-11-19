@@ -12,7 +12,6 @@
 - `zshenv` - edit this machine's `env.<hostname>.zsh`
 - `reload [function]` - reload an autoloaded function without a new shell
 - `picoh` - start PICO-8 with this folder as the cart root
-- `start-workstation` - start the cloud workstation through GitHub Actions
 - `test-color-24bit` - draw colour ramps to check truecolor
 
 # See also

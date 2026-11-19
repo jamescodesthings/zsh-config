@@ -22,3 +22,4 @@ eza   eza-community/eza      eza_{arch}-unknown-linux-gnu.tar.gz           x86_6
 delta dandavison/delta       delta-{version}-{arch}-unknown-linux-gnu.tar.gz x86_64 aarch64 delta-{version}-{arch}-unknown-linux-gnu/delta
 bat   sharkdp/bat            bat-{tag}-{arch}-unknown-linux-musl.tar.gz    x86_64 aarch64  bat-{tag}-{arch}-unknown-linux-musl/bat  bat-{tag}-{arch}-unknown-linux-musl/autocomplete/bat.zsh
 asdf  asdf-vm/asdf           asdf-{tag}-linux-{arch}.tar.gz                amd64  arm64    asdf
+lazygit jesseduffield/lazygit  lazygit_{version}_linux_{arch}.tar.gz         x86_64 arm64    lazygit

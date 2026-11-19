@@ -11,3 +11,4 @@ progress
 direnv
 build-essential
 fzf
+git-absorb

@@ -40,6 +40,13 @@ chmod +x "$BIN_SRC"/*
 for script in "$BIN_SRC"/*; do
   name=$(basename "$script")
   install-link "$script" "$BIN_DEST/$name" || exit 1
+  # Older installs linked these into /usr/local/bin; remove those links so
+  # only the ~/.local/bin ones remain. Only a link pointing into this repo goes.
+  old="/usr/local/bin/$name"
+  if [[ -L "$old" && "${old:A}" == "${script:A}" ]]; then
+    say info "removing old link $old"
+    command rm "$old" 2> /dev/null || sudo rm "$old" || say warn "could not remove $old"
+  fi
 done
 
 DESKTOP_SRC="$REPO_DIR/configs/gnome/quit-all-apps.desktop"
