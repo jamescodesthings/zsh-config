@@ -10,6 +10,7 @@
 
 # Latest
 
+- `cht tar` - 2026-11-23, a tldr page cheat falls back to keeps its colours instead of printing plain white; piped or NO_COLOR output stays plain. More: `cheat cheat`
 - `lazygit`, `git absorb` - 2026-11-19, lazygit and git-absorb now install on Debian too (a GitHub release and apt), not only through the Brewfile. More: `cheat git lazygit`
 - `hist delete` - 2026-11-18, `hist delete` and `j delete` work on macOS; sheets made by cheat new pass the strict check; fzf comes with install and update; `link-blender-scripts`, `log` and `config` tab-complete. More: `cheat hist delete`
 - `prst` - 2026-11-16, gh pr aliases: `my-prs`, `create-pr`, `open-pr` and `prst`. More: `cheat aliases git`

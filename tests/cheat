@@ -75,7 +75,21 @@ expect "cheat-help ignores a call with no --help" 1 - cheat-help a b
 
 # A fake tldr that knows one page, a-z, as tldr's own git-commit would be
 mkdir -p "$TMP/bin"
-printf '#!/bin/sh\nfor a; do last="$a"; done\ncase " $* " in *" --render "*) cat "$last"; exit 0 ;; esac\n[ "$last" = z ] && { echo "tldr page $*"; exit 0; }\nexit 1\n' > "$TMP/bin/tldr"
+# It records its arguments in $TMP/tldr-args and drops --color from what it
+# prints, so the page checks below do not depend on the colour flag.
+cat > "$TMP/bin/tldr" <<STUB
+#!/bin/sh
+echo "\$*" >> "$TMP/tldr-args"
+keep=""; skip=0
+for a; do
+  if [ \$skip = 1 ]; then skip=0; continue; fi
+  [ "\$a" = --color ] && { skip=1; continue; }
+  keep="\$keep \$a"; last="\$a"
+done
+case " \$* " in *" --render "*) cat "\$last"; exit 0 ;; esac
+[ "\$last" = z ] && { echo "tldr page\$keep"; exit 0; }
+exit 1
+STUB
 chmod +x "$TMP/bin/tldr"
 function run_with_tldr() {
   OUT="$(zsh -f -c '
@@ -141,5 +155,29 @@ else
   print -r -- "$NEWOUT" | sed 's/^/    /'
   failed=1
 fi
+
+# tldr colour: cheat runs tldr with --color always when its own output is
+# coloured (a terminal, or CLICOLOR_FORCE), and --color never when plain, so
+# a fallback page keeps tldr's colours instead of printing white.
+function tldr_args_for() {
+  : >| "$TMP/tldr-args"
+  zsh -f -c '
+    fpath=("$1/functions" $fpath)
+    autoload -Uz is cheat cheat-render col
+    export CHEATSHEET_DIR="$2" CUSTOM_DIR="$1"
+    path=("$3" /usr/bin /bin)
+    shift 3
+    cheat "$@"
+  ' _ "$REPO_DIR" "$SHEETS" "$TMP/bin" "$@" > /dev/null 2>&1
+  ARGS="$(head -1 "$TMP/tldr-args")"
+}
+CLICOLOR_FORCE=1 tldr_args_for z
+[[ "$ARGS" == *"--color always"* ]] && echo "ok: coloured output passes --color always to tldr" || { echo "FAIL: coloured output passes --color always to tldr: $ARGS"; failed=1 }
+tldr_args_for z
+[[ "$ARGS" == *"--color never"* ]] && echo "ok: plain output passes --color never to tldr" || { echo "FAIL: plain output passes --color never to tldr: $ARGS"; failed=1 }
+NO_COLOR=1 CLICOLOR_FORCE=1 tldr_args_for z
+[[ "$ARGS" == *"--color never"* ]] && echo "ok: NO_COLOR wins over CLICOLOR_FORCE for tldr" || { echo "FAIL: NO_COLOR wins over CLICOLOR_FORCE for tldr: $ARGS"; failed=1 }
+CLICOLOR_FORCE=1 tldr_args_for a z
+[[ "$ARGS" == *"--color always"* ]] && echo "ok: the exact-words tldr page gets the colour flag too" || { echo "FAIL: the exact-words tldr page gets the colour flag too: $ARGS"; failed=1 }
 
 exit $failed

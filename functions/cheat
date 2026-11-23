@@ -247,6 +247,10 @@ TEMPLATE
 
       local -i n
       local sheet=""
+      # tldr decides its own colour from a terminal check that misses here, so
+      # it is told: always when cheat's output is coloured, never when plain.
+      local _tldr_color=always
+      [[ "$CLI_PLAIN" == 1 ]] && _tldr_color=never
       for (( n = $#words; n > 0; n-- )); do
         if is file "$CHEATSHEET_DIR/${(j:-:)words[1,n]}.md"; then
           sheet="$CHEATSHEET_DIR/${(j:-:)words[1,n]}.md"
@@ -276,8 +280,8 @@ TEMPLATE
       # A local parent loses to tldr's page for the exact words, so
       # `cheat git commit` still finds tldr's git-commit beside a local git.md
       if is not empty "$sheet" && (( n < $#words )) && is available tldr; then
-        local -a exact_args=()
-        (( raw_mode )) && exact_args=(--raw)
+        local -a exact_args=(--color "$_tldr_color")
+        (( raw_mode )) && exact_args+=(--raw)
         if tldr "${exact_args[@]}" "${words[@]}" 2> /dev/null; then
           return 0
         fi
@@ -300,8 +304,8 @@ TEMPLATE
 
       # No local sheet: tldr's own pages, with the same parent fallback
       if is available tldr; then
-        local -a tldr_args=()
-        (( raw_mode )) && tldr_args=(--raw)
+        local -a tldr_args=(--color "$_tldr_color")
+        (( raw_mode )) && tldr_args+=(--raw)
         for (( n = $#words; n > 0; n-- )); do
           if tldr "${tldr_args[@]}" "${words[1,n]}" 2> /dev/null; then
             return 0
