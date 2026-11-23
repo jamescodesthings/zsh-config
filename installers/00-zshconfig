@@ -24,4 +24,15 @@ if ! cheatsheet-test "$REPO_DIR/cheatsheets"; then
   say warn "the cheatsheets above will not render with cheat"
 fi
 
+# the pre-commit hook in hooks/ runs the colour lint on staged shell files;
+# a hooks path someone set on purpose is left alone
+if [[ -d "$REPO_DIR/.git" ]]; then
+  hooks_path="$(git -C "$REPO_DIR" config --get core.hooksPath)"
+  if [[ -z "$hooks_path" ]]; then
+    git -C "$REPO_DIR" config core.hooksPath hooks && say ok "pre-commit colour check on (core.hooksPath hooks)"
+  elif [[ "$hooks_path" != hooks ]]; then
+    say warn "core.hooksPath is $hooks_path, so hooks/pre-commit does not run"
+  fi
+fi
+
 say ok "zshconfig install complete"

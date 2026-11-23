@@ -21,6 +21,7 @@ function installed-releases() {
   local line
   for line in ${(f)"$(xcodes installed --no-color 2> /dev/null)"}; do
     if [[ "$line" =~ '^([0-9]+(\.[0-9]+)*) \(' ]]; then
+      # colour-ok: version and path rows the caller reads
       print -r -- "$match[1]"$'\t'"${line##*$'\t'}"
     fi
   done

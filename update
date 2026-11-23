@@ -169,11 +169,11 @@ function update-check-repo() {
     say fail "zsh-config has local changes or unpushed commits, so update stops before pulling"
   fi
   if [[ -n "$changes" ]]; then
-    print -r -- "  git status --short:" >&2
+    print -r -- "  git status --short:" >&2 # colour-ok: indented detail under the say fail line above
     command git -C "$repo" status --short 2>/dev/null | sed 's/^/    /' >&2
   fi
   if (( ${ahead:-0} > 0 )); then
-    print -r -- "  not on $upstream yet:" >&2
+    print -r -- "  not on $upstream yet:" >&2 # colour-ok: indented detail under the say fail line above
     command git -C "$repo" log --oneline '@{u}..HEAD' 2>/dev/null | sed 's/^/    /' >&2
   fi
 
@@ -385,6 +385,7 @@ if [[ -s "$UPDATE_ERROR_LOG" ]]; then
   echo "$RUN_STARTED logged" > "$LOG_DIR/last-run"
   col -v HEAD heading
   [[ -n "$HEAD" ]] && col -v HEAD_OFF reset
+  # colour-ok: heading coloured with col just above
   print -r -- "${HEAD}errors and warnings from this run${HEAD_OFF}"
   print-error-log "$UPDATE_ERROR_LOG"
   say info "error log: $UPDATE_ERROR_LOG"

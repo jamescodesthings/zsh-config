@@ -77,9 +77,9 @@ print(json.dumps(c(plistlib.load(open(sys.argv[1],"rb")))))'
         (( ${keys[(Ie)$key]} )) && continue
         n+=1
         if [[ "$kind" == object || "$kind" == array ]]; then
-          print -r -- "  not adoptable: $key (a profile or list; for a profile use Save Profile as JSON)"
+          say warn "not adoptable: $key (a profile or list; for a profile use Save Profile as JSON)"
         else
-          print -r -- "  new: $key = $value"
+          say info "new: $key = $value"
         fi
       done < <(command jq -r --slurpfile b "$baseline" '
         to_entries[] | select(.value != ($b[0][.key])) |
@@ -142,9 +142,9 @@ print(json.dumps(c(plistlib.load(open(sys.argv[1],"rb")))))'
         [[ "$type" == bool ]] && { [[ "$value" == true ]] && want=1 || want=0 }
         current="$(command defaults read "$domain" "$key" 2>/dev/null)"
         if [[ "$current" == "$want" ]]; then
-          print -r -- "  ok: $key"
+          say ok "ok: $key"
         else
-          print -r -- "  drifted: $key is ${current:-unset}, managed $value"
+          say warn "drifted: $key is ${current:-unset}, managed $value"
           drift+=1
         fi
       done < "$managed"

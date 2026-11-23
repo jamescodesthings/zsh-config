@@ -1,0 +1,175 @@
+#!/usr/bin/env zsh
+# cli-colour-lint: fail on printing code in zsh-config that bypasses the
+# palette helpers (col, say, problems and the rest of the CLI helper library).
+# Ported from hub's zsh/lib/cli-colour-lint; the awk engine is the same.
+#
+#   cli-colour-lint [--root DIR] [--allow FILE] [-q|--quiet] [--plain] [file ...]
+#
+# With no file it scans the whole scope and also fails on stale allow-list rows,
+# so the list only shrinks. With files (the pre-commit hook passes the staged
+# ones) it scans only those in scope and skips the stale check.
+# Exit 0 clean, 1 violations, 2 usage.
+#
+# Scope: functions/*, installers/*, updaters/*, wrappers/*, configs/gnome/bin/*,
+# hooks/*, install, install.zsh and update; regular files that are shell by
+# shebang or a .zsh suffix. tests/, completions/ and the prompt files are not.
+#
+# A print site (print, echo, printf) is fine when it does not reach the
+# terminal (a redirect or pipe), a helper is on the line (say, col, problems,
+# progress ...), it passes one value through (print -r -- "$out"), it carries
+# "# colour-ok: <reason>" on the line or the one before (or sits between
+# "# colour-ok-begin: <reason>" and "# colour-ok-end"), or it is a prompt
+# (print -n with a read within 2 lines). A raw colour escape outside those is
+# a violation too.
+#
+# Allow list: tests/cli-colour.d/allow.txt, rows
+#   kind<TAB>path[:function]<TAB>owner<TAB>reason     (kind: print | raw)
+
+local root="${0:A:h:h}" allow="" quiet=0 plain=0
+local -a files=()
+while (( $# )); do
+  case $1 in
+    --root) root=${2:A}; shift ;;
+    --allow) allow=$2; shift ;;
+    -q|--quiet) quiet=1 ;;
+    --plain) plain=1 ;;
+    -h|--help) sed -n '2,/^$/{s/^# \{0,1\}//;p}' "${0:A}" | sed '$d'; exit 0 ;;
+    -*) print -u2 -r -- "cli-colour-lint: unknown option '$1'"; exit 2 ;; # colour-ok: usage error before the helpers load
+    *) files+=("$1") ;;
+  esac
+  shift
+done
+[[ -n $allow ]] || allow="$root/tests/cli-colour.d/allow.txt"
+fpath=("${0:A:h:h}/functions" $fpath)
+autoload -Uz say col cli-init cli-icon is
+local CLI_PLAIN="" CLI_QUIET="" CLI_VERBOSE=""
+(( plain )) && CLI_PLAIN=1
+cli-init
+
+in_scope() {
+  local f=$1
+  case $f in
+    tests/*|completions/*|*.json|*.md|p10k*) return 1 ;;
+    install|install.zsh|update) ;;
+    functions/*|installers/*|updaters/*|wrappers/*|configs/gnome/bin/*|hooks/*) ;;
+    *) return 1 ;;
+  esac
+  local p="$root/$f" first=""
+  [[ -f $p && ! -L $p ]] || return 1
+  [[ $f == *.zsh ]] && return 0
+  IFS= read -r first < "$p" 2>/dev/null
+  [[ $first == '#!'*(zsh|sh|bash)* ]]
+}
+
+local full=0 f
+local -a scan=()
+if (( ${#files} )); then
+  for f in "${files[@]}"; do f=${f#$root/}; in_scope $f && scan+=("$f"); done
+else
+  full=1
+  cd "$root" || exit 2
+  local -a cand=(install(N) install.zsh(N) update(N) functions/*(N.) installers/*(N.) updaters/*(N.) wrappers/*(N.) configs/gnome/bin/*(N.) hooks/*(N.))
+  for f in ${(u)cand}; do in_scope $f && scan+=("$f"); done
+fi
+(( ${#scan} )) || exit 0
+cd "$root" || exit 2
+
+local viol
+viol=$(awk '
+function emit(kind, msg) { printf "%s\037%s\037%s\037%d\037%s\n", kind, file, fn, i, msg }
+function reason(s) { return s ~ /#[ \t]*colour-ok:[ \t]*[^ \t]/ }
+function scanfile(   line, s, st, rest, tmp, hd, blk, prev, ok, j, k, stmt, t, mark) {
+  fn = ""; hd = ""; blk = 0; prev = ""
+  for (i = 1; i <= n; i++) {
+    line = L[i]
+    if (hd != "") { t = line; gsub(/^\t+/, "", t); if (t == hd) hd = ""; continue }
+    s = line; sub(/^[ \t]+/, "", s)
+    if (s ~ /^#/) {
+      if (s ~ /colour-ok-begin:/) { if (s ~ /colour-ok-begin:[ \t]*[^ \t]/) blk = 1; else emit("print", "colour-ok-begin needs a reason") }
+      else if (s ~ /colour-ok-end/) blk = 0
+      else if (s ~ /colour-ok:/ && !reason(s)) emit("print", "colour-ok needs a reason")
+      prev = s; continue
+    }
+    if (line ~ /^[A-Za-z_][A-Za-z0-9_.:+-]*[ \t]*\(\)/) { fn = line; sub(/[ \t]*\(\).*/, "", fn) }
+    else if (line ~ /^function[ \t]+[A-Za-z_]/) { fn = line; sub(/^function[ \t]+/, "", fn); sub(/[ \t({].*/, "", fn) }
+    stmt = line
+    while (stmt ~ /\\[ \t]*$/ && i < n) { sub(/\\[ \t]*$/, "", stmt); i++; stmt = stmt " " L[i] }
+    ok = (blk || reason(stmt) || reason(prev))
+    if (!ok && (stmt ~ /#[ \t]*colour-ok:/ || prev ~ /#[ \t]*colour-ok:/)) emit("print", "colour-ok needs a reason")
+    # raw escapes
+    if (!ok && (stmt ~ /\\e\[/ || stmt ~ /\\033\[/ || stmt ~ /\\x1[bB]\[/ || stmt ~ /\\E\[/ || stmt ~ /38;[25];/ || stmt ~ /tput[ \t]+setaf/ || stmt ~ /%F\{/))
+      emit("raw", "raw colour escape: use the palette (col, say)")
+    # print sites
+    st = stmt; sub(/^[ \t]+/, "", st)
+    if (!ok && match(st, /(^|[;&|{()]|(^|[ \t])(then|else|do))[ \t]*(print|echo|printf)([ \t]|$)/)) {
+      rest = substr(st, RSTART + RLENGTH - 1)
+      mark = st
+      # A: not the terminal
+      if (st ~ />>?[ \t]*[^&> \t]/ || st ~ /-u[3-9]/ || st ~ /-u[ \t]*\$/ || st ~ /[ \t]\|[ \t]/ || st ~ /[ \t]\|&?[ \t]*$/) ok = 1
+      # B: a helper
+      else if (st ~ /(say|problems|problem|fix|cli-icon|progress|run-quiet|log-line|cheat-render|pick|confirm)/ || st ~ /(^|[^A-Za-z_])(say|col)[ \t]/) ok = 1
+      else {
+        # C: one value passed through
+        tmp = rest
+        sub(/^[ \t]*(print|echo|printf)/, "", tmp)
+        while (match(tmp, /^[ \t]+-[A-Za-z]+[0-9]*/)) tmp = substr(tmp, RLENGTH + 1)
+        sub(/^[ \t]+--/, "", tmp)
+        sub(/[;&|].*$/, "", tmp)
+        gsub(/\$\{[^}]*\}/, "", tmp); gsub(/\$\([^)]*\)/, "", tmp); gsub(/\$[A-Za-z_0-9@*#?!]+/, "", tmp)
+        gsub(/[)}"; \t]/, "", tmp)
+        if (tmp == "") ok = 1
+        # F: a prompt, print -n then a read within 2 lines
+        else if (st ~ /(print|echo)[ \t]+-[A-Za-z]*n/) { for (j = i + 1; j <= i + 2 && j <= n; j++) if (L[j] ~ /(^|[ \t;])read[ \t]/) ok = 1 }
+      }
+      if (!ok) emit("print", "unannotated print: " substr(st, 1, 70))
+    }
+    if (match(line, /(^|[^<])<<-?[ \t]*(["\047\\]?[A-Za-z_][A-Za-z0-9_]*["\047]?)/)) {
+      mark = substr(line, RSTART, RLENGTH); sub(/^[^<]?<<-?[ \t]*["\047\\]?/, "", mark); sub(/["\047]$/, "", mark)
+      if (mark ~ /^[A-Z_][A-Z0-9_]*$/ || line ~ /<<-?[ \t]*["\047]/) hd = mark
+    }
+    prev = s
+  }
+}
+FNR == 1 { if (NR > 1) scanfile(); file = FILENAME; n = 0 }
+{ L[++n] = $0 }
+END { if (NR > 0) scanfile() }
+' "${scan[@]}")
+
+# split allow rows into lookup sets
+local -A arows used
+local k kind target owner why
+if [[ -f $allow ]]; then
+  while IFS=$'\t' read -r kind target owner why; do
+    [[ -z $kind || $kind == \#* ]] && continue
+    arows[$kind$'\t'$target]="$owner"
+  done < "$allow"
+fi
+
+local -a bad=()
+local vk vf vfn vl vm key
+while IFS=$'\037' read -r vk vf vfn vl vm; do
+  [[ -n $vk ]] || continue
+  if [[ -n ${arows[$vk$'\t'$vf]-} ]]; then used[$vk$'\t'$vf]=1; continue; fi
+  if [[ -n $vfn && -n ${arows[$vk$'\t'$vf:$vfn]-} ]]; then used[$vk$'\t'$vf:$vfn]=1; continue; fi
+  bad+=("$vf:$vl: ${vfn:+in $vfn: }$vm")
+done <<< "$viol"
+
+local -a stale=()
+local tab=$'\t'
+if (( full )); then
+  for key in ${(k)arows}; do
+    [[ -n ${used[$key]-} ]] || stale+=("${key/$tab/ } (owner ${arows[$key]})")
+  done
+fi
+
+local b
+for b in "${bad[@]}"; do print -u2 -r -- "$b"; done # colour-ok: file:line list, read by the hook and humans
+for b in "${stale[@]}"; do print -u2 -r -- "stale allow-list row, remove it: $b"; done # colour-ok: file:line list, read by the hook and humans
+if (( ${#bad} )); then
+  say fail "${#bad} printing site(s) bypass the shared colour helpers"
+  say info "fix: say, col or problems from the CLI helper library; '# colour-ok: <reason>' for data; or a row in tests/cli-colour.d/allow.txt"
+fi
+(( ${#stale} )) && say fail "${#stale} stale allow-list row(s): the file is clean now, delete the row"
+(( ${#bad} || ${#stale} )) && exit 1
+(( quiet )) || say ok "cli-colour-lint: ${#scan} file(s) clean"
+exit 0

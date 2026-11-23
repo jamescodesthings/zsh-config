@@ -245,6 +245,8 @@ tests/cheatsheet-test
 tests/hist-j-move
 ```
 
+`hooks/pre-commit` (`installers/00-zshconfig` sets `core.hooksPath hooks`, leaving a different path alone) runs `hooks/cli-colour-lint` on the staged shell files: a print, echo or printf in functions/, installers/, updaters/, wrappers/, configs/gnome/bin/, hooks/, install, install.zsh or update must go through the palette helpers (say, col, problems and the rest), not reach the terminal, pass one value through, or carry `# colour-ok: <reason>`; a raw colour escape fails too. It is a port of hub's lint with the same engine. `tests/cli-colour.d/allow.txt` lists the files that printed plain output when it arrived (`sweep` rows to convert, `design` rows for the palette helpers themselves); the list only shrinks, and a full scan (`hooks/cli-colour-lint`) fails on a row whose file is clean. `tests/cli-colour-lint` covers it.
+
 `tests/private-names [ref]` greps the tracked files and the commit messages since `upstream/main` for names from the work fork, so nothing work-only reaches this repo; run it on a branch before pushing it here. In a checkout whose origin is the work fork it skips unless given a ref.
 
 A failure shows up as an error printed to the terminal during startup; there is no log file. Without a TTY (an agent's shell, CI) the load check always prints `setopt:7: can't change option: monitor`, `(eval):1: can't change option: zle` and `gitstatus failed to initialize`; all three are expected there, and the exit code is still 0. Files in `functions/`, `installers/` and `updaters/` have no `.zsh` extension, so name them explicitly when syntax-checking.

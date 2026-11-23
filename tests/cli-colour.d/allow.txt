@@ -1,0 +1,20 @@
+# The cli-colour lint allow list (hooks/cli-colour-lint, run by the pre-commit
+# hook and tests/cli-colour-lint). Columns, tab separated:
+#   kind   print | raw
+#   path   a file, or file:function for one function
+#   owner  "sweep" for a file to convert later, or "design" for one that stays
+#   reason
+#
+# The list only shrinks. When a file is converted (its print sites use say,
+# col or problems, and data or prompts carry "# colour-ok: <reason>"), delete
+# its row; a full scan fails on a row whose file is clean. The rows below are
+# the files that printed plain or raw output when the lint arrived, 2026-11-23.
+print	functions/cheat-render	design	the palette helpers themselves write the escapes
+print	functions/col	design	the palette helpers themselves write the escapes
+print	functions/problems	design	the palette helpers themselves write the escapes
+print	functions/progress	design	the palette helpers themselves write the escapes
+print	functions/test-color-24bit	design	the palette helpers themselves write the escapes
+raw	functions/cheat-render	design	the palette helpers themselves write the escapes
+raw	functions/col	design	the palette helpers themselves write the escapes
+raw	functions/progress	design	the palette helpers themselves write the escapes
+raw	functions/test-color-24bit	design	the palette helpers themselves write the escapes

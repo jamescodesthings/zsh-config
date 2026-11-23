@@ -14,6 +14,7 @@ function check-or-load() {
   if ! command -v "$1" >/dev/null 2>&1; then
     autoload -Uz "$REPO_DIR/functions/$1"
     if ! command -v "$1" >/dev/null 2>&1; then
+      # colour-ok: runs while the helpers themselves are being loaded, so say may not exist
       echo "Failed to load '$1' function, cannot continue with installation"
       exit 1
     fi

@@ -28,7 +28,7 @@ function _cheat_expand_vars() {
           out = out "`" parts[i] "`"
         }
       }
-      print out
+      print out  # colour-ok: awk program printing markdown to the renderer
     }
   ' "$file"
 }
@@ -73,9 +73,9 @@ function cheat() {
 
   # No args → list
   if [[ $# -eq 0 ]]; then
-    print -r -- "${_H}Local Cheatsheets:${_R}"
+    print -r -- "${_H}Local Cheatsheets:${_R}"  # colour-ok: heading coloured through col variables
     for f in "$CHEATSHEET_DIR"/*.md(N-.); do
-      echo "  $(basename "$f" .md)"
+      echo "  $(basename "$f" .md)"  # colour-ok: sheet names, data
     done | sort
     return 0
   fi
@@ -96,30 +96,30 @@ function cheat() {
         cheat cheat
         return $?
       fi
-      print -r -- "${_H}cheat${_R}"
-      echo ""
-      echo "${_P}Personal cheatsheet viewer with tldr fallback. Cheatsheets are links in \$CHEATSHEET_DIR.${_R}"
-      echo ""
-      print -r -- "${_H}Usage:${_R}"
-      echo "  cheat                          list all local cheatsheets"
-      echo "  cheat ${_T}<name>${_R}                   show a cheatsheet"
-      echo "  cheat ${_T}<word> <word>${_R}             multi-word: 'cheat git commit' → git-commit.md"
-      echo "  cheat ${_T}<name>${_R} ${_F}--raw${_R}              print raw markdown"
-      echo ""
-      print -r -- "${_H}Subcommands:${_R}"
-      echo "  ${_F}list${_R}                           list local cheatsheets"
-      echo "  ${_F}search${_R} ${_T}<query>${_R}                search local + tldr by name"
-      echo "  ${_F}edit${_R} ${_T}<name>${_R}                  open in \$EDITOR"
-      echo "  ${_F}new${_R} ${_T}<name>${_R}                   create from template"
-      echo "  ${_F}refresh${_R}                        refresh the tldr cache"
-      echo "  ${_F}raw${_R} ${_T}<name>${_R}                   print raw markdown"
-      echo "  ${_F}help${_R}, ${_F}-h${_R}, ${_F}--help${_R}             show this help"
+      print -r -- "${_H}cheat${_R}"  # colour-ok: help text coloured through col variables
+      echo ""  # colour-ok: help text coloured through col variables
+      echo "${_P}Personal cheatsheet viewer with tldr fallback. Cheatsheets are links in \$CHEATSHEET_DIR.${_R}"  # colour-ok: help text coloured through col variables
+      echo ""  # colour-ok: help text coloured through col variables
+      print -r -- "${_H}Usage:${_R}"  # colour-ok: help text coloured through col variables
+      echo "  cheat                          list all local cheatsheets"  # colour-ok: help text coloured through col variables
+      echo "  cheat ${_T}<name>${_R}                   show a cheatsheet"  # colour-ok: help text coloured through col variables
+      echo "  cheat ${_T}<word> <word>${_R}             multi-word: 'cheat git commit' → git-commit.md"  # colour-ok: help text coloured through col variables
+      echo "  cheat ${_T}<name>${_R} ${_F}--raw${_R}              print raw markdown"  # colour-ok: help text coloured through col variables
+      echo ""  # colour-ok: help text coloured through col variables
+      print -r -- "${_H}Subcommands:${_R}"  # colour-ok: help text coloured through col variables
+      echo "  ${_F}list${_R}                           list local cheatsheets"  # colour-ok: help text coloured through col variables
+      echo "  ${_F}search${_R} ${_T}<query>${_R}                search local + tldr by name"  # colour-ok: help text coloured through col variables
+      echo "  ${_F}edit${_R} ${_T}<name>${_R}                  open in \$EDITOR"  # colour-ok: help text coloured through col variables
+      echo "  ${_F}new${_R} ${_T}<name>${_R}                   create from template"  # colour-ok: help text coloured through col variables
+      echo "  ${_F}refresh${_R}                        refresh the tldr cache"  # colour-ok: help text coloured through col variables
+      echo "  ${_F}raw${_R} ${_T}<name>${_R}                   print raw markdown"  # colour-ok: help text coloured through col variables
+      echo "  ${_F}help${_R}, ${_F}-h${_R}, ${_F}--help${_R}             show this help"  # colour-ok: help text coloured through col variables
       ;;
 
     list)
-      print -r -- "${_H}Local Cheatsheets:${_R}"
+      print -r -- "${_H}Local Cheatsheets:${_R}"  # colour-ok: heading coloured through col variables
       for f in "$CHEATSHEET_DIR"/*.md(N-.); do
-        echo "  $(basename "$f" .md)"
+        echo "  $(basename "$f" .md)"  # colour-ok: sheet names, data
       done | sort
       ;;
 
@@ -142,10 +142,10 @@ function cheat() {
       fi
       if (( ${#local_results[@]} + ${#tldr_only[@]} > 0 )); then
         for r in "${local_results[@]}"; do
-          printf "  %-30s %s\n" "$r" "${_O}[cheatsheet]${_R}"
+          printf "  %-30s %s\n" "$r" "${_O}[cheatsheet]${_R}"  # colour-ok: search rows, tag coloured through col variables
         done
         for r in "${tldr_only[@]}"; do
-          printf "  %-30s %s\n" "$r" "${_N}[tldr]${_R}"
+          printf "  %-30s %s\n" "$r" "${_N}[tldr]${_R}"  # colour-ok: search rows, tag coloured through col variables
         done
       else
         say warn "nothing found for \"$query\""
@@ -266,7 +266,7 @@ TEMPLATE
         local -a cands=("$CHEATSHEET_DIR"/${words[1]}*.md(N))
         cands=(${cands:t:r}); cands=(${cands:#*-*})
         if (( $#cands == 1 )); then
-          print -r -u2 -- "${_D}\"${words[1]}\" is short for \"${cands[1]}\"${_R}"
+          print -r -u2 -- "${_D}\"${words[1]}\" is short for \"${cands[1]}\"${_R}"  # colour-ok: dim note on stderr through col variable
           words[1]="${cands[1]}"
           for (( n = $#words; n > 0; n-- )); do
             if is file "$CHEATSHEET_DIR/${(j:-:)words[1,n]}.md"; then
@@ -289,7 +289,7 @@ TEMPLATE
 
       if is not empty "$sheet"; then
         if (( n < $#words )); then
-          print -r -u2 -- "${_D}no sheet for \"${words[*]}\", showing \"${words[1,n]}\"${_R}"
+          print -r -u2 -- "${_D}no sheet for \"${words[*]}\", showing \"${words[1,n]}\"${_R}"  # colour-ok: dim note on stderr through col variable
         fi
         if (( raw_mode )); then
           cat "$sheet"

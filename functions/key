@@ -186,7 +186,7 @@ function key() {
         _key_say fail "key: $name has no older key"
         return 1
       fi
-      print -r -- "$dir/$name.key.$newest"
+      print -r -- "$dir/$name.key.$newest"  # colour-ok: data output, byte-identical for scripts
     else
       if [[ ! -s "$dir/$name.key" ]]; then
         problem "key: no key for $name (${dir/#$HOME/~}/$name.key is missing or empty)"
@@ -194,7 +194,7 @@ function key() {
         problems
         return 1
       fi
-      print -r -- "$dir/$name.key"
+      print -r -- "$dir/$name.key"  # colour-ok: data output, byte-identical for scripts
     fi
     return 0
   fi
@@ -343,7 +343,7 @@ function _key_write_to() {
       while IFS= read -r line || [[ -n "$line" ]]; do
         if [[ "$line" == ("export "[[:space:]]#|)"$v="* ]]; then
           if (( ! done )); then
-            if [[ "$line" == export* ]]; then print -r -- "export $v=$k"; else print -r -- "$v=$k"; fi
+            if [[ "$line" == export* ]]; then print -r -- "export $v=$k"; else print -r -- "$v=$k"; fi  # colour-ok: data output, byte-identical for scripts
           fi
           done=1
         else
@@ -351,7 +351,7 @@ function _key_write_to() {
         fi
       done < "$file"
     fi
-    (( done )) || print -r -- "$v=$k"
+    (( done )) || print -r -- "$v=$k"  # colour-ok: data output, byte-identical for scripts
   } > "$tmp" && command chmod 600 "$tmp" && command mv -f "$tmp" "$file" || {
     command rm -f "$tmp"
     _key_say fail "key: could not write $file"
@@ -687,7 +687,7 @@ function _key_list() {
       _key_list_row "$dir" "$name"
       objs+=("{\"name\":\"$name\",\"stored\":$_L_STORED,\"backups\":$_L_BACKUPS,\"op\":\"$(_key_json "$_L_OP")\",\"var\":\"$(_key_json "$_L_VAR")\"}")
     done
-    print -r -- "[${(j:,:)objs}]"
+    print -r -- "[${(j:,:)objs}]"  # colour-ok: data output, byte-identical for scripts
     return 0
   fi
   local w=0 stored
@@ -695,7 +695,7 @@ function _key_list() {
   for name in "${names[@]}"; do
     _key_list_row "$dir" "$name"
     stored=missing; [[ "$_L_STORED" == true ]] && stored=stored
-    print -r -- "${(r:w:)name}  ${(r:7:)stored}  ${_L_BACKUPS} older  $_L_OP  $_L_VAR"
+    print -r -- "${(r:w:)name}  ${(r:7:)stored}  ${_L_BACKUPS} older  $_L_OP  $_L_VAR"  # colour-ok: data output, byte-identical for scripts
   done
   return 0
 }

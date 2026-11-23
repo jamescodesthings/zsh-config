@@ -14,8 +14,10 @@ function _md-to-html-fail() {
 # The command that installs a tool on this machine.
 function _md-to-html-install() {
   if is osx; then
+    # colour-ok: value a caller captures
     print -r -- "brew install $1"
   else
+    # colour-ok: value a caller captures
     print -r -- "sudo apt install $2"
   fi
 }
@@ -30,10 +32,12 @@ function _md-to-html-embed-flag() {
     major="$match[1]"
     minor="$match[2]"
     if (( major < 2 || (major == 2 && minor < 19) )); then
+      # colour-ok: value a caller captures
       print -r -- "--self-contained"
       return
     fi
   fi
+  # colour-ok: value a caller captures
   print -r -- "--embed-resources"
 }
 

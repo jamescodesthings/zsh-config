@@ -147,6 +147,7 @@ function pinned-by() {
   local wanted="$1@$2" key
   for key in ${(k)PINNED}; do
     if is equal "$wanted" "$key" || [[ "$wanted" == "$key".* ]]; then
+      # colour-ok: value read by the caller through $(...)
       echo "$PINNED[$key]"
       return 0
     fi

@@ -1,0 +1,57 @@
+#!/usr/bin/env zsh
+# Tests hooks/cli-colour-lint and hooks/pre-commit against a temp repo of
+# fixture files: an unannotated print fails, a helper, a redirect, a
+# passthrough and "# colour-ok: <reason>" pass, a raw escape fails, an
+# allow-list row covers a file, a stale row fails a full scan, files out of
+# scope are skipped, and the pre-commit hook checks only staged files.
+# Runs only zsh, git (on a temp repo) and the lint; nothing else.
+# Run: tests/cli-colour-lint. Exit 1 on any failure.
+
+REPO_DIR="${0:a:h:h}"
+LINT="$REPO_DIR/hooks/cli-colour-lint"
+TMP="$(mktemp -d)"
+trap 'command rm -rf "$TMP"' EXIT
+failed=0
+check() { if eval "$2"; then print -r -- "ok: $1"; else print -r -- "FAIL: $1"; failed=1; fi }
+
+R="$TMP/repo"
+mkdir -p "$R/functions" "$R/tests/cli-colour.d" "$R/configs"
+: > "$R/tests/cli-colour.d/allow.txt"
+w() { print -r -- "$2" > "$R/$1"; }
+w functions/bad $'#!/usr/bin/env zsh\nfunction bad() {\n  print "hello there"\n}'
+w functions/good $'#!/usr/bin/env zsh\nfunction good() {\n  say ok "done"\n  print -r -- "$out"\n  print "x" > "$file"\n  print "data line" # colour-ok: data for a pipe\n}'
+w functions/raw $'#!/usr/bin/env zsh\nprint -r -- $\'\\e[31mred\''
+w configs/notscanned $'#!/usr/bin/env zsh\nprint "out of scope"'
+
+out="$(zsh -f "$LINT" --root "$R" --plain functions/bad 2>&1)"; rc=$?
+check "an unannotated print fails" '(( rc == 1 )) && [[ "$out" == *"functions/bad:3"* ]]'
+out="$(zsh -f "$LINT" --root "$R" --plain functions/good 2>&1)"; rc=$?
+check "helpers, redirects, passthrough and colour-ok pass" '(( rc == 0 ))'
+out="$(zsh -f "$LINT" --root "$R" --plain functions/raw 2>&1)"; rc=$?
+check "a raw colour escape fails" '(( rc == 1 )) && [[ "$out" == *"raw colour escape"* ]]'
+out="$(zsh -f "$LINT" --root "$R" --plain configs/notscanned 2>&1)"; rc=$?
+check "a file out of scope is skipped" '(( rc == 0 ))'
+
+print -r -- $'print\tfunctions/bad\tdesign\ttest row' > "$R/tests/cli-colour.d/allow.txt"
+print -r -- $'raw\tfunctions/raw\tdesign\ttest row\nprint\tfunctions/raw\tdesign\ttest row' >> "$R/tests/cli-colour.d/allow.txt"
+out="$(zsh -f "$LINT" --root "$R" --plain 2>&1)"; rc=$?
+check "allow-list rows cover a full scan" '(( rc == 0 ))'
+print -r -- $'print\tfunctions/good\tP1\tno longer needed' >> "$R/tests/cli-colour.d/allow.txt"
+out="$(zsh -f "$LINT" --root "$R" --plain 2>&1)"; rc=$?
+check "a stale allow-list row fails a full scan" '(( rc == 1 )) && [[ "$out" == *"stale"* ]]'
+print -r -- $'print\tfunctions/bad\tdesign\ttest row\nraw\tfunctions/raw\tdesign\ttest row\nprint\tfunctions/raw\tdesign\ttest row' > "$R/tests/cli-colour.d/allow.txt"
+
+# the hook: only staged files, in a temp git repo with no global config
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 HOME="$TMP/home"
+mkdir -p "$HOME"
+git -C "$R" init -q && git -C "$R" add -A && git -C "$R" -c user.name=t -c user.email=t@t commit -qm base
+w functions/new $'#!/usr/bin/env zsh\nprint "unannotated"'
+out="$(cd "$R" && zsh -f "$REPO_DIR/hooks/pre-commit" 2>&1)"; rc=$?
+check "the hook passes when the bad file is not staged" '(( rc == 0 ))'
+git -C "$R" add functions/new
+out="$(cd "$R" && zsh -f "$REPO_DIR/hooks/pre-commit" 2>&1)"; rc=$?
+check "the hook blocks a staged unannotated print" '(( rc == 1 )) && [[ "$out" == *"functions/new:2"* ]]'
+
+out="$(zsh -f "$LINT" --plain 2>&1)"; rc=$?
+check "this repo's full scan is clean with its allow list" '(( rc == 0 ))' || print -r -- "$out" | head -5
+exit $failed

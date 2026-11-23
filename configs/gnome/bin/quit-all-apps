@@ -27,6 +27,7 @@ _wmctrl_close_all() {
     while read -r wid _rest; do
         wmctrl -i -c "$wid" 2>/dev/null && (( count++ )) || true
     done < <(wmctrl -l 2>/dev/null)
+    # colour-ok: bash script, value captured by the caller
     printf '%s' "$count"
 }
 
@@ -34,12 +35,14 @@ count=0
 
 if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v gdbus &>/dev/null; then
     count=$(_extension_close_all) || {
+        # colour-ok: bash script, cannot load the zsh helpers; error text
         echo "quit-all-apps: extension not responding — run window-debug-env to diagnose" >&2
         exit 1
     }
 elif command -v wmctrl &>/dev/null; then
     count=$(_wmctrl_close_all)
 else
+    # colour-ok: bash script, cannot load the zsh helpers; error text
     echo "quit-all-apps: no method available (need window-list@personal extension on Wayland, or wmctrl on X11)" >&2
     exit 1
 fi

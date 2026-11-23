@@ -15,8 +15,10 @@ function _md-to-pdf-report() {
 
 function _md-to-pdf-install() {
   if is osx; then
+    # colour-ok: value a caller captures
     print -r -- "brew install $1"
   else
+    # colour-ok: value a caller captures
     print -r -- "sudo apt install $2"
   fi
 }
@@ -41,6 +43,7 @@ function _md-to-pdf-find() {
   done
   (( ${#keyed} )) || return 0
   local LC_ALL=C
+  # colour-ok: value a caller captures
   print -rl -- "${(@)${(@o)keyed}#*$'\t'}"
 }
 
@@ -48,10 +51,13 @@ function _md-to-pdf-find() {
 function _md-to-pdf-merger() {
   local join="${MD_TO_PDF_JOIN:-/System/Library/Automator/Combine PDF Pages.action/Contents/MacOS/join}"
   if is available qpdf; then
+    # colour-ok: value a caller captures
     print -r -- qpdf
   elif is available pdfunite; then
+    # colour-ok: value a caller captures
     print -r -- pdfunite
   elif [[ -x "$join" ]]; then
+    # colour-ok: value a caller captures
     print -r -- join
   else
     return 1

@@ -57,5 +57,6 @@ if command -v wmctrl &>/dev/null; then
     _wmctrl_list && exit 0
 fi
 
+# colour-ok: bash script, cannot load the zsh helpers; error text
 echo "No method available (need window-list@personal extension, gdbus on Wayland, or wmctrl on X11)" >&2
 exit 1

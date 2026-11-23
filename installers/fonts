@@ -13,6 +13,7 @@ ZIP_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/DejaVu
 
 function font-installed() {
   if is osx; then
+    # colour-ok: file list tested for emptiness, never printed
     [[ -n "$(print -l ~/Library/Fonts/DejaVuSansMNerdFont*(N) /Library/Fonts/DejaVuSansMNerdFont*(N))" ]]
   else
     is available fc-list && fc-list : family | grep -qF "$FONT_NAME"

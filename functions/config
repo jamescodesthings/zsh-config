@@ -149,7 +149,7 @@ function _config_rows() {
   keys=("${(@f)$(jq -r 'keys_unsorted[]' "$3")}")
   for key in "${keys[@]}"; do
     _config_value "$2" "$3" "$key"
-    print -r -- "$key"$'\t'"$REPLY"$'\t'"$( (( _CONFIG_SET )) || print -r '(default)' )"$'\t'"$(jq -r --arg k "$key" '.[$k].meaning // ""' "$3")"
+    print -r -- "$key"$'\t'"$REPLY"$'\t'"$( (( _CONFIG_SET )) || print -r '(default)' )"$'\t'"$(jq -r --arg k "$key" '.[$k].meaning // ""' "$3")"  # colour-ok: tab-separated rows another function parses
   done
 }
 

@@ -89,14 +89,17 @@ unsetopt MONITOR
 # The folder of this file, where the key command sits.
 WIPCRYPT_DIR="${0:a:h}"
 
-# Copies of lib's painters, printing exactly the same text. The colour prefix
-# goes through print -P, the message never does. Paths reach these functions,
-# and under prompt_subst `print -P` performs command substitution, so a file
-# named `$(...)` inside a directory being cleaned would otherwise execute.
-info()    { print -Pn "%F{blue}[info]%f:  "; print -r -- "$1" }
-success() { print -Pn "%F{green}[ok]%f:    "; print -r -- "$1" }
-warn()    { print -Pn "%F{yellow}[warn]%f:  "; print -r -- "$1" }
-error()   { print -Pn "%F{red}[error]%f "; print -r -- "$1"; exit 1 }
+# Status lines go through the shared helpers (say), found on the fpath beside
+# this file because the script starts with nothing loaded. say prints the
+# message as one argument to print -r, so a path named `$(...)` never runs.
+# fail goes to stderr.
+fpath=("$WIPCRYPT_DIR" $fpath)
+autoload -Uz say cli-init
+cli-init
+info()    { say info "$1" }
+success() { say ok "$1" }
+warn()    { say warn "$1" }
+error()   { say fail "$1"; exit 1 }
 
 usage() {
   print -r -- "usage: wipcrypt <encrypt|decrypt|status|cycle-key> [--root DIR] [--pairs FILE] [--key NAME] [--env FILE] [--dry-run] [SRC DST]"
@@ -106,7 +109,7 @@ usage() {
 # operate, and a caller that wants to tell the two apart can. Both lines go to
 # stderr here; --help shows `cheat wipcrypt` and exits 0.
 usage_error() {
-  print -r -- "wipcrypt: $1" >&2
+  print -r -- "wipcrypt: $1" >&2  # colour-ok: argument error line, stderr text callers and tests match
   usage >&2
   exit 2
 }
@@ -165,9 +168,9 @@ load_store_key() {
 # the store; otherwise it is in the env file, as it always was.
 mismatch_hint() {
   if [[ -n "$KEY_NAME" ]]; then
-    print -r -- "Check the store key with: key path $KEY_NAME, and the previous key with: key path $KEY_NAME -p; restore the right one with: key pull $KEY_NAME"
+    print -r -- "Check the store key with: key path $KEY_NAME, and the previous key with: key path $KEY_NAME -p; restore the right one with: key pull $KEY_NAME"  # colour-ok: data or hint text read by callers
   else
-    print -r -- "Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."
+    print -r -- "Check that .env holds the current key; create-key writes the previous one to .env.<n> when it rotates."  # colour-ok: data or hint text read by callers
   fi
 }
 
@@ -194,7 +197,7 @@ wip_pairs() {
   local line wip enc
   while IFS=':' read -r wip enc || [[ -n "$wip" ]]; do
     [[ -z "$wip" || "$wip" == "#"* ]] && continue
-    print -r -- "$CONTENT_ROOT/$wip $CONTENT_ROOT/$enc"
+    print -r -- "$CONTENT_ROOT/$wip $CONTENT_ROOT/$enc"  # colour-ok: data or hint text read by callers
   done < "$pairs_file"
 }
 
@@ -800,9 +803,9 @@ encrypt_pair() {
     # caller of this mode is asking about the wip root, not the encrypted
     # one, and the two basenames differ (skills-wip vs skills-encrypted).
     if (( changed + missing + orphan == 0 )); then
-      print -r -- "${src_root:t}: in sync"
+      print -r -- "${src_root:t}: in sync"  # colour-ok: data or hint text read by callers
     else
-      print -r -- "${src_root:t}: $changed changed, $missing not yet encrypted, $orphan stale ciphertext"
+      print -r -- "${src_root:t}: $changed changed, $missing not yet encrypted, $orphan stale ciphertext"  # colour-ok: data or hint text read by callers
     fi
   else
     success "Encrypted ${dst_root:t}: $count file(s), $unchanged unchanged, $pruned pruned"

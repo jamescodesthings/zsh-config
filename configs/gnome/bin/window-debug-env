@@ -10,6 +10,7 @@ case "${1:-}" in
         exit 0 ;;
 esac
 
+# colour-ok-begin: bash diagnostic script, cannot load the zsh helpers; plain report
 ok()   { printf "  [ok]   %s\n" "$*"; }
 warn() { printf "  [warn] %s\n" "$*"; }
 fail() { printf "  [fail] %s\n" "$*"; }
@@ -127,3 +128,4 @@ else
         echo "    3. Re-run:       window-debug-env"
     fi
 fi
+# colour-ok-end

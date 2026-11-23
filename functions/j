@@ -19,12 +19,14 @@ function _j_read_entries() {
 
 function _j_print_entries() {
   while IFS='|' read -r _jp rank _; do
+    # colour-ok: coloured through the palette variables set from col
     printf '  %s %s%s%s\n' "$_jp" "${_N}" "$rank" "${_R}"
   done
 }
 
 function _j_max_rank() {
   local data_file
+  # colour-ok: data another program reads
   data_file=$(_j_data_file) || { echo "0"; return 0; }
   awk -F'|' 'BEGIN{m=0} {if ($2+0 > m) m=$2+0} END{print m}' "$data_file"
 }
@@ -93,7 +95,9 @@ function _j_move() {
     }
     END {
       for (i = 1; i <= n; i++) {
+        # colour-ok: awk program output, not terminal text
         if (mv[path[i]]) print path[i] "|" rank[i] "|" time[i]
+        # colour-ok: awk program output, not terminal text
         else print raw[i]
       }
     }
@@ -106,12 +110,14 @@ function _j_move() {
   fi
   local line
   if (( dry )); then
+    # colour-ok: data another program reads
     while IFS= read -r line; do echo "would move $line"; done < "$report"
     say info "dry run: would move ${count} entries"
     rm -f "$tmp" "$report"
     return 0
   fi
   command mv "$tmp" "$data_file" || { command rm -f "$tmp" "$report"; return 1; }
+  # colour-ok: coloured through the palette variables set from col
   while IFS= read -r line; do print -r -- "${_O}moved${_R} $line"; done < "$report"
   say ok "moved ${count} entries"
   rm -f "$report"
@@ -120,6 +126,7 @@ function _j_move() {
 # Aliases: fixed bookmarks, one "name<TAB>path" line each, sorted by name, in
 # ${XDG_CONFIG_HOME:-$HOME/.config}/zsh-config/j-aliases.
 function _j_alias_file() {
+  # colour-ok: data another program reads
   print -r -- "${XDG_CONFIG_HOME:-$HOME/.config}/zsh-config/j-aliases"
 }
 
@@ -155,9 +162,11 @@ function _j_alias_write() {
       local n p
       while IFS=$'\t' read -r n p; do
         [[ "$n" == "$1" || ( -n "$2" && "$n" == "$2" ) ]] && continue
+        # colour-ok: data another program reads
         print -r -- "$n"$'\t'"$p"
       done < "$file"
     fi
+    # colour-ok: data another program reads
     [[ -n "$2" ]] && print -r -- "$2"$'\t'"$3"
   } | LC_ALL=C sort -t $'\t' -k1,1 > "$tmp" && command mv "$tmp" "$file" || {
     command rm -f "$tmp"
@@ -279,16 +288,20 @@ function _j_alias() {
       local json=0 n p first=1
       [[ "$1" == --json ]] && json=1
       if (( json )); then
+        # colour-ok: data another program reads
         printf '['
         if is file "$file"; then
           while IFS=$'\t' read -r n p; do
+            # colour-ok: data another program reads
             (( first )) || printf ','
             first=0
             n="${n//\\/\\\\}"; n="${n//\"/\\\"}"
             p="${p//\\/\\\\}"; p="${p//\"/\\\"}"
+            # colour-ok: data another program reads
             printf '{"name":"%s","path":"%s"}' "$n" "$p"
           done < "$file"
         fi
+        # colour-ok: data another program reads
         printf ']\n'
         return 0
       fi
@@ -300,6 +313,7 @@ function _j_alias() {
         if is dir "$p"; then
           print -r -- "  ${_T}${n}${_R} $p"
         else
+          # colour-ok: coloured through the palette variables set from col
           print -r -- "  ${_T}${n}${_R} ${_W}${p} (missing)${_R}"
         fi
       done < "$file"
@@ -368,6 +382,7 @@ function j() {
       local found=0
       while IFS='|' read -r _jp rank _; do
         if printf '%s\n' "$_jp" | grep -qE -- "$query" 2>/dev/null; then
+          # colour-ok: coloured through the palette variables set from col
           printf '  %s %s%s%s\n' "$_jp" "${_N}" "$rank" "${_R}"
           (( found++ ))
         fi
@@ -400,6 +415,7 @@ function j() {
       if (( ${#matches[@]} == 0 )); then
         say info "no matches found"; return 0
       fi
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}Matches for '${query}':${_R}"
       for p in "${matches[@]}"; do echo "  $p"; done
       echo ""
@@ -433,9 +449,11 @@ function j() {
       local target="${matches[1]}"
       local max_rank new_rank
       max_rank=$(_j_max_rank)
+      # colour-ok: awk program output, not terminal text
       new_rank=$(awk -v m="$max_rank" 'BEGIN{print m+1}')
       local tmp; tmp=$(mktemp)
       awk -F'|' -v p="$target" -v r="$new_rank" 'BEGIN{OFS="|"} $1==p{$2=r} {print}' "$data_file" > "$tmp" && command mv "$tmp" "$data_file"
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_O}bumped${_R} $target ${_N}(rank → $new_rank)${_R}"
       ;;
 
@@ -474,8 +492,10 @@ function j() {
       local tmp2; tmp2=$(mktemp)
       while IFS='|' read -r _jp rank ts; do
         if is not empty "${new_rank_map[$_jp]}"; then
+          # colour-ok: data another program reads
           printf '%s|%s|%s\n' "$_jp" "${new_rank_map[$_jp]}" "$ts"
         else
+          # colour-ok: data another program reads
           printf '%s|%s|%s\n' "$_jp" "$rank" "$ts"
         fi
       done < "$data_file" > "$tmp2"
@@ -492,12 +512,14 @@ function j() {
       if (( ${#stale[@]} == 0 )); then
         say ok "no stale entries"; return 0
       fi
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}Stale entries (directory no longer exists):${_R}"
       for p in "${stale[@]}"; do print -r -- "  ${_W}${p}${_R}"; done
       echo ""
       if confirm "Delete ${#stale[@]} stale entries?"; then
         local tmp; tmp=$(mktemp)
         while IFS='|' read -r _jp rank ts; do
+          # colour-ok: data another program reads
           is existing "$_jp" && printf '%s|%s|%s\n' "$_jp" "$rank" "$ts"
         done < "$data_file" > "$tmp"
         command mv "$tmp" "$data_file"
@@ -520,21 +542,28 @@ function j() {
     stats)
       local data_file; data_file=$(_j_data_file) || return 1
       local total; total=$(wc -l < "$data_file" | tr -d ' ')
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}j stats:${_R}"
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "  ${_N}${total}${_R} total entries"
       echo ""
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}Top 5 by rank:${_R}"
       _j_read_entries | head -5 | _j_print_entries
       echo ""
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}Oldest entry:${_R}"
       sort -t'|' -k3 -n "$data_file" | head -1 | while IFS='|' read -r _jp rank ts; do
         local d; d=$(date -d "@$ts" 2>/dev/null || date -r "$ts" 2>/dev/null || echo "ts:$ts")
+        # colour-ok: coloured through the palette variables set from col
         printf '  %s %s%s%s (%s)\n' "$_jp" "${_N}" "$rank" "${_R}" "$d"
       done
       echo ""
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}Newest entry:${_R}"
       sort -t'|' -k3 -rn "$data_file" | head -1 | while IFS='|' read -r _jp rank ts; do
         local d; d=$(date -d "@$ts" 2>/dev/null || date -r "$ts" 2>/dev/null || echo "ts:$ts")
+        # colour-ok: coloured through the palette variables set from col
         printf '  %s %s%s%s (%s)\n' "$_jp" "${_N}" "$rank" "${_R}" "$d"
       done
       ;;

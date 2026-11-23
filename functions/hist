@@ -47,8 +47,10 @@ function _hist_print_deduped() {
       display="$cmd"
     fi
     if (( n > 1 )); then
+      # colour-ok: coloured through the palette variables set from col
       printf '%s%s %s(%d)%s\n' "$indent" "$display" "${_N}" "$n" "${_R}"
     else
+      # colour-ok: coloured through the palette variables set from col
       printf '%s%s\n' "$indent" "$display"
     fi
   done
@@ -79,10 +81,12 @@ function _hist_header() {
   local file="$1" is_global="$2"
   if [[ -n "$is_global" ]]; then
     local display="${file/#$HOME/~}"
+    # colour-ok: coloured through the palette variables set from col
     print -r -- "${_H}${display} (global):${_R}"
   else
     local dir
     dir=$(_hist_file_to_dir "$file")
+    # colour-ok: coloured through the palette variables set from col
     print -r -- "${_H}${dir}:${_R}"
   fi
 }
@@ -106,6 +110,7 @@ function _hist_merge_files() {
     return
   fi
   awk '
+    # colour-ok: awk program output, not terminal text
     function emit() { if (e != "") printf "%d\t%d\t%s\n", ts, ++n, e; e = "" }
     /^: [0-9]+:[0-9]+;/ { emit(); split($0, a, ":"); ts = a[2] + 0; e = $0; next }
     { e = e "\001" $0 }
@@ -268,6 +273,7 @@ function hist() {
         say fail "invalid regex: $query"
         return 1
       fi
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}Matches for '${query}':${_R}"
       local -a affected=()
       local total=0
@@ -328,6 +334,7 @@ function hist() {
         say ok "no stale history files"
         return 0
       fi
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}Stale files (directory no longer exists):${_R}"
       for f in "${stale[@]}"; do
         local dir; dir=$(_hist_file_to_dir "$f")
@@ -348,6 +355,7 @@ function hist() {
       ;;
 
     stats)
+      # colour-ok: coloured through the palette variables set from col
       print -r -- "${_H}History stats:${_R}"
       local -a rows=()
       local global_count
@@ -361,6 +369,7 @@ function hist() {
         rows+=("${count} ${dir}")
       done < <(_hist_files)
       printf '%s\n' "${rows[@]}" | sort -rn | while IFS=" " read -r count rest; do
+        # colour-ok: coloured through the palette variables set from col
         printf '  %s%6d%s  %s\n' "${_N}" "$count" "${_R}" "$rest"
       done
       ;;

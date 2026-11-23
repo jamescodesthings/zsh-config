@@ -4,6 +4,7 @@ if ! command -v zsh >/dev/null 2>&1; then
   if [ -f /etc/debian_version ]; then
     sudo apt-get update && sudo apt-get install -y zsh || exit 1
   else
+    # colour-ok: POSIX sh bootstrap that runs before zsh and the helpers exist
     echo "this config is built for macOS and Debian; get the clanker to port it"
     exit 1
   fi

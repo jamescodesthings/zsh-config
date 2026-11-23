@@ -39,6 +39,7 @@ for pkg in data:
 
   local total=${#packages[@]}
   say warn "found $total outdated package(s)"
+  # colour-ok: blank spacer line
   print
 
   echo "$outdated_json" | python3 -c "
@@ -54,6 +55,7 @@ for pkg, info in data.items():
     print(f'    current: {current}  ->  wanted: {wanted}  ->  latest: {latest}')
 " 2>/dev/null
 
+  # colour-ok: blank spacer line
   print
 
   local updated=0
@@ -92,6 +94,7 @@ for pkg, info in data.items():
       (( skipped++ ))
     fi
 
+    # colour-ok: blank spacer line
     print
   done
 

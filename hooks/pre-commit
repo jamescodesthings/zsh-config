@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+# Pre-commit hook: runs hooks/cli-colour-lint on the staged shell files, so new
+# printing code goes through the palette helpers (col, say, problems). The lint
+# picks which staged files are in scope. Exit 1 blocks the commit.
+# installers/00-zshconfig points core.hooksPath at this folder.
+repo_root="$(git rev-parse --show-toplevel)" || exit 0
+[[ -f "$repo_root/tests/cli-colour.d/allow.txt" ]] || exit 0
+lint="${0:A:h}/cli-colour-lint"
+[[ -x "$lint" ]] || exit 0
+staged=("${(@f)$(git diff --cached --name-only --diff-filter=ACMR)}")
+staged=(${staged:#})
+(( ${#staged} )) || exit 0
+exec zsh -f "$lint" --root "$repo_root" -q "${staged[@]}"
