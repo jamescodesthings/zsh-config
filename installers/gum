@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+source "${0:a:h}/_stub"
+
+check-or-load install-release
+
+# macOS gets gum from the Brewfile; Debian has no gum in apt without
+# charm's own repository, so it comes from the latest GitHub release.
+if is debian; then
+  install-release gum || exit 1
+  exit 0
+fi
+
+if is available gum; then
+  say info "skipping: gum already installed"
+  exit 0
+fi
+
+say info "installing: gum via homebrew"
+if brew install gum; then
+  say ok "gum installed"
+  exit 0
+fi
+
+say fail "homebrew install failed"
+say info "install instructions: https://github.com/charmbracelet/gum"
+exit 1

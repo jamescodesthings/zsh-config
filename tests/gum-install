@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+# Checks that gum is wired in the way lazygit is: a Brewfile line for macOS,
+# a configs/releases row for Debian's install-release, and an executable
+# installers/gum that goes through install-release on Debian. Reads files
+# only; runs no installer.
+# Run: tests/gum-install. Exit 1 on any failure.
+REPO_DIR="${0:a:h:h}"
+failed=0
+check() { if eval "$2"; then print -r -- "ok: $1"; else print -r -- "FAIL: $1"; failed=1; fi }
+check "the Brewfile installs gum" 'grep -q "^brew \"gum\"" "$REPO_DIR/configs/brew/Brewfile"'
+row="$(grep '^gum ' "$REPO_DIR/configs/releases")"
+check "configs/releases has a gum row" '[[ "$row" == *"charmbracelet/gum"* && "$row" == *"gum_{version}_Linux_{arch}.tar.gz"* && "$row" == *"gum_{version}_Linux_{arch}/gum"* ]]'
+check "installers/gum is executable" '[[ -x "$REPO_DIR/installers/gum" ]]'
+check "installers/gum uses install-release on Debian" 'grep -q "install-release gum" "$REPO_DIR/installers/gum"'
+check "installers/gum passes zsh -n" 'zsh -n "$REPO_DIR/installers/gum"'
+exit $failed

@@ -20,7 +20,7 @@
 # Work
 
 - `pick [-v VAR] <header> <items...>` - fzf choice for a missing argument
-- `confirm [-y]` - ask y/n; `-y` or `CLI_YES=1` says yes
+- `confirm [-y]` - ask y/n; `-y` or `CLI_YES=1` says yes; new TUIs use gum, with a plain fallback
 - `progress start|step|done|fail` - spinner with steps; `cheat cli progress`
 - `run-quiet <label> <command...>` - run it into a child log
 - `log-start <command>`, `log-line <text>` - open a log, add to it

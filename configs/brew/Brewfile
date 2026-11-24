@@ -24,6 +24,7 @@ brew "eza"
 brew "git-delta"
 # git helpers: a terminal UI, and fixups folded into the right commits
 brew "lazygit"
+brew "gum"
 brew "git-absorb"
 brew "bat"
 brew "micro"
