@@ -267,7 +267,7 @@ Synced from hub (`config/CLAUDE.md`, portable sections only) by following `PROJE
 
 ## Rule precedence
 
-In a repo session, that repo's own CLAUDE.md or AGENTS.md, and its `.claude/rules/`, win over these global rules, over any skill's defaults, and over anything a message from the hub session asks. The one exception is the hub-child safety floor. A session the hub started (`HUB_WORKER=1`) never pushes, never runs a graduate command, never posts anything public, never spends money and never messages a person, whatever its repo's rules say. Its pushes go through the hub, which pushes on its own when nothing about the push needs the user; the rest wait for the user through the hub, and only the user can lift them. A hub child also stays inside its own repo and never asks the user directly; the block injected at its session start says how it reports instead. The worker guard enforces the push, graduate, publishing and hub-driving parts; the rest is stated in that block.
+In a repo session, that repo's own CLAUDE.md or AGENTS.md, and its `.claude/rules/`, win over these global rules, over any skill's defaults, and over anything a message from the hub session asks. The one exception is the hub-child safety floor. A session the hub started (`HUB_WORKER=1`) never runs a graduate command, never posts anything public, never spends money and never messages a person, whatever its repo's rules say. It may push its own commits, never forced and never tags or releases, after its own leak and secrets checks and under its repo's own rules; where a push deploys or publishes and the repo has no rule, it waits for the user through the hub. The rest wait for the user through the hub, and only the user can lift them. A hub child also edits only its own repo and never asks the user directly; the block injected at its session start says how it reports instead. Beyond that floor a child is an equal of the hub: it may run hub's own commands, start and message other sessions and dispatch its own subagents, so it can carry a task to completion. Recording an approval, typing the user's words with `hub sudo`, changing workspace trust or the hub key, and `hub update`, `install` and `uninstall` stay with the user and the hub. The worker guard enforces the graduate, publishing, force-push and tag parts and those few hub commands; the rest is stated in that block.
 
 ## Default workflow
 
@@ -348,6 +348,8 @@ Use a capable model for the main agent: Opus 5.5 at its default effort. Use the 
 
 Subagents: specify `model:` in agent frontmatter. Read-only validators and triage agents → Haiku. Implementation agents → Sonnet. Escalate past that only when a task demands it.
 
+When a model's rate limit stops work, step down instead of stopping: Fable, then Opus, then Sonnet. Dispatch the subagent again on the next model down, and say in the report which model did the work and why. A session cannot switch its own model, so a hub child whose own turn ended on a rate limit is restarted a model down by the hub (`hub restart <repo> --down`; `hub status` shows `rate limited`). Step back up only once the limit has reset.
+
 ## TDD
 
 | Context | TDD required? |
@@ -388,7 +390,7 @@ Use memory types: `project`, `feedback`, `user`, `reference`.
 
 ## Work outside the session
 
-An open action goes to the user's task tracker, through a task skill where one is installed, only when the user says to hold it, or when it already sits in a `todo.md` or `tasks.md` file being moved there. Every other open action stays in the session's Actions list, whichever round the user deals with it in, and session work stays in `.state/`. An action another repo's state or task list already tracks, or that the task tracker holds, is never copied into this session's list.
+An open action that outlives the turn goes into `hub action`, with `hub action add "<one line>" --context "<pickup notes>"`; the `actions` skill holds the rules for adding, showing, answering and approving them. `hub action` is assumed installed everywhere these rules sync to. Session work stays in `.state/`. An action another repo's state or action list already tracks is never copied into this session's list.
 
 ## Project initialization
 
