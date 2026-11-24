@@ -7,35 +7,31 @@ function zshconfig() {
   cli-init "$@"
   set -- "${@:#(--plain|-q|--quiet|-v|--verbose)}"
 
-  if is empty "$1"; then
-    if is available realpath; then
-      cd "$(realpath $CUSTOM_DIR)"
-      return 0
-    fi
-    cd "$CUSTOM_DIR"
+  # if is empty "$1"; then
+  #   if is available realpath; then
+  #     cd "$(realpath $CUSTOM_DIR)"
+  #     return 0
+  #   fi
+  #   cd "$CUSTOM_DIR"
+  #   return 0
+  # fi
+
+  # if is equal "$1" "-e" || is equal "$1" "--edit"; then
+  if is available code; then
+    code "$CUSTOM_DIR"
     return 0
   fi
 
-  if is equal "$1" "-e" || is equal "$1" "--edit"; then
-    if is available code; then
-      code "$CUSTOM_DIR"
-      return 0
-    fi
-
-    if is available micro; then
-      micro "$CUSTOM_DIR/.zshrc"
-      return 0
-    fi
-
-    problem "no editor found"
-    fix "$CUSTOM_DIR/installers/micro" "install micro"
-    problems
-    return 1
+  if is available micro; then
+    micro "$CUSTOM_DIR/.zshrc"
+    return 0
   fi
 
-  say fail "zshconfig: unknown argument $1"
-  say info "see: cheat zshconfig"
-  return 2
+  problem "no editor found"
+  fix "$CUSTOM_DIR/installers/micro" "install micro"
+  problems
+  return 1
+  # fi
 }
 
 zshconfig "$@"

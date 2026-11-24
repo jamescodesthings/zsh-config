@@ -138,5 +138,10 @@
     "key": "ctrl+alt+z",
     "command": "workbench.action.tasks.runTask",
     "args": "zsh: syntax check current file"
+  },
+  {
+    "key": "shift+cmd+a",
+    "command": "-workbench.action.browser.quickOpen",
+    "when": "activeEditor == 'workbench.editor.browser'"
   }
 ]

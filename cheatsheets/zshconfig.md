@@ -1,11 +1,11 @@
 # zshconfig
 
-> Jump to or edit the zsh config directory (`~/.custom`, a symlink to this repo). Alias `zshc`.
+> Open the zsh config (`~/.custom`, a symlink to this repo) in an editor. Alias `zshc`.
 
 # Getting started
 
-- `zshconfig` - change into the config directory
-- `zshconfig [-e|--edit]` - open it in VS Code, else micro on `.zshrc`
+- `zshconfig` - open the config in VS Code, else micro on `.zshrc`
+- `cd ~/.custom` - change into the config directory
 - `zshenv` - edit this machine's env file (`env.<hostname>.zsh`, in micro)
 - Next: `reload <function>` picks up a function you changed
 
@@ -26,7 +26,7 @@
 - `--plain` - no colour or animation
 - `-q`, `--quiet` - print only warnings and errors
 - `-v`, `--verbose` - accepted
-- Exit: 0 done, 1 no editor found, 2 unknown argument
+- Exit: 0 opened, 1 no editor found
 
 # See also
 

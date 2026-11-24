@@ -176,4 +176,5 @@
   "git.timeline.showUncommitted": true,
   "editor.formatOnSave": true,
   "editor.minimap.enabled": false,
+  "files.insertFinalNewline": true,
 }
