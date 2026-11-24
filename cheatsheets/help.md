@@ -7,10 +7,9 @@
 
 - `cheat setup`, `cheat keys`, `cheat iterm` - how the config fits together; every key binding; the macOS terminal (kitty on Linux)
 - `cheat troubleshoot` - fixes for problems seen before
-- `cheat` - list every sheet; `cheat search [word]` finds one; `[tool] --help` shows its own
+- `cheat`, `cheat functions` - list every sheet; every zsh-config command; `cheat search [word]` finds a sheet
 - `ctrl+r` - fuzzy-search history for a command you ran before
 - `j [name]` - jump to a folder: an alias, or z's best match
-- `cheat functions` - every zsh-config command, in groups such as `cheat functions everyday`
 
 # Everyday
 
@@ -27,6 +26,7 @@
 - `cheat skill` - the Claude skills, one sheet each
 - `cheat readerr` - hear selected text read aloud
 - `cheat zsh-config`, `cheat apple-scripts` - this shell setup; the Stream Deck buttons for Google Meet
+- Languages, platforms, tools and topics: `cheat languages` (java, kotlin, go, swift, python, typescript, grpc), `cheat platforms` (ios, android), `cheat tools` (idea, xcode, android-studio, buf, bazel), `cheat topics` (testing, debugging, deploy, observability, data, review, security, api-design)
 - Third-party: `cheat fzf`, `cheat git`, `cheat eza`, `cheat bat`, `cheat glow`, `cheat http`, `cheat docker`, `cheat npm`, `cheat asdf`, `cheat apt`, `cheat zinit`, `cheat kitty` (the Linux terminal)
 
 # See also
