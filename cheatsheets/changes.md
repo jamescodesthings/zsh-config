@@ -10,6 +10,8 @@
 
 # Latest
 
+- `hub down all --force` - 2026-11-25, kills stalled sessions with no handover; the stall message walks through it. More: `cheat hub down`
+- `hub status` - 2026-11-25, each session shows its short id; hub status <name> shows the full session id. More: `cheat hub status`
 - `har`, `hal` - 2026-11-25, hub aliases: `har` picks a report to read; `hal` now picks from the action list, Enter opens a report and m marks it read. More: `cheat hub action report`
 - `hub join --detach` - 2026-11-25, hub and hubx join take `--detach` or `--no-attach` (or HUB_NO_ATTACH=1) to start a session without attaching; inside tmux, join switches the client instead. More: `cheat hub join`
 - `ham` - 2026-11-25, hub alias: `ham` lists only the actions waiting on you (`hub action list --mine`). More: `cheat aliases claude`
@@ -26,8 +28,6 @@
 - `installers/iterm2` - 2026-11-16, split panes in iTerm2 no longer have a title bar with a close cross; the bottom status bar stays. More: `cheat iterm2`
 - `git diff` - 2026-11-16, the scroll wheel and touchpad scroll pagers in iTerm2 (git, delta, less, man), and text selection still works. More: `cheat iterm2 keys`
 - `update` - 2026-11-16, stops before pulling when zsh-config has local changes or unpushed commits, shows them, and on a terminal offers to commit and push them first (default no). More: `cheat update`
-- `gh pr view --web` - 2026-11-13, many more iTerm2 snippets and actions, in tag folders: git, gh PRs and runs, Claude, lazygit and absorb. More: `cheat iterm2`
-- `false` - 2026-11-13, the iTerm2 status bar now shows the last command's exit code and time (only when it failed or took 5 s or more), the host over ssh, and CPU, memory, network and battery meters; the job and held-tasks items are gone. More: `cheat iterm2`
 
 # See also
 
