@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `installers/iterm2` - 2026-11-13, the iTerm2 status bar takes Night Owl's colours: a muted bar with the branch, job and tasks picked out. More: `cheat iterm2`
 - `installers/iterm2` - 2026-11-13, iTerm2 opens full screen with a status bar at the bottom: folder, branch, job, held tasks, snippets, actions and clock; notifications on. More: `cheat iterm2`
 - `cmd+shift+a` - 2026-11-13, iTerm2's Open Quickly is on kitty's command palette key; select last output moves to cmd+shift+o. More: `cheat iterm2 keys`
 - `ctrl+shift+arrows` - 2026-11-13, swap iTerm2 panes; in micro cmd+d duplicates the line and cmd+backspace deletes it; inactive panes dimmed less. More: `cheat iterm2 keys`

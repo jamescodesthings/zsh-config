@@ -10,6 +10,7 @@
 
 # Latest
 
+- `ham` - 2026-11-25, hub alias: `ham` lists only the actions waiting on you (`hub action list --mine`). More: `cheat aliases claude`
 - `hap`, `hst` - 2026-11-24, hub aliases: `hap` answers waiting actions, `hal` lists them, `has 41` shows one, `hst` is hub status. More: `cheat aliases claude`
 - `zshc` - 2026-11-24, zshconfig opens the config in VS Code (else micro) instead of changing into it; VS Code adds a final newline on save. More: `cheat zshconfig`
 - `cmd+shift+enter` - 2026-11-25, splits top and bottom again in iTerm2 3.7.9, whose British menus renamed Maximize to Maximise and let it take the key back; quit and reopen iTerm2 once. More: `cheat iterm2 keys`
@@ -27,7 +28,6 @@
 - `false` - 2026-11-13, the iTerm2 status bar now shows the last command's exit code and time (only when it failed or took 5 s or more), the host over ssh, and CPU, memory, network and battery meters; the job and held-tasks items are gone. More: `cheat iterm2`
 - `installers/iterm2` - 2026-11-13, iTerm2 snippets in the status bar's Snippets menu: hub status, cldr, gst, git-speedup and lazygit; your own snippets stay. More: `cheat iterm2`
 - `gh browse` - 2026-11-13, iTerm2's Actions menu can copy the branch or open the repo in the browser. More: `cheat iterm2`
-- `installers/iterm2` - 2026-11-13, the iTerm2 status bar takes Night Owl's colours: a muted bar with the branch, job and tasks picked out. More: `cheat iterm2`
 
 # See also
 
