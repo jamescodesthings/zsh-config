@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `ctrl+shift+arrows` - 2026-11-13, swap iTerm2 panes; in micro cmd+d duplicates the line and cmd+backspace deletes it; inactive panes dimmed less. More: `cheat iterm2 keys`
 - `cmd+enter` - 2026-11-13, iTerm2 keys like kitty: split with cmd+enter, panes on cmd+ctrl+arrows, resize on ctrl+opt+arrows, a micro profile, lighter dimming, and `cheat iterm`. More: `cheat iterm2 keys`
 - `installers/iterm2` - 2026-11-13, the iTerm2 status bar is gone, and the font is 14 point. More: `cheat iterm2`
 - `git absorb --and-rebase` - 2026-11-13, lazygit and git-absorb come with the Brewfile. More: `cheat git absorb`
