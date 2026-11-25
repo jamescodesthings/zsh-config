@@ -7,7 +7,8 @@
 - `cld [args]` - claude in bypass mode; offers to attach when this repo already has a session open
 - `cldr [session]` - resume a claude session in bypass mode, no check
 - `hap` - hub action pick: answer the actions waiting on you
-- `hal` - hub action list: every open action
+- `hal` - hub action list --select: pick an action; Enter opens its report, m marks it read
+- `har` - hub action report --select: pick a report to read
 - `ham` - hub action list --mine: only the actions waiting on you
 - `has [id]` - hub action show: one action with its context and notes
 - `hst` - hub status: every session and what it is on
