@@ -1,0 +1,42 @@
+# changes older
+
+> Earlier changes, newest first. Entries move here from `cheat changes` when it fills up.
+
+# Earlier
+
+- `gh browse` - 2026-11-13, iTerm2's Actions menu can copy the branch or open the repo in the browser. More: `cheat iterm2`
+- `installers/iterm2` - 2026-11-13, the iTerm2 status bar takes Night Owl's colours: a muted bar with the branch, job and tasks picked out. More: `cheat iterm2`
+- `installers/iterm2` - 2026-11-13, iTerm2 opens full screen with a status bar at the bottom: folder, branch, job, held tasks, snippets, actions and clock; notifications on. More: `cheat iterm2`
+- `cmd+shift+a` - 2026-11-13, iTerm2's Open Quickly is on kitty's command palette key; select last output moves to cmd+shift+o. More: `cheat iterm2 keys`
+- `ctrl+shift+arrows` - 2026-11-13, swap iTerm2 panes; in micro cmd+d duplicates the line and cmd+backspace deletes it; inactive panes dimmed less. More: `cheat iterm2 keys`
+- `cmd+enter` - 2026-11-13, iTerm2 keys like kitty: split with cmd+enter, panes on cmd+ctrl+arrows, resize on ctrl+opt+arrows, a micro profile, lighter dimming, and `cheat iterm`. More: `cheat iterm2 keys`
+- `installers/iterm2` - 2026-11-13, the iTerm2 status bar is gone, and the font is 14 point. More: `cheat iterm2`
+- `git absorb --and-rebase` - 2026-11-13, lazygit and git-absorb come with the Brewfile. More: `cheat git absorb`
+- `iterm2-settings diff` - 2026-11-13, settings changed in iTerm2's window can be adopted into the repo, or dropped. More: `cheat iterm2-settings`
+- `imgcat photo.png` - 2026-11-13, iTerm2 extras: an opt+space hotkey window, a status bar (folder, git, CPU, memory, clock) and the iTerm2 utilities. More: `cheat iterm2`
+- `installers/iterm2` - 2026-11-13, iTerm2 replaces kitty on macOS as a trial: Night Owl profile, option as meta, mouse for micro, shell integration. More: `cheat iterm2`
+- `compress-pdf-all -r` - 2026-11-12, compress the PDFs in every folder below, each into its own compressed/. More: `cheat compress-pdf-all`
+- `md-to-pdf -r . --combine` - 2026-11-12, convert every .md under a folder and join them into one pdf named after this folder. More: `cheat md-to-pdf`
+- `cheat help` - 2026-11-12, an index of our own sheets, basics first. More: `cheat help`
+- `j alias add tutorial .` - 2026-11-12, fixed bookmarks to folders; then `j tutorial` jumps there. More: `cheat j alias`
+- `cheat functions` - 2026-11-12, every zsh-config function, one row each in groups. More: `cheat functions`
+- `cheat aliases` - 2026-11-12, every alias, most used first. More: `cheat aliases`
+- `readerr speak` - 2026-11-12, with nothing selected, reads the front window's whole document, PDFs included. More: `cheat readerr speak`
+- `readerr config set volume 0.6` - 2026-11-12, a playback volume setting. More: `cheat readerr config`
+- `link-blender-scripts` - 2026-11-11, Blender startup scripts linked into every Blender version. More: `cheat link-blender-scripts`
+- `key pull myproj` - 2026-11-08, key names its direction: pull, push, import, export. More: `cheat key`
+- `hub` - 2026-11-08, agent-forge is now called hub. More: `cheat hub`
+- `hub task list` - 2026-11-07, hub task: the Claude-tagged Anytype tasks from the shell, replacing the old any CLI. More: `cheat hub action`
+- `hub resolve` - 2026-11-04, resolve every Claude task across the repos in rounds. More: `cheat hub resolve`
+- `readerr speak` - 2026-11-04, readerr reads headings, lists, tables and code by their shape, at terse, normal or detailed level. More: `cheat readerr speak`
+- `update` - 2026-11-03, the updater runs quietly with a step counter and keeps an error log; `update --errors` shows it. More: `cheat update`
+- `key create myproj` - 2026-11-03, per-project named keys kept outside git and backed by 1Password. More: `cheat key create`
+- `log open last` - 2026-11-01, every tool run keeps a log. More: `cheat log`
+- `config mytool list` - 2026-11-01, per-tool settings in JSON. More: `cheat config`
+- `cheat git` - 2026-11-01, sheets render in the shared palette with aligned columns. More: `cheat cheat`
+- `j --help` - 2026-10-30, every tool's --help shows its cheat sheet. More: `cheat cheat`
+- `j move ~/old ~/new` - 2026-10-29, carry z ranks and history over to a moved folder. More: `cheat j move`
+
+# See also
+
+- `cheat changes` - the latest changes
