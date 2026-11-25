@@ -1,0 +1,32 @@
+#!/usr/bin/env zsh
+# Tests hooks/changes-reminder in a temp git repo: a staged change to a
+# user-facing file (aliases.zsh, a functions/ command, a sheet other than the
+# changelog, an installer) with no cheat changes row staged prints a warning;
+# a staged changes.md row, or only internal files (tests/, .state/), prints
+# nothing. It never blocks: the exit code is always 0. Runs only zsh and git
+# on the temp repo, with no global git config.
+# Run: tests/changes-reminder. Exit 1 on any failure.
+REPO_DIR="${0:a:h:h}"
+TMP="$(mktemp -d)"; trap 'command rm -rf "$TMP"' EXIT
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 HOME="$TMP/home"; mkdir -p "$HOME"
+failed=0
+check() { if eval "$2"; then print -r -- "ok: $1"; else print -r -- "FAIL: $1"; failed=1; fi }
+R="$TMP/repo"; mkdir -p "$R/functions" "$R/cheatsheets" "$R/tests" "$R/.state"
+print 'x' > "$R/aliases.zsh"; print '# changes' > "$R/cheatsheets/changes.md"
+git -C "$R" init -q && git -C "$R" add -A && git -C "$R" -c user.name=t -c user.email=t@t commit -qm base
+run() { OUT="$(cd "$R" && zsh -f "$REPO_DIR/hooks/changes-reminder" --plain 2>&1)"; RC=$?; }
+
+print 'y' >> "$R/aliases.zsh"; git -C "$R" add aliases.zsh; run
+check "a user-facing change with no row warns" '[[ "$OUT" == *"cheat changes"* ]]'
+check "the warning never blocks" '(( RC == 0 ))'
+print -- '- `x` - row' >> "$R/cheatsheets/changes.md"; git -C "$R" add cheatsheets/changes.md; run
+check "a staged changes row silences it" '[[ -z "$OUT" ]] && (( RC == 0 ))'
+git -C "$R" -c user.name=t -c user.email=t@t commit -qm one
+print 't' > "$R/tests/foo"; print 's' > "$R/.state/s.md"; git -C "$R" add -A; run
+check "internal files only print nothing" '[[ -z "$OUT" ]]'
+git -C "$R" -c user.name=t -c user.email=t@t commit -qm two
+print '# new' > "$R/cheatsheets/new.md"; git -C "$R" add -A; run
+check "a new sheet with no row warns" '[[ "$OUT" == *"cheat changes"* ]]'
+git -C "$R" reset -q; print '#!/usr/bin/env zsh' > "$R/functions/tool"; git -C "$R" add -A; run
+check "a functions/ command with no row warns" '[[ "$OUT" == *"cheat changes"* ]]'
+exit $failed

@@ -10,4 +10,6 @@ lint="${0:A:h}/cli-colour-lint"
 staged=("${(@f)$(git diff --cached --name-only --diff-filter=ACMR)}")
 staged=(${staged:#})
 (( ${#staged} )) || exit 0
+# a nudge when a user-facing change has no cheat changes row; never blocks
+[[ -x "${0:A:h}/changes-reminder" ]] && zsh -f "${0:A:h}/changes-reminder"
 exec zsh -f "$lint" --root "$repo_root" -q "${staged[@]}"

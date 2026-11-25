@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+# changes-reminder: a pre-commit nudge, never a block. When the staged files
+# touch something a user notices (aliases.zsh, a command in functions/, an
+# installer or updater, the update runner, a cheat sheet other than the
+# changelog) and no cheat changes row is staged with them, it prints one warn
+# line naming the files. tests/, .state/, CLAUDE.md and the changelog itself
+# do not count. Always exits 0.
+#
+#   changes-reminder [--plain]
+fpath=("${0:A:h:h}/functions" $fpath)
+autoload -Uz say cli-init col cli-icon
+local CLI_PLAIN="" CLI_QUIET="" CLI_VERBOSE=""
+cli-init "$@"
+local -a staged facing
+staged=("${(@f)$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null)}")
+staged=(${staged:#})
+(( ${#staged} )) || exit 0
+(( ${staged[(I)cheatsheets/changes.md]} || ${staged[(I)cheatsheets/changes-older.md]} )) && exit 0
+local f
+for f in "${staged[@]}"; do
+  case $f in
+    cheatsheets/changes*.md|tests/*|.state/*|CLAUDE.md) ;;
+    aliases.zsh|update|install|install.zsh|functions/*|installers/*|updaters/*|wrappers/*|configs/gnome/bin/*|cheatsheets/*.md) facing+=("$f") ;;
+  esac
+done
+(( ${#facing} )) || exit 0
+local list="${(j:, :)facing[1,3]}"
+(( ${#facing} > 3 )) && list+=" and $(( ${#facing} - 3 )) more"
+say warn "no cheat changes row staged for $list; add one to cheatsheets/changes.md if a user will notice"
+exit 0

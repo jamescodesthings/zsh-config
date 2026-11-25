@@ -10,6 +10,8 @@
 
 # Latest
 
+- `hap`, `hst` - 2026-11-24, hub aliases: `hap` answers waiting actions, `hal` lists them, `has 41` shows one, `hst` is hub status. More: `cheat aliases claude`
+- `zshc` - 2026-11-24, zshconfig opens the config in VS Code (else micro) instead of changing into it; VS Code adds a final newline on save. More: `cheat zshconfig`
 - `cmd+shift+enter` - 2026-11-25, splits top and bottom again in iTerm2 3.7.9, whose British menus renamed Maximize to Maximise and let it take the key back; quit and reopen iTerm2 once. More: `cheat iterm2 keys`
 - `cheat topics` - 2026-11-24, sheets for languages, platforms, tools and topics (java to typescript, ios and android, bazel and buf, testing to api design); new TUIs use gum. More: `cheat languages`
 - `hooks/cli-colour-lint` - 2026-11-23, a commit that adds plain echo or print output to a zsh-config tool is stopped; use say or col, or mark data lines `# colour-ok: <reason>`; wipcrypt and iterm2-settings now print say lines. More: `cheat cli`
@@ -26,8 +28,6 @@
 - `installers/iterm2` - 2026-11-13, iTerm2 snippets in the status bar's Snippets menu: hub status, cldr, gst, git-speedup and lazygit; your own snippets stay. More: `cheat iterm2`
 - `gh browse` - 2026-11-13, iTerm2's Actions menu can copy the branch or open the repo in the browser. More: `cheat iterm2`
 - `installers/iterm2` - 2026-11-13, the iTerm2 status bar takes Night Owl's colours: a muted bar with the branch, job and tasks picked out. More: `cheat iterm2`
-- `installers/iterm2` - 2026-11-13, iTerm2 opens full screen with a status bar at the bottom: folder, branch, job, held tasks, snippets, actions and clock; notifications on. More: `cheat iterm2`
-- `cmd+shift+a` - 2026-11-13, iTerm2's Open Quickly is on kitty's command palette key; select last output moves to cmd+shift+o. More: `cheat iterm2 keys`
 
 # See also
 
