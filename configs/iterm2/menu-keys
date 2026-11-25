@@ -2,10 +2,13 @@
 # per line: exact menu title|key. In the key, @ is cmd, ^ ctrl, ~ opt, $ shift;
 # ↩ is return and ← → ↑ ↓ the arrows, written as the characters themselves. A menu
 # shortcut set here replaces the item's default, so cmd+d and cmd+shift+d no
-# longer split, and cmd+ctrl+arrows no longer move the divider.
+# longer split, and cmd+ctrl+arrows no longer move the divider. iTerm2 3.7.9
+# shows British titles under an en-GB locale (Maximise), so a title that
+# differs there is listed in both spellings.
 Split Vertically with Current Profile|@↩
 Split Horizontally with Current Profile|@$↩
 Maximize Active Pane|@~↩
+Maximise Active Pane|@~↩
 Toggle Full Screen|@^f
 Move Divider Left|^~←
 Move Divider Right|^~→

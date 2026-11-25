@@ -89,7 +89,7 @@ run
 check "mac: exit 0" '(( CODE == 0 ))'
 check "mac: profile linked" '[[ -L "$PROFILE" && "$(readlink "$PROFILE")" == "$REPO_DIR/configs/iterm2/zsh-config.json" ]]'
 check "mac: default profile set" '[[ "$(<"$TMP/prefs/Default Bookmark Guid")" == "$GUID" ]]'
-check "mac: counts the settings it wrote" '[[ "$OUT" == *" 29 settings written"* ]]'
+check "mac: counts the settings it wrote" '[[ "$OUT" == *" 30 settings written"* ]]'
 check "mac: inactive panes barely dimmed" '[[ "$(<"$TMP/prefs/SplitPaneDimmingAmount")" == 0.05 && "$(<"$TMP/prefs/DimBackgroundWindows")" == 0 ]]'
 check "mac: status bar at the bottom" '[[ "$(<"$TMP/prefs/StatusBarPosition")" == 1 && "$(<"$TMP/prefs/OpenNoWindowsAtStartup")" == 0 ]]'
 check "mac: the wheel scrolls pagers" '[[ "$(<"$TMP/prefs/AlternateMouseScroll")" == 1 ]]'
@@ -112,6 +112,9 @@ while IFS='|' read -r title spec; do
   check "menu key $title" '[[ "$(<"$TMP/prefs/NSUserKeyEquivalents.d/$title")" == "$want" ]]'
 done < "$REPO_DIR/configs/iterm2/menu-keys"
 check "Open Quickly is cmd+shift+a" 'grep -qx "Open Quickly|@\$a" "$REPO_DIR/configs/iterm2/menu-keys"'
+# iTerm2 3.7.9 shows British menu titles under an en-GB locale, and a menu
+# shortcut matches the title as shown, so both spellings carry the same key
+check "maximise pane is cmd+opt+enter in both spellings" '[[ "$(grep "^Maximize Active Pane|" "$REPO_DIR/configs/iterm2/menu-keys")" == *"|@~↩" && "$(grep "^Maximise Active Pane|" "$REPO_DIR/configs/iterm2/menu-keys")" == *"|@~↩" ]]'
 check "split side by side is cmd+enter" '[[ "$(grep "^Split Vertically with Current Profile|" "$REPO_DIR/configs/iterm2/menu-keys")" == *"|@↩" ]]'
 
 # Actions from configs/iterm2/actions.json land in the live Actions array
