@@ -10,6 +10,7 @@
 
 # Latest
 
+- `ha` - 2026-11-25, bare hub action opens pick (alias ha), hub action hide/unhide, pick --all shows hidden and blocked actions, blockers in red, left/right to look back. More: `cheat hub action pick`
 - `hap robot --reverse` - 2026-11-25, hub action pick takes a fuzzy repo filter and -r/--reverse for newest first. More: `cheat hub action pick`
 - `hub action edit <id>` - 2026-11-25, with no flags opens your editor; hub action note <id> likewise; e in hap edits. More: `cheat hub action`
 - `hub down all --force` - 2026-11-25, kills stalled sessions with no handover; the stall message walks through it. More: `cheat hub down`
@@ -27,7 +28,6 @@
 - `hist delete` - 2026-11-18, `hist delete` and `j delete` work on macOS; sheets made by cheat new pass the strict check; fzf comes with install and update; `link-blender-scripts`, `log` and `config` tab-complete. More: `cheat hist delete`
 - `prst` - 2026-11-16, gh pr aliases: `my-prs`, `create-pr`, `open-pr` and `prst`. More: `cheat aliases git`
 - `git status` - 2026-11-16, in a repo too big for the dirty counts (the prompt shows ─) the prompt no longer shows a staged +N, which could be stale after a checkout or pull. More: `cheat troubleshoot`
-- `installers/iterm2` - 2026-11-16, split panes in iTerm2 no longer have a title bar with a close cross; the bottom status bar stays. More: `cheat iterm2`
 
 # See also
 

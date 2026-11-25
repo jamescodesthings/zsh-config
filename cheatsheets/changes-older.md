@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `installers/iterm2` - 2026-11-16, split panes in iTerm2 no longer have a title bar with a close cross; the bottom status bar stays. More: `cheat iterm2`
 - `git diff` - 2026-11-16, the scroll wheel and touchpad scroll pagers in iTerm2 (git, delta, less, man), and text selection still works. More: `cheat iterm2 keys`
 - `update` - 2026-11-16, stops before pulling when zsh-config has local changes or unpushed commits, shows them, and on a terminal offers to commit and push them first (default no). More: `cheat update`
 - `gh pr view --web` - 2026-11-13, many more iTerm2 snippets and actions, in tag folders: git, gh PRs and runs, Claude, lazygit and absorb. More: `cheat iterm2`
