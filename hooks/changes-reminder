@@ -26,5 +26,5 @@ done
 (( ${#facing} )) || exit 0
 local list="${(j:, :)facing[1,3]}"
 (( ${#facing} > 3 )) && list+=" and $(( ${#facing} - 3 )) more"
-say warn "no cheat changes row staged for $list; add one to cheatsheets/changes.md if a user will notice"
+say warn "no cheat changes row staged for $list; add one to cheatsheets/changes.md if a user will notice, and update README.md or readme/ where they describe it"
 exit 0
