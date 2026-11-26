@@ -4,6 +4,11 @@
 
 # Earlier
 
+- `hub questions robot` - 2026-11-25, the questions you asked, each paired with the reply that answered it, in the hub history reader. More: `cheat hub questions`
+- `hub sudo robot --re 412 yes` - 2026-11-25, your words as an answer to one stored reply, by the id hub history shows. More: `cheat hub sudo`
+- `ha` - 2026-11-25, replies point at ha instead of listing actions; the status line shows run ha to act. More: `cheat hub action pending`
+- `ha` - 2026-11-25, bare hub action opens pick (alias ha), hub action hide/unhide, pick --all shows hidden and blocked actions, blockers in red, left/right to look back. More: `cheat hub action pick`
+- `ha robot --reverse` - 2026-11-25, hub action pick takes a fuzzy repo filter and -r/--reverse for newest first. More: `cheat hub action pick`
 - `hub action edit <id>` - 2026-11-25, with no flags opens your editor; hub action note <id> likewise; e in ha edits. More: `cheat hub action`
 - `hub down all --force` - 2026-11-25, kills stalled sessions with no handover; the stall message walks through it. More: `cheat hub down`
 - `hub status` - 2026-11-25, each session shows its short id; hub status <name> shows the full session id. More: `cheat hub status`

@@ -10,6 +10,11 @@
 
 # Latest
 
+- `hub night check` - 2026-11-26, checks the access open actions need before a night; hub night on --wait refuses while any is missing. More: `cheat hub night`
+- `ha` - 2026-11-26, pick shows Action #id (N outstanding); notes have a cursor, Enter saves, Esc cancels; Esc returns to the walk from any sub-view. More: `cheat hub action pick`
+- `hub dropped` - 2026-11-26, lists work a dropped or killed session left; --pickup works a guarded ladder. More: `cheat hub dropped`
+- `hub review run <target>` - 2026-11-26, repeats a review until a blind pass finds nothing new above p2. More: `cheat hub review`
+- `hub reports` - 2026-11-26, reports for you to read, filed to ~/Desktop/claude-reports with a zip each; check, read and archive. More: `cheat hub reports`
 - `hub resolve end` - 2026-11-26, burn-down chart in the resolve report and a copy on ~/Desktop/hub-reports with a 'Read the overnight report' check action. More: `cheat hub resolve`
 - `☾ 07:00` - 2026-11-26, the Claude status line shows a moon while hub night is on; HUB_NIGHT_BADGE=0 hides it. More: `cheat hub night`
 - `cheat hub` - 2026-11-26, regrouped by what you are doing, an actions section, new `cheat updating`. More: `cheat updating`
@@ -22,11 +27,6 @@
 - `hub night` - 2026-11-25, resolve that keeps going while you sleep: rounds until only what needs you is left, through rate limits, ending when the queue is empty or you are back (`--until 06:30`). More: `cheat hub night`
 - `hub action autopick` - 2026-11-25, at night a child records the recommended option of a question as an auto-pick, never your answer, ships the work and files a check action for you. More: `cheat hub action autopick`
 - `hub history` - 2026-11-25, scan the latest replies of the hub and each session, newest first: up and down move through replies, left and right through sessions, Enter answers one. More: `cheat hub history`
-- `hub questions robot` - 2026-11-25, the questions you asked, each paired with the reply that answered it, in the hub history reader. More: `cheat hub questions`
-- `hub sudo robot --re 412 yes` - 2026-11-25, your words as an answer to one stored reply, by the id hub history shows. More: `cheat hub sudo`
-- `ha` - 2026-11-25, replies point at ha instead of listing actions; the status line shows run ha to act. More: `cheat hub action pending`
-- `ha` - 2026-11-25, bare hub action opens pick (alias ha), hub action hide/unhide, pick --all shows hidden and blocked actions, blockers in red, left/right to look back. More: `cheat hub action pick`
-- `ha robot --reverse` - 2026-11-25, hub action pick takes a fuzzy repo filter and -r/--reverse for newest first. More: `cheat hub action pick`
 
 # See also
 
