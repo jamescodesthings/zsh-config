@@ -10,6 +10,7 @@
 
 # Latest
 
+- `hub down all` - 2026-11-26, all, children and idle now skip your own Claude sessions; name one to act on it. More: `cheat hub target`
 - `hub action add --step ... --option 'A|...'` - 2026-11-26, actions carry numbered steps and selectable options; show and hap fold notes, t toggles. More: `cheat hub action add`
 - `hub night` - 2026-11-25, resolve that keeps going while you sleep: rounds until only what needs you is left, through rate limits, ending when the queue is empty or you are back (`--until 06:30`). More: `cheat hub night`
 - `hub action autopick` - 2026-11-25, at night a child records the recommended option of a question as an auto-pick, never your answer, ships the work and files a check action for you. More: `cheat hub action autopick`
@@ -26,7 +27,6 @@
 - `hub join --detach` - 2026-11-25, hub and hubx join take `--detach` or `--no-attach` (or HUB_NO_ATTACH=1) to start a session without attaching; inside tmux, join switches the client instead. More: `cheat hub join`
 - `ham` - 2026-11-25, hub alias: `ham` lists only the actions waiting on you (`hub action list --mine`). More: `cheat aliases claude`
 - `ha`, `hst` - 2026-11-24, hub aliases: `ha` answers waiting actions, `hal` lists them, `has 41` shows one, `hst` is hub status. More: `cheat aliases claude`
-- `zshc` - 2026-11-24, zshconfig opens the config in VS Code (else micro) instead of changing into it; VS Code adds a final newline on save. More: `cheat zshconfig`
 
 # See also
 
