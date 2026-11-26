@@ -38,6 +38,7 @@ function cheatsheet-test() {
   # The glob sits in a string so the file still parses when it is autoloaded
   # under sh_glob, which reads "(N-.)" as a syntax error.
   local target pattern skills_pat='(skills|skills-*)'
+  local index_pat='(hub|hub-action|help)' join_pat='[^-<[=][^<[=]#\|*'
   for target in $targets; do
     if is dir "$target"; then
       pattern="${(b)target}/*.md(N-.)"
@@ -59,7 +60,8 @@ function cheatsheet-test() {
     return 1
   fi
 
-  local sheet line out name parent height first_section last_section candidate warning word
+  local sheet line out name parent height first_section last_section candidate warning word prev cmd alt
+  local -i pos depth
   local -i vars_at=0 i j rank last_rank
   local -a standard
   local -a sections warnings
@@ -144,7 +146,13 @@ function cheatsheet-test() {
         height=$(CLI_PLAIN=1 cheat-render "$sheet" 2> /dev/null | wc -l)
         height="${height//[[:space:]]/}"
         height=$(( height - 1 )) # the blank line every render ends with
-        (( height > 35 )) && warnings+=("a top sheet should fit half a kitty window: $height rendered lines, aim for 35")
+        # Index sheets group many commands under what-you-are-doing
+        # subheads and may run to about 90 lines (cheat cheat format)
+        if [[ "$name" == ${~index_pat} ]]; then
+          (( height > 90 )) && warnings+=("an index sheet should stay near 90 rendered lines: $height")
+        else
+          (( height > 35 )) && warnings+=("a top sheet should fit half a kitty window: $height rendered lines, aim for 35")
+        fi
       else
         [[ "$last_section" != "See also" ]] && warnings+=("the last section should be exactly \"See also\"")
       fi
@@ -200,10 +208,35 @@ function cheatsheet-test() {
         warnings+=("line $number: a row separates its command from the explanation with \" - \", not \": \"")
       fi
       if [[ "$line" == ${~row_pat} ]]; then
+        # One command per row: | may not join command words, meaning the
+        # word right after the tool, or a later word whose alternatives have
+        # sheets of their own (hub action add|edit). Values stay allowed:
+        # in [ ] or < >, after a flag or =, or a positional (on|off).
+        prev="" pos=0 depth=0 cmd=""
         for word in ${=${match[1]//\`/}}; do
-          if [[ "$word" == -*\|* ]]; then
+          (( depth )) || pos+=1
+          if [[ "$word" == -*\|* ]] && (( ! depth )); then
             warnings+=("line $number: put flag alternatives in [ ]: [$word]")
+          elif (( ! depth )) && [[ "$word" == ${~join_pat} && "$prev" != -* ]]; then
+            if (( pos == 2 )); then
+              warnings+=("line $number: one command per row; split $word into a row each")
+            elif (( pos > 2 )); then
+              for alt in ${(s:|:)word}; do
+                if is file "${sheet:h}/${cmd// /-}-$alt.md"; then
+                  warnings+=("line $number: one command per row; split $word into a row each")
+                  break
+                fi
+              done
+            fi
           fi
+          (( ! depth )) && [[ "$word" != *[=\|\[\<-]* ]] && cmd+="${cmd:+ }$word"
+          depth+=${#${word//[^\[<]/}}
+          depth=$(( depth - ${#${word//[^\]>]/}} ))
+          (( depth < 0 )) && depth=0
+          if [[ "$word" == *, ]]; then
+            pos=0 cmd=""
+          fi
+          prev="$word"
         done
       fi
     done < "$sheet"

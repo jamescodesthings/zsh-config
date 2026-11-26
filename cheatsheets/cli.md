@@ -6,11 +6,11 @@
 
 - `cheat-help <tool> "$@" && return 0` - first line: `--help` shows the tool's sheet
 - `cli-init "$@"` - second: sets plain mode and `-q`/`-v`, loads the palette
-- `say ok|info|warn|fail <text>` - report; `problem` and `problems` at the end
+- `say ok <text>` - report; also `say info`, `say warn`, `say fail`; `problems` at the end
 
 # Output
 
-- `say ok|info|warn|fail <text>` - one status line with an icon; fail goes to stderr
+- `say warn <text>` - one status line with an icon; `say fail` goes to stderr
 - `cli-icon [-v VAR] <name>` - a glyph
 - `problem <text>`, `fix <cmd> [why]` - collect; `problems` prints
 - `col [-v VAR] <name>` - a palette colour escape
@@ -21,7 +21,7 @@
 
 - `pick [-v VAR] <header> <items...>` - fzf choice for a missing argument
 - `confirm [-y]` - ask y/n; `-y` or `CLI_YES=1` says yes; new TUIs use gum, with a plain fallback
-- `progress start|step|done|fail` - spinner with steps; `cheat cli progress`
+- `progress start <title> <total>` - spinner with steps, then `progress step`, `progress done`; `cheat cli progress`
 - `run-quiet <label> <command...>` - run it into a child log
 - `log-start <command>`, `log-line <text>` - open a log, add to it
 - `config [--schema FILE] <tool>` - the tool's settings

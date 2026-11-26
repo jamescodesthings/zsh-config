@@ -10,22 +10,22 @@
 
 # Values and paths
 
-- `is file|dir|link|existing <path>` - regular file, directory, symlink, exists (any type)
-- `is readable|writeable|executable <path>` - permission check
-- `is older|newer <a> <b>` - modification time
-- `is available|alias <name>` - command in PATH, or alias is defined
+- `is file <path>` - regular file; also `is dir`, `is link`, `is existing` (any type)
+- `is readable <path>` - permission check; also `is writeable`, `is executable`
+- `is older <a> <b>` - modification time; also `is newer`
+- `is available <name>` - command in PATH; `is alias` for a defined alias
 - `is empty "$var"` - empty or unset
 - `is equal "$a" "$b"` - equal, as text or as numbers
-- `is matching|substring "<pattern>" "$val"` - whole value matches a regex, or contains the text
+- `is matching "<pattern>" "$val"` - whole value matches a regex; `is substring` if it contains the text
 - `is number "$val"` - integer or decimal
-- `is gt|lt|ge|le "$a" "$b"` - numeric compare
-- `is true|false "$val"` - `true` or `0` counts as true
+- `is gt "$a" "$b"` - numeric compare; also `is lt`, `is ge`, `is le`
+- `is true "$val"` - `true` or `0` counts as true; also `is false`
 
 # Platform
 
-- `is osx|linux|debian|arch|ubuntu|windows|gnome|wayland|x11`
+- Platform checks: `is osx`, `is linux`, `is debian`, `is arch`, `is ubuntu`, `is windows`, `is gnome`, `is wayland`, `is x11`
 - `is supported` - macOS or Debian family
-- `is m1|iterm` - Apple Silicon, or running in iTerm
+- `is m1` - Apple Silicon; `is iterm` when running in iTerm
 - `is tty` - Linux with no display (console)
 
 # See also

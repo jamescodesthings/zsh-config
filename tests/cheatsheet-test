@@ -137,4 +137,34 @@ expect 0 "a skill sheet keeps its bare example lines under --strict" '' --strict
 printf '# skill demo\n\n> Does a thing.\n\n# See also\n\n- Exit: 2\n' > "$SK/cheatsheet.md"
 expect 1 "a skill sheet with a non-pointer See also row fails --strict" '' --strict "$SK/cheatsheet.md"
 
+# Index sheets (hub, hub-action, help) may run to about 90 rendered lines;
+# grouped subheads are short phrases with one > tagline; a group may end
+# with its own pointer row; one command per row
+IDX="$TMP/idx"
+mkdir -p "$IDX"
+long() { local n=$1; printf '# %s\n\n> An index.\n\n# Getting started\n\n- `%s` - start\n\n# Starting, waking or stopping (safely)\n\n> when you begin or end a day\n\n' "$2" "$2"; for (( k = 1; k <= n; k++ )); do printf -- '- `%s up%s` - row\n' "$2" $k; done; printf -- '- `cheat %s up` - see also\n\n# See also\n\n- `cheat %s go` - go\n' "$2" "$2"; }
+long 60 help > "$IDX/help.md"
+expect 0 "an index sheet (help) of about 75 lines passes --strict" '' --strict "$IDX/help.md"
+long 60 hub > "$IDX/hub.md"
+long 60 hub > "$IDX/hub-action.md"
+sed -i '' 's/^# hub$/# hub action/' "$IDX/hub-action.md"
+expect 0 "hub and hub-action are index sheets too" '' --strict "$IDX/hub.md" "$IDX/hub-action.md"
+long 80 help > "$IDX/help.md"
+expect 1 "an index sheet past 90 rendered lines fails --strict" '' --strict "$IDX/help.md"
+long 60 tool > "$IDX/tool.md"
+expect 1 "any other top sheet past 35 lines still fails --strict" '' --strict "$IDX/tool.md"
+JOIN="$TMP/join"
+mkdir -p "$JOIN"
+cp "$SHAPED/t.md" "$JOIN/"
+printf '# t p\n\n> P.\n\n# Usage\n\n- `t up|down` - two commands in one row\n\n# See also\n\n- `cheat t`\n' > "$JOIN/t-p.md"
+expect 0 "a row joining commands with | only warns without --strict" '' "$JOIN/t-p.md"
+expect 1 "a row joining commands with | fails --strict" '' --strict "$JOIN/t-p.md"
+printf '# t q\n\n> Q.\n\n# Usage\n\n- `t q --to claude|xirp` - one option, two values\n- `t q [-v|--verbose] <a|b>` - spellings of one option\n\n# See also\n\n- `cheat t`\n' > "$JOIN/t-q.md"
+expect 0 "| between values or spellings of one option passes --strict" '' --strict "$JOIN/t-q.md"
+printf '# t r\n\n> R.\n\n# Usage\n\n- `t r [--sort ctx|age|name] [-n N|all]` - values in brackets\n- `T_R=always|never t r` - a variable value\n- `t r on|off` - a positional value\n\n# See also\n\n- `cheat t`\n' > "$JOIN/t-r.md"
+expect 0 "values after a subcommand, in [ ] or after = pass --strict" '' --strict "$JOIN/t-r.md"
+printf '# t s\n\n> S.\n\n# Usage\n\n- `t s add|edit` - two subcommands with sheets\n\n# See also\n\n- `cheat t`\n' > "$JOIN/t-s.md"
+printf '# t s add\n\n> A.\n\n# See also\n\n- `cheat t s`\n' > "$JOIN/t-s-add.md"
+expect 1 "subcommand words that have their own sheets fail --strict" '' --strict "$JOIN/t-s.md"
+
 exit $failed
