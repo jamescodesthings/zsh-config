@@ -10,6 +10,7 @@
 
 # Latest
 
+- `cheat hub` - 2026-11-26, regrouped by what you are doing, an actions section, new `cheat updating`. More: `cheat updating`
 - `ha robot -r` - 2026-11-25, list, show and edit catch up with pick: hub action list takes a repo filter and -r for newest first, as pick does. More: `cheat hub action list`
 - `hub action list -s zebra` - 2026-11-25, only the actions whose text, a note or an answer mentions the word, case blind. More: `cheat hub action list`
 - `hub action snooze 41`, `z` - 2026-11-25, snooze an action until 07:00 the next morning, out of pick and the waiting count; z in pick does it, u undoes it. More: `cheat hub action pick`
@@ -26,7 +27,6 @@
 - `ha robot --reverse` - 2026-11-25, hub action pick takes a fuzzy repo filter and -r/--reverse for newest first. More: `cheat hub action pick`
 - `hub action edit <id>` - 2026-11-25, with no flags opens your editor; hub action note <id> likewise; e in ha edits. More: `cheat hub action`
 - `hub down all --force` - 2026-11-25, kills stalled sessions with no handover; the stall message walks through it. More: `cheat hub down`
-- `hub status` - 2026-11-25, each session shows its short id; hub status <name> shows the full session id. More: `cheat hub status`
 
 # See also
 

@@ -10,10 +10,18 @@
 - Then the everyday groups, in the order a user works, then maintenance
 - A row is `- `, the command in backticks, ` - `, then what it does; options and targets show in the command
 - Flag alternatives go in brackets: `[-n|--lines N]`
+- One command per row: never `hub up|down` or `hub action add|edit`; `|` only between spellings or values of one thing (`[-v|--verbose]`, `--sort ctx|age`, `on|off`)
 - `# Variables` - when present, just before the last section
 - `# See also` last, exactly - only `cheat` or `tldr` pointers, one row each: the command and topic sheets, and the repo as an ordinary row
 - Quirks (exit codes, notes, caveats) go in `# Notes` above it, never in See also
 - Fits half a kitty window split horizontally: 35 rendered lines
+
+# Index sheet: cheat hub, cheat hub action, cheat help
+
+- Groups rows under what you are doing, not a noun: `# Starting, waking or stopping (safely)`
+- One `>` tagline under each such heading says when to reach for it: `> when things go wrong`
+- A group with its own sheet ends with that pointer as its last row, inside the group
+- May run to about 90 rendered lines; each group's sheet carries the detail
 
 # Rows and spans
 
