@@ -10,6 +10,10 @@
 
 # Latest
 
+- `ha robot -r` - 2026-11-25, list, show and edit catch up with pick: hub action list takes a repo filter and -r for newest first, as pick does. More: `cheat hub action list`
+- `hub action list -s zebra` - 2026-11-25, only the actions whose text, a note or an answer mentions the word, case blind. More: `cheat hub action list`
+- `hub action snooze 41`, `z` - 2026-11-25, snooze an action until 07:00 the next morning, out of pick and the waiting count; z in pick does it, u undoes it. More: `cheat hub action pick`
+- `e`, `E`, `t` - 2026-11-25, pick keys: e edits an action in a form, E opens its context in your editor, t or Space ticks a checklist box. More: `cheat hub action pick`
 - `hub down all` - 2026-11-26, all, children and idle now skip your own Claude sessions; name one to act on it. More: `cheat hub target`
 - `hub action add --step ... --option 'A|...'` - 2026-11-26, actions carry numbered steps and selectable options; show and hap fold notes, t toggles. More: `cheat hub action add`
 - `hub night` - 2026-11-25, resolve that keeps going while you sleep: rounds until only what needs you is left, through rate limits, ending when the queue is empty or you are back (`--until 06:30`). More: `cheat hub night`
@@ -23,10 +27,6 @@
 - `hub action edit <id>` - 2026-11-25, with no flags opens your editor; hub action note <id> likewise; e in ha edits. More: `cheat hub action`
 - `hub down all --force` - 2026-11-25, kills stalled sessions with no handover; the stall message walks through it. More: `cheat hub down`
 - `hub status` - 2026-11-25, each session shows its short id; hub status <name> shows the full session id. More: `cheat hub status`
-- `har`, `hal` - 2026-11-25, hub aliases: `har` picks a report to read; `hal` now picks from the action list, Enter opens a report and m marks it read. More: `cheat hub action report`
-- `hub join --detach` - 2026-11-25, hub and hubx join take `--detach` or `--no-attach` (or HUB_NO_ATTACH=1) to start a session without attaching; inside tmux, join switches the client instead. More: `cheat hub join`
-- `ham` - 2026-11-25, hub alias: `ham` lists only the actions waiting on you (`hub action list --mine`). More: `cheat aliases claude`
-- `ha`, `hst` - 2026-11-24, hub aliases: `ha` answers waiting actions, `hal` lists them, `has 41` shows one, `hst` is hub status. More: `cheat aliases claude`
 
 # See also
 
