@@ -10,6 +10,7 @@
 
 # Latest
 
+- `hub resolve end` - 2026-11-26, burn-down chart in the resolve report and a copy on ~/Desktop/hub-reports with a 'Read the overnight report' check action. More: `cheat hub resolve`
 - `☾ 07:00` - 2026-11-26, the Claude status line shows a moon while hub night is on; HUB_NIGHT_BADGE=0 hides it. More: `cheat hub night`
 - `cheat hub` - 2026-11-26, regrouped by what you are doing, an actions section, new `cheat updating`. More: `cheat updating`
 - `ha robot -r` - 2026-11-25, list, show and edit catch up with pick: hub action list takes a repo filter and -r for newest first, as pick does. More: `cheat hub action list`
@@ -26,7 +27,6 @@
 - `ha` - 2026-11-25, replies point at ha instead of listing actions; the status line shows run ha to act. More: `cheat hub action pending`
 - `ha` - 2026-11-25, bare hub action opens pick (alias ha), hub action hide/unhide, pick --all shows hidden and blocked actions, blockers in red, left/right to look back. More: `cheat hub action pick`
 - `ha robot --reverse` - 2026-11-25, hub action pick takes a fuzzy repo filter and -r/--reverse for newest first. More: `cheat hub action pick`
-- `hub action edit <id>` - 2026-11-25, with no flags opens your editor; hub action note <id> likewise; e in ha edits. More: `cheat hub action`
 
 # See also
 
