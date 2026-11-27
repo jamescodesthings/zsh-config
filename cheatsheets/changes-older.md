@@ -4,6 +4,7 @@
 
 # Earlier
 
+- `hub night` - 2026-11-25, resolve that keeps going while you sleep: rounds until only what needs you is left, through rate limits, ending when the queue is empty or you are back (`--until 06:30`). More: `cheat hub night`
 - `hub action autopick` - 2026-11-25, at night a child records the recommended option of a question as an auto-pick, never your answer, ships the work and files a check action for you. More: `cheat hub action autopick`
 - `hub history` - 2026-11-25, scan the latest replies of the hub and each session, newest first: up and down move through replies, left and right through sessions, Enter answers one. More: `cheat hub history`
 - `hub questions robot` - 2026-11-25, the questions you asked, each paired with the reply that answered it, in the hub history reader. More: `cheat hub questions`

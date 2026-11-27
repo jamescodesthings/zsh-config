@@ -10,6 +10,7 @@
 
 # Latest
 
+- `ha` - 2026-11-27, pick draws inline under the prompt; ha --fullscreen for the old screen. More: `cheat hub action pick`
 - `hub action note <id> -` - 2026-11-27, notes and context keep line breaks and lists in ha and show. More: `cheat hub action add`
 - `ha` - 2026-11-27, typing a note no longer flashes the screen; z starts a note (snooze is hub action snooze). More: `cheat hub action pick`
 - `hub night check` - 2026-11-26, checks the access open actions need before a night; hub night on --wait refuses while any is missing. More: `cheat hub night`
@@ -26,7 +27,6 @@
 - `e`, `E`, `t` - 2026-11-25, pick keys: e edits an action in a form, E opens its context in your editor, t or Space ticks a checklist box. More: `cheat hub action pick`
 - `hub down all` - 2026-11-26, all, children and idle now skip your own Claude sessions; name one to act on it. More: `cheat hub target`
 - `hub action add --step ... --option 'A|...'` - 2026-11-26, actions carry numbered steps and selectable options; show and hap fold notes, t toggles. More: `cheat hub action add`
-- `hub night` - 2026-11-25, resolve that keeps going while you sleep: rounds until only what needs you is left, through rate limits, ending when the queue is empty or you are back (`--until 06:30`). More: `cheat hub night`
 
 # See also
 
