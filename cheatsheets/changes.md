@@ -10,6 +10,7 @@
 
 # Latest
 
+- `ha` - 2026-11-27, typing a note no longer flashes the screen; z starts a note (snooze is hub action snooze). More: `cheat hub action pick`
 - `hub night check` - 2026-11-26, checks the access open actions need before a night; hub night on --wait refuses while any is missing. More: `cheat hub night`
 - `ha` - 2026-11-26, pick shows Action #id (N outstanding); notes have a cursor, Enter saves, Esc cancels; Esc returns to the walk from any sub-view. More: `cheat hub action pick`
 - `hub dropped` - 2026-11-26, lists work a dropped or killed session left; --pickup works a guarded ladder. More: `cheat hub dropped`
@@ -26,7 +27,6 @@
 - `hub action add --step ... --option 'A|...'` - 2026-11-26, actions carry numbered steps and selectable options; show and hap fold notes, t toggles. More: `cheat hub action add`
 - `hub night` - 2026-11-25, resolve that keeps going while you sleep: rounds until only what needs you is left, through rate limits, ending when the queue is empty or you are back (`--until 06:30`). More: `cheat hub night`
 - `hub action autopick` - 2026-11-25, at night a child records the recommended option of a question as an auto-pick, never your answer, ships the work and files a check action for you. More: `cheat hub action autopick`
-- `hub history` - 2026-11-25, scan the latest replies of the hub and each session, newest first: up and down move through replies, left and right through sessions, Enter answers one. More: `cheat hub history`
 
 # See also
 
